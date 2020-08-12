@@ -1,0 +1,48 @@
+KICAD_FOOTPRINTS:
+KICAD_LIBRARIES:
+KICAD_TEMPLATES:
+  Capacitors:
+    Aluminium: capacitor-polarized
+    Ceramic: capacitor
+    Default: capacitor
+    Polymer: capacitor-polarized
+    Super Capacitors: capacitor-polarized
+    Tantalum: capacitor-polarized
+  Circuit Protections:
+    Default: protection-unidir
+    Fuse: fuse
+    TVS: protection-unidir
+  Connectors:
+    Default: connector
+  Crystals and Oscillators:
+    Crystal 2P: crystal-2p
+    Default: crystal-2p
+    Oscillator 4P: oscillator-4p
+  Diodes:
+    Default: diode-standard
+    LED: diode-led
+    Schottky: diode-schottky
+    Standard: diode-standard
+    Zener: diode-zener
+  Inductors:
+    Default: inductor
+    Ferrite Bead: ferrite-bead
+    Power: inductor
+  Integrated Circuits:
+    Default: integrated-circuit
+  Mechanicals:
+    Default: default
+  Power Management:
+    Default: integrated-circuit
+  Resistors:
+    Default: resistor
+    Surface Mount: resistor-sm
+    Through Hole: resistor
+  RF:
+    Default: integrated-circuit
+  Transistors:
+    Default: transistor-nfet
+    N-Channel FET: transistor-nfet
+    NPN: transistor-npn
+    P-Channel FET: transistor-pfet
+    PNP: transistor-pnp

@@ -27,7 +27,10 @@ Ki-nTree was developped by @eeintech for [SPARK Microsystems](https://www.sparkm
 
 #### From source
 1. Create and activate a new python environment
-2. Clone or download source code from this repo
+2. Clone this repository with the following command:
+```
+$ git clone --recurse-submodules https://github.com/sparkmicro/Ki-nTree
+```
 3. Run `pip install -r requirements.txt` to install dependencies
 4. Run `python kintree_gui.py` to start using the tool
 

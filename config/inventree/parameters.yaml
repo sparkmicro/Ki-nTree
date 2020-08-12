@@ -1,0 +1,64 @@
+# Parameters
+# Name: Unit
+Value:
+Symbol:
+Footprint:
+Package Type:
+Package Size: mm
+Package Height: mm
+Temperature Range: °C
+Temperature Grade:
+# Capacitors
+Tolerance: '%'
+Rated Voltage: V
+Rated Current: A
+ESR: mOhm
+# Circuit Protections
+Capacitance: nF
+Rated Power: W
+Standoff Voltage: V
+Breakdown Voltage: V
+Clamping Voltage: V
+# Connectors
+Mating Height: mm
+Mounting Type: # (Surface Mount / Through-Hole / Mixed)
+Orientation: # (Vertical / Right-Angle)
+Locking: # (Yes / No)
+Shielding: # (Yes / No / Partial)
+Interface Type: # (USB, JTAG, etc.)
+Polarity: # (Plug / Receptacle)
+Number of Contacts:
+Number of Rows:
+Pitch: mm
+# Crystals and Oscillators
+Frequency: Hz
+Frequency Stability: ppm
+Frequency Tolerance: ppm
+Load Capacitance: pF
+# Diodes
+Forward Voltage: V
+LED Color:
+# ICs
+Number of Channels:
+Function Type:
+# Maximum Voltage: V
+Memory Size:
+# Inductors
+Saturation Current: A
+DC Resistance: mOhm
+# Resistors
+B Constant: K
+Number of Elements:
+# Transistors
+RDS On Resistance: Ohm
+RDS On Voltage: V
+Collector-Gate Voltage: V
+Maximum Gate Voltage: V
+# Voltage Regulators
+Min Input Voltage: V
+Max Input Voltage: V
+Output Type:
+(Min) Output Voltage: V
+Max Output Voltage: V
+Output Current: A
+Quiescent Current: A

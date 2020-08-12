@@ -1,0 +1,145 @@
+Capacitors:
+  ## 0402 0.1u 16V X7R
+  0402B104K160CT: original
+  # Equivalent
+  CL05B104KO5NNNC: alternate_mpn
+  # 'Fake' Equivalent (Temperature Grade)
+  C0402C104K4PACTU: fake_alternate
+  # Aluminum
+  EEE-HA1A101WP: original
+  # Tantalum
+  T491A106K010AT: original
+  # Aluminum-Polymer
+  RSA0J331MCN1GS: original
+  # Tantalum-Polymer
+  10TPE68M: original
+  # Super-Capacitor
+  CPH3225A: original
+
+Circuit Protections:
+  # TVS
+  SMAJ5.0CA-13-F: original
+  # ESD
+  ESDALC14-1BF4: original
+  # Fuse
+  0603SFP150F/32-2: original
+  # PTC
+  0ZCM0005FF2G: original
+
+Connectors:
+  # Board-to-board
+  10144517-061802LF: original
+  # Interface, microSD
+  DM3CS-SF: original
+  # Interface, USB Type-C
+  USB4085-GF-A: original
+  # Interface, Audio Jack
+  SJ-3524-SMT-TR: original
+  # Interface, Ethernet
+  J3011G21DNLT: original
+  # Coaxial
+  H.FL-R-SMT(C)(10): original
+  # FPC
+  0522713069: original
+  # Header Male (Power)
+  0533980271: original
+  # Header Female
+  20021321-00010C4LF: original
+
+Crystals and Oscillators:
+  # 2-pin 32.768kHz Crystal
+  ABS07-120-32.768KHZ-T: original
+  # 4-pin 40MHz Oscillator
+  KC2520C40.0000C2YE00: original
+
+Diodes:
+  # General Purpose
+  1N4148W-7-F: original
+  # Zener
+  MMSZ5231B-7-F: original
+  # LED
+  LTST-C191KGKT: original
+  # Schottky
+  PMEG10010ELRX: original
+
+Inductors:
+  # Power
+  NRS5030T4R7MMGJV: original
+  # Ferrite Bead
+  BLM18AG601SN1D: original
+
+Integrated Circuits:
+  # Logic
+  SN74LVC2T45DCTR: original
+  # Memory
+  MX25R6435FM2IL0: original
+  # Microcontroller
+  STM32F730R8T6: original
+  # Interface
+  MAX9867ETJ+T: original
+  # Sensor
+  BME280: original
+
+Mechanicals:
+  # Switch
+  TL1105SF160Q: original
+
+Power Management:
+  # Buck, Adjustable
+  AOZ1282CI: original
+  # Buck, Fixed
+  SC189CULTRT: original
+  # Boost, Fixed
+  TPS61221DCKR: original
+  # LDO, Adjustable
+  LP3982IMM-ADJ/NOPB: original
+  # LDO, Fixed
+  AP2210K-3.3TRG1: original
+
+Resistors:
+  # 10K/5%
+  ### Surface Mount
+  ## 0603
+  RK73B1JTTD103J: original
+  # Equivalent
+  ERJ-3GEYJ103V: alternate_mpn
+  # 'Fake' Equivalent (Tolerance)
+  RC0603FR-0710KL: fake_alternate
+  ## 0402
+  RMCF0402JT10K0: original
+  # Equivalent
+  CRCW040210K0JNEDC: alternate_mpn
+  # 'Fake' Equivalent (Power)
+  ERJ-2GEJ103X: fake_alternate
+  ### Through Hole
+  CF14JT10K0: original
+  # Equivalent
+  CFR16J10K: alternate_mpn
+  # 'Fake' Equivalent (Temperature)
+  CBT25J10K: fake_alternate
+  ### Array
+  # ('original', 'EXB-28V103JX'),
+  # # Equivalent
+  # ('alternate_mpn', 'CAT10-103J4LF'),
+  # # 'Fake' Equivalent (Power)
+  # ('fake_alternate', 'EXB-N8V103JX'),
+  # ### Potentiometer
+  # ('original', '3590S-2-103L'),
+  # ### PTC
+  # ('original', 'TFPT1206L1002JV'),
+  # ### NTC
+  # ('original', 'NCP15XH103J03RC'),
+
+RF:
+  # Filter (Balun)
+  2450BM14E0003T: original
+
+Transistors:
+  # NPN
+  MMBT3904-7-F: original
+  # PNP
+  MMBT3906TT1G: original
+  # N-Channel FET
+  2N7002-7-F: original
+  # P-Channel FET
+  BSS84-7-F: original

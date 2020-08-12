@@ -1,0 +1,14 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP IPN
+D description
+K keywords
+F inventree_url
+$ENDCMP
+#
+$CMP TEMPLATE_NPN
+D TEMPLATE NPN
+K Template NPN
+$ENDCMP
+#
+#End Doc Library

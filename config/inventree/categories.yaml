@@ -1,0 +1,95 @@
+# Coding
+CODES:
+  Assemblies: PCA
+  Capacitors: CAP
+  Circuit Protections: PRO
+  Connectors: CON
+  Crystals and Oscillators: CLK
+  Diodes: DIO
+  Inductors: IND
+  Integrated Circuits: ICS
+  Mechanicals: MEC
+  Power Management: PWR
+  Miscellaneous: MIS
+  Modules: MOD
+  Printed-Circuit Boards: PCB
+  Resistors: RES
+  RF: RFC
+  Transistors: TRA
+# Parents and Children Categories
+CATEGORIES:
+  Assemblies: null
+  Capacitors:
+    - Ceramic
+    - Aluminium
+    - Tantalum
+    - Polymer
+    - Super Capacitors
+    # - Feed-Thru
+  Circuit Protections:
+    - TVS
+    # - ESD
+    - Fuses
+    - PTC
+  Connectors:
+    - Board-to-Board
+    - Interface
+    - Coaxial
+    - FPC
+    - Header
+    # - Wire-to-Board
+    # - High-Speed
+    # - RF
+    # - Power
+  Crystals and Oscillators:
+    - Crystals
+    - Oscillators
+  Diodes:
+    - Standard
+    - Schottky
+    - Zener
+    - LED
+  Inductors:
+    - Power
+    - Ferrite Bead
+    # - RF
+  Integrated Circuits:
+    - Logic
+    - Interface
+    - MCU
+    - Memory
+    - Sensor
+    # - Load-Switch
+    # - SoC-CPU-GPU
+    # - FPGA-ASIC-CPLD
+    # - Driver
+  Mechanicals:
+    - Switch
+  Miscellaneous: null
+  Modules: null
+  Printed-Circuit Boards: null
+  Power Management:
+    - LDO
+    - Buck
+    - Boost
+    # - Buck-Boost
+    # - PMIC
+  Resistors:
+    - Surface Mount
+    - Through Hole
+    # - Current Sense
+    # - Array
+    # - Potentiometers
+    # - PTC
+    # - NTC
+  RF:
+    - Chipset
+    - Antenna
+    - Filter
+  Transistors:
+    - N-Channel FET
+    - P-Channel FET
+    # - N+N-Channel FET
+    # - N+P-Channel FET
+    - NPN
+    - PNP

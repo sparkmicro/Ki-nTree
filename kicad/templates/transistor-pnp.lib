@@ -1,0 +1,28 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# IPN
+#
+DEF IPN Q 0 0 N N 1 F N
+F0 "Q" -50 170 50 H V C CNN
+F1 "IPN" 0 -400 50 H I C CNN
+F2 "Footprint" 0 -700 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+F4 "Manufacturer" 0 -500 50 H I C CNN "Manufacturer"
+F5 "MPN" 0 -600 50 H I C CNN "Manufacturer Part Number"
+F6 "Value" 150 150 50 H V L CNN "Part Number"
+F7 "Rated Voltage" 150 50 50 H V L CNN "Rated Voltage (Volt)"
+F8 "Rated Current" 150 -50 50 H V L CNN "Rated Current (Amps)"
+F9 "Package Type" 150 -150 50 H V L CNN "Package Type"
+DRAW
+P 2 0 1 0 0 -90 0 90 N
+P 2 0 1 0 100 -100 0 -40 N
+P 2 0 1 0 100 100 0 40 N
+P 4 0 1 0 5 -40 30 -90 60 -45 5 -40 F
+X B ~ -200 0 200 R 50 50 1 1 I
+X C ~ 100 300 200 D 50 50 1 1 O
+X E ~ 100 -300 200 U 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+#End Library

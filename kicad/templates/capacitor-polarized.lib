@@ -1,0 +1,31 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# IPN
+#
+DEF IPN C 0 0 N N 1 F N
+F0 "C" 0 150 50 H V C CNN
+F1 "IPN" 0 -500 50 H I C CNN
+F2 "Footprint" 0 -800 50 H I C CNN
+F3 "" 0 -1150 50 H I C CNN
+F4 "Manufacturer" 0 -600 50 H I C CNN "Manufacturer"
+F5 "MPN" 0 -700 50 H I C CNN "Manufacturer Part Number"
+F6 "Value" 0 -150 50 H V C CNN "Capacitance (Farad)"
+F7 "Tolerance" 200 -150 50 H I L CNN "Tolerance (%)"
+F8 "Rated Voltage" 0 -250 50 H V C CNN "Voltage Rated (Volt)"
+F9 "Package Type" 0 -350 50 H V C CNN "Package Type"
+F10 "Package Size" 0 -350 50 H I C CNN "Package Size"
+F11 "ESR" 200 -250 50 H I L CNN "ESR (Ohm)"
+DRAW
+A 150 0 125 -1431 1431 0 1 10 N 60 -75 60 75
+P 2 0 1 0 -70 -15 -70 -65 N
+P 2 0 1 0 -50 0 -25 0 N
+P 2 0 1 0 -45 -40 -95 -40 N
+P 2 0 1 10 -25 -75 -25 75 N
+P 2 0 1 0 60 0 25 0 N
+X Positif 1 -150 0 100 R 60 50 1 1 P
+X Negatif 2 150 0 100 L 60 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+#End Library

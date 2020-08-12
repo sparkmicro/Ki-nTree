@@ -1,0 +1,26 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# IPN
+#
+DEF IPN D 0 0 N N 1 F N
+F0 "D" 0 150 50 H V C CNN
+F1 "IPN" 0 -550 50 H I C CNN
+F2 "Footprint" 0 -850 50 H I C CNN
+F3 "" 0 -400 30 H I C CNN
+F4 "Manufacturer" 0 -650 50 H I C CNN "Manufacturer"
+F5 "MPN" 0 -750 50 H I C CNN "Manufacturer Part Number"
+F6 "Value" 0 -400 50 H I C CNN "Part Number"
+F7 "Forward Voltage" 0 -300 50 H V C CNN "Forward Voltage (Volt)"
+F8 "LED Color" 0 -200 50 H V C CNN "LED Color"
+DRAW
+P 2 0 1 15 0 -50 0 50 N
+P 4 0 1 10 -100 50 -100 -50 0 0 -100 50 f
+P 5 0 1 10 -85 -70 -30 -125 -40 -95 -60 -115 -30 -125 F
+P 5 0 1 10 -25 -65 30 -120 0 -110 20 -90 30 -120 F
+X Cathode 1 100 0 100 L 50 50 1 1 P
+X Anode 2 -200 0 100 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+#End Library

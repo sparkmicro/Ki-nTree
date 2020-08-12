@@ -1,0 +1,73 @@
+CATEGORIES:
+  Assemblies: null
+  Capacitors:
+  - Ceramic
+  - Aluminium
+  - Tantalum
+  - Polymer
+  - Super Capacitors
+  Circuit Protections:
+  - TVS
+  - Fuses
+  - PTC
+  Connectors:
+  - Board-to-Board
+  - Interface
+  - Coaxial
+  - FPC
+  - Header
+  Crystals and Oscillators:
+  - Crystals
+  - Oscillators
+  Diodes:
+  - Standard
+  - Schottky
+  - Zener
+  - LED
+  Inductors:
+  - Power
+  - Ferrite Bead
+  Integrated Circuits:
+  - Logic
+  - Interface
+  - MCU
+  - Memory
+  - Sensor
+  Mechanicals:
+  - Switch
+  Miscellaneous: null
+  Modules: null
+  Power Management:
+  - LDO
+  - Buck
+  - Boost
+  Printed-Circuit Boards: null
+  RF:
+  - Chipset
+  - Antenna
+  - Filter
+  Resistors:
+  - Surface Mount
+  - Through Hole
+  Transistors:
+  - N-Channel FET
+  - P-Channel FET
+  - NPN
+  - PNP
+CODES:
+  Assemblies: PCA
+  Capacitors: CAP
+  Circuit Protections: PRO
+  Connectors: CON
+  Crystals and Oscillators: CLK
+  Diodes: DIO
+  Inductors: IND
+  Integrated Circuits: ICS
+  Mechanicals: MEC
+  Miscellaneous: MIS
+  Modules: MOD
+  Power Management: PWR
+  Printed-Circuit Boards: PCB
+  RF: RFC
+  Resistors: RES
+  Transistors: TRA

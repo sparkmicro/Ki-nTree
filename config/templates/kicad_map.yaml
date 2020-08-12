@@ -1,0 +1,119 @@
+KICAD_FOOTPRINTS:
+  Capacitors:
+    - Capacitors
+  Circuit Protections:
+    - Fuses
+    - Diodes
+  Connectors:
+    - Connectors
+  Crystals and Oscillators:
+    - Crystals
+  Diodes:
+    - Diodes
+  Inductors:
+    - Inductors
+  Integrated Circuits:
+    - Package_GEN
+    - Package_DFN
+    - Package_QFN
+    - Package_QFP
+    - Package_SO
+  Mechanicals:
+    - Switches
+    - Relays
+  Miscellaneous:
+    - Misc
+  Modules:
+    - Modules
+  Power Management:
+    - Package_GEN
+    - Package_DFN
+    - Package_QFN
+    - Package_QFP
+    - Package_SO
+  RF:
+    - Antennas
+    - Filters
+  Resistors:
+    - Resistors
+  Transistors:
+    - Package_SO
+KICAD_LIBRARIES:
+  Capacitors:
+  - Capacitors
+  Circuit Protections:
+  - Circuit_Protections
+  Connectors:
+  - Connectors
+  Crystals and Oscillators:
+  - Crystal_Oscillators
+  Diodes:
+  - Diodes
+  Inductors:
+  - Inductors
+  Integrated Circuits:
+  - Integrated_Circuits
+  Mechanicals:
+  - Mechanicals
+  Modules:
+  - Modules
+  Power Management:
+  - Power_Management
+  Printed-Circuit Boards:
+  - PCB
+  RF:
+  - RF
+  Resistors:
+  - Resistors
+  Transistors:
+  - Transistors
+KICAD_TEMPLATES:
+  Capacitors:
+    Aluminium: capacitor-polarized
+    Ceramic: capacitor
+    Default: capacitor
+    Polymer: capacitor-polarized
+    Super Capacitors: capacitor-polarized
+    Tantalum: capacitor-polarized
+  Circuit Protections:
+    Default: protection-unidir
+    Fuses: fuse
+    TVS: protection-unidir
+  Connectors:
+    Default: connector
+  Crystals and Oscillators:
+    Crystals: crystal-2p
+    Default: crystal-2p
+    Oscillators: oscillator-4p
+  Diodes:
+    Default: diode-standard
+    LED: diode-led
+    Schottky: diode-schottky
+    Standard: diode-standard
+    Zener: diode-zener
+  Inductors:
+    Default: inductor
+    Ferrite Bead: ferrite-bead
+    Power: inductor
+  Integrated Circuits:
+    Default: integrated-circuit
+  Mechanicals:
+    Default: default
+  Modules:
+    Default: null
+  Power Management:
+    Default: integrated-circuit
+  Printed-Circuit Boards:
+    Default: null
+  RF:
+    Default: integrated-circuit
+  Resistors:
+    Default: resistor
+    Surface Mount: resistor-sm
+    Through Hole: resistor
+  Transistors:
+    Default: transistor-nfet
+    N-Channel FET: transistor-nfet
+    NPN: transistor-npn
+    P-Channel FET: transistor-pfet
+    PNP: transistor-pnp

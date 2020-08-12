@@ -1,0 +1,26 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# IPN
+#
+DEF IPN D 0 0 N N 1 F N
+F0 "D" 0 150 50 H V C CNN
+F1 "IPN" 0 -600 50 H I C CNN
+F2 "Footprint" 0 -900 50 H I C CNN
+F3 "" 0 -350 30 H I C CNN
+F4 "Manufacturer" 0 -700 50 H I C CNN "Manufacturer"
+F5 "MPN" 0 -800 50 H I C CNN "Manufacturer Part Number"
+F6 "Value" 0 -150 50 H V C CNN "Part Number"
+F7 "Forward Voltage" 0 -450 50 H I C CNN "Forward Voltage (Volt)"
+F8 "Rated Power" 0 -250 50 H V C CNN "Power (Watts)"
+F9 "Rated Voltage" 0 -350 50 H V C CNN "Rated Voltage (Volt)"
+DRAW
+P 2 0 1 10 0 -55 35 -70 N
+P 3 0 1 10 0 -55 0 55 -35 70 N
+P 4 0 1 10 -100 50 -100 -50 0 0 -100 50 f
+X Cathode 1 100 0 100 L 50 50 1 1 P
+X Anode 2 -200 0 100 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+#End Library

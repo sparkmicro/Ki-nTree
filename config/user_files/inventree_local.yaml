@@ -1,0 +1,4 @@
+ENABLE: false
+PASSWORD: !!binary ""
+SERVER_ADDRESS: ''
+USERNAME: ''

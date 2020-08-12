@@ -1,0 +1,43 @@
+Capacitors:
+- Value
+- Rated Voltage
+- Tolerance
+- Package Type
+- Temperature Grade
+Circuit Protections:
+- Value
+Connectors:
+- Value
+Crystals and Oscillators:
+- Value
+- Package Type
+- Package Size
+- Temperature Range
+Diodes:
+- Value
+Inductors:
+- Value
+- Rated Current
+- Package Type
+- Package Size
+- Temperature Range
+Integrated Circuits:
+- Value
+Mechanicals:
+- Value
+Modules:
+- 
+Power Management:
+- Value
+Printed-Circuit Boards:
+- 
+RF:
+- Value
+Resistors:
+- Value
+- Tolerance
+- Rated Power
+- Package Type
+- Temperature Range
+Transistors:
+- Value
