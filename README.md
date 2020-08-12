@@ -1,6 +1,5 @@
 # Ki-nTree
-#### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://github.com/inventree/inventree)
-
+#### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://github.com/inventree/inventree) -> [see it in action!](https://youtu.be/NSMfCCD0uVw)
 <img src="images/doc/kintree_example.png"  width="auto" height="auto">
 
 ## Introduction
