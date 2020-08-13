@@ -18,15 +18,7 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 
 ## Get Started
 ### Installation
-#### From release package
-1. Download the latest release package: [releases](https://github.com/sparkmicro/Ki-nTree/releases)
-2. Extract the TGZ file
-3. Run `./kintree_gui` in terminal console to run and show output
-4. Alternatively, double-click on `kintree_gui` to run it in graphical mode only
-
-#### From source
-1. Create and activate a new python environment (Python 3.6+)
-2. Clone this repository with the `--recurse-submodules` option:
+1. Clone this repository with the `--recurse-submodules` option:
 ```
 $ git clone --recurse-submodules https://github.com/sparkmicro/Ki-nTree
 ```
@@ -34,8 +26,22 @@ Alternatively, you can clone without the `--recurse-submodules` option, then run
 ```
 $ git submodule update --init
 ```
+2. Create and activate a new python environment (Python 3.6+) inside the `Ki-nTree` folder:
+```
+$ cd Ki-nTree
+$ python3 -m venv env-kintree
+$ source env-kintree/bin/activate
+```
 3. Run `pip install -r requirements.txt` to install dependencies
 4. Run `python kintree_gui.py` to start using Ki-nTree
+
+#### Make it an executable
+1. Make sure you followed the previous installation steps, then run:
+```
+$ make all
+```
+2. It will create a one-file executable in a new `dist` folder. You can now run it with `dist/kintree_gui` or simply double-clicking the `kintree_gui` file
+3. Make also create a TGZ file in the `dist` folder so that you can extract Ki-nTree and store it anywhere on your computer
 
 ### Usage Instructions
 #### Requirements

@@ -170,8 +170,8 @@ def kicad_settings_window():
 			if path == '':
 				cprint(f'[INFO]\tWarning: KiCad {name} path is empty', silent=settings.SILENT)
 			# Check if path has trailing slash
-			elif path[-1] != '/':
-				new_settings[name] = path + '/'
+			elif path[-1] != os.sep:
+				new_settings[name] = path + os.sep
 		# Read user settings file
 		kicad_user_settings = {**kicad_user_settings, **new_settings}
 		# Write to user settings file
@@ -441,10 +441,10 @@ def user_defined_symbol_template_footprint(	categories: list,
 		try:
 			footprint_mod_choices = [	item.replace('.kicad_mod','') \
 										for item in sorted(os.listdir(footprint_lib_path)) \
-										if os.path.isfile(footprint_lib_path + '/' + item) ]
+										if os.path.isfile(os.path.join(footprint_lib_path, item)) ]
 		except:
 			cprint(f'[INFO]\tWarning: Failed fetching footprint mod files for {footprint_lib}', silent=settings.SILENT)
-			cprint(f'{footprint_lib=}\t{categories[0]}', silent=settings.HIDE_DEBUG)
+			# cprint(f'{footprint_lib=}\t{categories[0]}', silent=settings.HIDE_DEBUG)
 			cprint(footprint_library, silent=settings.HIDE_DEBUG)
 	else:
 		# Try fuzzy matching
@@ -456,10 +456,10 @@ def user_defined_symbol_template_footprint(	categories: list,
 			footprint_lib_path = footprint_library[categories[0]][footprint_lib_default]
 			footprint_mod_choices = [	item.replace('.kicad_mod','') \
 										for item in sorted(os.listdir(footprint_lib_path)) \
-										if os.path.isfile(footprint_lib_path + '/' + item) ]
+										if os.path.isfile(os.path.join(footprint_lib_path, item)) ]
 		except:
 			cprint(f'[INFO]\tWarning: Failed fetching footprint mod files for {footprint_lib_default}', silent=settings.SILENT)
-			cprint(f'{footprint_lib_default=}\t{categories[0]}', silent=settings.HIDE_DEBUG)
+			# cprint(f'{footprint_lib_default=}\t{categories[0]}', silent=settings.HIDE_DEBUG)
 			cprint(footprint_library, silent=settings.HIDE_DEBUG)
 
 	if not footprint_mod_choices:
@@ -667,14 +667,14 @@ def main():
 						{ categories[1]: part_info['subcategory'] }
 				}
 				if not config_interface.add_supplier_category(category_dict, settings.CONFIG_DIGIKEY_CATEGORIES):
-					config_file = settings.CONFIG_DIGIKEY_CATEGORIES.split('/')[-1]
+					config_file = settings.CONFIG_DIGIKEY_CATEGORIES.split(os.sep)[-1]
 					cprint(f'[INFO]\tWarning: Failed to add new supplier category to {config_file} file', silent=settings.SILENT)
 					cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
 			
 				if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
 					# Request user to select symbol and footprint libraries
 					symbol, template, footprint = user_defined_symbol_template_footprint(categories)
-					cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
+					# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
 
 					if symbol and footprint:
 						# Create part in InvenTree
@@ -751,7 +751,7 @@ def main():
 							if settings.AUTO_GENERATE_LIB:
 								if not os.path.exists(library_directory):
 									os.mkdir(library_directory)
-								new_lib_file = library_directory + '/' + symbol + '.lib'
+								new_lib_file = os.path.join(library_directory, symbol + '.lib')
 								new_dcm_file = new_lib_file.replace('.lib','.dcm')
 								if not os.path.exists(new_lib_file):
 									copyfile(settings.symbol_template_lib, new_lib_file)

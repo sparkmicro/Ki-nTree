@@ -329,7 +329,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 			kicad_symbol = symbol + ':' + ipn # symbol.split('.')[0] + ':' + ipn
 		else:
 			try:
-				kicad_symbol = settings.symbol_libraries_paths[category_name].split('/')[-1].split('.')[0] + ':' + ipn
+				kicad_symbol = settings.symbol_libraries_paths[category_name].split(os.sep)[-1].split('.')[0] + ':' + ipn
 			except:
 				kicad_symbol = category_name.replace(' ','_') + ':TBD'
 		if footprint:

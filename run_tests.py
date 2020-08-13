@@ -38,7 +38,7 @@ PART_CATEGORIES = [
 ###
 
 # Load test samples
-samples = config_interface.load_file('tests/test_samples.yaml')
+samples = config_interface.load_file(os.abspath(os.path.join('tests','test_samples.yaml')))
 PART_TEST_SAMPLES = {}
 for category in PART_CATEGORIES:
 	PART_TEST_SAMPLES.update({category:samples[category]})

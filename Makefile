@@ -1,4 +1,4 @@
-all: clean exec
+all: clean exec package
 
 clean:
 	-find . -name __pycache__ | xargs rm -r
@@ -17,6 +17,9 @@ exec:
 	-cp -r config/inventree/ dist/config/
 	-cp config/version.yaml dist/config/
 	-cp -r kicad/templates/ dist/kicad/
+
+package:
+	cd dist/ && tar -czvf kintree.tgz * && cd -
 	
 test:
 	python run_tests.py

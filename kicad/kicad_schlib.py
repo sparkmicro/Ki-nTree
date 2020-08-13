@@ -60,7 +60,7 @@ class ComponentLibManager(object):
 
 		# Load library
 		schlib = SchLib(library_path)
-		library_name = library_path.split('/')[-1]
+		library_name = library_path.split(os.sep)[-1]
 		cprint('[KCAD]\tNumber of parts in library ' + library_name + ': ' + str(schlib.getComponentCount()), silent=settings.SILENT)
 
 		# Check if part already in library
@@ -139,7 +139,7 @@ class ComponentLibManager(object):
 			return False
 
 		schlib = SchLib(library_path)
-		library_name = library_path.split('/')[-1]
+		library_name = library_path.split(os.sep)[-1]
 		cprint('[KCAD]\tNumber of parts in library ' + library_name + ': ' + str(schlib.getComponentCount()), silent=settings.SILENT)
 
 		try:

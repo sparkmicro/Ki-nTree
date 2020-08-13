@@ -43,19 +43,19 @@ def load_user_config_files(path_to_templates: str, path_to_user_files: str):
 
 	# Load Digi-Key configuration files
 	try:
-		config_files = path_to_templates + 'digikey/'
+		config_files = os.path.join(path_to_templates, 'digikey', '')
 		load_config(config_files)
 	except:
 		cprint(f'[INFO]\tWarning: Failed to load Digi-Key configuration')
 	# Load InvenTree configuration files
 	try:
-		config_files = path_to_templates + 'inventree/'
+		config_files = os.path.join(path_to_templates, 'inventree', '')
 		load_config(config_files)
 	except:
 		cprint(f'[INFO]\tWarning: Failed to load InvenTree configuration')
 	# Load KiCad configuration files
 	try:
-		config_files = path_to_templates + 'kicad/'
+		config_files = os.path.join(path_to_templates, 'kicad', '')
 		load_config(config_files)
 	except:
 		cprint(f'[INFO]\tWarning: Failed to load KiCad configuration')
