@@ -22,7 +22,7 @@ def enable_test_mode():
 
 ### PATHS
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-	PROJECT_DIR = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
+	PROJECT_DIR = os.path.abspath(os.path.dirname(sys.executable))
 else:
 	PROJECT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 # InvenTree API
@@ -54,7 +54,7 @@ def create_user_config_files():
 
 	# Create user files folder if it does not exists
 	if not os.path.exists(CONFIG_USER_FILES):
-		os.mkdir(CONFIG_USER_FILES)
+		os.makedirs(CONFIG_USER_FILES)
 	# Create user files
 	config_interface.load_user_config_files(	path_to_templates=CONFIG_TEMPLATES,
 												path_to_user_files=CONFIG_USER_FILES )
@@ -92,13 +92,13 @@ if CACHE_ENABLED:
 					}
 	# Create folder if it does not exists
 	if not os.path.exists(search_results['directory']):
-		os.mkdir(search_results['directory'])
+		os.makedirs(search_results['directory'])
 
 # Part images
 search_images = os.path.join(PROJECT_DIR, 'search', 'images', '')
 # Create folder if it does not exists
 if not os.path.exists(search_images):
-	os.mkdir(search_images)
+	os.makedirs(search_images)
 ###
 
 ### KICAD
