@@ -1,6 +1,6 @@
 [submodule "database/inventree-python"]
 	path = database/inventree-python
-	url = git@github.com:inventree/inventree-python.git
+	url = https://github.com:inventree/inventree-python.git
 [submodule "search/digikey_api"]
 	path = search/digikey_api
-	url = git@github.com:peeter123/digikey-api.git
+	url = https://github.com:peeter123/digikey-api.git

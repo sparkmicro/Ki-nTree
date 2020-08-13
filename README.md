@@ -33,7 +33,14 @@ $ python3 -m venv env-kintree
 $ source env-kintree/bin/activate
 ```
 3. Run `pip install -r requirements.txt` to install dependencies
+> If you get the following error:  `error: invalid command 'bdist_wheel'`  
+> run `pip install wheel` then re-install dependencies using the above command
 4. Run `python kintree_gui.py` to start using Ki-nTree
+5. (Optional) To get rid of this warning:
+> UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning  
+
+Install the following package: `pip install python-Levenshtein`  
+It may fail if you don't have [python3.x-dev on your computer](https://www.google.com/search?q=python-Levenshtein+%23include+%3CPython.h%3E&oq=python-Levenshtein+%23include+%3CPython.h%3E) (again, this step is optional)
 
 #### Make it an executable
 1. Make sure you followed the previous installation steps, then run:
@@ -49,23 +56,32 @@ $ make all
 * Ki-nTree was developped and tested only on a Linux system with Python 3.8.x (should be compatible with Python 3.6+)
 
 #### Settings
-1. With Ki-nTree GUI open, click on "Settings > Digi-Key" and fill in both Digi-Key API Client ID and Secret keys (optional: click on "Test" to [get an API token](https://github.com/sparkmicro/Ki-nTree/tree/0.2.rc#part-number-search))
+1. With Ki-nTree GUI open, click on "Settings > Digi-Key" and fill in both Digi-Key API Client ID and Secret keys (optional: click on "Test" to [get an API token](#get-digi-key-api-token))
 2. Click on "Settings > KiCad", browse to the location where KiCad symbol and footprint libraries are stored on your computer then click "Save"
 3. If you intend to use InvenTree with this tool, click on "Settings > InvenTree" and fill in your InvenTree server address and credentials then click "Save" (optional: click on "Test" to get an API token)
 
-#### Part Number Search
-1. In the main window, enter the part number and click "OK", it will start by fetching part data using the Digi-Key API
-2. In the case the Digi-Key API token is not found or expired, a browser window will pop-up. Enter your Digi-Key developper account credentials then login. The following page will appear (`user@email.com` will show your email address):
+#### Get Digi-Key API token
+<details>
+<summary>Show steps (click to expand)</summary>
+<p>
 
-<img src="images/doc/digikey_api_approval_request.png"  width="800" height="auto">
+Enter your Digi-Key developper account credentials then login. The following page will appear (`user@email.com` will show your email address):
+
+<img src="images/doc/digikey_api_approval_request.png" width="800" height="auto">
 
 Click on "Allow", another page will open.  
 Click on the "Advanced" button, then click on "Proceed to localhost (unsafe)" at the bottom of the page:
 
 <img src="images/doc/digikey_api_approval_request2.png"  width="800" height="auto">
 
-Lastly, a new page will open with a "You may now close this window." message, do so to proceed with the search.
+Lastly, a new page will open with a "You may now close this window." message, proceed to get the token.
 
+</p>
+</details>
+
+#### Part Number Search
+1. In the main window, enter the part number and click "OK", it will start by fetching part data using the Digi-Key API
+2. In the case the Digi-Key API token is not found or expired, a browser window will pop-up. To get a new token: [follow those steps](#get-digi-key-api-token)
 3. Once the part data has been successfully fetched from Digi-Key, you will be prompted to add/confirm/edit the `Category` and `Subcategory` to use for this part (Ki-nTree tries to match them automatically)  
 4. Then, you will be prompted with selecting the KiCad symbol library, template and footprint library to use for this part  
 5. It will take some time to complete the part creation in InvenTree and/or KiCad, once it finishes you'll be notified of the result  
