@@ -21,19 +21,23 @@ def enable_test_mode():
 ###
 
 ### PATHS
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+	PROJECT_DIR = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
+else:
+	PROJECT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 # InvenTree API
-sys.path.append(PROJECT_DIR + '/database/inventree-python')
+sys.path.append(os.path.join(PROJECT_DIR, 'database', 'inventree-python'))
 # Digi-Key API
-sys.path.append(PROJECT_DIR + '/search/digikey_api')
+sys.path.append(os.path.join(PROJECT_DIR, 'search', 'digikey_api'))
 # KiCad Library Utils
-sys.path.append(PROJECT_DIR + '/kicad')
+sys.path.append(os.path.join(PROJECT_DIR, 'kicad'))
 # Tests
-sys.path.append(PROJECT_DIR + '/tests')
+sys.path.append(os.path.join(PROJECT_DIR, 'tests'))
 ###
 
 ### VERSION
-version_info = config_interface.load_file('config/version.yaml')
+CONFIG_VERSION = os.path.join(PROJECT_DIR, 'config', 'version.yaml')
+version_info = config_interface.load_file(CONFIG_VERSION)
 try:
 	version = '.'.join([str(v) for v in version_info.values()])
 except:
@@ -41,8 +45,8 @@ except:
 ###
 
 ### CONFIG FILES
-CONFIG_TEMPLATES = 'config/'
-CONFIG_USER_FILES = 'config/user_files/'
+CONFIG_TEMPLATES = os.path.join(PROJECT_DIR, 'config', '')
+CONFIG_USER_FILES = os.path.join(PROJECT_DIR, 'config', 'user_files', '')
 
 def create_user_config_files():
 	global CONFIG_TEMPLATES
@@ -59,36 +63,39 @@ def create_user_config_files():
 create_user_config_files()
 
 # Digi-Key
-CONFIG_DIGIKEY_API = CONFIG_USER_FILES + 'digikey_api.yaml'
-CONFIG_DIGIKEY_CATEGORIES = CONFIG_USER_FILES + 'digikey_categories.yaml'
-CONFIG_DIGIKEY_PARAMETERS = CONFIG_USER_FILES + 'digikey_parameters.yaml'
+CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
+CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
+CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
 
 # KiCad
-CONFIG_KICAD = CONFIG_USER_FILES + 'kicad.yaml'
-CONFIG_KICAD_CATEGORY_MAP = CONFIG_USER_FILES + 'kicad_map.yaml'
+CONFIG_KICAD = os.path.join(CONFIG_USER_FILES, 'kicad.yaml')
+CONFIG_KICAD_CATEGORY_MAP = os.path.join(CONFIG_USER_FILES, 'kicad_map.yaml')
 
 # Inventree
-CONFIG_CATEGORIES = CONFIG_USER_FILES + 'categories.yaml'
-CONFIG_PARAMETERS = CONFIG_USER_FILES + 'parameters.yaml'
-CONFIG_PARAMETERS_FILTERS = CONFIG_USER_FILES + 'parameters_filters.yaml'
+CONFIG_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'categories.yaml')
+CONFIG_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'parameters.yaml')
+CONFIG_PARAMETERS_FILTERS = os.path.join(CONFIG_USER_FILES, 'parameters_filters.yaml')
 ###
 
 ### DIGI-KEY
 # API storage path
-DIGIKEY_STORAGE_PATH = 'search/'
+DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', '')
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = 100
 # Search results caching (stored in files)
 CACHE_ENABLED = True
 # Caching settings
 if CACHE_ENABLED:
-	search_results = {	'directory' : 'search/results/', 'extension' : '.dat' }
+	search_results = {
+						'directory' : os.path.join(PROJECT_DIR, 'search', 'results', ''),
+						'extension' : '.dat',
+					}
 	# Create folder if it does not exists
 	if not os.path.exists(search_results['directory']):
 		os.mkdir(search_results['directory'])
 
 # Part images
-search_images = 'search/images/'
+search_images = os.path.join(PROJECT_DIR, 'search', 'images', '')
 # Create folder if it does not exists
 if not os.path.exists(search_images):
 	os.mkdir(search_images)
@@ -141,7 +148,7 @@ footprint_libraries_paths = config_interface.load_footprint_paths(CONFIG_KICAD_C
 footprint_name_default = 'TBD'
 
 AUTO_GENERATE_LIB = True
-symbol_template_lib = 'kicad/templates/library_template.lib'
+symbol_template_lib = os.path.join(PROJECT_DIR, 'kicad', 'templates', 'library_template.lib')
 symbol_template_dcm = symbol_template_lib.replace('.lib','.dcm')
 ###
 
@@ -159,11 +166,11 @@ environment = Environment.LOCAL_DEV
 
 # Load correct user file
 if environment == Environment.SERVER_PROD:
-	CONFIG_INVENTREE = CONFIG_USER_FILES + 'inventree_prod.yaml'
+	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_prod.yaml')
 elif environment == Environment.SERVER_DEV:
-	CONFIG_INVENTREE = CONFIG_USER_FILES + 'inventree_dev.yaml'
+	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_dev.yaml')
 else:
-	CONFIG_INVENTREE = CONFIG_USER_FILES + 'inventree_local.yaml'
+	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_local.yaml')
 
 # Load user settings
 inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
