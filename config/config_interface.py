@@ -147,7 +147,10 @@ def load_libraries_paths(user_config_path: str, library_path: str) -> dict:
 				symbol_libraries_paths['uncategorized'].append(file)
 			except:
 				symbol_libraries_paths['uncategorized'] = [file]
-	symbol_libraries_paths['uncategorized'] = sorted(symbol_libraries_paths['uncategorized'])
+	try:
+		symbol_libraries_paths['uncategorized'] = sorted(symbol_libraries_paths['uncategorized'])
+	except:
+		pass
 
 	# print(symbol_libraries_paths)
 	return symbol_libraries_paths

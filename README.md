@@ -53,6 +53,7 @@ $ make all
 ### Usage Instructions
 #### Requirements
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
+> [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree was developped and tested only on a Linux system with Python 3.8.x (should be compatible with Python 3.6+)
 
 #### Settings

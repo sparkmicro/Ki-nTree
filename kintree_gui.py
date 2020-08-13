@@ -327,10 +327,10 @@ def user_defined_symbol_template_footprint(	categories: list,
 			for item in items['uncategorized']:
 				more_choices.append(item)
 		except:
-			error_message = f'Warning: No libraries defined for "{category}"'
-			cprint(f'[INFO]\t{error_message}', silent=settings.SILENT)
-			sg.popup_ok(error_message, title='No Libraries', location=(500, 500))
-
+			# error_message = f'Warning: No libraries defined for "{category}"'
+			# cprint(f'[INFO]\t{error_message}', silent=settings.SILENT)
+			# sg.popup_ok(error_message, title='No Libraries', location=(500, 500))
+			pass
 		try:
 			choices.extend(sorted(more_choices))
 		except:
@@ -339,22 +339,20 @@ def user_defined_symbol_template_footprint(	categories: list,
 		return choices
 
 	# Load symbol libraries
-	symbol_library = config_interface.load_libraries_paths( user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-															library_path=settings.KICAD_SYMBOLS_PATH )
-	# cprint(f'{symbol_library=}')
-	if not symbol_library:
+	if not settings.KICAD_SYMBOLS_PATH:
 		sg.popup_ok(f'Error: KiCad symbol library folder path is not defined ("Settings > KiCad")',
 						title='KiCad Symbol Library Folder',
 						location=(500, 500))
 		return symbol, template, footprint
-	try:
-		if not symbol_library[categories[0]] and 'uncategorized' not in symbol_library.keys():
-			sg.popup_ok(f'Error: Symbol library files were not found in {settings.KICAD_SYMBOLS_PATH}',
-						title='KiCad Symbol Library Folder',
-						location=(500, 500))
-			return symbol, template, footprint
-	except:
-		pass
+
+	symbol_library = config_interface.load_libraries_paths( user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+															library_path=settings.KICAD_SYMBOLS_PATH )
+	# cprint(f'{symbol_library=}')
+	if not symbol_library:
+		sg.popup_ok(f'Error: Symbol library files were not found in {settings.KICAD_SYMBOLS_PATH}',
+					title='KiCad Symbol Library Folder',
+					location=(500, 500))
+		return symbol, template, footprint
 	
 	# Build symbol choices
 	symbol_lib_choices = build_choices(symbol_library, categories[0])
@@ -368,22 +366,20 @@ def user_defined_symbol_template_footprint(	categories: list,
 			symbol_lib_default = symbol_lib_choices[0]
 
 	# Load templates
-	templates = config_interface.load_templates_paths( 	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-														template_path=settings.KICAD_TEMPLATES_PATH )
-	# cprint(templates)
-	if not templates:
+	if not settings.KICAD_TEMPLATES_PATH:
 		sg.popup_ok(f'Error: KiCad template folder path is not defined ("Settings > KiCad")',
 						title='KiCad Template Folder',
 						location=(500, 500))
 		return symbol, template, footprint
-	try:
-		if not templates[categories[0]] and 'uncategorized' not in templates.keys():
-			sg.popup_ok(f'Error: Template files were not found in {settings.KICAD_TEMPLATES_PATH}',
-						title='KiCad Template Folder',
-						location=(500, 500))
-			return symbol, template, footprint
-	except:
-		pass
+
+	templates = config_interface.load_templates_paths( 	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+														template_path=settings.KICAD_TEMPLATES_PATH )
+	# cprint(templates)
+	if not templates:
+		sg.popup_ok(f'Error: Template files were not found in {settings.KICAD_TEMPLATES_PATH}',
+					title='KiCad Template Folder',
+					location=(500, 500))
+		return symbol, template, footprint
 	
 	# Build template choices
 	if not categories[0]:
@@ -409,22 +405,20 @@ def user_defined_symbol_template_footprint(	categories: list,
 		template_default = template_choices[0]
 
 	# Load footprint libraries
-	footprint_library = config_interface.load_footprint_paths(	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-																footprint_path=settings.KICAD_FOOTPRINTS_PATH )
-	# cprint(f'{footprint_library=}')
-	if not footprint_library:
+	if not settings.KICAD_FOOTPRINTS_PATH:
 		sg.popup_ok(f'Error: KiCad footprint library folder path is not defined ("Settings > KiCad")',
 						title='KiCad Footprint Library Folder',
 						location=(500, 500))
 		return symbol, template, footprint
-	try:
-		if not footprint_library[categories[0]] and 'uncategorized' not in footprint_library.keys():
-			sg.popup_ok(f'Error: Footprint library files were not found in {settings.KICAD_FOOTPRINTS_PATH}',
-						title='KiCad Footprint Library Folder',
-						location=(500, 500))
-			return symbol, template, footprint
-	except:
-		pass
+
+	footprint_library = config_interface.load_footprint_paths(	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+																footprint_path=settings.KICAD_FOOTPRINTS_PATH )
+	# cprint(f'{footprint_library=}')
+	if not footprint_library:
+		sg.popup_ok(f'Error: Footprint library files were not found in {settings.KICAD_FOOTPRINTS_PATH}',
+					title='KiCad Footprint Library Folder',
+					location=(500, 500))
+		return symbol, template, footprint
 	
 	# Build symbol choices
 	footprint_lib_choices = build_choices(footprint_library, categories[0])
