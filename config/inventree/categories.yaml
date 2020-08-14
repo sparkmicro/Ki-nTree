@@ -30,7 +30,6 @@ CATEGORIES:
     - TVS
     # - ESD
     - Fuses
-    - PTC
   Connectors:
     - Board-to-Board
     - Interface
@@ -86,6 +85,7 @@ CATEGORIES:
     - Chipset
     - Antenna
     - Filter
+    - Shield
   Transistors:
     - N-Channel FET
     - P-Channel FET
