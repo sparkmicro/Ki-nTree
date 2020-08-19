@@ -8,5 +8,6 @@ search/token_storage.json
 dist/
 build/
 *.spec
-# Cache files
+# Cache-backup files
 *__pycache__*
+*.bck
