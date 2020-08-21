@@ -9,7 +9,7 @@ from search.digikey_api import disable_digikey_api_logger
 
 # SETTINGS
 # Enable InvenTree tests
-ENABLE_INVENTREE = False
+ENABLE_INVENTREE = True
 # Enable KiCad tests
 ENABLE_KICAD = True
 # Enable test samples deletion
@@ -17,17 +17,17 @@ ENABLE_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
 	'Capacitors',
-	'Circuit Protections',
-	'Connectors',
-	'Crystals and Oscillators',
-	'Diodes',
-	'Inductors',
-	'Integrated Circuits',
-	'Mechanicals',
-	'Power Management',
-	'Resistors',
-	'RF',
-	'Transistors',
+	# 'Circuit Protections',
+	# 'Connectors',
+	# 'Crystals and Oscillators',
+	# 'Diodes',
+	# 'Inductors',
+	# 'Integrated Circuits',
+	# 'Mechanicals',
+	# 'Power Management',
+	# 'Resistors',
+	# 'RF',
+	# 'Transistors',
 ]
 ###
 
@@ -124,17 +124,20 @@ if __name__ == '__main__':
 
 					# Create part in InvenTree
 					if categories[0] and categories[1]:
-						symbol = os.path.basename(test_library_path).split['.'][0]
 						new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
-																							categories=categories,
-																							symbol=symbol)
+																							categories=categories)
 
 					success = check_result(status, new_part)
+
+					if success and status != 'alternate_mpn':
+						delete = True
+					else:
+						delete = False
 
 					# Display
 					if success:
 						# Build results
-						inventree_results.update({number: [part_pk, success]})
+						inventree_results.update({number: [part_pk, success, delete]})
 						cprint(f'[ PASS ]')
 					else:
 						cprint(f'[ FAIL ]')
@@ -172,8 +175,9 @@ if __name__ == '__main__':
 					cprint(f'[MAIN]\tDeleting InvenTree test parts')
 					# Delete all InvenTree test parts
 					for number, result in inventree_results.items():
-						cprint(f'[{number}]\tAPI Result:\t', end='', silent=not(ENABLE_DELETE))
-						try:
-							inventree_api.delete_part(part_id=result[0])
-						except:
-							pass
+						if result[2]:
+							cprint(f'[{result[0]}]\tAPI Result:\t', end='', silent=not(ENABLE_DELETE))
+							try:
+								inventree_api.delete_part(part_id=result[0])
+							except:
+								pass

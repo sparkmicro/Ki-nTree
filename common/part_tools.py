@@ -34,7 +34,7 @@ def compare(new_part_parameters: dict, db_part_parameters: dict, filters: list) 
 				if value != db_part_parameters[parameter]:
 					return False
 	except:
-		settings.print(f'[INFO]\tWarning: Failed to compare part with database', silent=settings.SILENT)
+		settings.cprint(f'[INFO]\tWarning: Failed to compare part with database', silent=settings.SILENT)
 		return False
 
 	return True
@@ -144,5 +144,5 @@ def clean_parameter_value(category: str, name: str, value: str) -> str:
 	if '"' in value:
 		value = value.replace('"','\\"')
 
-	# settings.print(value)
+	# settings.cprint(value)
 	return value

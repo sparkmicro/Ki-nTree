@@ -13,28 +13,27 @@ from search import digikey_api
 def connect_to_server() -> bool:
 	''' Connect to InvenTree server using user settings '''
 	connect = False
-	user_settings = config_interface.load_inventree_user_settings(settings.CONFIG_INVENTREE)
+	settings.load_inventree_settings()
+	# user_settings = config_interface.load_inventree_user_settings(settings.CONFIG_INVENTREE)
 	# cprint(user_settings)
 
-	if 	user_settings['SERVER_ADDRESS'] and \
-		user_settings['USERNAME'] and \
-		user_settings['PASSWORD']:
-		connect = inventree_api.connect(	server=user_settings['SERVER_ADDRESS'],
-											username=user_settings['USERNAME'],
-											password=user_settings['PASSWORD'] )
-	else:
-		if not user_settings['SERVER_ADDRESS']:
-			cprint(f'[TREE]\tError connecting to InvenTree server: missing server address', silent=settings.SILENT)
-		if not user_settings['USERNAME']:
-			cprint(f'[TREE]\tError connecting to InvenTree server: missing username', silent=settings.SILENT)
-		if not user_settings['PASSWORD']:
-			cprint(f'[TREE]\tError connecting to InvenTree server: missing password', silent=settings.SILENT)
-		return connect
+	connect = inventree_api.connect(	server=settings.SERVER_ADDRESS,
+										username=settings.USERNAME,
+										password=settings.PASSWORD )
 
-	if connect:
-		cprint(f'[TREE]\tSuccessfully connected to InvenTree server', silent=settings.SILENT)
+	if not connect:
+		if not settings.SERVER_ADDRESS:
+			cprint(f'[TREE]\tError connecting to InvenTree server: missing server address', silent=settings.SILENT)
+			return connect
+		if not settings.USERNAME:
+			cprint(f'[TREE]\tError connecting to InvenTree server: missing username', silent=settings.SILENT)
+			return connect
+		if not settings.PASSWORD:
+			cprint(f'[TREE]\tError connecting to InvenTree server: missing password', silent=settings.SILENT)
+			return connect
+		cprint(f'[TREE]\tError connecting to InvenTree server: invalid address, username or password', silent=settings.SILENT)
 	else:
-		cprint(f'[TREE]\tError connecting to InvenTree server: invalid username/password', silent=settings.SILENT)
+		cprint(f'[TREE]\tSuccessfully connected to InvenTree server', silent=settings.SILENT)
 
 	return connect
 
