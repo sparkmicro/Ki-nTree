@@ -13,3 +13,5 @@ build/
 *.bck
 # Test files
 tests/TEST.*
+.coverage
+htmlcov/

@@ -1,7 +1,6 @@
-import os
+import webbrowser
 
 from common.tools import cprint
-from config import settings
 from invoke import UnexpectedExit, task
 
 
@@ -16,8 +15,9 @@ def install(c, is_install=True):
 
 	if is_install:
 		cprint(f'[MAIN]\tInstalling optional dependencies')
-		response = c.run('pip install -U python-Levenshtein', hide='both')
-		if int(response.exited) != 0:
+		try:
+			c.run('pip install -U python-Levenshtein', hide=True)
+		except UnexpectedExit:
 			cprint(f'\n[INFO]\tFailed to install python-Levenshtein...\t'
 					'You may be missing python3.x-dev')
 
@@ -37,22 +37,26 @@ def clean(c):
 @task
 def package(c):
 	cprint(f'[MAIN]\tPackaging Ki-nTree')
-	c.run('cd dist/ && tar -czvf kintree.tgz * && cd -')
+	try:
+		c.run('rm dist/kintree.tgz', hide='err')
+	except UnexpectedExit:
+		pass
+	c.run('cd dist/ && tar -czvf kintree.tgz * && cd -', hide=True)
 
 @task
 def exec(c):
 	cprint(f'[MAIN]\tBuilding Ki-nTree into "dist" directory')
 	c.run('pyinstaller --clean --onefile '
 		  '-p search/digikey_api/ -p kicad/ -p database/inventree-python/ '
-		  'kintree_gui.py')
+		  'kintree_gui.py', hide=True)
 
 	cprint(f'[MAIN]\tCopying configuration files')
-	c.run('mkdir dist/config && mkdir dist/kicad')
-	c.run('cp -r config/kicad/ dist/config/')
-	c.run('cp -r config/digikey/ dist/config/')
-	c.run('cp -r config/inventree/ dist/config/')
-	c.run('cp config/version.yaml dist/config/')
-	c.run('cp -r kicad/templates/ dist/kicad/')
+	c.run('mkdir dist/config && mkdir dist/kicad', hide=True)
+	c.run('cp -r config/kicad/ dist/config/', hide=True)
+	c.run('cp -r config/digikey/ dist/config/', hide=True)
+	c.run('cp -r config/inventree/ dist/config/', hide=True)
+	c.run('cp config/version.yaml dist/config/', hide=True)
+	c.run('cp -r kicad/templates/ dist/kicad/', hide=True)
 
 @task(pre=[clean], post=[package])
 def build(c):
@@ -60,4 +64,14 @@ def build(c):
 
 @task
 def test(c):
-	c.run('python run_tests.py')
+	try:
+		c.run('pip show coverage', hide=True)
+	except UnexpectedExit:
+		c.run('pip install -U coverage', hide=True)
+
+	cprint(f'[MAIN]\tRunning tests using coverage')
+	c.run('coverage run run_tests.py')
+	cprint(f'\n[MAIN]\tSaving coverage report to "htmlcov" folder')
+	c.run('coverage html', hide=True)
+	c.run('coverage report')
+	webbrowser.open('htmlcov/index.html', new=2)

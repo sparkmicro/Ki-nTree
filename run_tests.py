@@ -12,22 +12,25 @@ from search.digikey_api import disable_digikey_api_logger
 ENABLE_INVENTREE = True
 # Enable KiCad tests
 ENABLE_KICAD = True
+# Show results
+SHOW_RESULTS = False
 # Enable test samples deletion
 ENABLE_DELETE = True
+AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
 	'Capacitors',
-	# 'Circuit Protections',
-	# 'Connectors',
-	# 'Crystals and Oscillators',
-	# 'Diodes',
-	# 'Inductors',
-	# 'Integrated Circuits',
-	# 'Mechanicals',
-	# 'Power Management',
-	# 'Resistors',
-	# 'RF',
-	# 'Transistors',
+	'Circuit Protections',
+	'Connectors',
+	'Crystals and Oscillators',
+	'Diodes',
+	'Inductors',
+	'Integrated Circuits',
+	'Mechanicals',
+	'Power Management',
+	'Resistors',
+	'RF',
+	'Transistors',
 ]
 ###
 
@@ -93,10 +96,10 @@ if __name__ == '__main__':
 						
 						# Get and print result
 						if kicad_success:
-							cprint(f'[ PASS ]')
+							cprint(f'[ PASS ]', flush=True)
 							result = True
 						else:
-							cprint(f'[ FAIL ]')
+							cprint(f'[ FAIL ]', flush=True)
 							result = False
 
 						# Log result
@@ -138,9 +141,9 @@ if __name__ == '__main__':
 					if success:
 						# Build results
 						inventree_results.update({number: [part_pk, success, delete]})
-						cprint(f'[ PASS ]')
+						cprint(f'[ PASS ]', flush=True)
 					else:
-						cprint(f'[ FAIL ]')
+						cprint(f'[ FAIL ]', flush=True)
 						part_url = settings.PART_URL_ROOT + str(part_pk) + '/'
 						cprint(f'[DBUG]\tnew_part = {new_part}')
 						cprint(f'[DBUG]\tpart_pk = {part_pk}')
@@ -148,16 +151,18 @@ if __name__ == '__main__':
 						# cprint(f'[DBUG]\tpart_info =')
 						# cprint(part_data)
 
-		if ENABLE_KICAD:
-			cprint(f'\nKiCad Results\n-----', silent=not(settings.ENABLE_TEST))
-			cprint(kicad_results, silent=not(settings.ENABLE_TEST))
-		if ENABLE_INVENTREE:
-			cprint(f'\nInvenTree Results\n-----', silent=not(settings.ENABLE_TEST))
-			cprint(inventree_results, silent=not(settings.ENABLE_TEST))
+		if SHOW_RESULTS:
+			if ENABLE_KICAD:
+				cprint(f'\nKiCad Results\n-----', silent=not(settings.ENABLE_TEST))
+				cprint(kicad_results, silent=not(settings.ENABLE_TEST))
+			if ENABLE_INVENTREE:
+				cprint(f'\nInvenTree Results\n-----', silent=not(settings.ENABLE_TEST))
+				cprint(inventree_results, silent=not(settings.ENABLE_TEST))
 
 		if ENABLE_DELETE:
 			if kicad_results or inventree_results:
-				input('\nPress "Enter" to delete parts...')
+				if not AUTO_DELETE:
+					input('\nPress "Enter" to delete parts...')
 
 				if ENABLE_KICAD:
 					cprint(f'[MAIN]\tDeleting KiCad test parts')
@@ -167,16 +172,16 @@ if __name__ == '__main__':
 							kicad_interface.delete_part(part_number=number,
 														category=None,
 														library_path=test_library_path)
-							cprint(f'[KCAD]\tSuccess: "{number}" was deleted')
 						except:
-							cprint(f'[KCAD]\tWarning: "{number}" could not be deleted')
+							cprint(f'[KCAD]\tWarning: "{number}" could not be deleted', flush=True)
+
 
 				if ENABLE_INVENTREE:
 					cprint(f'[MAIN]\tDeleting InvenTree test parts')
 					# Delete all InvenTree test parts
 					for number, result in inventree_results.items():
 						if result[2]:
-							cprint(f'[{result[0]}]\tAPI Result:\t', end='', silent=not(ENABLE_DELETE))
+							cprint(f'[{result[0]}]\tAPI Result:\t', end='', flush=True)
 							try:
 								inventree_api.delete_part(part_id=result[0])
 							except:

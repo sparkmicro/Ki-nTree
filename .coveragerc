@@ -1,0 +1,7 @@
+[run]
+omit =
+    # Do not run coverage on virtual environment files
+    env-kintree/*
+    # Do not run coverage on submodules
+    database/inventree-python/*
+    search/digikey_api/digikey/*
