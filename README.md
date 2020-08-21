@@ -32,20 +32,17 @@ $ cd Ki-nTree
 $ python3 -m venv env-kintree
 $ source env-kintree/bin/activate
 ```
-3. Run `pip install -r requirements.txt` to install dependencies
-> If you get the following error:  `error: invalid command 'bdist_wheel'`  
-> run `pip install wheel` then re-install dependencies using the above command
-4. Run `python kintree_gui.py` to start using Ki-nTree
-5. (Optional) To get rid of this warning:
-> UserWarning: Using slow pure-python SequenceMatcher. Install python-Levenshtein to remove this warning  
-
-Install the following package: `pip install python-Levenshtein`  
-It may fail if you don't have [python3.x-dev on your computer](https://www.google.com/search?q=python-Levenshtein+%23include+%3CPython.h%3E&oq=python-Levenshtein+%23include+%3CPython.h%3E) (again, this step is optional)
+3. Install `invoke` package:
+```
+$ pip install invoke
+```
+4. Run `invoke install` to install dependencies
+5. Run `python kintree_gui.py` to start using Ki-nTree
 
 #### Make it an executable
 1. Make sure you followed the previous installation steps, then run:
 ```
-$ make all
+$ invoke build
 ```
 2. It will create a one-file executable in a new `dist` folder. You can now run it with `dist/kintree_gui` or simply double-clicking the `kintree_gui` file
 3. Make also create a TGZ file in the `dist` folder so that you can extract Ki-nTree and store it anywhere on your computer

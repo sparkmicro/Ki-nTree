@@ -11,3 +11,5 @@ build/
 # Cache-backup files
 *__pycache__*
 *.bck
+# Test files
+tests/TEST.*

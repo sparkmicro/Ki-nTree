@@ -1,5 +1,7 @@
 import builtins
 import json
+import os
+from shutil import copyfile
 
 
 ### CUSTOM PRINT METHOD
@@ -45,3 +47,15 @@ def cprint(*args, **kwargs):
 				pass
 			return builtins.print(*args, **kwargs)
 ###
+
+def create_library(library_path: str, symbol: str, template_lib:str):
+	''' Create library files if they don\'t exist '''
+	if not os.path.exists(library_path):
+		os.mkdir(library_path)
+	new_lib_file = os.path.join(library_path, symbol + '.lib')
+	new_dcm_file = new_lib_file.replace('.lib','.dcm')
+	template_dcm = template_lib.replace('.lib','.dcm')
+	if not os.path.exists(new_lib_file):
+		copyfile(template_lib, new_lib_file)
+	if not os.path.exists(new_dcm_file):
+		copyfile(template_dcm, new_dcm_file)

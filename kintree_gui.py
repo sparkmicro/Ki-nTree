@@ -1,8 +1,6 @@
 import os
 # Webbrowser
 import webbrowser
-# Copyfile
-from shutil import copyfile
 
 # Settings
 import config.settings as settings
@@ -11,7 +9,7 @@ import PySimpleGUI as sg
 # Digi-Key API
 import search.digikey_api as digikey_api
 # Tools
-from common.tools import cprint
+from common.tools import cprint, create_library
 # Interface
 from config import config_interface
 # InvenTree
@@ -743,14 +741,7 @@ def main():
 						
 						if library_directory:
 							if settings.AUTO_GENERATE_LIB:
-								if not os.path.exists(library_directory):
-									os.mkdir(library_directory)
-								new_lib_file = os.path.join(library_directory, symbol + '.lib')
-								new_dcm_file = new_lib_file.replace('.lib','.dcm')
-								if not os.path.exists(new_lib_file):
-									copyfile(settings.symbol_template_lib, new_lib_file)
-								if not os.path.exists(new_dcm_file):
-									copyfile(settings.symbol_template_dcm, new_dcm_file)
+								create_library(library_directory, symbol, settings.symbol_template_lib)
 
 							kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(	part_data=part_data,
 																								library_path=library_path,

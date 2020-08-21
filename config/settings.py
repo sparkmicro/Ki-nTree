@@ -149,7 +149,6 @@ footprint_name_default = 'TBD'
 
 AUTO_GENERATE_LIB = True
 symbol_template_lib = os.path.join(PROJECT_DIR, 'kicad', 'templates', 'library_template.lib')
-symbol_template_dcm = symbol_template_lib.replace('.lib','.dcm')
 ###
 
 ### INVENTREE
