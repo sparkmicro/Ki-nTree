@@ -1,4 +1,5 @@
 import os
+import sys
 
 import config.settings as settings
 from common.tools import cprint, create_library
@@ -186,3 +187,5 @@ if __name__ == '__main__':
 								inventree_api.delete_part(part_id=result[0])
 							except:
 								pass
+
+	sys.exit(0)
