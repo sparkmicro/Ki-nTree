@@ -3,6 +3,7 @@ import webbrowser
 from common.tools import cprint
 from invoke import UnexpectedExit, task
 
+MANUAL_TEST = False
 
 @task
 def install(c, is_install=True):
@@ -63,6 +64,12 @@ def build(c):
 	exec(c)
 
 @task
+def coverage(c):
+	cprint(f'\n[MAIN]\tSaving coverage report to "htmlcov" folder')
+	c.run('coverage html', hide=True)
+	c.run('coverage report')
+
+@task
 def test(c):
 	try:
 		c.run('pip show coverage', hide=True)
@@ -70,8 +77,8 @@ def test(c):
 		c.run('pip install -U coverage', hide=True)
 
 	cprint(f'[MAIN]\tRunning tests using coverage')
-	c.run('coverage run run_tests.py')
-	cprint(f'\n[MAIN]\tSaving coverage report to "htmlcov" folder')
-	c.run('coverage html', hide=True)
-	c.run('coverage report')
-	webbrowser.open('htmlcov/index.html', new=2)
+	run_tests = c.run('coverage run run_tests.py')
+	if run_tests.exited == 0:
+		coverage(c)
+	if MANUAL_TEST:
+		webbrowser.open('htmlcov/index.html', new=2)
