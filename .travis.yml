@@ -16,6 +16,7 @@ python:
 before_install:
     - pip3 install invoke
     - invoke install
+    - cd search/ && tar xvf results.tgz && cd -
 
 script:
     - invoke test
