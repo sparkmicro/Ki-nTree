@@ -1,0 +1,24 @@
+dist: xenial
+
+language: python
+python:
+    - 3.6
+    - 3.7
+    - 3.8
+
+addons:
+    apt-packages:
+        - python3.6-dev
+        - python3.7-dev
+        - python3.8-dev
+
+before_install:
+    - sudo apt-get update
+    - pip3 install invoke
+    - invoke install
+
+script:
+    - invoke test
+
+after_success:
+    - coveralls

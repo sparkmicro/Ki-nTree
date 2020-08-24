@@ -9,7 +9,7 @@ from search.digikey_api import disable_digikey_api_logger
 
 # SETTINGS
 # Enable InvenTree tests
-ENABLE_INVENTREE = True
+ENABLE_INVENTREE = False
 # Enable KiCad tests
 ENABLE_KICAD = True
 # Show results
