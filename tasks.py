@@ -1,13 +1,7 @@
-import sys
 import webbrowser
 
 from common.tools import cprint
 from invoke import UnexpectedExit, task
-
-try:
-	from search import digikey_api
-except ModuleNotFoundError:
-	pass
 
 
 @task
@@ -87,35 +81,25 @@ def coverage(c):
 	c.run('coverage report')
 
 @task
-def refresh_api_token(c):
-	c.run('cp tests/files/token_storage.json search/')
-	result = digikey_api.test_digikey_api_connect()
-	if result:
-		c.run('cp search/token_storage.json tests/files/', hide=True)
-
-	return result
+def save_api_token(c):
+	c.run('cp search/token_storage.json tests/files/', hide=True)
 
 @task
 def test(c):
-	api_token = refresh_api_token(c)
-	if api_token:
-		try:
-			c.run('pip show coverage', hide=True)
-		except UnexpectedExit:
-			c.run('pip install -U coverage', hide=True)
+	try:
+		c.run('pip show coverage', hide=True)
+	except UnexpectedExit:
+		c.run('pip install -U coverage', hide=True)
 
-		cprint(f'[MAIN]\tRunning tests using coverage')
-		run_inventree = c.run('cd InvenTree/InvenTree/ && python manage.py runserver',
-							  asynchronous=True)
-		c.run('cd ../.. && sleep 5')
-		setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
-		run_tests = c.run('coverage run --parallel-mode run_tests.py')
-		if setup_inventree.exited == 0 and run_tests.exited == 0:
-			c.run('coverage combine')
-			coverage(c)
-	else:
-		cprint(f'[MAIN]\tFailed updating Digi-Key API token')
-		sys.exit(-1)
+	cprint(f'[MAIN]\tRunning tests using coverage')
+	run_inventree = c.run('cd InvenTree/InvenTree/ && python manage.py runserver',
+						  asynchronous=True)
+	c.run('cd ../.. && sleep 5')
+	setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
+	run_tests = c.run('coverage run --parallel-mode run_tests.py')
+	if setup_inventree.exited == 0 and run_tests.exited == 0:
+		c.run('coverage combine')
+		coverage(c)
 
 @task
 def show_coverage(c):
