@@ -2,7 +2,11 @@ import webbrowser
 
 from common.tools import cprint
 from invoke import UnexpectedExit, task
-from search import digikey_api
+
+try:
+	from search import digikey_api
+except ModuleNotFoundError:
+	pass
 
 
 @task
