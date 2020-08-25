@@ -1,4 +1,6 @@
 # Ki-nTree
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![Python Versions](images/python_versions.svg)
 [![Build Status](https://travis-ci.org/sparkmicro/Ki-nTree.svg?branch=master)](https://travis-ci.org/sparkmicro/Ki-nTree)
 [![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=master)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=master)
 #### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://github.com/inventree/inventree) -> [see it in action!](https://youtu.be/NSMfCCD0uVw)
@@ -53,7 +55,7 @@ $ invoke build
 #### Requirements
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
-* Ki-nTree was developped and tested only on a Linux system with Python 3.8.x (should be compatible with Python 3.6+)
+* Ki-nTree was developped and tested only on a Linux/Ubuntu system (compatible with Python 3.6+)
 
 #### Settings
 1. With Ki-nTree GUI open, click on "Settings > Digi-Key" and fill in both Digi-Key API Client ID and Secret keys (optional: click on "Test" to [get an API token](#get-digi-key-api-token))
