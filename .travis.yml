@@ -6,17 +6,19 @@ python:
     - 3.7
     - 3.8
 
-# addons:
-#     update: true
-#     apt-packages:
-#         - python3.6-dev
-#         - python3.7-dev
-#         - python3.8-dev
+apt-packages:
+    - sqlite3
 
 before_install:
     - pip3 install invoke
+    - invoke clean
     - invoke install
-    # - cd search/ && tar xvf results.tgz && cd -
+    # InvenTree Setup
+    - git clone https://github.com/inventree/inventree/
+    - cp tests/files/inventree_default_db.sqlite3 inventree/inventree/
+    - cd inventree/
+    - invoke install
+    - invoke migrate
 
 script:
     - invoke test

@@ -1,0 +1,5 @@
+ENABLE: true
+PASSWORD: !!binary |
+  WVdSdGFXND0=
+SERVER_ADDRESS: http://127.0.0.1:8000/
+USERNAME: admin

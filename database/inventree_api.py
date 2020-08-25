@@ -363,7 +363,7 @@ def create_parameter_template(name: str, units: str) -> int:
 
 	parameter_templates = ParameterTemplate.list(inventree_api)
 	for item in parameter_templates:
-		if name in item.name:
+		if name == item.name:
 			return 0
 
 	parameter_template = ParameterTemplate.create(inventree_api, {
@@ -384,7 +384,7 @@ def create_parameter(part_id: int, template_name: int, value: str):
 	
 	template_id = 0
 	for item in parameter_template_list:
-		if template_name in item.name:
+		if template_name == item.name:
 			template_id = item.pk
 			break
 

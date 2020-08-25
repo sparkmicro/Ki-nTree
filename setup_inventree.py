@@ -18,9 +18,9 @@ if __name__ == '__main__':
 		cprint(f'\n[MAIN]\tCreating {category.upper()}')
 		category_pk, is_category_new = inventree_api.create_category(parent=None, name=category)
 		if is_category_new:
-			cprint(f'[TREE]\tSuccess: Category "{category}" was added to InvenTree')
+			cprint(f'[TREE]\tSuccess: Category "{category}" was added to InvenTree', flush=True)
 		else:
-			cprint(f'[TREE]\tWarning: Category "{category}" already exists')
+			cprint(f'[TREE]\tWarning: Category "{category}" already exists', flush=True)
 
 		if categories[category]:
 			cprint(f'[MAIN]\tCreating Subcategories')
@@ -28,9 +28,9 @@ if __name__ == '__main__':
 				sub_category_pk, is_subcategory_new = inventree_api.create_category(parent=category, name=subcategory)
 
 				if is_subcategory_new:
-					cprint(f'[TREE]\tSuccess: Subcategory "{category}/{subcategory}" was added to InvenTree')
+					cprint(f'[TREE]\tSuccess: Subcategory "{category}/{subcategory}" was added to InvenTree', flush=True)
 				else:
-					cprint(f'[TREE]\tWarning: Subcategory "{category}/{subcategory}" already exists')
+					cprint(f'[TREE]\tWarning: Subcategory "{category}/{subcategory}" already exists', flush=True)
 
 	# Load parameter configuration file
 	parameters = config_interface.load_file(settings.CONFIG_PARAMETERS)
@@ -39,6 +39,6 @@ if __name__ == '__main__':
 	for name, unit in parameters.items():
 		pk = inventree_api.create_parameter_template(name, unit)
 		if pk > 0:
-			cprint(f'[TREE]\tSuccess: Parameter "{name}" was added to InvenTree')
+			cprint(f'[TREE]\tSuccess: Parameter "{name}" was added to InvenTree', flush=True)
 		else:
-			cprint(f'[TREE]\tWarning: Parameter "{name}" already exists')
+			cprint(f'[TREE]\tWarning: Parameter "{name}" already exists', flush=True)

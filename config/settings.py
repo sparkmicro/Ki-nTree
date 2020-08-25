@@ -152,24 +152,24 @@ symbol_template_lib = os.path.join(PROJECT_DIR, 'kicad', 'templates', 'library_t
 ###
 
 ### INVENTREE
-# Local Development: LOCAL_DEV
-# Server/Remote Development: SERVER_DEV
-# Server/Remote Production: SERVER_PROD
+# Local Development/Testing: TESTING
+# Server/Remote Development: DEVELOPMENT
+# Server/Remote Production: PRODUCTION
 class Environment(Enum):
-    LOCAL_DEV = 0
-    SERVER_DEV = 1
-    SERVER_PROD = 2
+    TESTING = 0
+    DEVELOPMENT = 1
+    PRODUCTION = 2
 
 # Pick environment
-environment = Environment.LOCAL_DEV
+environment = os.environ.get('INVENTREE_ENV', Environment.DEVELOPMENT)
 
 # Load correct user file
-if environment == Environment.SERVER_PROD:
+if environment == Environment.PRODUCTION:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_prod.yaml')
-elif environment == Environment.SERVER_DEV:
+elif environment == Environment.DEVELOPMENT:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_dev.yaml')
 else:
-	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_local.yaml')
+	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_test.yaml')
 
 # Load user settings
 inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)

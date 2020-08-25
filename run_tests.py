@@ -11,14 +11,14 @@ from search.digikey_api import disable_digikey_api_logger
 
 # SETTINGS
 # Enable InvenTree tests
-ENABLE_INVENTREE = False
+ENABLE_INVENTREE = True
 # Enable KiCad tests
 ENABLE_KICAD = True
 # Show results
-SHOW_RESULTS = False
+SHOW_RESULTS = True
 # Enable test samples deletion
 ENABLE_DELETE = True
-AUTO_DELETE = True
+AUTO_DELETE = False
 # Set categories to test
 PART_CATEGORIES = [
 	'Capacitors',
@@ -48,10 +48,6 @@ test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 # Disable API logging
 disable_digikey_api_logger()
 
-DIGIKEY_CLIENT_ID = os.environ.get('DIGIKEY_CLIENT_ID', None)
-DIGIKEY_CLIENT_SECRET = os.environ.get('DIGIKEY_CLIENT_SECRET', None)
-print(f'{DIGIKEY_CLIENT_ID=}\n{DIGIKEY_CLIENT_SECRET=}')
-	
 # Check result
 def check_result(status: str, new_part: bool) -> bool:
 	# Build result
@@ -80,6 +76,10 @@ inventree_results = {}
 
 if __name__ == '__main__':
 	if settings.ENABLE_TEST:
+		if ENABLE_INVENTREE:
+			cprint('\n[MAIN]\tConnecting to Inventree server')
+			inventree_connect = inventree_interface.connect_to_server()
+
 		for category in PART_TEST_SAMPLES.keys():
 			cprint(f'\n[MAIN]\tTesting {category.upper()}')
 			for number, status in PART_TEST_SAMPLES[category].items():
@@ -115,10 +115,6 @@ if __name__ == '__main__':
 							kicad_results.update({number: result})
 
 				if ENABLE_INVENTREE:
-					cprint('\n[MAIN]\tConnecting to Inventree server',
-						   silent=settings.SILENT)
-					inventree_connect = inventree_interface.connect_to_server()
-
 					# InvenTree
 					test_message = f'[INFO]\tInvenTree test for "{number}" ({status})'.ljust(65)
 					cprint(test_message, end='')
@@ -139,16 +135,17 @@ if __name__ == '__main__':
 																							categories=categories)
 
 					success = check_result(status, new_part)
+					pk_list = [data[0] for data in inventree_results.values()]
 
-					if success and status != 'alternate_mpn':
+					if part_pk != 0 and part_pk not in pk_list:
 						delete = True
 					else:
 						delete = False
+					# Build results
+					inventree_results.update({number: [part_pk, success, delete]})
 
 					# Display
 					if success:
-						# Build results
-						inventree_results.update({number: [part_pk, success, delete]})
 						cprint(f'[ PASS ]', flush=True)
 					else:
 						cprint(f'[ FAIL ]', flush=True)

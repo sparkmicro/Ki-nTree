@@ -34,6 +34,10 @@ def clean(c):
 		c.run('rm -r dist build', hide='err')
 	except UnexpectedExit:
 		pass
+	try:
+		c.run('rm -r search/results', hide='err')
+	except UnexpectedExit:
+		pass
 
 @task
 def package(c):
@@ -64,6 +68,10 @@ def build(c):
 	exec(c)
 
 @task
+def setup_inventree(c):
+	c.run('python setup_inventree.py', hide=True)
+
+@task
 def coverage(c):
 	cprint(f'\n[MAIN]\tSaving coverage report to "htmlcov" folder')
 	c.run('coverage html', hide=True)
@@ -77,8 +85,10 @@ def test(c):
 		c.run('pip install -U coverage', hide=True)
 
 	cprint(f'[MAIN]\tRunning tests using coverage')
-	run_tests = c.run('coverage run run_tests.py')
-	if run_tests.exited == 0:
+	setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
+	run_tests = c.run('coverage run --parallel-mode run_tests.py')
+	if setup_inventree.exited == 0 and run_tests.exited == 0:
+		c.run('coverage combine')
 		coverage(c)
 	if MANUAL_TEST:
 		webbrowser.open('htmlcov/index.html', new=2)
