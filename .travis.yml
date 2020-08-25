@@ -11,7 +11,6 @@ apt-packages:
 
 before_install:
     - pip3 install invoke
-    - invoke clean
     - invoke install
     # InvenTree Setup
     - git clone https://github.com/inventree/inventree/
