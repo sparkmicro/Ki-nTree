@@ -20,8 +20,11 @@ before_install:
     - invoke migrate
     - cd ..
 
-script:
-    - invoke test
+jobs:
+  include:
+    - stage: test
+      script: cd InvenTree/InvenTree/ && python manage.py runserver
+      script: invoke test
 
 after_success:
     - coveralls
