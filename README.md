@@ -1,6 +1,6 @@
 # Ki-nTree
-[![Build Status](https://travis-ci.org/sparkmicro/Ki-nTree.svg?branch=master)](https://travis-ci.org/sparkmicro/Ki-nTree)
-[![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg)](https://coveralls.io/github/sparkmicro/Ki-nTree)
+[![Build Status](https://travis-ci.org/sparkmicro/Ki-nTree.svg?branch=travis_integration)](https://travis-ci.org/sparkmicro/Ki-nTree)
+[![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=travis_integration)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=travis_integration)
 #### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://github.com/inventree/inventree) -> [see it in action!](https://youtu.be/NSMfCCD0uVw)
 <img src="images/doc/kintree_example.png"  width="auto" height="auto">
 
