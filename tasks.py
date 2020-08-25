@@ -1,3 +1,4 @@
+import sys
 import webbrowser
 
 from common.tools import cprint
@@ -87,6 +88,7 @@ def coverage(c):
 
 @task
 def refresh_api_token(c):
+	c.run('cp tests/files/token_storage.json search/')
 	result = digikey_api.test_digikey_api_connect()
 	if result:
 		c.run('cp search/token_storage.json tests/files/', hide=True)

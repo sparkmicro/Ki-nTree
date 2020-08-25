@@ -1,6 +1,5 @@
 import os
 import sys
-from shutil import copyfile
 
 import config.settings as settings
 from common.tools import cprint, create_library
@@ -40,9 +39,6 @@ PART_CATEGORIES = [
 settings.enable_test_mode()
 # Create user configuration files
 settings.create_user_config_files()
-# Copy test files
-copyfile(os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'token_storage.json'),
-		 os.path.join(settings.PROJECT_DIR, 'search', 'token_storage.json'))
 # Set path to test symbol library
 test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 # Disable API logging
