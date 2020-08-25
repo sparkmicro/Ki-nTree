@@ -1,5 +1,6 @@
 import os
 import sys
+from shutil import copyfile
 
 import config.settings as settings
 from common.tools import cprint, create_library
@@ -21,17 +22,17 @@ AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
 	'Capacitors',
-	'Circuit Protections',
-	'Connectors',
-	'Crystals and Oscillators',
-	'Diodes',
-	'Inductors',
-	'Integrated Circuits',
-	'Mechanicals',
-	'Power Management',
-	'Resistors',
-	'RF',
-	'Transistors',
+	# 'Circuit Protections',
+	# 'Connectors',
+	# 'Crystals and Oscillators',
+	# 'Diodes',
+	# 'Inductors',
+	# 'Integrated Circuits',
+	# 'Mechanicals',
+	# 'Power Management',
+	# 'Resistors',
+	# 'RF',
+	# 'Transistors',
 ]
 ###
 
@@ -39,12 +40,18 @@ PART_CATEGORIES = [
 settings.enable_test_mode()
 # Create user configuration files
 settings.create_user_config_files()
+# Copy test files
+copyfile(os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'token_storage.json'),
+		 os.path.join(settings.PROJECT_DIR, 'search', 'token_storage.json'))
 # Set path to test symbol library
-test_library_path = os.path.join(
-	settings.PROJECT_DIR, 'tests', 'TEST.lib')
+test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 # Disable API logging
 disable_digikey_api_logger()
 
+DIGIKEY_CLIENT_ID = os.environ.get('DIGIKEY_CLIENT_ID', None)
+DIGIKEY_CLIENT_SECRET = os.environ.get('DIGIKEY_CLIENT_SECRET', None)
+print(f'{DIGIKEY_CLIENT_ID=}\n{DIGIKEY_CLIENT_SECRET=}')
+	
 # Check result
 def check_result(status: str, new_part: bool) -> bool:
 	# Build result

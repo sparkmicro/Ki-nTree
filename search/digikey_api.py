@@ -14,11 +14,23 @@ def disable_digikey_api_logger():
 	# Disable DEBUG
 	logging.disable(logging.DEBUG)
 
-def setup_environment():
-	# SETUP the Digikey authentication see https://developer.digikey.com/documentation/organization#production
-	digikey_api_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
-	os.environ['DIGIKEY_CLIENT_ID'] = digikey_api_settings['DIGIKEY_CLIENT_ID']
-	os.environ['DIGIKEY_CLIENT_SECRET'] = digikey_api_settings['DIGIKEY_CLIENT_SECRET']
+def check_environment() -> bool:
+	DIGIKEY_CLIENT_ID = os.environ.get('DIGIKEY_CLIENT_ID', None)
+	DIGIKEY_CLIENT_SECRET = os.environ.get('DIGIKEY_CLIENT_SECRET', None)
+
+	if not DIGIKEY_CLIENT_ID or not DIGIKEY_CLIENT_SECRET:
+		return False
+
+	return True
+
+def setup_environment() -> bool:
+	if not check_environment():
+		# SETUP the Digikey authentication see https://developer.digikey.com/documentation/organization#production
+		digikey_api_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
+		os.environ['DIGIKEY_CLIENT_ID'] = digikey_api_settings['DIGIKEY_CLIENT_ID']
+		os.environ['DIGIKEY_CLIENT_SECRET'] = digikey_api_settings['DIGIKEY_CLIENT_SECRET']
+
+	return check_environment()
 
 def test_digikey_api_connect() -> bool:
 	setup_environment()
@@ -42,7 +54,8 @@ def find_categories(part_details: str):
 def fetch_digikey_part_info(part_number: str) -> dict:
 	''' Fetch Digi-Key part data from API '''
 	part_info = {}
-	setup_environment()
+	if not setup_environment():
+		return part_info
 
 	# Query part number
 	try:
