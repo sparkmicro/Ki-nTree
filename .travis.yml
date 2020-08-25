@@ -13,9 +13,9 @@ before_install:
     - pip3 install invoke
     - invoke install
     # InvenTree Setup
-    - git clone https://github.com/inventree/inventree/
-    - cp tests/files/inventree_default_db.sqlite3 inventree/inventree/
-    - cd inventree/
+    - git clone https://github.com/inventree/InvenTree/
+    - cp tests/files/inventree_default_db.sqlite3 InvenTree/InvenTree/
+    - cd InvenTree/
     - invoke install
     - invoke migrate
 
