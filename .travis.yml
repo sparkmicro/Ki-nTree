@@ -14,10 +14,11 @@ before_install:
     - invoke install
     # InvenTree Setup
     - git clone https://github.com/inventree/InvenTree/
-    - cp tests/files/inventree_default_db.sqlite3 InvenTree/InvenTree/
+    - cp tests/files/inventree_default_db.sqlite3 InvenTree/
     - cd InvenTree/
     - invoke install
     - invoke migrate
+    - cd ..
 
 script:
     - invoke test
