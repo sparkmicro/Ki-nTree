@@ -30,7 +30,7 @@ Alternatively, you can clone without the `--recurse-submodules` option, then run
 ```
 $ git submodule update --init
 ```
-2. Create and activate a new python environment (Python 3.6+) inside the `Ki-nTree` folder:
+2. Create and activate a new python environment (Python 3.6 and newer) inside the `Ki-nTree` folder:
 ```
 $ cd Ki-nTree
 $ python3 -m venv env-kintree
@@ -55,7 +55,7 @@ $ invoke build
 #### Requirements
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
-* Ki-nTree was developped and tested only on a Linux/Ubuntu system (compatible with Python 3.6+)
+* Ki-nTree is developped and Linux/Ubuntu system and tested with Python 3.6, 3.7 and 3.8
 
 #### Settings
 1. With Ki-nTree GUI open, click on "Settings > Digi-Key" and fill in both Digi-Key API Client ID and Secret keys (optional: click on "Test" to [get an API token](#get-digi-key-api-token))

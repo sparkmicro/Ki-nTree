@@ -2,8 +2,8 @@ import webbrowser
 
 from common.tools import cprint
 from invoke import UnexpectedExit, task
+from search import digikey_api
 
-MANUAL_TEST = False
 
 @task
 def install(c, is_install=True):
@@ -30,7 +30,10 @@ def update(c):
 def clean(c):
 	cprint(f'[MAIN]\tCleaning project directory')
 	c.run('find . -name __pycache__ | xargs rm -r')
-	c.run('rm .coverage.*')
+	try:
+		c.run('rm .coverage.*', hide='err')
+	except UnexpectedExit:
+		pass
 	try:
 		c.run('rm -r dist build', hide='err')
 	except UnexpectedExit:
@@ -79,20 +82,47 @@ def coverage(c):
 	c.run('coverage report')
 
 @task
-def test(c):
-	try:
-		c.run('pip show coverage', hide=True)
-	except UnexpectedExit:
-		c.run('pip install -U coverage', hide=True)
+def refresh_api_token(c):
+	result = digikey_api.test_digikey_api_connect()
+	if result:
+		c.run('cp search/token_storage.json tests/files/', hide=True)
 
-	cprint(f'[MAIN]\tRunning tests using coverage')
-	run_inventree = c.run('cd InvenTree/InvenTree/ && python manage.py runserver',
-						  asynchronous=True)
-	c.run('cd ../.. && sleep 5')
-	setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
-	run_tests = c.run('coverage run --parallel-mode run_tests.py')
-	if setup_inventree.exited == 0 and run_tests.exited == 0:
-		c.run('coverage combine')
-		coverage(c)
-	if MANUAL_TEST:
-		webbrowser.open('htmlcov/index.html', new=2)
+	return result
+
+@task
+def test(c):
+	api_token = refresh_api_token(c)
+	if api_token:
+		try:
+			c.run('pip show coverage', hide=True)
+		except UnexpectedExit:
+			c.run('pip install -U coverage', hide=True)
+
+		cprint(f'[MAIN]\tRunning tests using coverage')
+		run_inventree = c.run('cd InvenTree/InvenTree/ && python manage.py runserver',
+							  asynchronous=True)
+		c.run('cd ../.. && sleep 5')
+		setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
+		run_tests = c.run('coverage run --parallel-mode run_tests.py')
+		if setup_inventree.exited == 0 and run_tests.exited == 0:
+			c.run('coverage combine')
+			coverage(c)
+	else:
+		cprint(f'[MAIN]\tFailed updating Digi-Key API token')
+		sys.exit(-1)
+
+@task
+def show_coverage(c):
+	webbrowser.open('htmlcov/index.html', new=2)
+
+@task
+def make_python_badge(c):
+	cprint(f'[MAIN]\tInstall pybadges')
+	c.run('pip install pybadges pip-autoremove', hide=True)
+	cprint(f'[MAIN]\tCreate badge')
+	c.run('python -m pybadges --left-text="Python" --right-text="3.6 | 3.7 | 3.8" '
+		  '--whole-link="https://www.python.org/" --browser --embed-logo '
+		  '--logo="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/python.svg"')
+	cprint(f'[MAIN]\tUninstall pybadges')
+	c.run('pip-autoremove pybadges -y', hide=True)
+	c.run('pip uninstall pip-autoremove -y', hide=True)
