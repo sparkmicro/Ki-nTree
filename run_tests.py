@@ -23,16 +23,16 @@ AUTO_DELETE = True
 PART_CATEGORIES = [
 	'Capacitors',
 	'Circuit Protections',
-	# 'Connectors',
-	# 'Crystals and Oscillators',
-	# 'Diodes',
-	# 'Inductors',
-	# 'Integrated Circuits',
-	# 'Mechanicals',
-	# 'Power Management',
-	# 'Resistors',
-	# 'RF',
-	# 'Transistors',
+	'Connectors',
+	'Crystals and Oscillators',
+	'Diodes',
+	'Inductors',
+	'Integrated Circuits',
+	'Mechanicals',
+	'Power Management',
+	'Resistors',
+	'RF',
+	'Transistors',
 ]
 ###
 
