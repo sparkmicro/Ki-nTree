@@ -3,7 +3,6 @@ import webbrowser
 from common.tools import cprint
 from invoke import UnexpectedExit, task
 
-MANUAL_TEST = False
 
 @task
 def install(c, is_install=True):
@@ -30,7 +29,10 @@ def update(c):
 def clean(c):
 	cprint(f'[MAIN]\tCleaning project directory')
 	c.run('find . -name __pycache__ | xargs rm -r')
-	c.run('rm .coverage.*')
+	try:
+		c.run('rm .coverage.*', hide='err')
+	except UnexpectedExit:
+		pass
 	try:
 		c.run('rm -r dist build', hide='err')
 	except UnexpectedExit:
@@ -79,6 +81,10 @@ def coverage(c):
 	c.run('coverage report')
 
 @task
+def save_api_token(c):
+	c.run('cp search/token_storage.json tests/files/', hide=True)
+
+@task
 def test(c):
 	try:
 		c.run('pip show coverage', hide=True)
@@ -94,5 +100,19 @@ def test(c):
 	if setup_inventree.exited == 0 and run_tests.exited == 0:
 		c.run('coverage combine')
 		coverage(c)
-	if MANUAL_TEST:
-		webbrowser.open('htmlcov/index.html', new=2)
+
+@task
+def show_coverage(c):
+	webbrowser.open('htmlcov/index.html', new=2)
+
+@task
+def make_python_badge(c):
+	cprint(f'[MAIN]\tInstall pybadges')
+	c.run('pip install pybadges pip-autoremove', hide=True)
+	cprint(f'[MAIN]\tCreate badge')
+	c.run('python -m pybadges --left-text="Python" --right-text="3.6 | 3.7 | 3.8" '
+		  '--whole-link="https://www.python.org/" --browser --embed-logo '
+		  '--logo="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/python.svg"')
+	cprint(f'[MAIN]\tUninstall pybadges')
+	c.run('pip-autoremove pybadges -y', hide=True)
+	c.run('pip uninstall pip-autoremove -y', hide=True)

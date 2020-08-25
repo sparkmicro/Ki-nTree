@@ -7,7 +7,8 @@ from common.tools import cprint, create_library
 from config import config_interface
 from database import inventree_api, inventree_interface
 from kicad import kicad_interface
-from search.digikey_api import disable_digikey_api_logger
+from search.digikey_api import (disable_digikey_api_logger,
+                                test_digikey_api_connect)
 
 # SETTINGS
 # Enable InvenTree tests
@@ -43,6 +44,9 @@ settings.create_user_config_files()
 # Copy test files
 copyfile(os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'token_storage.json'),
 		 os.path.join(settings.PROJECT_DIR, 'search', 'token_storage.json'))
+if not test_digikey_api_connect():
+	cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+	sys.exit(-1)
 # Set path to test symbol library
 test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 # Disable API logging

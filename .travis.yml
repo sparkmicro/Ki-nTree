@@ -1,5 +1,9 @@
 dist: bionic
 
+branches:
+  only:
+  - master
+  
 language: python
 python:
     - 3.6
@@ -14,14 +18,13 @@ before_install:
     # InvenTree Setup
     - git clone https://github.com/inventree/InvenTree/
     - cp tests/files/inventree_default_db.sqlite3 InvenTree/
-    - cd InvenTree/
-    - invoke install
-    - invoke migrate
-    - cd ..
+    - cd InvenTree/ && invoke install && invoke migrate && cd -
     # Ki-nTree setup
     # Remove python-coveralls as not maintained
     - pip uninstall python-coveralls -y
     - invoke install
+    - cp tests/files/results.tgz search/
+    - cd search/ && tar xvf results.tgz && cd -
     
 install: skip
 
