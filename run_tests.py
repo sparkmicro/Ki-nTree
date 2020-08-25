@@ -15,14 +15,14 @@ ENABLE_INVENTREE = True
 # Enable KiCad tests
 ENABLE_KICAD = True
 # Show results
-SHOW_RESULTS = True
+SHOW_RESULTS = False
 # Enable test samples deletion
 ENABLE_DELETE = True
-AUTO_DELETE = False
+AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
 	'Capacitors',
-	# 'Circuit Protections',
+	'Circuit Protections',
 	# 'Connectors',
 	# 'Crystals and Oscillators',
 	# 'Diodes',

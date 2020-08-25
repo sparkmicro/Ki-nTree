@@ -88,7 +88,7 @@ def test(c):
 	cprint(f'[MAIN]\tRunning tests using coverage')
 	run_inventree = c.run('cd InvenTree/InvenTree/ && python manage.py runserver',
 						  asynchronous=True)
-	c.run('cd ../.. && sleep 5 && ps aux | grep manage.py')
+	c.run('cd ../.. && sleep 5')
 	setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
 	run_tests = c.run('coverage run --parallel-mode run_tests.py')
 	if setup_inventree.exited == 0 and run_tests.exited == 0:
