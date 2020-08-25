@@ -22,10 +22,7 @@ before_install:
 
 install: skip
 
-jobs:
-  include:
-    - script: cd InvenTree/InvenTree/ && python manage.py runserver
-    - script: invoke test
+script: invoke test
 
 after_success:
     - coveralls
