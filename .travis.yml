@@ -2,8 +2,8 @@ dist: bionic
 
 language: python
 python:
-    - 3.6
-    - 3.7
+    # - 3.6
+    # - 3.7
     - 3.8
 
 apt-packages:
@@ -20,11 +20,12 @@ before_install:
     - invoke migrate
     - cd ..
 
+install: skip
+
 jobs:
   include:
-    - stage: test
-      script: cd InvenTree/InvenTree/ && python manage.py runserver
-      script: invoke test
+    - script: cd InvenTree/InvenTree/ && python manage.py runserver
+    - script: invoke test
 
 after_success:
     - coveralls
