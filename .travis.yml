@@ -20,7 +20,7 @@ before_install:
     - cd ..
     # Ki-nTree setup
     # Remove python-coveralls as not maintained
-    - pip uninstall python-coveralls
+    - pip uninstall python-coveralls -y
     - invoke install
     
 install: skip
