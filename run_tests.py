@@ -23,17 +23,17 @@ AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
 	'Capacitors',
-	# 'Circuit Protections',
-	# 'Connectors',
-	# 'Crystals and Oscillators',
-	# 'Diodes',
-	# 'Inductors',
-	# 'Integrated Circuits',
-	# 'Mechanicals',
-	# 'Power Management',
-	# 'Resistors',
-	# 'RF',
-	# 'Transistors',
+	'Circuit Protections',
+	'Connectors',
+	'Crystals and Oscillators',
+	'Diodes',
+	'Inductors',
+	'Integrated Circuits',
+	'Mechanicals',
+	'Power Management',
+	'Resistors',
+	'RF',
+	'Transistors',
 ]
 ###
 
