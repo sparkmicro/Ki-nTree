@@ -9,7 +9,7 @@ def load_file(file_path: str) -> dict:
 	''' Safe load YAML file '''
 	with open(file_path, 'r') as file:
 		try:
-			data = yaml.safe_load(file)#, Loader=yaml.BaseLoader)
+			data = yaml.safe_load(file)
 		except yaml.YAMLError as exc:
 			print(exc)
 			return None
@@ -66,16 +66,17 @@ def load_inventree_user_settings(user_config_path: str) -> dict:
 
 	try:
 		# Use base64 encoding to make password unreadable inside the file
-		user_settings['PASSWORD'] = base64.b64decode(user_settings['PASSWORD']).decode()
+		user_settings['PASSWORD'] = base64.b64decode(
+			user_settings['PASSWORD']).decode()
 	except:
 		user_settings['PASSWORD'] = ''
-	
+
 	return user_settings
 
 def save_inventree_user_settings(enable: bool, server: str, username: str, password: str, user_config_path: str):
 	''' Save InvenTree user settings to file '''
-	user_settings = load_file(user_config_path)
-	
+	user_settings = {}
+
 	user_settings['ENABLE'] = enable
 	user_settings['SERVER_ADDRESS'] = server
 	user_settings['USERNAME'] = username
@@ -126,7 +127,7 @@ def load_libraries_paths(user_config_path: str, library_path: str) -> dict:
 	found_library_files = []
 	for file in os.listdir(library_path):
 		if file.endswith('.lib'):
-			found_library_files.append(file.replace('.lib',''))
+			found_library_files.append(file.replace('.lib', ''))
 
 	symbol_libraries_paths = {}
 	assigned_files = []
@@ -136,7 +137,8 @@ def load_libraries_paths(user_config_path: str, library_path: str) -> dict:
 			if libraries:
 				for library in libraries:
 					if library in found_library_files:
-						symbol_libraries_paths[category][library] = library_path + library + '.lib'
+						symbol_libraries_paths[category][library] = library_path + \
+							library + '.lib'
 						assigned_files.append(library)
 	except:
 		pass
@@ -148,7 +150,8 @@ def load_libraries_paths(user_config_path: str, library_path: str) -> dict:
 			except:
 				symbol_libraries_paths['uncategorized'] = [file]
 	try:
-		symbol_libraries_paths['uncategorized'] = sorted(symbol_libraries_paths['uncategorized'])
+		symbol_libraries_paths['uncategorized'] = sorted(
+			symbol_libraries_paths['uncategorized'])
 	except:
 		pass
 
@@ -171,9 +174,11 @@ def load_templates_paths(user_config_path: str, template_path: str) -> dict:
 					file_name = 'default'
 				if file_name:
 					try:
-						symbol_templates_paths[category][subcategory] = template_path + file_name + '.lib'
+						symbol_templates_paths[category][subcategory] = template_path + \
+							file_name + '.lib'
 					except:
-						symbol_templates_paths[category] = {subcategory: template_path + file_name + '.lib'}
+						symbol_templates_paths[category] = {
+							subcategory: template_path + file_name + '.lib'}
 	except:
 		pass
 
@@ -186,9 +191,8 @@ def load_footprint_paths(user_config_path: str, footprint_path: str) -> dict:
 	if not os.path.exists(footprint_path):
 		return None
 
-	found_library_folders = [	item.replace('.pretty','') for item in os.listdir(footprint_path) \
-								if os.path.isdir(footprint_path + item) ]
-
+	found_library_folders = [	item.replace('.pretty', '') for item in os.listdir(footprint_path)
+							  if os.path.isdir(footprint_path + item)]
 
 	footprint_libraries_paths = {}
 	assigned_folders = []
@@ -197,7 +201,8 @@ def load_footprint_paths(user_config_path: str, footprint_path: str) -> dict:
 			footprint_libraries_paths[category] = {}
 			if libraries:
 				for folder in libraries:
-					footprint_libraries_paths[category][folder] = footprint_path + folder + '.pretty'
+					footprint_libraries_paths[category][folder] = footprint_path + \
+						folder + '.pretty'
 					assigned_folders.append(folder)
 	except:
 		pass
@@ -208,7 +213,8 @@ def load_footprint_paths(user_config_path: str, footprint_path: str) -> dict:
 				footprint_libraries_paths['uncategorized'].append(folder)
 			except:
 				footprint_libraries_paths['uncategorized'] = [folder]
-	footprint_libraries_paths['uncategorized'] = sorted(footprint_libraries_paths['uncategorized'])
+	footprint_libraries_paths['uncategorized'] = sorted(
+		footprint_libraries_paths['uncategorized'])
 
 	return footprint_libraries_paths
 
@@ -226,7 +232,7 @@ def add_footprint_library(user_config_path: str, category: str, library_folder: 
 
 	try:
 		if library_folder not in user_settings['KICAD_FOOTPRINTS'][index]:
-				user_settings['KICAD_FOOTPRINTS'][index].append(library_folder)
+			user_settings['KICAD_FOOTPRINTS'][index].append(library_folder)
 	except:
 		user_settings['KICAD_FOOTPRINTS'][index] = [library_folder]
 
@@ -266,10 +272,10 @@ def load_supplier_categories_inversed(supplier_config_path: str) -> dict:
 def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
 	''' Add Supplier category mapping to Supplier settings file
 
-		categories = {
-			'Capacitors':
-				{ 'Tantalum': 'Tantalum Capacitors' }
-		}
+			categories = {
+					'Capacitors':
+							{ 'Tantalum': 'Tantalum Capacitors' }
+			}
 	'''
 	try:
 		supplier_categories = load_file(supplier_config_path)
@@ -281,7 +287,8 @@ def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
 			try:
 				supplier_category_keys = supplier_categories[category].keys()
 			except:
-				supplier_categories[category] = {user_subcategory: [supplier_category]}
+				supplier_categories[category] = {
+					user_subcategory: [supplier_category]}
 				break
 
 			# Function filtered
@@ -289,26 +296,30 @@ def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
 			if inventree_subcategory_filter in supplier_category_keys:
 				try:
 					if supplier_category not in supplier_categories[category][inventree_subcategory_filter]:
-						supplier_categories[category][inventree_subcategory_filter].append(supplier_category)
+						supplier_categories[category][inventree_subcategory_filter].append(
+							supplier_category)
 					break
 				except:
 					pass
 
 				try:
-					supplier_categories[category][inventree_subcategory_filter] = [supplier_category]
+					supplier_categories[category][inventree_subcategory_filter] = [
+						supplier_category]
 					break
 				except:
 					pass
 			else:
 				try:
 					if supplier_category not in supplier_categories[category][user_subcategory]:
-						supplier_categories[category][user_subcategory].append(supplier_category)
+						supplier_categories[category][user_subcategory].append(
+							supplier_category)
 					break
 				except:
 					pass
 
 				try:
-					supplier_categories[category][user_subcategory] = [supplier_category]
+					supplier_categories[category][user_subcategory] = [
+						supplier_category]
 					break
 				except:
 					pass
@@ -319,16 +330,6 @@ def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
 
 def load_category_parameters(category: str, supplier_config_path: str) -> dict:
 	''' Load Supplier parameters mapping from Supplier settings file '''
-	try:
-		category_parameters = load_file(supplier_config_path)[category]
-	except:
-		return None
-
-	# print(category_parameters)
-	return category_parameters
-
-def load_category_parameters_inversed(category: str, supplier_config_path: str) -> dict:
-	''' Load Supplier parameters mapping from Supplier settings file (inversed relation) '''
 	try:
 		category_parameters = load_file(supplier_config_path)[category]
 	except:
@@ -352,44 +353,3 @@ def load_category_parameters_filters(category: str, supplier_config_path: str) -
 
 	# print(parameters_filters)
 	return parameters_filters
-
-# Obsolete
-def load_supplier_map(supplier_config_path: str, map_type: str, supplier='Digi-Key') -> dict:
-	''' Construct Supplier categories and parameters map from Supplier settings file '''
-	suppliers = ['Digi-Key', ]
-	maps = ['category', 'parameter', ]
-	# Check if supplier data exists
-	if supplier not in suppliers:
-		return None
-	# Check if map data exists
-	if map_type not in maps:
-		return None
-
-	try:
-		supplier_maps = load_file(supplier_config_path)
-	except:
-		return None
-
-	# Digi-Key
-	if supplier == suppliers[0]:
-		if map_type == maps[0]:
-			# Return reverse dictionaries
-			category_map = supplier_maps['DIGIKEY_CATEGORY_MAP']
-			inversed_category_map = {}
-
-			for category in category_map.keys():
-				for inventree, supplier in category_map[category].items():
-					if type(supplier) is list:
-						for item in supplier:
-							inversed_category_map[category][item] = inventree
-					else:
-						try:
-							inversed_category_map[category][supplier] = inventree
-						except:
-							inversed_category_map[category] = {supplier: inventree}
-
-			return inversed_category_map
-		elif map_type == maps[1]:
-			return supplier_maps['DIGIKEY_PARAMETER_MAP']
-		
-	return None

@@ -80,7 +80,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 	if not categories[1] and function_filter:
 		cprint(f'[INFO]\tSubcategory is filtered using "{filter_parameter}" parameter', silent=settings.SILENT, end='')
 		# Load parameter map
-		parameter_map = config_interface.load_category_parameters_inversed(categories[0], settings.CONFIG_DIGIKEY_PARAMETERS)
+		parameter_map = config_interface.load_category_parameters(categories[0], settings.CONFIG_DIGIKEY_PARAMETERS)
 		# Build compare list
 		compare = []
 		for supplier_parameter, inventree_parameter in parameter_map.items():
@@ -189,7 +189,7 @@ def translate_digikey_to_inventree(part_info: dict, categories: list) -> dict:
 	inventree_part['datasheet'] = part_info['primary_datasheet'].replace(' ','%20')
 
 	# Load parameters map
-	parameter_map = config_interface.load_category_parameters_inversed(	category=inventree_part["category"][0],
+	parameter_map = config_interface.load_category_parameters(	category=inventree_part["category"][0],
 																		supplier_config_path=settings.CONFIG_DIGIKEY_PARAMETERS, )
 	# Add Parameters	
 	if parameter_map:

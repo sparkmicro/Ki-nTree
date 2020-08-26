@@ -116,26 +116,13 @@ class ComponentLibManager(object):
 
 		return part_in_lib, new_part
 
-	def delete_component_from_lib(self, part_number, category=None, library_path=None):
+	def delete_component_from_lib(self, part_number, library_path):
 		''' Remove component (symbol) from KiCad library '''
-		if category and library_path:
-			cprint('[KCAD]\tWarning: Too many argument, specifify only category or library_path (delete_component_from_lib)', silent=settings.SILENT)
-			return False
-		# Load Library and Template paths
-		elif category and not library_path:
-			library_path = settings.symbol_libraries_paths[category]
-			# Check librart file exists
-			if not os.path.isfile(library_path):
-				cprint(f'[KCAD]\tError loading library file ({library_path})', silent=settings.SILENT)
-				cprint('[KCAD]\tCheck library file path and name', silent=settings.SILENT)
-				return False
-		elif library_path and not category:
-			if not os.path.isfile(library_path):
-				cprint(f'[KCAD]\tError loading library file ({library_path})', silent=settings.SILENT)
-				cprint('[KCAD]\tCheck library file path and name', silent=settings.SILENT)
-				return False
-		else:
-			cprint('[KCAD]\tError: Specify either category or library_path (delete_component_from_lib)', silent=settings.SILENT)
+
+		# Check that Library file exists
+		if not os.path.isfile(library_path):
+			cprint(f'[KCAD]\tError loading library file ({library_path})', silent=settings.SILENT)
+			cprint('[KCAD]\tCheck library file path and name', silent=settings.SILENT)
 			return False
 
 		schlib = SchLib(library_path)

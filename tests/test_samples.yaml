@@ -125,8 +125,6 @@ Resistors:
   # ('fake_alternate', 'EXB-N8V103JX'),
   # ### Potentiometer
   # ('original', '3590S-2-103L'),
-  # ### PTC
-  # ('original', 'TFPT1206L1002JV'),
   # ### NTC
   # ('original', 'NCP15XH103J03RC'),
 

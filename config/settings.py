@@ -57,15 +57,17 @@ def create_user_config_files():
 		os.makedirs(CONFIG_USER_FILES)
 	# Create user files
 	config_interface.load_user_config_files(	path_to_templates=CONFIG_TEMPLATES,
-												path_to_user_files=CONFIG_USER_FILES )
+											 path_to_user_files=CONFIG_USER_FILES)
 
 # Create user configuration files
 create_user_config_files()
 
-# Digi-Key
+### DIGI-KEY
 CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
-CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
-CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
+CONFIG_DIGIKEY_CATEGORIES = os.path.join(
+	CONFIG_USER_FILES, 'digikey_categories.yaml')
+CONFIG_DIGIKEY_PARAMETERS = os.path.join(
+	CONFIG_USER_FILES, 'digikey_parameters.yaml')
 
 # KiCad
 CONFIG_KICAD = os.path.join(CONFIG_USER_FILES, 'kicad.yaml')
@@ -74,10 +76,11 @@ CONFIG_KICAD_CATEGORY_MAP = os.path.join(CONFIG_USER_FILES, 'kicad_map.yaml')
 # Inventree
 CONFIG_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'categories.yaml')
 CONFIG_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'parameters.yaml')
-CONFIG_PARAMETERS_FILTERS = os.path.join(CONFIG_USER_FILES, 'parameters_filters.yaml')
+CONFIG_PARAMETERS_FILTERS = os.path.join(
+	CONFIG_USER_FILES, 'parameters_filters.yaml')
 ###
 
-### DIGI-KEY
+# DIGI-KEY
 # API storage path
 DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', '')
 # Automatic category match confidence level (from 0 to 100)
@@ -87,9 +90,9 @@ CACHE_ENABLED = True
 # Caching settings
 if CACHE_ENABLED:
 	search_results = {
-						'directory' : os.path.join(PROJECT_DIR, 'search', 'results', ''),
-						'extension' : '.dat',
-					}
+		'directory': os.path.join(PROJECT_DIR, 'search', 'results', ''),
+		'extension': '.dat',
+	}
 	# Create folder if it does not exists
 	if not os.path.exists(search_results['directory']):
 		os.makedirs(search_results['directory'])
@@ -106,6 +109,7 @@ if not os.path.exists(search_images):
 KICAD_SYMBOLS_PATH = ''
 KICAD_TEMPLATES_PATH = ''
 KICAD_FOOTPRINTS_PATH = ''
+
 def load_kicad_settings():
 	global CONFIG_KICAD
 	global KICAD_SYMBOLS_PATH
@@ -119,6 +123,7 @@ def load_kicad_settings():
 	KICAD_FOOTPRINTS_PATH = kicad_user_settings['KICAD_FOOTPRINTS_PATH']
 	ENABLE_KICAD = kicad_user_settings['KICAD_ENABLE']
 
+
 # Load user settings
 load_kicad_settings()
 
@@ -128,37 +133,44 @@ def set_kicad_enable_flag(value: bool, save=False):
 	ENABLE_KICAD = value
 	if save:
 		global CONFIG_KICAD
-		kicad_user_settings = config_interface.load_inventree_user_settings(CONFIG_KICAD)
+		kicad_user_settings = config_interface.load_inventree_user_settings(
+			CONFIG_KICAD)
 		kicad_user_settings['KICAD_ENABLE'] = value
 		config_interface.dump_file(kicad_user_settings, CONFIG_KICAD)
 	return
 
 # Library Paths
 if not ENABLE_TEST:
-	symbol_libraries_paths = config_interface.load_libraries_paths(CONFIG_KICAD_CATEGORY_MAP, KICAD_SYMBOLS_PATH)
+	symbol_libraries_paths = config_interface.load_libraries_paths(
+		CONFIG_KICAD_CATEGORY_MAP, KICAD_SYMBOLS_PATH)
 # cprint(symbol_libraries_paths)
 
 # Template Paths
-symbol_templates_paths = config_interface.load_templates_paths(CONFIG_KICAD_CATEGORY_MAP, KICAD_TEMPLATES_PATH)
+symbol_templates_paths = config_interface.load_templates_paths(
+	CONFIG_KICAD_CATEGORY_MAP, KICAD_TEMPLATES_PATH)
 # cprint(symbol_templates_paths)
 
 # Footprint Libraries
-footprint_libraries_paths = config_interface.load_footprint_paths(CONFIG_KICAD_CATEGORY_MAP, KICAD_FOOTPRINTS_PATH)
+footprint_libraries_paths = config_interface.load_footprint_paths(
+	CONFIG_KICAD_CATEGORY_MAP, KICAD_FOOTPRINTS_PATH)
 # cprint(footprint_libraries_paths)
 footprint_name_default = 'TBD'
 
 AUTO_GENERATE_LIB = True
-symbol_template_lib = os.path.join(PROJECT_DIR, 'kicad', 'templates', 'library_template.lib')
+symbol_template_lib = os.path.join(
+	PROJECT_DIR, 'kicad', 'templates', 'library_template.lib')
 ###
 
 ### INVENTREE
-# Local Development/Testing: TESTING
-# Server/Remote Development: DEVELOPMENT
-# Server/Remote Production: PRODUCTION
 class Environment(Enum):
-    TESTING = 0
-    DEVELOPMENT = 1
-    PRODUCTION = 2
+	'''
+	Local Development/Testing: TESTING
+	Server/Remote Development: DEVELOPMENT
+	Server/Remote Production: PRODUCTION
+	'''
+	TESTING = 0
+	DEVELOPMENT = 1
+	PRODUCTION = 2
 
 # Pick environment
 environment = os.environ.get('INVENTREE_ENV', Environment.DEVELOPMENT)
@@ -172,7 +184,8 @@ else:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_test.yaml')
 
 # Load user settings
-inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
+inventree_settings = config_interface.load_inventree_user_settings(
+	CONFIG_INVENTREE)
 
 # Enable flag
 ENABLE_INVENTREE = inventree_settings['ENABLE']
@@ -182,13 +195,14 @@ def set_inventree_enable_flag(value: bool, save=False):
 	ENABLE_INVENTREE = value
 	if save:
 		global CONFIG_INVENTREE
-		inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
+		inventree_settings = config_interface.load_inventree_user_settings(
+			CONFIG_INVENTREE)
 		inventree_settings['ENABLE'] = value
 		config_interface.save_inventree_user_settings(	enable=inventree_settings['ENABLE'],
-														server=inventree_settings['SERVER_ADDRESS'],
-														username=inventree_settings['USERNAME'],
-														password=inventree_settings['PASSWORD'],
-														user_config_path=CONFIG_INVENTREE )
+													   server=inventree_settings['SERVER_ADDRESS'],
+													   username=inventree_settings['USERNAME'],
+													   password=inventree_settings['PASSWORD'],
+													   user_config_path=CONFIG_INVENTREE)
 	return
 
 # Server settings
@@ -198,13 +212,15 @@ def load_inventree_settings():
 	global PASSWORD
 	global PART_URL_ROOT
 
-	inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
+	inventree_settings = config_interface.load_inventree_user_settings(
+		CONFIG_INVENTREE)
 
 	SERVER_ADDRESS = inventree_settings['SERVER_ADDRESS']
 	USERNAME = inventree_settings['USERNAME']
 	PASSWORD = inventree_settings['PASSWORD']
 	# Part URL
 	PART_URL_ROOT = SERVER_ADDRESS + 'part/'
+
 
 # InvenTree part dictionary template
 inventree_part_template = {

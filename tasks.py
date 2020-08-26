@@ -34,7 +34,7 @@ def clean(c):
 	except UnexpectedExit:
 		pass
 	try:
-		c.run('rm -r dist build', hide='err')
+		c.run('rm -r dist build htmlcov', hide='err')
 	except UnexpectedExit:
 		pass
 	try:
@@ -102,7 +102,10 @@ def test(c):
 		coverage(c)
 
 @task
-def show_coverage(c):
+def coverage_report(c):
+	cprint(f'[MAIN]\tMaking coverage report')
+	c.run('coverage report')
+	c.run('coverage html')
 	webbrowser.open('htmlcov/index.html', new=2)
 
 @task

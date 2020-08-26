@@ -79,7 +79,7 @@ CATEGORIES:
     # - Current Sense
     # - Array
     # - Potentiometers
-    # - PTC
+    - PTC
     # - NTC
   RF:
     - Chipset

@@ -39,6 +39,10 @@ PART_CATEGORIES = [
 
 # Enable test mode
 settings.enable_test_mode()
+# Enable InvenTree
+settings.set_inventree_enable_flag(True, save=True)
+# Enable KiCad
+settings.set_kicad_enable_flag(True, save=True)
 # Create user configuration files
 settings.create_user_config_files()
 # Copy test files
@@ -75,6 +79,7 @@ for category in PART_CATEGORIES:
 	PART_TEST_SAMPLES.update({category: samples[category]})
 
 # Store results
+exit_code = 0
 kicad_results = {}
 inventree_results = {}
 
@@ -112,6 +117,7 @@ if __name__ == '__main__':
 							result = True
 						else:
 							cprint(f'[ FAIL ]', flush=True)
+							exit_code = -1
 							result = False
 
 						# Log result
@@ -153,6 +159,7 @@ if __name__ == '__main__':
 						cprint(f'[ PASS ]', flush=True)
 					else:
 						cprint(f'[ FAIL ]', flush=True)
+						exit_code = -1
 						part_url = settings.PART_URL_ROOT + str(part_pk) + '/'
 						cprint(f'[DBUG]\tnew_part = {new_part}')
 						cprint(f'[DBUG]\tpart_pk = {part_pk}')
@@ -179,7 +186,6 @@ if __name__ == '__main__':
 					for number, result in kicad_results.items():
 						try:
 							kicad_interface.delete_part(part_number=number,
-														category=None,
 														library_path=test_library_path)
 						except:
 							cprint(f'[KCAD]\tWarning: "{number}" could not be deleted', flush=True)
@@ -196,4 +202,4 @@ if __name__ == '__main__':
 							except:
 								pass
 
-	sys.exit(0)
+	sys.exit(exit_code)
