@@ -15,25 +15,25 @@ from search.digikey_api import (disable_digikey_api_logger,
 ENABLE_INVENTREE = True
 # Enable KiCad tests
 ENABLE_KICAD = True
-# Show results
-SHOW_RESULTS = False
+# Show final results
+SHOW_FINAL_RESULTS = False
 # Enable test samples deletion
 ENABLE_DELETE = True
 AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
 	'Capacitors',
-	'Circuit Protections',
-	'Connectors',
-	'Crystals and Oscillators',
-	'Diodes',
-	'Inductors',
-	'Integrated Circuits',
-	'Mechanicals',
-	'Power Management',
-	'Resistors',
-	'RF',
-	'Transistors',
+	# 'Circuit Protections',
+	# 'Connectors',
+	# 'Crystals and Oscillators',
+	# 'Diodes',
+	# 'Inductors',
+	# 'Integrated Circuits',
+	# 'Mechanicals',
+	# 'Power Management',
+	# 'Resistors',
+	# 'RF',
+	# 'Transistors',
 ]
 ###
 
@@ -45,16 +45,16 @@ settings.set_inventree_enable_flag(True, save=True)
 settings.set_kicad_enable_flag(True, save=True)
 # Create user configuration files
 settings.create_user_config_files()
+# Set path to test symbol library
+test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 # Copy test files
 copyfile(os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'token_storage.json'),
 		 os.path.join(settings.PROJECT_DIR, 'search', 'token_storage.json'))
+# Disable API logging
+disable_digikey_api_logger()
 if not test_digikey_api_connect():
 	cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
 	sys.exit(-1)
-# Set path to test symbol library
-test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
-# Disable API logging
-disable_digikey_api_logger()
 
 # Check result
 def check_result(status: str, new_part: bool) -> bool:
@@ -86,18 +86,27 @@ inventree_results = {}
 if __name__ == '__main__':
 	if settings.ENABLE_TEST:
 		if ENABLE_INVENTREE:
-			cprint('\n[MAIN]\tConnecting to Inventree server')
+			inventree_message = '\n[MAIN]\tConnecting to Inventree'.ljust(65)
+			cprint(inventree_message, end='')
 			inventree_connect = inventree_interface.connect_to_server()
+			if inventree_connect:
+				cprint(f'[ PASS ]', flush=True)
+			else:
+				cprint(f'[ FAIL ]', flush=True)
+				sys.exit(-1)
 
 		for category in PART_TEST_SAMPLES.keys():
-			cprint(f'\n[MAIN]\tTesting {category.upper()}')
+			cprint(f'\n[MAIN]\tCategory: {category.upper()}')
 			for number, status in PART_TEST_SAMPLES[category].items():
+				kicad_result = False
+				inventree_result = False
 				# Fetch supplier data
 				part_info = inventree_interface.digikey_search(number)
+				# Display part to be tested
+				test_message = f'[INFO]\tChecking "{number}" ({status})'.ljust(65)
+				cprint(test_message, end='')
 
 				if ENABLE_KICAD:
-					test_message = f'[INFO]\tKiCad test for "{number}" ({status})'.ljust(65)
-					cprint(test_message, end='')
 					# Translate supplier data to inventree/kicad data
 					part_data = inventree_interface.translate_digikey_to_inventree(part_info, [category, None])
 
@@ -108,27 +117,14 @@ if __name__ == '__main__':
 						if settings.AUTO_GENERATE_LIB:
 							create_library(os.path.dirname(test_library_path), 'TEST', settings.symbol_template_lib)
 
-						kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_data,
+						kicad_result, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_data,
 																					 	   library_path=test_library_path)
 						
-						# Get and print result
-						if kicad_success:
-							cprint(f'[ PASS ]', flush=True)
-							result = True
-						else:
-							cprint(f'[ FAIL ]', flush=True)
-							exit_code = -1
-							result = False
-
 						# Log result
 						if number not in kicad_results.keys():
-							kicad_results.update({number: result})
+							kicad_results.update({number: kicad_result})
 
 				if ENABLE_INVENTREE:
-					# InvenTree
-					test_message = f'[INFO]\tInvenTree test for "{number}" ({status})'.ljust(65)
-					cprint(test_message, end='')
-
 					# Adding part information to InvenTree
 					categories = [None, None]
 					new_part = False
@@ -144,30 +140,37 @@ if __name__ == '__main__':
 						new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
 																							categories=categories)
 
-					success = check_result(status, new_part)
+					inventree_result = check_result(status, new_part)
 					pk_list = [data[0] for data in inventree_results.values()]
 
 					if part_pk != 0 and part_pk not in pk_list:
 						delete = True
 					else:
 						delete = False
-					# Build results
-					inventree_results.update({number: [part_pk, success, delete]})
 
-					# Display
-					if success:
-						cprint(f'[ PASS ]', flush=True)
-					else:
-						cprint(f'[ FAIL ]', flush=True)
-						exit_code = -1
+					# Log results
+					inventree_results.update({number: [part_pk, inventree_result, delete]})
+
+				# Combine KiCad and InvenTree for less verbose
+				result = False
+				if ENABLE_KICAD and ENABLE_INVENTREE:
+					result = kicad_result and inventree_result
+				else:
+					result = kicad_result or inventree_result
+
+				# Print live results
+				if result:
+					cprint(f'[ PASS ]', flush=True)
+				else:
+					cprint(f'[ FAIL ]', flush=True)
+					exit_code = -1
+					if ENABLE_INVENTREE:
 						part_url = settings.PART_URL_ROOT + str(part_pk) + '/'
 						cprint(f'[DBUG]\tnew_part = {new_part}')
 						cprint(f'[DBUG]\tpart_pk = {part_pk}')
 						cprint(f'[DBUG]\tpart_url = {part_url}')
-						# cprint(f'[DBUG]\tpart_info =')
-						# cprint(part_data)
 
-		if SHOW_RESULTS:
+		if SHOW_FINAL_RESULTS:
 			if ENABLE_KICAD:
 				cprint(f'\nKiCad Results\n-----', silent=not(settings.ENABLE_TEST))
 				cprint(kicad_results, silent=not(settings.ENABLE_TEST))
@@ -179,27 +182,46 @@ if __name__ == '__main__':
 			if kicad_results or inventree_results:
 				if not AUTO_DELETE:
 					input('\nPress "Enter" to delete parts...')
+				else:
+					cprint('\n')
 
 				if ENABLE_KICAD:
-					cprint(f'[MAIN]\tDeleting KiCad test parts')
+					error = 0
+
+					message = '[MAIN]\tDeleting KiCad test parts'.ljust(65)
+					cprint(message, end='')
 					# Delete all KiCad test parts
 					for number, result in kicad_results.items():
 						try:
 							kicad_interface.delete_part(part_number=number,
 														library_path=test_library_path)
 						except:
+							error += 1
 							cprint(f'[KCAD]\tWarning: "{number}" could not be deleted', flush=True)
 
+					if error > 0:
+						cprint('[ FAIL ]', flush=True)
+						exit_code = -1
+					else:
+						cprint(f'[ PASS ]', flush=True)
 
 				if ENABLE_INVENTREE:
-					cprint(f'[MAIN]\tDeleting InvenTree test parts')
+					error = 0
+
+					message = '[MAIN]\tDeleting InvenTree test parts'.ljust(65)
+					cprint(message, end='')
 					# Delete all InvenTree test parts
 					for number, result in inventree_results.items():
 						if result[2]:
-							cprint(f'[{result[0]}]\tAPI Result:\t', end='', flush=True)
 							try:
 								inventree_api.delete_part(part_id=result[0])
 							except:
-								pass
+								error += 1
+
+					if error > 0:
+						cprint('[ FAIL ]', flush=True)
+						exit_code = -1
+					else:
+						cprint(f'[ PASS ]', flush=True)
 
 	sys.exit(exit_code)

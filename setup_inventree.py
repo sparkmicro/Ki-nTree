@@ -1,18 +1,21 @@
+import sys
+
 import config.settings as settings
 from common.tools import cprint
 from config import config_interface
 from database import inventree_api, inventree_interface
 
 if __name__ == '__main__':
+	cprint('\n[MAIN]\tStarting InvenTree setup', silent=settings.SILENT, flush=True)
 	# Load category configuration file
 	categories = config_interface.load_file(settings.CONFIG_CATEGORIES)['CATEGORIES']
 	# cprint(categories)
 
-	cprint('[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
+	cprint('[MAIN]\tConnecting to Inventree', silent=settings.SILENT, flush=True)
 	inventree_connect = inventree_interface.connect_to_server()
 	
 	if not inventree_connect:
-		exit(0)
+		sys.exit(-1)
 
 	for category in categories.keys():
 		cprint(f'\n[MAIN]\tCreating {category.upper()}')

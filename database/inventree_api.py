@@ -66,24 +66,7 @@ def set_part_number(part_id: int, ipn: str) -> bool:
 	else:
 		return False
 
-def is_new_part(category_id: int, part_description: str) -> int:
-	''' Check if part exists based on description (weak) '''
-	global inventree_api
-
-	part_category = PartCategory(inventree_api, category_id)
-	
-	# Fetch all parts
-	part_list = part_category.getParts()
-	for item in part_list:
-		if part_description in item.description:
-			cprint(f'[TREE]\t{item.name} ?= {part_description} => True', silent=settings.HIDE_DEBUG)
-			return item.pk
-		else:
-			cprint(f'[TREE]\t{item.name} ?= {part_description} => False', silent=settings.HIDE_DEBUG)
-
-	return 0
-
-def is_new_part_specs(category_id: int, part_info: dict) -> int:
+def is_new_part(category_id: int, part_info: dict) -> int:
 	''' Check if part exists based on parameters (strong) '''
 	global inventree_api
 

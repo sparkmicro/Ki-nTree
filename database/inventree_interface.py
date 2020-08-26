@@ -277,7 +277,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 																	parent_category_id=category_pk )
 		if subcategory_pk > 0:
 			# Check if part already exists
-			part_pk = inventree_api.is_new_part_specs(subcategory_pk, inventree_part)
+			part_pk = inventree_api.is_new_part(subcategory_pk, inventree_part)
 
 			### Part exists
 			if part_pk > 0:
