@@ -30,6 +30,7 @@ CATEGORIES:
     - TVS
     # - ESD
     - Fuses
+    - PTC
   Connectors:
     - Board-to-Board
     - Interface
@@ -79,7 +80,6 @@ CATEGORIES:
     # - Current Sense
     # - Array
     # - Potentiometers
-    - PTC
     # - NTC
   RF:
     - Chipset

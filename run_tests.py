@@ -183,7 +183,7 @@ if __name__ == '__main__':
 				if not AUTO_DELETE:
 					input('\nPress "Enter" to delete parts...')
 				else:
-					cprint('\n')
+					cprint('')
 
 				if ENABLE_KICAD:
 					error = 0
