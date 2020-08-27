@@ -66,24 +66,7 @@ def set_part_number(part_id: int, ipn: str) -> bool:
 	else:
 		return False
 
-def is_new_part(category_id: int, part_description: str) -> int:
-	''' Check if part exists based on description (weak) '''
-	global inventree_api
-
-	part_category = PartCategory(inventree_api, category_id)
-	
-	# Fetch all parts
-	part_list = part_category.getParts()
-	for item in part_list:
-		if part_description in item.description:
-			cprint(f'[TREE]\t{item.name} ?= {part_description} => True', silent=settings.HIDE_DEBUG)
-			return item.pk
-		else:
-			cprint(f'[TREE]\t{item.name} ?= {part_description} => False', silent=settings.HIDE_DEBUG)
-
-	return 0
-
-def is_new_part_specs(category_id: int, part_info: dict) -> int:
+def is_new_part(category_id: int, part_info: dict) -> int:
 	''' Check if part exists based on parameters (strong) '''
 	global inventree_api
 
@@ -316,9 +299,13 @@ def create_supplier_part(part_id: int, supplier_name: str, supplier_sku: str, de
 	global inventree_api
 
 	supplier_id = get_company_id(supplier_name)
-	manufacturer_id = get_company_id(manufacturer_name)
+	if not supplier_id:
+		cprint(f'[TREE]\tError: Supplier "{supplier_name}" not found (failed to create supplier part)',
+			   silent=settings.SILENT)
+		return False
 
-	if manufacturer_id == 0:
+	manufacturer_id = get_company_id(manufacturer_name)
+	if not manufacturer_id:
 		cprint(f'[TREE]\tCreating new manufacturer "{manufacturer_name}"', silent=settings.SILENT)
 		'''
 		name: Brief name of the company
@@ -336,8 +323,7 @@ def create_supplier_part(part_id: int, supplier_name: str, supplier_sku: str, de
 			})
 		manufacturer_id = manufacturer.pk
 
-	supplier_part = None
-	if supplier_id > 0 and manufacturer_id > 0:
+	if manufacturer_id:
 		supplier_part = SupplierPart.create(inventree_api, {
 			'part': part_id,
 			'supplier': supplier_id,
@@ -348,14 +334,10 @@ def create_supplier_part(part_id: int, supplier_name: str, supplier_sku: str, de
 			'description': description,
 			})
 
-	if supplier_part:
-		return True
-	else:
-		if supplier_id == 0:
-			cprint(f'[TREE]\tError: Supplier "{supplier_name}" does not exist', silent=settings.SILENT)
-		if manufacturer_id == 0:
-			cprint(f'[TREE]\tError: Manufacturer "{manufacturer_name}" does not exist', silent=settings.SILENT)
-		return False
+		if supplier_part:
+			return True
+
+	return False
 
 def create_parameter_template(name: str, units: str) -> int:
 	''' Create InvenTree parameter template '''

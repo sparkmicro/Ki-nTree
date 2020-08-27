@@ -32,17 +32,6 @@ def setup_environment() -> bool:
 
 	return check_environment()
 
-def test_digikey_api_connect() -> bool:
-	setup_environment()
-	try:
-		test_part = digikey.product_details('RC0603FR-0710KL')
-		if test_part:
-			return True
-	except:
-		return False
-
-	return False
-
 def find_categories(part_details: str):
 	''' Find Digi-Key categories '''
 	try:
@@ -92,6 +81,15 @@ def fetch_digikey_part_info(part_number: str) -> dict:
 
 	return part_info
 
+def test_digikey_api_connect() -> bool:
+	setup_environment()
+
+	test_part = fetch_digikey_part_info('RMCF0402JT10K0')
+	if test_part:
+		return True
+
+	return False
+	
 def load_from_file(search_file) -> dict:
 	''' Fetch Digi-Key part data from file '''
 	try:

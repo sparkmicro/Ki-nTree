@@ -80,7 +80,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 	if not categories[1] and function_filter:
 		cprint(f'[INFO]\tSubcategory is filtered using "{filter_parameter}" parameter', silent=settings.SILENT, end='')
 		# Load parameter map
-		parameter_map = config_interface.load_category_parameters_inversed(categories[0], settings.CONFIG_DIGIKEY_PARAMETERS)
+		parameter_map = config_interface.load_category_parameters(categories[0], settings.CONFIG_DIGIKEY_PARAMETERS)
 		# Build compare list
 		compare = []
 		for supplier_parameter, inventree_parameter in parameter_map.items():
@@ -116,7 +116,6 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 			category_match = None
 			subcategory_match = None
 
-			# try:
 			for inventree_category in category_map.keys():
 				fuzzy_match = fuzz.partial_ratio(supplier_category, inventree_category)
 				display_result = f'"{supplier_category}" ?= "{inventree_category}"'.ljust(50)
@@ -137,9 +136,6 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 				if fuzzy_match >= settings.CATEGORY_MATCH_RATIO_LIMIT:
 					category_match = inventree_category
 					break
-
-			# except:
-			# 	pass
 
 			return category_match, subcategory_match
 
@@ -189,7 +185,7 @@ def translate_digikey_to_inventree(part_info: dict, categories: list) -> dict:
 	inventree_part['datasheet'] = part_info['primary_datasheet'].replace(' ','%20')
 
 	# Load parameters map
-	parameter_map = config_interface.load_category_parameters_inversed(	category=inventree_part["category"][0],
+	parameter_map = config_interface.load_category_parameters(	category=inventree_part["category"][0],
 																		supplier_config_path=settings.CONFIG_DIGIKEY_PARAMETERS, )
 	# Add Parameters	
 	if parameter_map:
@@ -277,7 +273,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 																	parent_category_id=category_pk )
 		if subcategory_pk > 0:
 			# Check if part already exists
-			part_pk = inventree_api.is_new_part_specs(subcategory_pk, inventree_part)
+			part_pk = inventree_api.is_new_part(subcategory_pk, inventree_part)
 
 			### Part exists
 			if part_pk > 0:
@@ -323,7 +319,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 
 		# Create mandatory parameters (symbol & footprint)
 		if symbol:
-			kicad_symbol = symbol + ':' + ipn # symbol.split('.')[0] + ':' + ipn
+			kicad_symbol = symbol + ':' + ipn
 		else:
 			try:
 				kicad_symbol = settings.symbol_libraries_paths[category_name].split(os.sep)[-1].split('.')[0] + ':' + ipn

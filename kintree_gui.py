@@ -743,9 +743,12 @@ def main():
 							if settings.AUTO_GENERATE_LIB:
 								create_library(library_directory, symbol, settings.symbol_template_lib)
 
-							kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(	part_data=part_data,
-																								library_path=library_path,
-																								template_path=template_path )
+							try:
+								kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_data,
+																								   library_path=library_path,
+																								   template_path=template_path)
+							except:
+								cprint(f'[INFO]\tError: Failed to add part to KiCad (incomplete InvenTree data)', silent=settings.SILENT)
 
 				# Result pop-up window
 				if settings.ENABLE_INVENTREE:
