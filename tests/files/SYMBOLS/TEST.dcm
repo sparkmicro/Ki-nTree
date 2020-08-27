@@ -1,0 +1,33 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 
+D CAP CER 33PF 50V C0G/NP0 0402
+K 33pF 50V 0402
+F https://content.kemet.com/datasheets/KEM_C1003_C0G_SMD.pdf
+$ENDCMP
+#
+$CMP C0402C100J3GACTU
+D CAP CER 10PF 25V C0G/NP0 0402
+K 10pF 25V 0402
+F http://ksim.kemet.com/Plots/SpicePlots.aspx
+$ENDCMP
+#
+$CMP C0402C103K8RACTU
+D CAP CER 10nF 10V X7R 0402
+K 10nF 10V 0402
+F https://api.kemet.com/component-edge/download/datasheet/C0402C103K8RACTU.pdf
+$ENDCMP
+#
+$CMP GRM155R70J105KA12J
+D CAP CER 1UF 6.3V X7R 0402
+K 1uF 6.3V 0402
+F https://ds.murata.co.jp/simsurfing/mlcc.html?partnumbers=%5B%22GRM155R70J105KA12%22%5D&oripartnumbers=%5B%22GRM155R70J105KA12J%22%5D&rgear=jomoqke&rgearinfo=ca
+$ENDCMP
+#
+$CMP HTSH-110-01-F-DV-007-K
+D CONN HEADER FMALE 20PS .1" R/A AU
+K HEADER FEMALE 20POS RA
+F https://s3.amazonaws.com/catalogspreads-pdf/PAGE119%20.100%20SFH11%20SERIES%20FEMALE%20HDR%20ST%20RA.pdf
+$ENDCMP
+#
+#End Doc Library

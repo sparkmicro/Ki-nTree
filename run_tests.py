@@ -45,8 +45,10 @@ settings.set_inventree_enable_flag(True, save=True)
 settings.set_kicad_enable_flag(True, save=True)
 # Create user configuration files
 settings.create_user_config_files()
-# Set path to test symbol library
+# Set path to test libraries
 test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
+symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
+footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
 # Copy test files
 copyfile(os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'token_storage.json'),
 		 os.path.join(settings.PROJECT_DIR, 'search', 'token_storage.json'))
@@ -242,6 +244,12 @@ if __name__ == '__main__':
 
 			# Load KiCad library paths
 			config_interface.load_library_path(settings.CONFIG_KICAD, silent=True)
+			symbol_libraries_paths = config_interface.load_libraries_paths(settings.CONFIG_KICAD_CATEGORY_MAP,
+																		   symbol_libraries_test_path)
+			footprint_libraries_paths = config_interface.load_footprint_paths(settings.CONFIG_KICAD_CATEGORY_MAP,
+																			  footprint_libraries_test_path)
+			if not (symbol_libraries_paths and footprint_libraries_paths):
+				method_results = False
 
 			# Add symbol library to user file
 			add_symbol_lib = config_interface.add_library_path(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
