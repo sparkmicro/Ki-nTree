@@ -2,7 +2,6 @@ import os
 
 import config.settings as settings
 from common.tools import cprint
-from config import config_interface
 from schlib import SchLib
 
 
@@ -21,30 +20,18 @@ class ComponentLibManager(object):
 
 		return False
 
-	def add_component_to_library_from_inventree(self, component_data, library_path=None, template_path=None):
+	def add_component_to_library_from_inventree(self, component_data, library_path, template_path=None):
 		''' Create component (symbol) in KiCad library '''
-		KICAD_SYMBOLS_PATH = config_interface.load_library_path(settings.CONFIG_KICAD, silent=True)
 		part_in_lib = False
 		new_part = False
 		category = component_data['category'][0]
 		subcategory = component_data['category'][1]
 
 		# Load library and template paths
-		if not library_path:
-			# Automatically fetch library path
-			try:
-				symbol_library_name = component_data['parameters']['Symbol'].split(':')[0]
-				# Reload paths (only in production)
-				symbol_libraries_paths = config_interface.load_libraries_paths(settings.CONFIG_KICAD_CATEGORY_MAP, KICAD_SYMBOLS_PATH)
-				library_path = symbol_libraries_paths[category][symbol_library_name]
-			except:
-				cprint(f'[KCAD]\tError: Failed to load library file for "{category}" category', silent=settings.SILENT)
-				return part_in_lib, new_part
-
 		cprint(f'[KCAD]\tlibrary_path: {library_path}', silent=settings.SILENT)
 
 		if not template_path:
-			# Automatically fetch template path
+			# Fetch template path
 			try:
 				template_path = settings.symbol_templates_paths[category][subcategory]
 			except:

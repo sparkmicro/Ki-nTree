@@ -116,7 +116,6 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 			category_match = None
 			subcategory_match = None
 
-			# try:
 			for inventree_category in category_map.keys():
 				fuzzy_match = fuzz.partial_ratio(supplier_category, inventree_category)
 				display_result = f'"{supplier_category}" ?= "{inventree_category}"'.ljust(50)
@@ -137,9 +136,6 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 				if fuzzy_match >= settings.CATEGORY_MATCH_RATIO_LIMIT:
 					category_match = inventree_category
 					break
-
-			# except:
-			# 	pass
 
 			return category_match, subcategory_match
 
@@ -323,7 +319,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 
 		# Create mandatory parameters (symbol & footprint)
 		if symbol:
-			kicad_symbol = symbol + ':' + ipn # symbol.split('.')[0] + ':' + ipn
+			kicad_symbol = symbol + ':' + ipn
 		else:
 			try:
 				kicad_symbol = settings.symbol_libraries_paths[category_name].split(os.sep)[-1].split('.')[0] + ':' + ipn

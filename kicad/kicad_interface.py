@@ -2,7 +2,7 @@ from kicad import kicad_schlib
 
 klib = kicad_schlib.ComponentLibManager()
 
-def inventree_to_kicad(part_data: dict, library_path=None, template_path=None) -> bool:
+def inventree_to_kicad(part_data: dict, library_path: str, template_path=None) -> bool:
 	''' Create KiCad symbol from InvenTree part data '''
 	return klib.add_component_to_library_from_inventree(component_data=part_data,
 														library_path=library_path,

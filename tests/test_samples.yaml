@@ -106,11 +106,11 @@ Resistors:
   # 'Fake' Equivalent (Tolerance)
   RC0603FR-0710KL: fake_alternate
   ## 0402
-  RMCF0402JT10K0: original
+  RC0402FR-07100RL: original
   # Equivalent
-  CRCW040210K0JNEDC: alternate_mpn
+  CRCW0402100RFKEDC: alternate_mpn
   # 'Fake' Equivalent (Power)
-  ERJ-2GEJ103X: fake_alternate
+  ERJ-2GEJ101X: fake_alternate
   ### Through Hole
   CF14JT10K0: original
   # Equivalent

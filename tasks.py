@@ -30,15 +30,15 @@ def clean(c):
 	cprint('[MAIN]\tCleaning project directory')
 	c.run('find . -name __pycache__ | xargs rm -r')
 	try:
+		c.run('rm .coverage', hide='err')
+	except UnexpectedExit:
+		pass
+	try:
 		c.run('rm .coverage.*', hide='err')
 	except UnexpectedExit:
 		pass
 	try:
 		c.run('rm -r dist build htmlcov', hide='err')
-	except UnexpectedExit:
-		pass
-	try:
-		c.run('rm -r search/results', hide='err')
 	except UnexpectedExit:
 		pass
 

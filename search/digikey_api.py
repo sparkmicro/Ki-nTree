@@ -83,12 +83,10 @@ def fetch_digikey_part_info(part_number: str) -> dict:
 
 def test_digikey_api_connect() -> bool:
 	setup_environment()
-	try:
-		test_part = fetch_digikey_part_info('RC0603FR-0710KL')
-		if test_part:
-			return True
-	except:
-		return False
+
+	test_part = fetch_digikey_part_info('RMCF0402JT10K0')
+	if test_part:
+		return True
 
 	return False
 	
