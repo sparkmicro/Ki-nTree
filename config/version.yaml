@@ -1,3 +1,4 @@
 MAJOR_REVISION: 0
 MINOR_REVISION: 2
-RELEASE_STATE: rc
+# Digit means stable version
+RELEASE_STATE: 0

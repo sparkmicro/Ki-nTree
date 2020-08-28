@@ -2,12 +2,12 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Python Versions](images/python_versions.svg)
 [![Build Status](https://travis-ci.org/sparkmicro/Ki-nTree.svg?branch=master)](https://travis-ci.org/sparkmicro/Ki-nTree)
-[![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=master)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=master)
-### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://github.com/inventree/inventree) -> [see it in action!](https://youtu.be/NSMfCCD0uVw)
+[![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=master&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=master)
+### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://inventree.github.io/) :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) | [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
 <img src="images/doc/kintree_example.png"  width="auto" height="auto">
 
 ## Introduction
-Ki-nTree (pronounce "Key Entry" or "Key 'n' Tree") aims to:
+Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
 * automate part creation of KiCad library parts
 * automate part creation of InvenTree parts
 * synchronize parts data between KiCad and InvenTree
@@ -95,16 +95,19 @@ Enjoy!
 
 ## Roadmap
 #### Version 0.2
-- [ ] Get more users to try it and release stable version with bug fixes
+- [ ] Fix any bugs in stable version (feature frozen)
+- [ ] Document configuration and backend
 
 #### Version 0.3
-Main goals: Improve GUI/user input and implement part synchronization between KiCad and InvenTree
-
 ##### Global
 - [ ] Inform user of part creation progress in UI and terminal
 - [ ] Combine all KiCad templates in a single library file (lib+dcm)
+- [ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad
+- [ ] Add "Add Custom" menu option to add parts to KiCad and InvenTree bypassing Digi-Key API
 
 ##### GUI
 - [ ] Improve cosmetics (!)
 - [ ] Show form prefilled with part API search results and allow user edits
+	- [ ] Switch to YAML file format for part search API results
+	- [ ] Add timestamp to API data for caching management
 - [ ] Add icon to GUI and executable (not successful in 0.2, try with PySimpleGUIQt?)
