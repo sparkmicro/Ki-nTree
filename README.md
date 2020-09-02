@@ -101,6 +101,7 @@ Enjoy!
 #### Version 0.3
 ##### Global
 - [ ] Inform user of part creation progress in UI and terminal
+- [ ] Add ability to create missing category-subcategory to InvenTree during part creation
 - [ ] Combine all KiCad templates in a single library file (lib+dcm)
 - [ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad
 - [ ] Add "Add Custom" menu option to add parts to KiCad and InvenTree bypassing Digi-Key API
