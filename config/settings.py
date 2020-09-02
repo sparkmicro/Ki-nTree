@@ -173,12 +173,15 @@ class Environment(Enum):
 	PRODUCTION = 2
 
 # Pick environment
-environment = os.environ.get('INVENTREE_ENV', Environment.DEVELOPMENT)
+try:
+	environment = int(os.environ.get('INVENTREE_ENV', Environment.DEVELOPMENT.value))
+except ValueError:
+	environment = 1
 
 # Load correct user file
-if environment == Environment.PRODUCTION:
+if int(environment) == Environment.PRODUCTION.value:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_prod.yaml')
-elif environment == Environment.DEVELOPMENT:
+elif environment == Environment.DEVELOPMENT.value:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_dev.yaml')
 else:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_test.yaml')

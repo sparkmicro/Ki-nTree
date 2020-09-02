@@ -72,7 +72,7 @@ def build(c):
 
 @task
 def setup_inventree(c):
-	c.run('python setup_inventree.py', hide=True)
+	c.run('python setup_inventree.py')
 
 @task
 def coverage_report(c, open_browser=True):
