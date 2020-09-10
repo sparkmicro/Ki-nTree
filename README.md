@@ -1,9 +1,11 @@
 # Ki-nTree
+### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://inventree.github.io/) 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Python Versions](images/python_versions.svg)
 [![Build Status](https://travis-ci.org/sparkmicro/Ki-nTree.svg?branch=master)](https://travis-ci.org/sparkmicro/Ki-nTree)
 [![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=master&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=master)
-### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://inventree.github.io/) :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) | [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
+
+#### Watch Videos :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) :fast_forward: [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
 <img src="images/doc/kintree_example.png"  width="auto" height="auto">
 
 ## Introduction
