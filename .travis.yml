@@ -14,14 +14,14 @@ apt-packages:
     - sqlite3
 
 before_install:
-    - pip3 install invoke
+    - pip install invoke
     # InvenTree Setup
     - git clone https://github.com/inventree/InvenTree/
     - cp tests/files/inventree_default_db.sqlite3 InvenTree/
     - cd InvenTree/ && invoke install && invoke migrate && cd -
     # Ki-nTree setup
     # Remove python-coveralls as not maintained
-    - pip uninstall python-coveralls -y
+    - pip uninstall python-coveralls -y && pip uninstall inventree -y
     - invoke install
     - cp tests/files/results.tgz search/
     - cd search/ && tar xvf results.tgz && cd -
