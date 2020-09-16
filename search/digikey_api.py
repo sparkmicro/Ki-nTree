@@ -82,6 +82,7 @@ def fetch_digikey_part_info(part_number: str) -> dict:
 	return part_info
 
 def test_digikey_api_connect() -> bool:
+	''' Test method for Digi-Key API token '''
 	setup_environment()
 
 	test_part = fetch_digikey_part_info('RMCF0402JT10K0')

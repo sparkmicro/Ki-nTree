@@ -1,9 +1,12 @@
 # Ki-nTree
+### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://inventree.github.io/) 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Python Versions](images/python_versions.svg)
-[![Build Status](https://travis-ci.org/sparkmicro/Ki-nTree.svg?branch=master)](https://travis-ci.org/sparkmicro/Ki-nTree)
+[![Build Status](https://travis-ci.com/sparkmicro/Ki-nTree.svg?branch=master)](https://travis-ci.com/sparkmicro/Ki-nTree)
 [![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=master&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=master)
-### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://inventree.github.io/) :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) | [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
+
+## Demo Videos :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) :fast_forward: [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
+
 <img src="images/doc/kintree_example.png"  width="auto" height="auto">
 
 ## Introduction
@@ -94,16 +97,14 @@ Enjoy!
 *For any problem/bug you find, please [report an issue](https://github.com/sparkmicro/Ki-nTree/issues).*
 
 ## Roadmap
-#### Version 0.2
-- [ ] Fix any bugs in stable version (feature frozen)
-- [ ] Document configuration and backend
-
 #### Version 0.3
 ##### Global
 - [ ] Inform user of part creation progress in UI and terminal
+- [ ] Add ability to create missing category-subcategory to InvenTree during part creation
 - [ ] Combine all KiCad templates in a single library file (lib+dcm)
 - [ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad
 - [ ] Add "Add Custom" menu option to add parts to KiCad and InvenTree bypassing Digi-Key API
+- [ ] Document configuration and backend
 
 ##### GUI
 - [ ] Improve cosmetics (!)

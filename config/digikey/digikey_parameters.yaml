@@ -172,13 +172,20 @@ Mechanicals:
   Value:
   - Manufacturer Part Number
   Mounting Type:
-  - Mounting Type 
+  - Mounting Type
+  - Features
   Rated Current:
   - Contact Rating @ Voltage
   Function Type:
   - Circuit
+  - Type
   Package Size:
   - Outline
+  - Diameter - Outside
+  Package Type:
+  - Screw, Thread Size
+  Package Height:
+  - Between Board Height
   Temperature Range:
   - Operating Temperature
 Power Management:

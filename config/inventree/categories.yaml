@@ -65,6 +65,7 @@ CATEGORIES:
     # - Driver
   Mechanicals:
     - Switch
+    - Standoff
   Miscellaneous: null
   Modules: null
   Printed-Circuit Boards: null

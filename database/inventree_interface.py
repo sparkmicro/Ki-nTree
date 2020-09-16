@@ -282,7 +282,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 				# Update InvenTree part number
 				inventree_part['IPN'] = ipn
 				# Update InvenTree URL
-				inventree_part['inventree_url'] = settings.PART_URL_ROOT + str(part_pk) + '/'
+				inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
 			### Part is new
 			else:
 				new_part = True
@@ -305,7 +305,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 				# Update InvenTree part revision
 				inventree_part['revision'] = 'A'
 				# Update InvenTree URL
-				inventree_part['inventree_url'] = settings.PART_URL_ROOT + str(part_pk) + '/'
+				inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
 		else:
 			cprint(f'\n[TREE]\tError: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
 	

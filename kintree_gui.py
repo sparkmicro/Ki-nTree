@@ -787,11 +787,11 @@ def main():
 			if symbol and result_message:
 				sg.popup_ok(result_message, title='Results', location=(500, 500))
 
-			if part_pk:
+			if part_data:
 				# Auto-Open Browser Window
-				url = settings.PART_URL_ROOT + str(part_pk) + '/'
-				cprint(f'\n[MAIN]\tOpening URL {url} in browser', silent=settings.SILENT)
-				webbrowser.open(url, new=2)
+				cprint(f'\n[MAIN]\tOpening URL {part_data["inventree_url"]} in browser',
+					   silent=settings.SILENT)
+				webbrowser.open(part_data['inventree_url'], new=2)
 
 	window.close()
 

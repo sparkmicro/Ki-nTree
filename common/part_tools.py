@@ -46,7 +46,7 @@ def clean_parameter_value(category: str, name: str, value: str) -> str:
 
 	## Parameter specific filters
 	# Package
-	if 'package' in name:
+	if 'package' in name and not 'size' in name:
 		space_split = value.split()
 
 		# Return value before the space
