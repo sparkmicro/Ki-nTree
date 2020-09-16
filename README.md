@@ -97,10 +97,6 @@ Enjoy!
 *For any problem/bug you find, please [report an issue](https://github.com/sparkmicro/Ki-nTree/issues).*
 
 ## Roadmap
-#### Version 0.2
-- [ ] Fix any bugs in stable version (feature frozen)
-- [ ] Document configuration and backend
-
 #### Version 0.3
 ##### Global
 - [ ] Inform user of part creation progress in UI and terminal
@@ -108,6 +104,7 @@ Enjoy!
 - [ ] Combine all KiCad templates in a single library file (lib+dcm)
 - [ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad
 - [ ] Add "Add Custom" menu option to add parts to KiCad and InvenTree bypassing Digi-Key API
+- [ ] Document configuration and backend
 
 ##### GUI
 - [ ] Improve cosmetics (!)

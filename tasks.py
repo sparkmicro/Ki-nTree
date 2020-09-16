@@ -2,6 +2,7 @@ import webbrowser
 
 from common.tools import cprint
 from invoke import UnexpectedExit, task
+from search.digikey_api import test_digikey_api_connect
 
 
 @task
@@ -81,6 +82,10 @@ def coverage_report(c, open_browser=True):
 	c.run('coverage html')
 	if open_browser:
 		webbrowser.open('htmlcov/index.html', new=2)
+
+@task
+def refresh_api_token(c):
+	test_digikey_api_connect()
 
 @task
 def save_api_token(c):
