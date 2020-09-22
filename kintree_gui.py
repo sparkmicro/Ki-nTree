@@ -181,6 +181,7 @@ def add_custom_part() -> dict:
 	''' Add custome part (bypass Digi-Key search) '''
 	user_values = {}
 	add_custom_layout = []
+	default = 'TEST'
 
 	skip_items = ['category', 'IPN', 'image', 'inventree_url', 'parameters']
 	input_keys = []
@@ -191,20 +192,20 @@ def add_custom_part() -> dict:
 			sub_key = key + '_name'
 			add_custom_layout.append([
 										sg.Text(sub_key.replace('_', ' ').title()),
-										sg.InputText('', size=(40,1), key=sub_key),
+										sg.InputText(default, size=(40,1), key=sub_key),
 									])
 			input_keys.append(sub_key)
 
 			sub_key = key + '_part_number'
 			add_custom_layout.append([
 										sg.Text(sub_key.replace('_', ' ').title()),
-										sg.InputText('', size=(40,1), key=sub_key),
+										sg.InputText(default, size=(40,1), key=sub_key),
 									])
 			input_keys.append(sub_key)
 		else:
 			add_custom_layout.append([
 										sg.Text(key.capitalize()),
-										sg.InputText('', size=(40,1), key=key),
+										sg.InputText(default, size=(40,1), key=key),
 									])
 			input_keys.append(key)
 
@@ -637,8 +638,7 @@ def main():
 			settings.set_kicad_enable_flag(values['enable_kicad'], save=True)
 		elif event == 'Custom Part':
 			custom_part_info = add_custom_part()
-			if custom_part_info:
-				CREATE_CUSTOM = True
+			CREATE_CUSTOM = True
 		else:
 			# Adding part information to InvenTree
 			categories = [None, None]
@@ -651,8 +651,8 @@ def main():
 			part_data = {}
 
 			if CREATE_CUSTOM:
-				part_info = custom_part_info
-				cprint(part_info, silent=settings.SILENT)
+				if custom_part_info['name'] and custom_part_info['description']:
+					part_info = custom_part_info
 			else:
 				if values['part_number']:
 					# New part separation
@@ -668,15 +668,18 @@ def main():
 					# Digi-Key Search
 					part_info = inventree_interface.digikey_search(values['part_number'])
 
-			# Reset create custom flag
-			CREATE_CUSTOM = False
-
 			if not part_info:
-				sg.popup_ok(f'Failed to fetch part information\n'
-							'Make sure:\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
-							'\n- Part number is valid',
-							title='Digi-Key API Search',
-							location=(500, 500))
+				# Missing Part Information
+				if CREATE_CUSTOM:
+					sg.popup_ok(f'Missing "Name" or "Description"',
+								title='Incomplete Custom Part Data',
+								location=(500, 500))
+				else:
+					sg.popup_ok(f'Failed to fetch part information\n'
+								'Make sure:\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
+								'\n- Part number is valid',
+								title='Digi-Key API Search',
+								location=(500, 500))
 			else:
 				if settings.ENABLE_INVENTREE:
 					cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
@@ -720,15 +723,16 @@ def main():
 					cprint(f'[INFO]\tUser Subcategory: "{categories[1]}"', silent=settings.SILENT)
 
 			if categories[0] and categories[1]:
-				# Add to supplier categories configuration file
-				category_dict = {
-					categories[0]:
-						{ categories[1]: part_info['subcategory'] }
-				}
-				if not config_interface.add_supplier_category(category_dict, settings.CONFIG_DIGIKEY_CATEGORIES):
-					config_file = settings.CONFIG_DIGIKEY_CATEGORIES.split(os.sep)[-1]
-					cprint(f'[INFO]\tWarning: Failed to add new supplier category to {config_file} file', silent=settings.SILENT)
-					cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
+				if not CREATE_CUSTOM:
+					# Add to supplier categories configuration file
+					category_dict = {
+						categories[0]:
+							{ categories[1]: part_info['subcategory'] }
+					}
+					if not config_interface.add_supplier_category(category_dict, settings.CONFIG_DIGIKEY_CATEGORIES):
+						config_file = settings.CONFIG_DIGIKEY_CATEGORIES.split(os.sep)[-1]
+						cprint(f'[INFO]\tWarning: Failed to add new supplier category to {config_file} file', silent=settings.SILENT)
+						cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
 			
 				if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
 					# Request user to select symbol and footprint libraries
@@ -736,6 +740,11 @@ def main():
 					# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
 
 					if symbol and footprint:
+						# Translate custom part data
+						if CREATE_CUSTOM:
+							part_info = inventree_interface.translate_custom_form_to_digikey(part_info=part_info,
+																							 categories=categories)
+							
 						# Create part in InvenTree
 						if settings.ENABLE_INVENTREE:
 							new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
@@ -747,9 +756,12 @@ def main():
 						else:
 							if not categories[0]:
 								pseudo_categories = [symbol, None]
-								part_data = inventree_interface.translate_digikey_to_inventree(part_info, pseudo_categories)
+								part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
+																							   categories=pseudo_categories)
+
 							else:
-								part_data = inventree_interface.translate_digikey_to_inventree(part_info, categories)
+								part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
+																							   categories=categories)
 								part_data['parameters']['Symbol'] = symbol
 								part_data['parameters']['Footprint'] = footprint
 							if not part_data:
@@ -859,6 +871,9 @@ def main():
 				cprint(f'\n[MAIN]\tOpening URL {part_data["inventree_url"]} in browser',
 					   silent=settings.SILENT)
 				webbrowser.open(part_data['inventree_url'], new=2)
+
+			# Reset create custom flag
+			CREATE_CUSTOM = False
 
 	window.close()
 

@@ -1,3 +1,5 @@
+import validators
+
 import config.settings as settings
 import requests
 from common import part_tools
@@ -324,6 +326,10 @@ def create_supplier_part(part_id: int, supplier_name: str, supplier_sku: str, de
 		manufacturer_id = manufacturer.pk
 
 	if manufacturer_id:
+		# Validate datasheet link
+		if not validators.url(datasheet):
+			datasheet = ''
+
 		supplier_part = SupplierPart.create(inventree_api, {
 			'part': part_id,
 			'supplier': supplier_id,

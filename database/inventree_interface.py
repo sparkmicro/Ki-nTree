@@ -15,9 +15,9 @@ def connect_to_server() -> bool:
 	connect = False
 	settings.load_inventree_settings()
 
-	connect = inventree_api.connect(	server=settings.SERVER_ADDRESS,
-										username=settings.USERNAME,
-										password=settings.PASSWORD )
+	connect = inventree_api.connect(server=settings.SERVER_ADDRESS,
+									username=settings.USERNAME,
+									password=settings.PASSWORD)
 
 	if not connect:
 		if not settings.SERVER_ADDRESS:
@@ -31,7 +31,9 @@ def connect_to_server() -> bool:
 			return connect
 		cprint(f'[TREE]\tError connecting to InvenTree server: invalid address, username or password')
 	else:
-		cprint(f'[TREE]\tSuccessfully connected to InvenTree server', silent=settings.SILENT)
+		env = [env_type.name for env_type in settings.Environment
+			   if env_type.value == settings.environment][0]
+		cprint(f'[TREE]\tSuccessfully connected to InvenTree server (ENV={env})', silent=settings.SILENT)
 
 	return connect
 
@@ -216,12 +218,22 @@ def translate_digikey_to_inventree(part_info: dict, categories: list) -> dict:
 
 	return inventree_part
 
-def translate_custom_form_to_inventree(part_info: dict, categories: list) -> dict:
-	''' Using custom user part data and categories, fill-in InvenTree part dictionary '''
-	# Copy template
-	inventree_part = copy.deepcopy(settings.inventree_part_template)
+def translate_custom_form_to_digikey(part_info: dict, categories: list) -> dict:
+	''' Translate custom user part data and categories to Digi-Key API result format '''
+	updated_part_info = {}
 
-	cprint('Custom Data Translate')
+	updated_part_info['category'] = categories[0]
+	updated_part_info['subcategory'] = categories[1]
+
+	updated_part_info['product_name'] = part_info['name']
+	updated_part_info['product_description'] = part_info['description']
+	updated_part_info['digi_key_part_number'] = part_info['supplier_part_number']
+	updated_part_info['manufacturer'] = part_info['manufacturer_name']
+	updated_part_info['manufacturer_part_number'] = part_info['manufacturer_part_number']
+	updated_part_info['primary_datasheet'] = part_info['datasheet']
+	updated_part_info['primary_photo'] = ''
+
+	return updated_part_info
 
 def digikey_search(part_number: str) -> dict:
 	''' Wrapper for Digi-Key search, allow use of cached data (limited daily API calls) '''
@@ -375,8 +387,8 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 
 		# Create company part
 		cprint('\n[MAIN]\tCreating supplier part', silent=settings.SILENT)
-		is_new_supplier_part = inventree_api.is_new_supplier_part(	supplier_name=supplier, 
-																	supplier_sku=inventree_part['supplier'][supplier][0] )
+		is_new_supplier_part = inventree_api.is_new_supplier_part(supplier_name=supplier, 
+																  supplier_sku=inventree_part['supplier'][supplier][0] )
 
 		if not is_new_supplier_part:
 			cprint(f'[INFO]\tSupplier part already exists, skipping.', silent=settings.SILENT)
@@ -386,13 +398,13 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 				manufacturer_name = key
 				manufacturer_number = values[0]
 			# Create a new supplier part
-			is_supplier_part_created = inventree_api.create_supplier_part(	part_id=part_pk,
-																			supplier_name=supplier,
-																			supplier_sku=inventree_part['supplier'][supplier],
-																			description=inventree_part['description'],
-																			manufacturer_name=manufacturer_name,
-																			manufacturer_pn=manufacturer_number,
-																			datasheet=inventree_part['datasheet'] )
+			is_supplier_part_created = inventree_api.create_supplier_part(part_id=part_pk,
+																		  supplier_name=supplier,
+																		  supplier_sku=inventree_part['supplier'][supplier],
+																		  description=inventree_part['description'],
+																		  manufacturer_name=manufacturer_name,
+																	 	  manufacturer_pn=manufacturer_number,
+																		  datasheet=inventree_part['datasheet'] )
 			
 			if is_supplier_part_created:
 				cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
