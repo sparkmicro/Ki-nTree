@@ -42,8 +42,12 @@ def build_part_keywords(inventree_part: dict) -> str:
 def get_categories(part_info: dict, supplier_only=False) -> list:
 	''' Find categories from part supplier data, use "somewhat automatic" matching '''
 	categories = [None, None]
-	supplier_category = str(part_info['category'])
-	supplier_subcategory = str(part_info['subcategory'])
+
+	try:
+		supplier_category = str(part_info['category'])
+		supplier_subcategory = str(part_info['subcategory'])
+	except KeyError:
+		return categories
 
 	# Return supplier category, if match not needed
 	if supplier_only:
@@ -211,6 +215,13 @@ def translate_digikey_to_inventree(part_info: dict, categories: list) -> dict:
 		cprint(f'[INFO]\tWarning: Parameter map for "{categories[0]}" does not exist or is empty', silent=settings.SILENT)
 
 	return inventree_part
+
+def translate_custom_form_to_inventree(part_info: dict, categories: list) -> dict:
+	''' Using custom user part data and categories, fill-in InvenTree part dictionary '''
+	# Copy template
+	inventree_part = copy.deepcopy(settings.inventree_part_template)
+
+	cprint('Custom Data Translate')
 
 def digikey_search(part_number: str) -> dict:
 	''' Wrapper for Digi-Key search, allow use of cached data (limited daily API calls) '''

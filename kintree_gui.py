@@ -71,7 +71,6 @@ def search_api_settings_window():
 			search_api_window.close()
 			return
 
-
 def inventree_settings_window():
 	''' InvenTree settings window '''
 
@@ -177,6 +176,52 @@ def kicad_settings_window():
 		
 	kicad_window.close()
 	return
+
+def add_custom_part() -> dict:
+	''' Add custome part (bypass Digi-Key search) '''
+	user_values = {}
+	add_custom_layout = []
+
+	skip_items = ['category', 'IPN', 'image', 'inventree_url', 'parameters']
+	input_keys = []
+	for key, value in settings.inventree_part_template.items():
+		if key in skip_items:
+			pass
+		elif key == 'supplier' or key == 'manufacturer':
+			sub_key = key + '_name'
+			add_custom_layout.append([
+										sg.Text(sub_key.replace('_', ' ').title()),
+										sg.InputText('', size=(40,1), key=sub_key),
+									])
+			input_keys.append(sub_key)
+
+			sub_key = key + '_part_number'
+			add_custom_layout.append([
+										sg.Text(sub_key.replace('_', ' ').title()),
+										sg.InputText('', size=(40,1), key=sub_key),
+									])
+			input_keys.append(sub_key)
+		else:
+			add_custom_layout.append([
+										sg.Text(key.capitalize()),
+										sg.InputText('', size=(40,1), key=key),
+									])
+			input_keys.append(key)
+
+	add_custom_layout.append([ sg.Button('CREATE', size=(59,1)), ])
+
+	add_custom_window = sg.Window(
+		'Add Custom Part', add_custom_layout, location=(500, 500)
+	)
+	cstm_event, cstm_values = add_custom_window.read()
+	if cstm_event == sg.WIN_CLOSED:  # if user closes window
+		pass
+	else:
+		for key in input_keys:
+			user_values[key] = cstm_values[key]
+		
+	add_custom_window.close()
+	return user_values
 
 def user_defined_categories(category=None, subcategory=None) -> list:
 	''' User defined categories window (pops-up only if no match found) '''
@@ -528,6 +573,8 @@ def user_defined_symbol_template_footprint(	categories: list,
 		
 def main():
 	''' Main GUI window '''
+	CREATE_CUSTOM = False
+
 	# Select PySimpleGUI theme
 	# sg.theme_previewer() # Show all
 	sg.theme('DarkTeal10')
@@ -539,6 +586,12 @@ def main():
 				'Digi-Key',
 				'KiCad',
 				'InvenTree',
+			],
+		],
+		[ 'Extras', 
+			[
+				# 'Synchronize',
+				'Custom Part',
 			],
 		],
 	]
@@ -565,7 +618,10 @@ def main():
 
 	# Event Loop to process 'events' and get the 'values' of the inputs
 	while True:
-		event, values = window.read()
+		if CREATE_CUSTOM:
+			event = 'CREATE_CUSTOM'
+		else:
+			event, values = window.read()
 
 		if event == sg.WIN_CLOSED:  # if user closes window or clicks cancel
 			break
@@ -579,6 +635,10 @@ def main():
 		elif 'enable' in event:
 			settings.set_inventree_enable_flag(values['enable_inventree'], save=True)
 			settings.set_kicad_enable_flag(values['enable_kicad'], save=True)
+		elif event == 'Custom Part':
+			custom_part_info = add_custom_part()
+			if custom_part_info:
+				CREATE_CUSTOM = True
 		else:
 			# Adding part information to InvenTree
 			categories = [None, None]
@@ -590,19 +650,26 @@ def main():
 			part_info = {}
 			part_data = {}
 
-			if values['part_number']:
-				# New part separation
-				new_search = '-' * 20
-				cprint(f'\n{new_search}', silent=settings.SILENT)
+			if CREATE_CUSTOM:
+				part_info = custom_part_info
+				cprint(part_info, silent=settings.SILENT)
+			else:
+				if values['part_number']:
+					# New part separation
+					new_search = '-' * 20
+					cprint(f'\n{new_search}', silent=settings.SILENT)
 
-				# Load KiCad settings
-				settings.load_kicad_settings()
+					# Load KiCad settings
+					settings.load_kicad_settings()
 
-				# Load InvenTree settings
-				settings.load_inventree_settings()
+					# Load InvenTree settings
+					settings.load_inventree_settings()
 
-				# Digi-Key Search
-				part_info = inventree_interface.digikey_search(values['part_number'])
+					# Digi-Key Search
+					part_info = inventree_interface.digikey_search(values['part_number'])
+
+			# Reset create custom flag
+			CREATE_CUSTOM = False
 
 			if not part_info:
 				sg.popup_ok(f'Failed to fetch part information\n'
