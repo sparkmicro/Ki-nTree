@@ -224,33 +224,36 @@ def add_custom_part() -> dict:
 	add_custom_window.close()
 	return user_values
 
-def user_defined_categories(category=None, subcategory=None) -> list:
+def user_defined_categories(category=None, subcategory=None, extend=False) -> list:
 	''' User defined categories window (pops-up only if no match found) '''
 	categories = [None, None]
-	# Load supplier categories
-	categories_dict = config_interface.load_supplier_categories(settings.CONFIG_DIGIKEY_CATEGORIES)
-	# Category list
-	categories_choices = []
-	try:
-		for item in categories_dict.keys():
-			categories_choices.append(item)
-	except:
-		pass
+	# Load and synchronize supplier categories with InvenTree categories
+	categories_dict = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
+																		  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
 
+	# Category choices
+	categories_choices = []
 	subcategories_choices = []
 	subcategory_default = None
-	try:
-		if category:
-			# Subcategory list
-			for key, value in categories_dict[category].items():
-				if key not in subcategories_choices:
-					subcategories_choices.append(key.replace('__',''))
 
-			if subcategory:
+	try:
+		for cat in categories_dict.keys():
+			categories_choices.append(cat)
+
+			if category:
+				if category == cat:
+					# Subcategory choices
+					for subcat in categories_dict[cat].keys():
+						if subcat not in subcategories_choices:
+							subcategories_choices.append(subcat)
+
+		if subcategory:
 				subcategory_default = subcategory
 	except:
+		# categories_dict is None
 		pass
 
+	# Set default list for subcategory choices
 	if not subcategories_choices:
 		subcategories_choices = ['None']
 	if not subcategory_default:
@@ -259,12 +262,12 @@ def user_defined_categories(category=None, subcategory=None) -> list:
 	category_layout = [
 		[
 			sg.Text('Select Category:'),
-			sg.Combo(categories_choices, default_value=category, key='category'),
+			sg.Combo(sorted(categories_choices), default_value=category, key='category'),
 			sg.Button('Confirm'),
 		],
 		[
 			sg.Text('Select Subcategory:'),
-			sg.Combo(subcategories_choices, default_value=subcategory_default, size=(20,1), key='subcategory_sel'),
+			sg.Combo(sorted(subcategories_choices), default_value=subcategory_default, size=(20,1), key='subcategory_sel'),
 			sg.Text('Or Enter Name:'),
 			sg.In(size=(20,1),key='subcategory_man'),
 		],
@@ -288,8 +291,8 @@ def user_defined_categories(category=None, subcategory=None) -> list:
 		else:
 			categories[1] = category_values['subcategory_sel']
 
-		if categories[1] == 'None':
-			categories[1] = ''
+		# if categories[1] == 'None':
+		# 	categories[1] = ''
 		
 		if '' in categories:
 			missing_category = 'Missing category information'
@@ -866,7 +869,7 @@ def main():
 			if symbol and result_message:
 				sg.popup_ok(result_message, title='Results', location=(500, 500))
 
-			if part_data:
+			if 'inventree_url' in part_data.keys():
 				# Auto-Open Browser Window
 				cprint(f'\n[MAIN]\tOpening URL {part_data["inventree_url"]} in browser',
 					   silent=settings.SILENT)

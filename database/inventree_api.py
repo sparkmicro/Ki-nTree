@@ -69,7 +69,7 @@ def set_part_number(part_id: int, ipn: str) -> bool:
 		return False
 
 def is_new_part(category_id: int, part_info: dict) -> int:
-	''' Check if part exists based on parameters (strong) '''
+	''' Check if part exists based on parameters (or description) '''
 	global inventree_api
 
 	# Get category object
@@ -86,7 +86,10 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 				return item.name
 
 	# Retrieve parent category name for parameters compare
-	category_name = part_category.getParentCategory().name
+	try:
+		category_name = part_category.getParentCategory().name
+	except AttributeError:
+		category_name = part_category.name
 	filters = config_interface.load_category_parameters_filters(category=category_name, 
 																supplier_config_path=settings.CONFIG_PARAMETERS_FILTERS)
 	# cprint(filters)
@@ -100,10 +103,15 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 			parameter_value = parameter.data
 			part_parameters[parameter_name] = parameter_value
 
-		# Compare database part with new part
-		compare = part_tools.compare(	new_part_parameters=new_part_parameters,
-										db_part_parameters=part_parameters,
-										filters=filters )
+		if new_part_parameters:
+			# Compare database part with new part
+			compare = part_tools.compare(new_part_parameters=new_part_parameters,
+										 db_part_parameters=part_parameters,
+										 filters=filters)
+		else:
+			# Compare with description
+			compare = part_info['description'] == part.description
+
 		if compare:
 			cprint(f'\n[TREE]\tFound part match in database (pk = {part.pk})', silent=settings.HIDE_DEBUG)
 			return part.pk

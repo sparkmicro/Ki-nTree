@@ -56,8 +56,8 @@ def create_user_config_files():
 	if not os.path.exists(CONFIG_USER_FILES):
 		os.makedirs(CONFIG_USER_FILES)
 	# Create user files
-	config_interface.load_user_config_files(	path_to_templates=CONFIG_TEMPLATES,
-											 path_to_user_files=CONFIG_USER_FILES)
+	config_interface.load_user_config_files(path_to_templates=CONFIG_TEMPLATES,
+											path_to_user_files=CONFIG_USER_FILES)
 
 # Create user configuration files
 create_user_config_files()
@@ -187,8 +187,7 @@ else:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_test.yaml')
 
 # Load user settings
-inventree_settings = config_interface.load_inventree_user_settings(
-	CONFIG_INVENTREE)
+inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
 
 # Enable flag
 ENABLE_INVENTREE = inventree_settings['ENABLE']
@@ -198,14 +197,13 @@ def set_inventree_enable_flag(value: bool, save=False):
 	ENABLE_INVENTREE = value
 	if save:
 		global CONFIG_INVENTREE
-		inventree_settings = config_interface.load_inventree_user_settings(
-			CONFIG_INVENTREE)
+		inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
 		inventree_settings['ENABLE'] = value
-		config_interface.save_inventree_user_settings(	enable=inventree_settings['ENABLE'],
-													   server=inventree_settings['SERVER_ADDRESS'],
-													   username=inventree_settings['USERNAME'],
-													   password=inventree_settings['PASSWORD'],
-													   user_config_path=CONFIG_INVENTREE)
+		config_interface.save_inventree_user_settings(enable=inventree_settings['ENABLE'],
+													  server=inventree_settings['SERVER_ADDRESS'],
+													  username=inventree_settings['USERNAME'],
+													  password=inventree_settings['PASSWORD'],
+													  user_config_path=CONFIG_INVENTREE)
 	return
 
 # Server settings

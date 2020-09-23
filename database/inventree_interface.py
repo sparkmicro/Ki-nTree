@@ -289,48 +289,52 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 	category_name = inventree_part['category'][0]
 	subcategory_name = inventree_part['category'][1]
 	category_pk = inventree_api.get_inventree_category_id(category_name)
+	category_select = category_pk
 	
+	# Check if subcategory exists
 	if subcategory_name:
 		# Fetch subcategory id
-		subcategory_pk = inventree_api.get_inventree_category_id(	category_name=subcategory_name,
-																	parent_category_id=category_pk )
+		subcategory_pk = inventree_api.get_inventree_category_id(category_name=subcategory_name,
+																 parent_category_id=category_pk)
 		if subcategory_pk > 0:
-			# Check if part already exists
-			part_pk = inventree_api.is_new_part(subcategory_pk, inventree_part)
-
-			### Part exists
-			if part_pk > 0:
-				cprint(f'[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
-				ipn = inventree_api.get_part_number(part_pk)
-				# Update InvenTree part number
-				inventree_part['IPN'] = ipn
-				# Update InvenTree URL
-				inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
-			### Part is new
-			else:
-				new_part = True
-				# Create a new Part
-				# Use the pk (primary-key) of the category
-				part_pk = inventree_api.create_part(description=inventree_part['description'],
-													category_id=subcategory_pk,
-													image=inventree_part['image'],
-													keywords=inventree_part['keywords'])
-
-				# Generate Internal Part Number
-				cprint(f'\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
-				ipn = part_tools.generate_part_number(category_name, part_pk)
-				cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
-				# Update InvenTree part number
-				ipn_update = inventree_api.set_part_number(part_pk, ipn)
-				if not ipn_update:
-					cprint(f'\n[INFO]\tError updating IPN', silent=settings.SILENT)
-				inventree_part['IPN'] = ipn
-				# Update InvenTree part revision
-				inventree_part['revision'] = 'A'
-				# Update InvenTree URL
-				inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+			category_select = subcategory_pk
 		else:
-			cprint(f'\n[TREE]\tError: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
+			cprint(f'\n[TREE]\tWarning: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
+
+	if category_select > 0:
+		# Check if part already exists
+		part_pk = inventree_api.is_new_part(category_select, inventree_part)
+		### Part exists
+		if part_pk > 0:
+			cprint(f'[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
+			ipn = inventree_api.get_part_number(part_pk)
+			# Update InvenTree part number
+			inventree_part['IPN'] = ipn
+			# Update InvenTree URL
+			inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+		### Part is new
+		else:
+			new_part = True
+			# Create a new Part
+			# Use the pk (primary-key) of the category
+			part_pk = inventree_api.create_part(description=inventree_part['description'],
+												category_id=category_select,
+												image=inventree_part['image'],
+												keywords=inventree_part['keywords'])
+
+			# Generate Internal Part Number
+			cprint(f'\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
+			ipn = part_tools.generate_part_number(category_name, part_pk)
+			cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
+			# Update InvenTree part number
+			ipn_update = inventree_api.set_part_number(part_pk, ipn)
+			if not ipn_update:
+				cprint(f'\n[INFO]\tError updating IPN', silent=settings.SILENT)
+			inventree_part['IPN'] = ipn
+			# Update InvenTree part revision
+			inventree_part['revision'] = 'A'
+			# Update InvenTree URL
+			inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
 	
 	if part_pk > 0:
 		if new_part:
@@ -341,7 +345,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 				cprint(f'[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
 
 		# Create mandatory parameters (symbol & footprint)
-		if symbol:
+		if symbol and ipn:
 			kicad_symbol = symbol + ':' + ipn
 		else:
 			try:
