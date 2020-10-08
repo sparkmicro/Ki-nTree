@@ -2,7 +2,7 @@ import copy
 import os
 
 import config.settings as settings
-from common import part_tools
+from common import part_tools, progress
 from common.tools import cprint
 from config import config_interface
 from database import inventree_api
@@ -271,12 +271,18 @@ def digikey_search(part_number: str) -> dict:
 
 	return part_info
 
-def inventree_create(part_info: dict, categories: list, symbol=None, footprint=None):
+def inventree_create(part_info: dict, categories: list, symbol=None, footprint=None, progress_window=None):
 	''' Create InvenTree part from supplier part data and categories '''
 	# TODO: Make 'supplier' a variable for use with other APIs (eg. Octopart)
 	supplier = 'Digi-Key'
 	part_pk = 0
 	new_part = False
+
+	def update_progress():
+		''' Update InvenTree progress '''
+		cprint(f'>>>> Updating progress: ', end='')
+		if not progress.update_progress_bar_window():
+			progress.close_progress_bar_window()
 
 	# Translate to InvenTree part format
 	if supplier == 'Digi-Key':
@@ -284,6 +290,8 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 
 	if not inventree_part:
 		cprint(f'\n[MAIN]\tError: Failed to process {supplier} data', silent=settings.SILENT)
+
+	update_progress()
 
 	# Fetch category info from InvenTree part
 	category_name = inventree_part['category'][0]
@@ -300,6 +308,8 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 			category_select = subcategory_pk
 		else:
 			cprint(f'\n[TREE]\tWarning: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
+
+	update_progress()
 
 	if category_select > 0:
 		# Check if part already exists
@@ -321,6 +331,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 												category_id=category_select,
 												image=inventree_part['image'],
 												keywords=inventree_part['keywords'])
+			update_progress()
 
 			# Generate Internal Part Number
 			cprint(f'\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
@@ -336,6 +347,8 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 			# Update InvenTree URL
 			inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
 	
+	update_progress(progress_window)
+
 	if part_pk > 0:
 		if new_part:
 			cprint('[INFO]\tSuccess: Added new part to InvenTree', silent=settings.SILENT)
@@ -374,6 +387,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 			]
 			for name, value in inventree_part['parameters'].items():
 					parameter, is_new_parameter = inventree_api.create_parameter(part_id=part_pk, template_name=name, value=value)
+					update_progress(progress_window)
 
 					if is_new_parameter:
 						parameters_lists[0].append(name)
@@ -413,4 +427,5 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 			if is_supplier_part_created:
 				cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
 
+	update_progress(progress_window)
 	return new_part, part_pk, inventree_part
