@@ -8,10 +8,10 @@ import config.settings as settings
 import PySimpleGUI as sg
 # Digi-Key API
 import search.digikey_api as digikey_api
-# Tools
-from common.tools import cprint, create_library
 # Progress
 from common import progress
+# Tools
+from common.tools import cprint, create_library
 # Interface
 from config import config_interface
 # InvenTree
@@ -851,10 +851,6 @@ def main():
 							except:
 								cprint(f'[INFO]\tError: Failed to add part to KiCad (incomplete InvenTree data)', silent=settings.SILENT)
 
-							# Update progress bar and close window
-							progress.update_progress_bar_window(progressbar)
-							progress.close_progress_bar_window(progressbar)
-
 				# Result pop-up window
 				if settings.ENABLE_INVENTREE:
 					if not new_part:
@@ -889,6 +885,10 @@ def main():
 					if not part_pk:
 						result_message = 'Unexpected error - Contact developper'
 
+			# Update progress bar to complete and close window
+			progress.update_progress_bar_window(progress.MAX_PROGRESS)
+			progress.close_progress_bar_window()
+
 			if symbol and result_message:
 				sg.popup_ok(result_message, title='Results', location=(500, 500))
 
@@ -896,7 +896,10 @@ def main():
 				# Auto-Open Browser Window
 				cprint(f'\n[MAIN]\tOpening URL {part_data["inventree_url"]} in browser',
 					   silent=settings.SILENT)
-				webbrowser.open(part_data['inventree_url'], new=2)
+				try:
+					webbrowser.open(part_data['inventree_url'], new=2)
+				except TypeError:
+					cprint(f'[INFO]\tError: Failed to open URL', silent=settings.SILENT)
 
 			# Reset create custom flag
 			CREATE_CUSTOM = False

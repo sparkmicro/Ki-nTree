@@ -1,6 +1,7 @@
 import os
 
 import config.settings as settings
+from common import progress
 from common.tools import cprint
 from schlib import SchLib
 
@@ -59,6 +60,9 @@ class ComponentLibManager(object):
 		if is_component_in_library:
 			return part_in_lib, new_part
 
+		# Progress Update
+		if not progress.update_progress_bar_window(): return part_in_lib, new_part
+
 		# Load template
 		templatelib = SchLib(template_path)
 		# Load new component
@@ -100,6 +104,9 @@ class ComponentLibManager(object):
 		cprint(f'[KCAD]\tSuccess: Component added to library {library_name}', silent=settings.SILENT)
 		part_in_lib = True
 		new_part = True
+
+		# Progress Update
+		if not progress.update_progress_bar_window(): pass
 
 		return part_in_lib, new_part
 

@@ -99,11 +99,11 @@ Enjoy!
 ## Roadmap
 #### Version 0.3
 ##### Global
-- [ ] Inform user of part creation progress in UI and terminal
+- [X] Inform user of part creation progress with GUI window
 - [ ] Add ability to create missing category-subcategory to InvenTree during part creation
 - [ ] Combine all KiCad templates in a single library file (lib+dcm)
 - [ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad
-- [ ] Add "Add Custom" menu option to add parts to KiCad and InvenTree bypassing Digi-Key API
+- [X] Add "Add Custom" menu option to add parts to KiCad and InvenTree bypassing Digi-Key API
 - [ ] Document configuration and backend
 
 ##### GUI

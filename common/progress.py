@@ -1,24 +1,30 @@
+import time
+
+# PySimpleGUI
 import PySimpleGUI as sg
 
 CREATE_PART_PROGRESS: int
 MAX_PROGRESS = 100
+DEFAULT_PROGRESS = 5
 
 def create_progress_bar_window():
 	''' Create window for part creation progress '''
 	global CREATE_PART_PROGRESS, MAX_PROGRESS
 	global progress_window
 
-	progress_layout = [[sg.Text('Creating part...')],
-					  [sg.ProgressBar(MAX_PROGRESS, orientation='h', size=(20, 20), key='progressbar')],
-					  [sg.Cancel()]]
+	progress_layout = [
+						[sg.Text('Creating part...')],
+					  	[sg.ProgressBar(MAX_PROGRESS, orientation='h', size=(20, 30), key='progressbar')],
+					  	[sg.Cancel()]
+					  ]
 	progress_window = sg.Window('Part Creation Progress', progress_layout, location=(500, 500))
-	progress_bar = progress_window['progressbar']
+	# progress_bar = progress_window['progressbar']
 
 	event, values = progress_window.read(timeout=10)
 
 	# Reset progress
 	CREATE_PART_PROGRESS = 0
-	progress_bar.UpdateBar(CREATE_PART_PROGRESS)
+	update_progress_bar_window()
 
 	return progress_window
 
@@ -29,41 +35,46 @@ def close_progress_bar_window():
 	if progress_window:
 		progress_window.close()
 
-def progress_increment(inc=5):
+def progress_increment():
 	''' Increment progress '''
 	global CREATE_PART_PROGRESS, MAX_PROGRESS
 
-	if CREATE_PART_PROGRESS + inc < MAX_PROGRESS:
-		CREATE_PART_PROGRESS += inc
+	if CREATE_PART_PROGRESS + 1 < MAX_PROGRESS:
+		CREATE_PART_PROGRESS += 1
 	else:
 		CREATE_PART_PROGRESS = MAX_PROGRESS
 
-def update_progress_bar_window() -> bool:
+def update_progress_bar_window(increment=0) -> bool:
 	''' Update progress bar during part creation '''
-	global CREATE_PART_PROGRESS
+	global CREATE_PART_PROGRESS, MAX_PROGRESS, DEFAULT_PROGRESS
 	global progress_window
 
-	stop = False
+	on_going_progress = True
 
 	if not progress_window:
-		return stop
+		return False
 
-	# progress_bar = window['progressbar']
-	progress_bar = progress_window.FindElement('progressbar')
+	if increment:
+		inc = increment
+	else:
+		# Default
+		inc = DEFAULT_PROGRESS
+
+	progress_bar = progress_window['progressbar']
 
 	event, values = progress_window.read(timeout=10)
-	print(f'{event=}')
 
-	if not event:
-		print('Uneventful')
+	if event in ['Cancel', sg.WIN_CLOSED]:
+		on_going_progress = False
+		close_progress_bar_window()
+	else:
+		# Smooth effect
+		for i in range(inc):
+			progress_increment()
+			progress_bar.update(CREATE_PART_PROGRESS, MAX_PROGRESS)
+			if inc < MAX_PROGRESS:
+				time.sleep(0.02)
+			else:
+				time.sleep(0.005)
 
-	# if event in ['Cancel', sg.WIN_CLOSED]:
-	# 	stop = True
-	# else:
-	print(f'{progress_bar=}')
-	progress_increment()
-	print(f'{CREATE_PART_PROGRESS} / {MAX_PROGRESS}')
-	print(progress_bar.UpdateBar(CREATE_PART_PROGRESS, MAX_PROGRESS))
-
-	return stop
-
+	return on_going_progress
