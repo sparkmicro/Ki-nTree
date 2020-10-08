@@ -311,12 +311,12 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
 
 		return categories
 
-def user_defined_symbol_template_footprint(	categories: list,
-											symbol_lib=None,
-											template=None,
-											footprint_lib=None,
-											symbol_confirm=False,
-											footprint_confirm=False ):
+def user_defined_symbol_template_footprint(categories: list,
+										   symbol_lib=None,
+										   template=None,
+										   footprint_lib=None,
+										   symbol_confirm=False,
+										   footprint_confirm=False):
 	''' Symbol and Footprint user defined window '''
 	symbol = None
 	footprint = None
@@ -582,7 +582,42 @@ def user_defined_symbol_template_footprint(	categories: list,
 			cprint(f'[INFO]\tWarning: Failed to add footprint library to {categories[0]} category', silent=settings.SILENT)
 
 		return symbol, template, footprint
-		
+
+def create_progress_bar_window():
+	''' Create window for part creation progress '''
+	progress_layout = [[sg.Text('Creating part...')],
+					  [sg.ProgressBar(100, orientation='h', size=(20, 20), key='progressbar')],
+					  [sg.Cancel()]]
+	progress_window = sg.Window('Part Creation Progress', progress_layout)
+	progress_bar = progress_window['progressbar']
+
+	event, values = progress_window.read(timeout=10)
+
+	progress_bar.UpdateBar(0)
+
+	return progress_window
+
+def update_progress_bar_window(window, progress: int) -> bool:
+	''' Update progress bar during part creation '''
+	stop = False
+
+	progress_bar = window['progressbar']
+
+	event, values = window.read(timeout=10)
+
+	if event in ['Cancel', sg.WIN_CLOSED]:
+		stop = True
+	else:
+		progress_bar.UpdateBar(progress)
+
+	return stop
+
+def close_progress_bar_window(window):
+	''' Close progress bar window after part creation '''
+
+	window.close()
+
+# Main
 def main():
 	''' Main GUI window '''
 	CREATE_CUSTOM = False
@@ -753,6 +788,9 @@ def main():
 					symbol, template, footprint = user_defined_symbol_template_footprint(categories)
 					# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
 
+					# Create progress bar window
+					progressbar = create_progress_bar_window()
+
 					if symbol and footprint:
 						# Translate custom part data
 						if CREATE_CUSTOM:
@@ -767,6 +805,8 @@ def main():
 																								footprint=footprint)
 							if not part_data:
 								cprint(f'[INFO]\tError: Could not add part to InvenTree', silent=settings.SILENT)
+
+							update_progress_bar_window(progressbar, 50)
 						else:
 							if not categories[0]:
 								pseudo_categories = [symbol, None]
@@ -842,6 +882,9 @@ def main():
 																								   template_path=template_path)
 							except:
 								cprint(f'[INFO]\tError: Failed to add part to KiCad (incomplete InvenTree data)', silent=settings.SILENT)
+
+							update_progress_bar_window(progressbar, 100)
+							close_progress_bar_window(progressbar)
 
 				# Result pop-up window
 				if settings.ENABLE_INVENTREE:
