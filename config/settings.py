@@ -5,7 +5,7 @@ from enum import Enum
 from common.tools import cprint
 from config import config_interface
 
-### DEBUG
+# DEBUG
 # Testing
 ENABLE_TEST = False
 # Silent Mode
@@ -18,9 +18,13 @@ def enable_test_mode():
 	global SILENT
 	ENABLE_TEST = True
 	SILENT = True
-###
 
-### PATHS
+
+# GLOBAL
+FUNCTION_FILTER_KEY = '__'
+
+
+# PATHS
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
 	PROJECT_DIR = os.path.abspath(os.path.dirname(sys.executable))
 else:
@@ -33,18 +37,18 @@ sys.path.append(os.path.join(PROJECT_DIR, 'search', 'digikey_api'))
 sys.path.append(os.path.join(PROJECT_DIR, 'kicad'))
 # Tests
 sys.path.append(os.path.join(PROJECT_DIR, 'tests'))
-###
 
-### VERSION
+
+# VERSION
 CONFIG_VERSION = os.path.join(PROJECT_DIR, 'config', 'version.yaml')
 version_info = config_interface.load_file(CONFIG_VERSION)
 try:
 	version = '.'.join([str(v) for v in version_info.values()])
 except:
 	version = '0.0.alpha'
-###
 
-### CONFIG FILES
+
+# CONFIG FILES
 CONFIG_TEMPLATES = os.path.join(PROJECT_DIR, 'config', '')
 CONFIG_USER_FILES = os.path.join(PROJECT_DIR, 'config', 'user_files', '')
 
@@ -62,7 +66,7 @@ def create_user_config_files():
 # Create user configuration files
 create_user_config_files()
 
-### DIGI-KEY
+# Digi-Key
 CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
 CONFIG_DIGIKEY_CATEGORIES = os.path.join(
 	CONFIG_USER_FILES, 'digikey_categories.yaml')
@@ -78,7 +82,7 @@ CONFIG_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'categories.yaml')
 CONFIG_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'parameters.yaml')
 CONFIG_PARAMETERS_FILTERS = os.path.join(
 	CONFIG_USER_FILES, 'parameters_filters.yaml')
-###
+
 
 # DIGI-KEY
 # API storage path
@@ -102,9 +106,9 @@ search_images = os.path.join(PROJECT_DIR, 'search', 'images', '')
 # Create folder if it does not exists
 if not os.path.exists(search_images):
 	os.makedirs(search_images)
-###
 
-### KICAD
+
+# KICAD
 # User Settings
 KICAD_SYMBOLS_PATH = ''
 KICAD_TEMPLATES_PATH = ''
@@ -159,9 +163,9 @@ footprint_name_default = 'TBD'
 AUTO_GENERATE_LIB = True
 symbol_template_lib = os.path.join(
 	PROJECT_DIR, 'kicad', 'templates', 'library_template.lib')
-###
 
-### INVENTREE
+
+# INVENTREE
 class Environment(Enum):
 	'''
 	Local Development/Testing: TESTING
@@ -238,4 +242,3 @@ inventree_part_template = {
 	'datasheet': None,
 	'parameters': {},
 }
-###

@@ -71,7 +71,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 				if supplier_subcategory == key:
 					categories[0] = inventree_category
 					# Check if filtering by function
-					if inventree_subcategory.startswith('__'):
+					if inventree_subcategory.startswith(settings.FUNCTION_FILTER_KEY):
 						function_filter = True
 
 					# Save subcategory if not function filtered
@@ -102,7 +102,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 				display_result = f'"{inventree_subcategory}" ?= "{item}"'.ljust(50)
 				cprint(f'{display_result} => {fuzzy_match}', silent=settings.HIDE_DEBUG)
 				if fuzzy_match >= settings.CATEGORY_MATCH_RATIO_LIMIT:
-					categories[1] = inventree_subcategory.replace('__','')
+					categories[1] = inventree_subcategory.replace(settings.FUNCTION_FILTER_KEY,'')
 					break
 
 			if categories[1]:
@@ -165,11 +165,11 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 	if not categories[0]:
 		cprint(f'[INFO]\tWarning: "{part_info["category"]}" did not match any supplier category ', silent=settings.SILENT)
 	else:
-		cprint(f'[TREE]\tCategory: "{categories[0]}"', silent=settings.SILENT)
+		cprint(f'[INFO]\tCategory: "{categories[0]}"', silent=settings.SILENT)
 	if not categories[1]:
 		cprint(f'[INFO]\tWarning: "{part_info["subcategory"]}" did not match any supplier subcategory ', silent=settings.SILENT)
 	else:
-		cprint(f'[TREE]\tSubcategory: "{categories[1]}"', silent=settings.SILENT)
+		cprint(f'[INFO]\tSubcategory: "{categories[1]}"', silent=settings.SILENT)
 	
 	return categories
 

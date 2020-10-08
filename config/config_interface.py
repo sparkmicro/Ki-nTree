@@ -4,6 +4,7 @@ import copy
 
 import yaml
 from common.tools import cprint
+import config.settings as settings
 
 
 def load_file(file_path: str) -> dict:
@@ -246,10 +247,12 @@ def load_supplier_categories(supplier_config_path: str, clean=False) -> dict:
 	if clean:
 		clean_supplier_categories = copy.deepcopy(supplier_categories)
 
-		for category in supplier_categories.keys():
-			for subcategory in supplier_categories[category].keys():
-				clean_supplier_categories[category][subcategory.replace('__','')] = supplier_categories[category][subcategory]
-				del clean_supplier_categories[category][subcategory]
+		for category in supplier_categories:
+			for subcategory in supplier_categories[category]:
+				if settings.FUNCTION_FILTER_KEY in subcategory:
+					clean_supplier_categories[category][subcategory.replace(settings.FUNCTION_FILTER_KEY,'')] \
+						= supplier_categories[category][subcategory]
+					del clean_supplier_categories[category][subcategory]
 
 		return clean_supplier_categories
 
@@ -315,7 +318,7 @@ def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
 				break
 
 			# Function filtered
-			inventree_subcategory_filter = '__' + user_subcategory
+			inventree_subcategory_filter = settings.FUNCTION_FILTER_KEY + user_subcategory
 			if inventree_subcategory_filter in supplier_category_keys:
 				try:
 					if supplier_category not in supplier_categories[category][inventree_subcategory_filter]:

@@ -225,11 +225,16 @@ def add_custom_part() -> dict:
 	return user_values
 
 def user_defined_categories(category=None, subcategory=None, extend=False) -> list:
-	''' User defined categories window (pops-up only if no match found) '''
+	''' User defined categories window '''
 	categories = [None, None]
-	# Load and synchronize supplier categories with InvenTree categories
-	categories_dict = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
-																		  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
+
+	if extend:
+		# Load and synchronize supplier categories with InvenTree categories
+		categories_dict = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
+																			  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
+	else:
+		# Load categories from supplier configuration
+		categories_dict = config_interface.load_supplier_categories(supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
 
 	# Category choices
 	categories_choices = []
@@ -255,7 +260,10 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
 
 	# Set default list for subcategory choices
 	if not subcategories_choices:
-		subcategories_choices = ['None']
+		if not subcategory_default:
+			subcategories_choices = ['None']
+		else:
+			subcategories_choices = [subcategory_default]
 	if not subcategory_default:
 		subcategory_default = subcategories_choices[0]
 
@@ -709,19 +717,22 @@ def main():
 			
 				# If categories do not exist: request user to fill in categories
 				if not categories[0]:
-					categories = user_defined_categories()
+					categories = user_defined_categories(extend=settings.ENABLE_INVENTREE)
 					if categories[0]:
 						cprint(f'[INFO]\tCategory: "{categories[0]}"', silent=settings.SILENT)
 					if categories[1]:
 						cprint(f'[INFO]\tSubcategory: "{categories[1]}"', silent=settings.SILENT)
 				elif categories[0] and not categories[1]:
-					categories = user_defined_categories(categories[0])
+					categories = user_defined_categories(category=categories[0],
+														 extend=settings.ENABLE_INVENTREE)
 					if categories[1]:
 						cprint(f'[INFO]\tUpdated Category: "{categories[0]}"', silent=settings.SILENT)
 						cprint(f'[INFO]\tSubcategory: "{categories[1]}"', silent=settings.SILENT)
 				else:
 					# Ask user to re-confirm categories (pre-filled)
-					categories = user_defined_categories(categories[0], categories[1])
+					categories = user_defined_categories(category=categories[0], 
+														 subcategory=categories[1],
+														 extend=settings.ENABLE_INVENTREE)
 					cprint(f'[INFO]\tUser Category: "{categories[0]}"', silent=settings.SILENT)
 					cprint(f'[INFO]\tUser Subcategory: "{categories[1]}"', silent=settings.SILENT)
 
