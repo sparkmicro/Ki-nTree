@@ -108,7 +108,7 @@ Enjoy!
 
 ##### GUI
 - [ ] Show form prefilled with part API search results and allow user edits
-	- [ ] Switch to YAML file format for part search API results
+	- [X] Switch to YAML file format for part search API results
 	- [ ] Add timestamp to API data for caching management
 - [ ] Improve cosmetics (!)
 - [ ] Add icon to GUI and executable (not successful in 0.2, try with PySimpleGUIQt?)

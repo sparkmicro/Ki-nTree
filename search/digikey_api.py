@@ -102,18 +102,13 @@ def test_digikey_api_connect() -> bool:
 def load_from_file(search_file) -> dict:
 	''' Fetch Digi-Key part data from file '''
 	try:
-		file = open(search_file, 'rb')
-		part_info = pickle.load(file)
-		file.close()
-		return part_info
+		return config_interface.load_file(search_file)
 	except:
 		return None
 
 def save_to_file(part_info, search_file):
+	''' Save Digi-Key part data to file '''
 	try:
-		''' Save Digi-Key part data to file '''
-		file = open(search_file, 'wb')
-		pickle.dump(part_info, file)
-		file.close()
+		config_interface.dump_file(part_info, search_file)
 	except:
 		raise Exception('Error saving Digi-key search data')

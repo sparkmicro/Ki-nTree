@@ -95,7 +95,7 @@ CACHE_ENABLED = True
 if CACHE_ENABLED:
 	search_results = {
 		'directory': os.path.join(PROJECT_DIR, 'search', 'results', ''),
-		'extension': '.dat',
+		'extension': '.yaml',
 	}
 	# Create folder if it does not exists
 	if not os.path.exists(search_results['directory']):

@@ -336,7 +336,10 @@ def create_supplier_part(part_id: int, supplier_name: str, supplier_sku: str, de
 			'is_supplier': False,
 			'is_manufacturer': True,
 			})
-		manufacturer_id = manufacturer.pk
+		try:
+			manufacturer_id = manufacturer.pk
+		except AttributeError:
+			manufacturer_id = None
 
 	if manufacturer_id:
 		# Validate datasheet link

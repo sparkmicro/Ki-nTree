@@ -328,6 +328,9 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 												category_id=category_select,
 												image=inventree_part['image'],
 												keywords=inventree_part['keywords'])
+
+			# Check part primary key
+			if not part_pk: return new_part, part_pk, inventree_part
 			# Progress Update
 			if not progress.update_progress_bar_window(): return new_part, part_pk, inventree_part
 
