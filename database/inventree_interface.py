@@ -249,16 +249,12 @@ def digikey_search(part_number: str) -> dict:
 
 	# Load from file if cache is enabled
 	search_filename = settings.search_results['directory'] + part_number + settings.search_results['extension']
-	if settings.CACHE_ENABLED:
-		# TODO: Cache should be automatically disabled if data is too old
-		try:
-			part_info = digikey_api.load_from_file(search_filename)
-			if part_info:
-				cprint(f'\n[MAIN]\tUsing Digi-Key cached data for {part_number}', silent=settings.SILENT)
-		except:
-			pass
 
-	if not part_info:
+	# Get cached data
+	part_info = digikey_api.load_from_file(search_filename)
+	if part_info:
+		cprint(f'\n[MAIN]\tUsing Digi-Key cached data for {part_number}', silent=settings.SILENT)
+	else:
 		cprint(f'\n[MAIN]\tDigi-Key search for {part_number}', silent=settings.SILENT)
 		part_info = digikey_api.fetch_digikey_part_info(part_number)
 
@@ -267,10 +263,7 @@ def digikey_search(part_number: str) -> dict:
 		cprint(f'[INFO]\tError: Failed to fetch data for "{part_number}"', silent=settings.SILENT)
 	
 	# Save search results
-	if part_info and settings.CACHE_ENABLED:
-		# Check if search/results directory needs to be created
-		if not os.path.exists(os.path.dirname(search_filename)):
-			os.mkdir(os.path.dirname(search_filename))
+	if part_info:
 		digikey_api.save_to_file(part_info, search_filename)
 
 	return part_info

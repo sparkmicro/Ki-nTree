@@ -1,6 +1,7 @@
 import logging
 import os
 import pickle
+import time
 
 import config.settings as settings
 import digikey
@@ -101,14 +102,38 @@ def test_digikey_api_connect() -> bool:
 	
 def load_from_file(search_file) -> dict:
 	''' Fetch Digi-Key part data from file '''
-	try:
-		return config_interface.load_file(search_file)
-	except:
-		return None
+	cache_valid = settings.CACHE_VALID_DAYS * 24 * 3600
+
+	# Load data from file if cache enabled
+	if settings.CACHE_ENABLED:
+		part_data = config_interface.load_file(search_file)
+
+		if part_data:
+			# Check cache validity
+			try:
+				# Get timestamp
+				timestamp = int(time.time() - part_data['search_timestamp'])
+			except KeyError:
+				timestamp = int(time.time())
+
+			if timestamp < cache_valid:
+				return part_data
+
+	return None
 
 def save_to_file(part_info, search_file):
 	''' Save Digi-Key part data to file '''
-	try:
-		config_interface.dump_file(part_info, search_file)
-	except:
-		raise Exception('Error saving Digi-key search data')
+
+	# Check if search/results directory needs to be created
+	if not os.path.exists(os.path.dirname(search_file)):
+		os.mkdir(os.path.dirname(search_file))
+
+	# Add timestamp
+	part_info['search_timestamp'] = time.time()
+
+	# Save data if cache enabled
+	if settings.CACHE_ENABLED:
+		try:
+			config_interface.dump_file(part_info, search_file)
+		except:
+			raise Exception('Error saving Digi-key search data')

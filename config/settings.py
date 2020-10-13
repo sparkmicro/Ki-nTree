@@ -91,6 +91,8 @@ DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', '')
 CATEGORY_MATCH_RATIO_LIMIT = 100
 # Search results caching (stored in files)
 CACHE_ENABLED = True
+# Cache validity in days
+CACHE_VALID_DAYS = 7
 # Caching settings
 if CACHE_ENABLED:
 	search_results = {
