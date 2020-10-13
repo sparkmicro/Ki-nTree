@@ -603,7 +603,7 @@ def main():
 				'InvenTree',
 			],
 		],
-		[ 'Extras', 
+		[ 'More', 
 			[
 				# 'Synchronize',
 				'Custom Part',

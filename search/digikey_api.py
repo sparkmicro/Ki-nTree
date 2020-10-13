@@ -55,7 +55,7 @@ def fetch_digikey_part_info(part_number: str) -> dict:
 	# Query part number
 	try:
 		part = digikey_search_timeout()
-	except TimeoutError:
+	except:
 		part = None
 
 	if not part:

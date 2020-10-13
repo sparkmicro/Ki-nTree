@@ -19,7 +19,7 @@ def connect_to_server(timeout=5) -> bool:
 		connect = inventree_api.connect(server=settings.SERVER_ADDRESS,
 										username=settings.USERNAME,
 										password=settings.PASSWORD,
-										dec_timeout=timeout)
+										connect_timeout=timeout)
 	except TimeoutError:
 		pass
 
@@ -310,7 +310,7 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 
 	if category_select > 0:
 		# Check if part already exists
-		part_pk = inventree_api.is_new_part(category_select, inventree_part)
+		part_pk = inventree_api.is_new_part(category_pk, inventree_part)
 		### Part exists
 		if part_pk > 0:
 			cprint(f'[INFO]\tPart already exists, skipping.', silent=settings.SILENT)

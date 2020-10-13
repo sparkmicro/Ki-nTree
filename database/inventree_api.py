@@ -13,13 +13,16 @@ from inventree.part import Part, PartCategory
 from wrapt_timeout_decorator import timeout
 
 
-@timeout(dec_timeout=5)
-def connect(server: str, username: str, password: str, silent=False) -> bool:
+def connect(server: str, username: str, password: str, connect_timeout=5, silent=False) -> bool:
 	''' Connect to InvenTree server and create API object '''
 	global inventree_api
+	
+	@timeout(dec_timeout=connect_timeout)
+	def get_inventree_api_timeout():
+		return InvenTreeAPI(server, username=username, password=password)
 
 	try:
-		inventree_api = InvenTreeAPI(server, username=username, password=password)
+		inventree_api = get_inventree_api_timeout()
 	except:
 		return False
 

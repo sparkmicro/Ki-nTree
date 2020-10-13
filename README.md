@@ -100,15 +100,15 @@ Enjoy!
 #### Version 0.3
 ##### Global
 - [X] Inform user of part creation progress with GUI window
-- [ ] Add ability to create missing category-subcategory to InvenTree during part creation
+- [X] Save part into main category if subcategory does not exist in InvenTree
 - [ ] Combine all KiCad templates in a single library file (lib+dcm)
 - [ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad
 - [X] Add "Add Custom" menu option to add parts to KiCad and InvenTree bypassing Digi-Key API
 - [ ] Document configuration and backend
 
 ##### GUI
-- [ ] Improve cosmetics (!)
 - [ ] Show form prefilled with part API search results and allow user edits
 	- [ ] Switch to YAML file format for part search API results
 	- [ ] Add timestamp to API data for caching management
+- [ ] Improve cosmetics (!)
 - [ ] Add icon to GUI and executable (not successful in 0.2, try with PySimpleGUIQt?)
