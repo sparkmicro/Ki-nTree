@@ -227,11 +227,11 @@ def add_custom_part(part_data: dict) -> dict:
 									])
 			input_keys.append(key)
 
-	add_custom_layout.append([ sg.Button('CREATE', size=(59,1)), ])
-
 	if part_data:
+		add_custom_layout.append([ sg.Button('Submit', size=(20,1)), ])
 		window_title = 'Update Part Data'
 	else:
+		add_custom_layout.append([ sg.Button('CREATE', size=(59,1)), ])
 		window_title = 'Add Custom Part'
 
 	add_custom_window = sg.Window(
@@ -769,26 +769,41 @@ def main():
 						cprint(f'[INFO]\tWarning: Failed to add new supplier category to {config_file} file', silent=settings.SILENT)
 						cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
 
-					# Confirm part_info data with user
-					part_info = add_custom_part(inventree_interface.translate_digikey_to_inventree(part_info, categories))
+					# Confirm part data with user
+					form_data = add_custom_part(inventree_interface.translate_digikey_to_inventree(part_info=part_info,
+																								   categories=categories,
+																								   skip_params=True))
+					if form_data:
+						# Translate to part info format
+						user_part_info = inventree_interface.translate_form_to_digikey(part_info=form_data,
+																				  	   categories=categories,
+																				  	   custom=False)
+
+						# Merge original part_info with user_part_info
+						part_info = {**part_info, **user_part_info}
 			
 				if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
-					# Request user to select symbol and footprint libraries
-					symbol, template, footprint = user_defined_symbol_template_footprint(categories)
-					# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
+					if settings.ENABLE_KICAD:
+						# Request user to select symbol and footprint libraries
+						symbol, template, footprint = user_defined_symbol_template_footprint(categories)
+						# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
 
 					# Create progress bar window
 					progressbar = progress.create_progress_bar_window()
 
-					if symbol and footprint:
-						# Translate custom/updated part data
-						part_info = inventree_interface.translate_custom_form_to_digikey(part_info=part_info,
-																						 categories=categories)
+					if (symbol and footprint) or (settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD):
+						
+						if CREATE_CUSTOM:
+							# Translate custom part data
+							part_info = inventree_interface.translate_form_to_digikey(part_info=part_info,
+																					  categories=categories,
+																					  custom=True)
 							
 						# Create part in InvenTree
 						if settings.ENABLE_INVENTREE:
 							new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
 																								categories=categories,
+																								kicad=settings.ENABLE_KICAD,
 																								symbol=symbol,
 																								footprint=footprint,
 																								progress_window=progressbar)
@@ -800,7 +815,6 @@ def main():
 								pseudo_categories = [symbol, None]
 								part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
 																							   categories=pseudo_categories)
-
 							else:
 								part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
 																							   categories=categories)

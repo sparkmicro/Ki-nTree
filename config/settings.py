@@ -228,6 +228,8 @@ def load_inventree_settings():
 	# Part URL
 	PART_URL_ROOT = SERVER_ADDRESS + 'part/'
 
+# Default revision
+INVENTREE_DEFAULT_REV = 'A'
 
 # InvenTree part dictionary template
 inventree_part_template = {

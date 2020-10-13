@@ -132,7 +132,7 @@ def save_to_file(part_info, search_file):
 		os.mkdir(os.path.dirname(search_file))
 
 	# Add timestamp
-	part_info['search_timestamp'] = time.time()
+	part_info['search_timestamp'] = int(time.time())
 
 	# Save data if cache enabled
 	if settings.CACHE_ENABLED:

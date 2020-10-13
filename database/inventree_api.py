@@ -79,10 +79,22 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 
 	# Get category object
 	part_category = PartCategory(inventree_api, category_id)
-	# Fetch all parts
-	part_list = part_category.getParts()
+
+	# Fetch all parts from category and subcategories
+	part_list = []
+	part_list.extend(part_category.getParts())
+	for subcategory in part_category.getChildCategories():
+		part_list.extend(subcategory.getParts())
+
 	# Extract parameter from part info
 	new_part_parameters = part_info['parameters']
+	
+	# # Exclude symbol and footprint
+	# try:
+	# 	new_part_parameters.pop('Symbol')
+	# 	new_part_parameters.pop('Footprint')
+	# except KeyError:
+	# 	pass
 
 	template_list = ParameterTemplate.list(inventree_api)
 	def fetch_template_name(template_id):
@@ -108,11 +120,18 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 			parameter_value = parameter.data
 			part_parameters[parameter_name] = parameter_value
 
+		# # Exclude symbol and footprint
+		# try:
+		# 	part_parameters.pop('Symbol')
+		# 	part_parameters.pop('Footprint')
+		# except KeyError:
+		# 	pass
+
 		if new_part_parameters:
 			# Compare database part with new part
 			compare = part_tools.compare(new_part_parameters=new_part_parameters,
 										 db_part_parameters=part_parameters,
-										 filters=filters)
+										 include_filters=filters)
 		else:
 			# Compare with description
 			compare = part_info['description'] == part.description
@@ -208,16 +227,16 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
 	else:
 		return False
 
-def create_part(description: str, category_id: int, image: str, keywords=None) -> int:
+def create_part(category_id: int, name: str, description: str, revision: str, image: str, keywords=None) -> int:
 	''' Create InvenTree part '''
 	global inventree_api
 
 	part = Part.create(inventree_api, {
-		'name': description,
+		'name': name,
 		'description': description,
 		'category': category_id,
 		'keywords': keywords,
-		'revision': 'A',
+		'revision': revision,
 		'active': True,
 		'virtual': False,
 		'component': True,

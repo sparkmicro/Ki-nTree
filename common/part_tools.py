@@ -20,14 +20,14 @@ def generate_part_number(category: str, part_pk: int) -> str:
 
 	return f'{category_id}-{unique_id}-{variant_id}'
 
-def compare(new_part_parameters: dict, db_part_parameters: dict, filters: list) -> bool:
+def compare(new_part_parameters: dict, db_part_parameters: dict, include_filters: list) -> bool:
 	''' Compare two InvenTree parts based on parameters (specs) '''
 	try:
 		for parameter, value in new_part_parameters.items():
 			# Check for filters
-			if filters:
-				# Compare only parameters present in filters
-				if parameter in filters and value != db_part_parameters[parameter]:
+			if include_filters:
+				# Compare only parameters present in include_filters
+				if parameter in include_filters and value != db_part_parameters[parameter]:
 					return False
 			else:
 				# Compare all parameters
