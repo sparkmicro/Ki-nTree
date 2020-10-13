@@ -25,3 +25,4 @@ shiboken2>=5.15.0
 six>=1.15.0
 tldextract>=2.2.3
 urllib3>=1.25.10
+wrapt_timeout_decorator>=1.3.1

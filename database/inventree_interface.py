@@ -10,14 +10,18 @@ from fuzzywuzzy import fuzz
 from search import digikey_api
 
 
-def connect_to_server() -> bool:
+def connect_to_server(timeout=5) -> bool:
 	''' Connect to InvenTree server using user settings '''
 	connect = False
 	settings.load_inventree_settings()
 
-	connect = inventree_api.connect(server=settings.SERVER_ADDRESS,
-									username=settings.USERNAME,
-									password=settings.PASSWORD)
+	try: 
+		connect = inventree_api.connect(server=settings.SERVER_ADDRESS,
+										username=settings.USERNAME,
+										password=settings.PASSWORD,
+										dec_timeout=timeout)
+	except TimeoutError:
+		pass
 
 	if not connect:
 		if not settings.SERVER_ADDRESS:

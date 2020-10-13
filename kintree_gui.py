@@ -104,11 +104,11 @@ def inventree_settings_window():
 		inv_event, inv_values = inventree_window.read()
 
 		def save_settings():
-			config_interface.save_inventree_user_settings(	enable=settings.ENABLE_INVENTREE,
-															server=inv_values['server'],
-															username=inv_values['username'],
-															password=inv_values['password'],
-															user_config_path=settings.CONFIG_INVENTREE )
+			config_interface.save_inventree_user_settings(enable=settings.ENABLE_INVENTREE,
+														  server=inv_values['server'],
+														  username=inv_values['username'],
+														  password=inv_values['password'],
+														  user_config_path=settings.CONFIG_INVENTREE)
 
 		if inv_event == sg.WIN_CLOSED:
 			inventree_window.close()

@@ -32,8 +32,11 @@ def close_progress_bar_window():
 	''' Close progress bar window after part creation '''
 	global progress_window
 
-	if progress_window:
-		progress_window.close()
+	try:
+		if progress_window:
+			progress_window.close()
+	except NameError:
+		return
 
 def progress_increment():
 	''' Increment progress '''
@@ -51,7 +54,10 @@ def update_progress_bar_window(increment=0) -> bool:
 
 	on_going_progress = True
 
-	if not progress_window:
+	try:
+		if not progress_window:
+			return False
+	except NameError:
 		return False
 
 	if increment:

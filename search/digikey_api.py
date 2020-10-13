@@ -5,6 +5,8 @@ import pickle
 import config.settings as settings
 import digikey
 from config import config_interface
+# Timeout
+from wrapt_timeout_decorator import timeout
 
 os.environ['DIGIKEY_STORAGE_PATH'] = settings.DIGIKEY_STORAGE_PATH
 
@@ -46,13 +48,19 @@ def fetch_digikey_part_info(part_number: str) -> dict:
 	if not setup_environment():
 		return part_info
 
+	@timeout(dec_timeout=10)
+	def digikey_search_timeout():
+		return digikey.product_details(part_number).to_dict()
+	
 	# Query part number
 	try:
-		part = digikey.product_details(part_number).to_dict()
-	except:
+		part = digikey_search_timeout()
+	except TimeoutError:
+		part = None
+
+	if not part:
 		return part_info
-	# print(json.dumps(part, indent = 4, sort_keys = True))
-	
+
 	category, subcategory = find_categories(part)
 	try:
 		part_info['category'] = category
