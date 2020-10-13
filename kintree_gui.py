@@ -179,11 +179,20 @@ def kicad_settings_window():
 	kicad_window.close()
 	return
 
-def add_custom_part() -> dict:
-	''' Add custome part (bypass Digi-Key search) '''
+def add_custom_part(part_data: dict) -> dict:
+	''' Add custom part (bypass Digi-Key search) '''
 	user_values = {}
 	add_custom_layout = []
-	default = 'TEST'
+
+	def get_default(part_data, key):
+		try:
+			default_key = list(part_data[key].keys())[0]
+			default_value = part_data[key][default_key][0]
+		except:
+			default_key = ''
+			default_value = ''
+
+		return default_key, default_value
 
 	skip_items = ['category', 'IPN', 'image', 'inventree_url', 'parameters']
 	input_keys = []
@@ -191,20 +200,27 @@ def add_custom_part() -> dict:
 		if key in skip_items:
 			pass
 		elif key == 'supplier' or key == 'manufacturer':
+			# Get default values
+			name_default, number_default = get_default(part_data, key)
+
 			sub_key = key + '_name'
 			add_custom_layout.append([
 										sg.Text(sub_key.replace('_', ' ').title()),
-										sg.InputText(default, size=(40,1), key=sub_key),
+										sg.InputText(name_default, size=(40,1), key=sub_key),
 									])
 			input_keys.append(sub_key)
 
 			sub_key = key + '_part_number'
 			add_custom_layout.append([
 										sg.Text(sub_key.replace('_', ' ').title()),
-										sg.InputText(default, size=(40,1), key=sub_key),
+										sg.InputText(number_default, size=(40,1), key=sub_key),
 									])
 			input_keys.append(sub_key)
 		else:
+			default = part_data.get(key, '')
+			if not default:
+				default = ''
+
 			add_custom_layout.append([
 										sg.Text(key.capitalize()),
 										sg.InputText(default, size=(40,1), key=key),
@@ -213,12 +229,18 @@ def add_custom_part() -> dict:
 
 	add_custom_layout.append([ sg.Button('CREATE', size=(59,1)), ])
 
+	if part_data:
+		window_title = 'Update Part Data'
+	else:
+		window_title = 'Add Custom Part'
+
 	add_custom_window = sg.Window(
-		'Add Custom Part', add_custom_layout, location=(500, 500)
+		window_title, add_custom_layout, location=(500, 500)
 	)
+
 	cstm_event, cstm_values = add_custom_window.read()
 	if cstm_event == sg.WIN_CLOSED:  # if user closes window
-		pass
+		return None
 	else:
 		for key in input_keys:
 			user_values[key] = cstm_values[key]
@@ -651,8 +673,9 @@ def main():
 			settings.set_inventree_enable_flag(values['enable_inventree'], save=True)
 			settings.set_kicad_enable_flag(values['enable_kicad'], save=True)
 		elif event == 'Custom Part':
-			custom_part_info = add_custom_part()
-			CREATE_CUSTOM = True
+			custom_part_info = add_custom_part(part_data={})
+			if custom_part_info:
+				CREATE_CUSTOM = True
 		else:
 			# Adding part information to InvenTree
 			categories = [None, None]
@@ -706,12 +729,7 @@ def main():
 						part_info = {}
 
 			if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
-				# if settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
-				# 	categories = inventree_interface.get_categories(part_info=part_info,
-				# 													supplier_only=False)
-				# 	# Force category window
-				# 	categories = user_defined_categories()
-
+				
 				if settings.ENABLE_INVENTREE:
 					cprint('\n[MAIN]\tCreating part in Inventree', silent=settings.SILENT)
 
@@ -750,6 +768,9 @@ def main():
 						config_file = settings.CONFIG_DIGIKEY_CATEGORIES.split(os.sep)[-1]
 						cprint(f'[INFO]\tWarning: Failed to add new supplier category to {config_file} file', silent=settings.SILENT)
 						cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
+
+					# Confirm part_info data with user
+					part_info = add_custom_part(inventree_interface.translate_digikey_to_inventree(part_info, categories))
 			
 				if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
 					# Request user to select symbol and footprint libraries
@@ -760,10 +781,9 @@ def main():
 					progressbar = progress.create_progress_bar_window()
 
 					if symbol and footprint:
-						# Translate custom part data
-						if CREATE_CUSTOM:
-							part_info = inventree_interface.translate_custom_form_to_digikey(part_info=part_info,
-																							 categories=categories)
+						# Translate custom/updated part data
+						part_info = inventree_interface.translate_custom_form_to_digikey(part_info=part_info,
+																						 categories=categories)
 							
 						# Create part in InvenTree
 						if settings.ENABLE_INVENTREE:

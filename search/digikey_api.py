@@ -106,7 +106,10 @@ def load_from_file(search_file) -> dict:
 
 	# Load data from file if cache enabled
 	if settings.CACHE_ENABLED:
-		part_data = config_interface.load_file(search_file)
+		try:
+			part_data = config_interface.load_file(search_file)
+		except FileNotFoundError:
+			return None
 
 		if part_data:
 			# Check cache validity
