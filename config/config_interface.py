@@ -1,11 +1,11 @@
 import base64
-import os
 import copy
+import os
 
 import yaml
 from common.tools import cprint
-import config.settings as settings
 
+FUNCTION_FILTER_KEY = '__'
 
 def load_file(file_path: str) -> dict:
 	''' Safe load YAML file '''
@@ -249,8 +249,8 @@ def load_supplier_categories(supplier_config_path: str, clean=False) -> dict:
 
 		for category in supplier_categories:
 			for subcategory in supplier_categories[category]:
-				if settings.FUNCTION_FILTER_KEY in subcategory:
-					clean_supplier_categories[category][subcategory.replace(settings.FUNCTION_FILTER_KEY,'')] \
+				if FUNCTION_FILTER_KEY in subcategory:
+					clean_supplier_categories[category][subcategory.replace(FUNCTION_FILTER_KEY,'')] \
 						= supplier_categories[category][subcategory]
 					del clean_supplier_categories[category][subcategory]
 
@@ -318,7 +318,7 @@ def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
 				break
 
 			# Function filtered
-			inventree_subcategory_filter = settings.FUNCTION_FILTER_KEY + user_subcategory
+			inventree_subcategory_filter = FUNCTION_FILTER_KEY + user_subcategory
 			if inventree_subcategory_filter in supplier_category_keys:
 				try:
 					if supplier_category not in supplier_categories[category][inventree_subcategory_filter]:

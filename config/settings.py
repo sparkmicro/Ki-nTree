@@ -20,10 +20,6 @@ def enable_test_mode():
 	SILENT = True
 
 
-# GLOBAL
-FUNCTION_FILTER_KEY = '__'
-
-
 # PATHS
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
 	PROJECT_DIR = os.path.abspath(os.path.dirname(sys.executable))

@@ -75,7 +75,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 				if supplier_subcategory == key:
 					categories[0] = inventree_category
 					# Check if filtering by function
-					if inventree_subcategory.startswith(settings.FUNCTION_FILTER_KEY):
+					if inventree_subcategory.startswith(config_interface.FUNCTION_FILTER_KEY):
 						function_filter = True
 
 					# Save subcategory if not function filtered
@@ -106,7 +106,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 				display_result = f'"{inventree_subcategory}" ?= "{item}"'.ljust(50)
 				cprint(f'{display_result} => {fuzzy_match}', silent=settings.HIDE_DEBUG)
 				if fuzzy_match >= settings.CATEGORY_MATCH_RATIO_LIMIT:
-					categories[1] = inventree_subcategory.replace(settings.FUNCTION_FILTER_KEY,'')
+					categories[1] = inventree_subcategory.replace(config_interface.FUNCTION_FILTER_KEY,'')
 					break
 
 			if categories[1]:
