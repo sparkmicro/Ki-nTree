@@ -97,17 +97,6 @@ Enjoy!
 *For any problem/bug you find, please [report an issue](https://github.com/sparkmicro/Ki-nTree/issues).*
 
 ## Roadmap
-#### Version 0.3
-##### Global
-- [X] Save part into main category if subcategory does not exist in InvenTree
-- [X] Add "Add Custom" menu option to add parts to KiCad and InvenTree bypassing Digi-Key API
-- [X] Add timeout to InvenTree server connect and Digi-Key API search
-
-##### GUI
-- [X] Inform user of part creation progress with GUI window
-- [X] Show form prefilled with part API search results and allow user edits
-	- [X] Switch to YAML file format for part search API results
-	- [X] Add timestamp to API data for caching management
 
 #### Version 0.4
 ##### Global
