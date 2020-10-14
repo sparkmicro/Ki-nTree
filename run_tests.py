@@ -276,6 +276,13 @@ if __name__ == '__main__':
 			if not add_category:
 				method_results = False
 
+
+			# Synchronize InvenTree and Supplier categories
+			sync_categories = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
+																			  	  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
+			if not sync_categories:
+				method_results = False
+
 			if not method_results:
 				cprint('[ FAIL ]', flush=True)
 				exit_code = -1
