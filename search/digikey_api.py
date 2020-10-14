@@ -49,7 +49,7 @@ def fetch_digikey_part_info(part_number: str) -> dict:
 	if not setup_environment():
 		return part_info
 
-	@timeout(dec_timeout=10)
+	@timeout(dec_timeout=20)
 	def digikey_search_timeout():
 		return digikey.product_details(part_number).to_dict()
 	
