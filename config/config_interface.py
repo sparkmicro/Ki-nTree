@@ -1,9 +1,11 @@
 import base64
+import copy
 import os
 
 import yaml
 from common.tools import cprint
 
+FUNCTION_FILTER_KEY = '__'
 
 def load_file(file_path: str) -> dict:
 	''' Safe load YAML file '''
@@ -238,12 +240,21 @@ def add_footprint_library(user_config_path: str, category: str, library_folder: 
 
 	return dump_file(user_settings, user_config_path)
 
-def load_supplier_categories(supplier_config_path: str) -> dict:
+def load_supplier_categories(supplier_config_path: str, clean=False) -> dict:
 	''' Load Supplier category mapping from Supplier settings file '''
-	try:
-		supplier_categories = load_file(supplier_config_path)
-	except:
-		return None
+	supplier_categories = load_file(supplier_config_path)
+
+	if clean:
+		clean_supplier_categories = copy.deepcopy(supplier_categories)
+
+		for category in supplier_categories:
+			for subcategory in supplier_categories[category]:
+				if FUNCTION_FILTER_KEY in subcategory:
+					clean_supplier_categories[category][subcategory.replace(FUNCTION_FILTER_KEY,'')] \
+						= supplier_categories[category][subcategory]
+					del clean_supplier_categories[category][subcategory]
+
+		return clean_supplier_categories
 
 	# print(supplier_categories)
 	return supplier_categories
@@ -269,6 +280,21 @@ def load_supplier_categories_inversed(supplier_config_path: str) -> dict:
 	# print(supplier_categories_inversed)
 	return supplier_categories_inversed
 
+def sync_inventree_supplier_categories(inventree_config_path: str, supplier_config_path: str) -> dict:
+	''' Synchronize supplier categories dict from InvenTree categories '''
+	inventree_categories = load_file(inventree_config_path)['CATEGORIES']
+	supplier_categories = load_supplier_categories(supplier_config_path, clean=True)
+	updated_supplier_categories = copy.deepcopy(supplier_categories)
+
+	try:
+		for category in inventree_categories:
+			if category not in supplier_categories.keys():
+				updated_supplier_categories[category] = inventree_categories[category]
+	except:
+		pass
+
+	return updated_supplier_categories
+
 def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
 	''' Add Supplier category mapping to Supplier settings file
 
@@ -292,7 +318,7 @@ def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
 				break
 
 			# Function filtered
-			inventree_subcategory_filter = '__' + user_subcategory
+			inventree_subcategory_filter = FUNCTION_FILTER_KEY + user_subcategory
 			if inventree_subcategory_filter in supplier_category_keys:
 				try:
 					if supplier_category not in supplier_categories[category][inventree_subcategory_filter]:

@@ -2,7 +2,7 @@ import copy
 import os
 
 import config.settings as settings
-from common import part_tools
+from common import part_tools, progress
 from common.tools import cprint
 from config import config_interface
 from database import inventree_api
@@ -10,14 +10,18 @@ from fuzzywuzzy import fuzz
 from search import digikey_api
 
 
-def connect_to_server() -> bool:
+def connect_to_server(timeout=5) -> bool:
 	''' Connect to InvenTree server using user settings '''
 	connect = False
 	settings.load_inventree_settings()
 
-	connect = inventree_api.connect(	server=settings.SERVER_ADDRESS,
+	try: 
+		connect = inventree_api.connect(server=settings.SERVER_ADDRESS,
 										username=settings.USERNAME,
-										password=settings.PASSWORD )
+										password=settings.PASSWORD,
+										connect_timeout=timeout)
+	except TimeoutError:
+		pass
 
 	if not connect:
 		if not settings.SERVER_ADDRESS:
@@ -31,7 +35,9 @@ def connect_to_server() -> bool:
 			return connect
 		cprint(f'[TREE]\tError connecting to InvenTree server: invalid address, username or password')
 	else:
-		cprint(f'[TREE]\tSuccessfully connected to InvenTree server', silent=settings.SILENT)
+		env = [env_type.name for env_type in settings.Environment
+			   if env_type.value == settings.environment][0]
+		cprint(f'[TREE]\tSuccessfully connected to InvenTree server (ENV={env})', silent=settings.SILENT)
 
 	return connect
 
@@ -42,8 +48,12 @@ def build_part_keywords(inventree_part: dict) -> str:
 def get_categories(part_info: dict, supplier_only=False) -> list:
 	''' Find categories from part supplier data, use "somewhat automatic" matching '''
 	categories = [None, None]
-	supplier_category = str(part_info['category'])
-	supplier_subcategory = str(part_info['subcategory'])
+
+	try:
+		supplier_category = str(part_info['category'])
+		supplier_subcategory = str(part_info['subcategory'])
+	except KeyError:
+		return categories
 
 	# Return supplier category, if match not needed
 	if supplier_only:
@@ -65,7 +75,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 				if supplier_subcategory == key:
 					categories[0] = inventree_category
 					# Check if filtering by function
-					if inventree_subcategory.startswith('__'):
+					if inventree_subcategory.startswith(config_interface.FUNCTION_FILTER_KEY):
 						function_filter = True
 
 					# Save subcategory if not function filtered
@@ -96,7 +106,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 				display_result = f'"{inventree_subcategory}" ?= "{item}"'.ljust(50)
 				cprint(f'{display_result} => {fuzzy_match}', silent=settings.HIDE_DEBUG)
 				if fuzzy_match >= settings.CATEGORY_MATCH_RATIO_LIMIT:
-					categories[1] = inventree_subcategory.replace('__','')
+					categories[1] = inventree_subcategory.replace(config_interface.FUNCTION_FILTER_KEY,'')
 					break
 
 			if categories[1]:
@@ -159,25 +169,27 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 	if not categories[0]:
 		cprint(f'[INFO]\tWarning: "{part_info["category"]}" did not match any supplier category ', silent=settings.SILENT)
 	else:
-		cprint(f'[TREE]\tCategory: "{categories[0]}"', silent=settings.SILENT)
+		cprint(f'[INFO]\tCategory: "{categories[0]}"', silent=settings.SILENT)
 	if not categories[1]:
 		cprint(f'[INFO]\tWarning: "{part_info["subcategory"]}" did not match any supplier subcategory ', silent=settings.SILENT)
 	else:
-		cprint(f'[TREE]\tSubcategory: "{categories[1]}"', silent=settings.SILENT)
+		cprint(f'[INFO]\tSubcategory: "{categories[1]}"', silent=settings.SILENT)
 	
 	return categories
 
-def translate_digikey_to_inventree(part_info: dict, categories: list) -> dict:
+def translate_digikey_to_inventree(part_info: dict, categories: list, skip_params=False) -> dict:
 	''' Using supplier part data and categories, fill-in InvenTree part dictionary '''
 	# Copy template
 	inventree_part = copy.deepcopy(settings.inventree_part_template)
 	# Insert data
 	inventree_part["category"][0] = categories[0]
 	inventree_part["category"][1] = categories[1]
-	inventree_part['name'] = part_info['product_description']
+	inventree_part['name'] = part_info.get('product_name', part_info['product_description'])
 	inventree_part['description'] = part_info['product_description']
+	# Revision
+	inventree_part['revision'] = part_info.get('revision', settings.INVENTREE_DEFAULT_REV)
 	# Keywords (need to be after description)
-	inventree_part['keywords'] = build_part_keywords(inventree_part)
+	inventree_part['keywords'] = part_info.get('keywords', build_part_keywords(inventree_part))
 	inventree_part['image'] = part_info['primary_photo']
 	inventree_part['supplier'] = {'Digi-Key': [part_info['digi_key_part_number']],}
 	inventree_part['manufacturer'] = {part_info['manufacturer']: [part_info['manufacturer_part_number']],}
@@ -185,32 +197,54 @@ def translate_digikey_to_inventree(part_info: dict, categories: list) -> dict:
 	inventree_part['datasheet'] = part_info['primary_datasheet'].replace(' ','%20')
 
 	# Load parameters map
-	parameter_map = config_interface.load_category_parameters(	category=inventree_part["category"][0],
-																		supplier_config_path=settings.CONFIG_DIGIKEY_PARAMETERS, )
-	# Add Parameters	
-	if parameter_map:
-		for supplier_param, inventree_param in parameter_map.items():
-			# Some parameters may not be mapped
-			if inventree_param not in inventree_part['parameters'].keys():
-				if supplier_param != 'Manufacturer Part Number':
-					try:
-						parameter_value = part_tools.clean_parameter_value(	category=categories[0],
-																			name=supplier_param,
-																			value=part_info['parameters'][supplier_param] )
-						inventree_part['parameters'][inventree_param] = parameter_value
-					except:
-						cprint(f'[INFO]\tWarning: Parameter "{supplier_param}" not found in supplier data', silent=settings.SILENT)
-				else:
-					inventree_part['parameters'][inventree_param] = part_info['manufacturer_part_number']
-		
-		# Check for missing parameters and fill value with dash
-		for inventree_param in parameter_map.values():
-			if inventree_param not in inventree_part['parameters'].keys():
-				inventree_part['parameters'][inventree_param] = '-'
-	else:
-		cprint(f'[INFO]\tWarning: Parameter map for "{categories[0]}" does not exist or is empty', silent=settings.SILENT)
+	parameter_map = config_interface.load_category_parameters(category=inventree_part["category"][0],
+															  supplier_config_path=settings.CONFIG_DIGIKEY_PARAMETERS, )
+	
+	if not skip_params:
+		# Add Parameters	
+		if parameter_map:
+			for supplier_param, inventree_param in parameter_map.items():
+				# Some parameters may not be mapped
+				if inventree_param not in inventree_part['parameters'].keys():
+					if supplier_param != 'Manufacturer Part Number':
+						try:
+							parameter_value = part_tools.clean_parameter_value(	category=categories[0],
+																				name=supplier_param,
+																				value=part_info['parameters'][supplier_param] )
+							inventree_part['parameters'][inventree_param] = parameter_value
+						except:
+							cprint(f'[INFO]\tWarning: Parameter "{supplier_param}" not found in supplier data', silent=settings.SILENT)
+					else:
+						inventree_part['parameters'][inventree_param] = part_info['manufacturer_part_number']
+			
+			# Check for missing parameters and fill value with dash
+			for inventree_param in parameter_map.values():
+				if inventree_param not in inventree_part['parameters'].keys():
+					inventree_part['parameters'][inventree_param] = '-'
+		else:
+			cprint(f'[INFO]\tWarning: Parameter map for "{categories[0]}" does not exist or is empty', silent=settings.SILENT)
 
 	return inventree_part
+
+def translate_form_to_digikey(part_info: dict, categories: list, custom=False) -> dict:
+	''' Translate custom user part data and categories to Digi-Key API result format '''
+	updated_part_info = {}
+
+	updated_part_info['category'] = categories[0]
+	updated_part_info['subcategory'] = categories[1]
+
+	updated_part_info['product_name'] = part_info['name']
+	updated_part_info['product_description'] = part_info['description']
+	updated_part_info['revision'] = part_info['revision']
+	updated_part_info['keywords'] = part_info['keywords']
+	updated_part_info['digi_key_part_number'] = part_info['supplier_part_number']
+	updated_part_info['manufacturer'] = part_info['manufacturer_name']
+	updated_part_info['manufacturer_part_number'] = part_info['manufacturer_part_number']
+	updated_part_info['primary_datasheet'] = part_info['datasheet']
+	if custom:
+		updated_part_info['primary_photo'] = ''
+
+	return updated_part_info
 
 def digikey_search(part_number: str) -> dict:
 	''' Wrapper for Digi-Key search, allow use of cached data (limited daily API calls) '''
@@ -222,16 +256,12 @@ def digikey_search(part_number: str) -> dict:
 
 	# Load from file if cache is enabled
 	search_filename = settings.search_results['directory'] + part_number + settings.search_results['extension']
-	if settings.CACHE_ENABLED:
-		# TODO: Cache should be automatically disabled if data is too old
-		try:
-			part_info = digikey_api.load_from_file(search_filename)
-			if part_info:
-				cprint(f'\n[MAIN]\tUsing Digi-Key cached data for {part_number}', silent=settings.SILENT)
-		except:
-			pass
 
-	if not part_info:
+	# Get cached data
+	part_info = digikey_api.load_from_file(search_filename)
+	if part_info:
+		cprint(f'\n[MAIN]\tUsing Digi-Key cached data for {part_number}', silent=settings.SILENT)
+	else:
 		cprint(f'\n[MAIN]\tDigi-Key search for {part_number}', silent=settings.SILENT)
 		part_info = digikey_api.fetch_digikey_part_info(part_number)
 
@@ -240,15 +270,12 @@ def digikey_search(part_number: str) -> dict:
 		cprint(f'[INFO]\tError: Failed to fetch data for "{part_number}"', silent=settings.SILENT)
 	
 	# Save search results
-	if part_info and settings.CACHE_ENABLED:
-		# Check if search/results directory needs to be created
-		if not os.path.exists(os.path.dirname(search_filename)):
-			os.mkdir(os.path.dirname(search_filename))
+	if part_info:
 		digikey_api.save_to_file(part_info, search_filename)
 
 	return part_info
 
-def inventree_create(part_info: dict, categories: list, symbol=None, footprint=None):
+def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True):
 	''' Create InvenTree part from supplier part data and categories '''
 	# TODO: Make 'supplier' a variable for use with other APIs (eg. Octopart)
 	supplier = 'Digi-Key'
@@ -266,49 +293,64 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 	category_name = inventree_part['category'][0]
 	subcategory_name = inventree_part['category'][1]
 	category_pk = inventree_api.get_inventree_category_id(category_name)
+	category_select = category_pk
 	
+	# Check if subcategory exists
 	if subcategory_name:
 		# Fetch subcategory id
-		subcategory_pk = inventree_api.get_inventree_category_id(	category_name=subcategory_name,
-																	parent_category_id=category_pk )
+		subcategory_pk = inventree_api.get_inventree_category_id(category_name=subcategory_name,
+																 parent_category_id=category_pk)
 		if subcategory_pk > 0:
-			# Check if part already exists
-			part_pk = inventree_api.is_new_part(subcategory_pk, inventree_part)
-
-			### Part exists
-			if part_pk > 0:
-				cprint(f'[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
-				ipn = inventree_api.get_part_number(part_pk)
-				# Update InvenTree part number
-				inventree_part['IPN'] = ipn
-				# Update InvenTree URL
-				inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
-			### Part is new
-			else:
-				new_part = True
-				# Create a new Part
-				# Use the pk (primary-key) of the category
-				part_pk = inventree_api.create_part(description=inventree_part['description'],
-													category_id=subcategory_pk,
-													image=inventree_part['image'],
-													keywords=inventree_part['keywords'])
-
-				# Generate Internal Part Number
-				cprint(f'\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
-				ipn = part_tools.generate_part_number(category_name, part_pk)
-				cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
-				# Update InvenTree part number
-				ipn_update = inventree_api.set_part_number(part_pk, ipn)
-				if not ipn_update:
-					cprint(f'\n[INFO]\tError updating IPN', silent=settings.SILENT)
-				inventree_part['IPN'] = ipn
-				# Update InvenTree part revision
-				inventree_part['revision'] = 'A'
-				# Update InvenTree URL
-				inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+			category_select = subcategory_pk
 		else:
-			cprint(f'\n[TREE]\tError: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
+			cprint(f'\n[TREE]\tWarning: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
+
+	# Progress Update
+	if show_progress and not progress.update_progress_bar_window(): return new_part, part_pk, inventree_part
+
+	if category_select > 0:
+		# Check if part already exists
+		part_pk = inventree_api.is_new_part(category_pk, inventree_part)
+		### Part exists
+		if part_pk > 0:
+			cprint(f'[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
+			ipn = inventree_api.get_part_number(part_pk)
+			# Update InvenTree part number
+			inventree_part['IPN'] = ipn
+			# Update InvenTree URL
+			inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+		### Part is new
+		else:
+			new_part = True
+			# Create a new Part
+			# Use the pk (primary-key) of the category
+			part_pk = inventree_api.create_part(category_id=category_select,
+												name=inventree_part['name'],
+												description=inventree_part['description'],
+												revision=inventree_part['revision'],
+												image=inventree_part['image'],
+												keywords=inventree_part['keywords'])
+
+			# Check part primary key
+			if not part_pk: return new_part, part_pk, inventree_part
+			# Progress Update
+			if show_progress and not progress.update_progress_bar_window(): return new_part, part_pk, inventree_part
+
+			# Generate Internal Part Number
+			cprint(f'\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
+			ipn = part_tools.generate_part_number(category_name, part_pk)
+			cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
+			# Update InvenTree part number
+			ipn_update = inventree_api.set_part_number(part_pk, ipn)
+			if not ipn_update:
+				cprint(f'\n[INFO]\tError updating IPN', silent=settings.SILENT)
+			inventree_part['IPN'] = ipn
+			# Update InvenTree URL
+			inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
 	
+	# Progress Update
+	if show_progress and not progress.update_progress_bar_window(): return new_part, part_pk, inventree_part
+
 	if part_pk > 0:
 		if new_part:
 			cprint('[INFO]\tSuccess: Added new part to InvenTree', silent=settings.SILENT)
@@ -317,26 +359,27 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 			if not image_result:
 				cprint(f'[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
 
-		# Create mandatory parameters (symbol & footprint)
-		if symbol:
-			kicad_symbol = symbol + ':' + ipn
-		else:
-			try:
-				kicad_symbol = settings.symbol_libraries_paths[category_name].split(os.sep)[-1].split('.')[0] + ':' + ipn
-			except:
-				kicad_symbol = category_name.replace(' ','_') + ':TBD'
-		if footprint:
-			kicad_footprint = footprint
-		else:
-			try:
-				supplier_package = inventree_part['parameters']['Package Type']
-				kicad_footprint = settings.footprint_lookup_table[category_name][supplier_package]
-			except:
-				kicad_footprint = category_name.replace(' ','_') + ':TBD'
+		if kicad:
+			# Create mandatory parameters (symbol & footprint)
+			if symbol and ipn:
+				kicad_symbol = symbol + ':' + ipn
+			else:
+				try:
+					kicad_symbol = settings.symbol_libraries_paths[category_name].split(os.sep)[-1].split('.')[0] + ':' + ipn
+				except:
+					kicad_symbol = category_name.replace(' ','_') + ':TBD'
+			if footprint:
+				kicad_footprint = footprint
+			else:
+				try:
+					supplier_package = inventree_part['parameters']['Package Type']
+					kicad_footprint = settings.footprint_lookup_table[category_name][supplier_package]
+				except:
+					kicad_footprint = category_name.replace(' ','_') + ':TBD'
 
-		# Add symbol & footprint to InvenTree part
-		inventree_part['parameters']['Symbol'] = kicad_symbol
-		inventree_part['parameters']['Footprint'] = kicad_footprint
+			# Add symbol & footprint to InvenTree part
+			inventree_part['parameters']['Symbol'] = kicad_symbol
+			inventree_part['parameters']['Footprint'] = kicad_footprint
 
 		# Create parameters
 		if len(inventree_part['parameters']) > 0:
@@ -347,6 +390,8 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 			]
 			for name, value in inventree_part['parameters'].items():
 					parameter, is_new_parameter = inventree_api.create_parameter(part_id=part_pk, template_name=name, value=value)
+					# Progress Update
+					if show_progress and not progress.update_progress_bar_window(3): return new_part, part_pk, inventree_part
 
 					if is_new_parameter:
 						parameters_lists[0].append(name)
@@ -364,8 +409,8 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 
 		# Create company part
 		cprint('\n[MAIN]\tCreating supplier part', silent=settings.SILENT)
-		is_new_supplier_part = inventree_api.is_new_supplier_part(	supplier_name=supplier, 
-																	supplier_sku=inventree_part['supplier'][supplier][0] )
+		is_new_supplier_part = inventree_api.is_new_supplier_part(supplier_name=supplier, 
+																  supplier_sku=inventree_part['supplier'][supplier][0] )
 
 		if not is_new_supplier_part:
 			cprint(f'[INFO]\tSupplier part already exists, skipping.', silent=settings.SILENT)
@@ -375,15 +420,18 @@ def inventree_create(part_info: dict, categories: list, symbol=None, footprint=N
 				manufacturer_name = key
 				manufacturer_number = values[0]
 			# Create a new supplier part
-			is_supplier_part_created = inventree_api.create_supplier_part(	part_id=part_pk,
-																			supplier_name=supplier,
-																			supplier_sku=inventree_part['supplier'][supplier],
-																			description=inventree_part['description'],
-																			manufacturer_name=manufacturer_name,
-																			manufacturer_pn=manufacturer_number,
-																			datasheet=inventree_part['datasheet'] )
+			is_supplier_part_created = inventree_api.create_supplier_part(part_id=part_pk,
+																		  supplier_name=supplier,
+																		  supplier_sku=inventree_part['supplier'][supplier],
+																		  description=inventree_part['description'],
+																		  manufacturer_name=manufacturer_name,
+																	 	  manufacturer_pn=manufacturer_number,
+																		  datasheet=inventree_part['datasheet'] )
 			
 			if is_supplier_part_created:
 				cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
+
+	# Progress Update
+	if show_progress and not progress.update_progress_bar_window(3): pass
 
 	return new_part, part_pk, inventree_part

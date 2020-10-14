@@ -124,7 +124,8 @@ if __name__ == '__main__':
 								create_library(os.path.dirname(test_library_path), 'TEST', settings.symbol_template_lib)
 
 							kicad_result, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_data,
-																						 	  library_path=test_library_path)
+																						 	  library_path=test_library_path,
+																						 	  show_progress=False)
 							
 							# Log result
 							if number not in kicad_results.keys():
@@ -144,7 +145,8 @@ if __name__ == '__main__':
 						# Create part in InvenTree
 						if categories[0] and categories[1]:
 							new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
-																								categories=categories)
+																								categories=categories,
+																								show_progress=False)
 
 						inventree_result = check_result(status, new_part)
 						pk_list = [data[0] for data in inventree_results.values()]
@@ -272,6 +274,13 @@ if __name__ == '__main__':
 			}
 			add_category = config_interface.add_supplier_category(categories, settings.CONFIG_DIGIKEY_CATEGORIES)
 			if not add_category:
+				method_results = False
+
+
+			# Synchronize InvenTree and Supplier categories
+			sync_categories = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
+																			  	  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
+			if not sync_categories:
 				method_results = False
 
 			if not method_results:

@@ -1,6 +1,7 @@
 import os
 
 import config.settings as settings
+from common import progress
 from common.tools import cprint
 from schlib import SchLib
 
@@ -20,7 +21,7 @@ class ComponentLibManager(object):
 
 		return False
 
-	def add_component_to_library_from_inventree(self, component_data, library_path, template_path=None):
+	def add_component_to_library_from_inventree(self, component_data, library_path, template_path=None, show_progress=True):
 		''' Create component (symbol) in KiCad library '''
 		part_in_lib = False
 		new_part = False
@@ -58,6 +59,9 @@ class ComponentLibManager(object):
 			is_component_in_library = False
 		if is_component_in_library:
 			return part_in_lib, new_part
+
+		# Progress Update
+		if show_progress and not progress.update_progress_bar_window(): return part_in_lib, new_part
 
 		# Load template
 		templatelib = SchLib(template_path)
@@ -100,6 +104,9 @@ class ComponentLibManager(object):
 		cprint(f'[KCAD]\tSuccess: Component added to library {library_name}', silent=settings.SILENT)
 		part_in_lib = True
 		new_part = True
+
+		# Progress Update
+		if show_progress and not progress.update_progress_bar_window(): pass
 
 		return part_in_lib, new_part
 

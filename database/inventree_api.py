@@ -1,5 +1,6 @@
 import config.settings as settings
 import requests
+import validators
 from common import part_tools
 from common.tools import cprint
 from config import config_interface
@@ -8,14 +9,20 @@ from inventree.api import InvenTreeAPI
 from inventree.base import Parameter, ParameterTemplate
 from inventree.company import Company, SupplierPart
 from inventree.part import Part, PartCategory
+# Timeout
+from wrapt_timeout_decorator import timeout
 
 
-def connect(server: str, username: str, password: str, silent=False) -> bool:
+def connect(server: str, username: str, password: str, connect_timeout=5, silent=False) -> bool:
 	''' Connect to InvenTree server and create API object '''
 	global inventree_api
+	
+	@timeout(dec_timeout=connect_timeout)
+	def get_inventree_api_timeout():
+		return InvenTreeAPI(server, username=username, password=password)
 
 	try:
-		inventree_api = InvenTreeAPI(server, username=username, password=password)
+		inventree_api = get_inventree_api_timeout()
 	except:
 		return False
 
@@ -67,15 +74,27 @@ def set_part_number(part_id: int, ipn: str) -> bool:
 		return False
 
 def is_new_part(category_id: int, part_info: dict) -> int:
-	''' Check if part exists based on parameters (strong) '''
+	''' Check if part exists based on parameters (or description) '''
 	global inventree_api
 
 	# Get category object
 	part_category = PartCategory(inventree_api, category_id)
-	# Fetch all parts
-	part_list = part_category.getParts()
+
+	# Fetch all parts from category and subcategories
+	part_list = []
+	part_list.extend(part_category.getParts())
+	for subcategory in part_category.getChildCategories():
+		part_list.extend(subcategory.getParts())
+
 	# Extract parameter from part info
 	new_part_parameters = part_info['parameters']
+	
+	# # Exclude symbol and footprint
+	# try:
+	# 	new_part_parameters.pop('Symbol')
+	# 	new_part_parameters.pop('Footprint')
+	# except KeyError:
+	# 	pass
 
 	template_list = ParameterTemplate.list(inventree_api)
 	def fetch_template_name(template_id):
@@ -84,7 +103,10 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 				return item.name
 
 	# Retrieve parent category name for parameters compare
-	category_name = part_category.getParentCategory().name
+	try:
+		category_name = part_category.getParentCategory().name
+	except AttributeError:
+		category_name = part_category.name
 	filters = config_interface.load_category_parameters_filters(category=category_name, 
 																supplier_config_path=settings.CONFIG_PARAMETERS_FILTERS)
 	# cprint(filters)
@@ -98,10 +120,22 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 			parameter_value = parameter.data
 			part_parameters[parameter_name] = parameter_value
 
-		# Compare database part with new part
-		compare = part_tools.compare(	new_part_parameters=new_part_parameters,
-										db_part_parameters=part_parameters,
-										filters=filters )
+		# # Exclude symbol and footprint
+		# try:
+		# 	part_parameters.pop('Symbol')
+		# 	part_parameters.pop('Footprint')
+		# except KeyError:
+		# 	pass
+
+		if new_part_parameters:
+			# Compare database part with new part
+			compare = part_tools.compare(new_part_parameters=new_part_parameters,
+										 db_part_parameters=part_parameters,
+										 include_filters=filters)
+		else:
+			# Compare with description
+			compare = part_info['description'] == part.description
+
 		if compare:
 			cprint(f'\n[TREE]\tFound part match in database (pk = {part.pk})', silent=settings.HIDE_DEBUG)
 			return part.pk
@@ -193,16 +227,16 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
 	else:
 		return False
 
-def create_part(description: str, category_id: int, image: str, keywords=None) -> int:
+def create_part(category_id: int, name: str, description: str, revision: str, image: str, keywords=None) -> int:
 	''' Create InvenTree part '''
 	global inventree_api
 
 	part = Part.create(inventree_api, {
-		'name': description,
+		'name': name,
 		'description': description,
 		'category': category_id,
 		'keywords': keywords,
-		'revision': 'A',
+		'revision': revision,
 		'active': True,
 		'virtual': False,
 		'component': True,
@@ -321,9 +355,16 @@ def create_supplier_part(part_id: int, supplier_name: str, supplier_sku: str, de
 			'is_supplier': False,
 			'is_manufacturer': True,
 			})
-		manufacturer_id = manufacturer.pk
+		try:
+			manufacturer_id = manufacturer.pk
+		except AttributeError:
+			manufacturer_id = None
 
 	if manufacturer_id:
+		# Validate datasheet link
+		if not validators.url(datasheet):
+			datasheet = ''
+
 		supplier_part = SupplierPart.create(inventree_api, {
 			'part': part_id,
 			'supplier': supplier_id,

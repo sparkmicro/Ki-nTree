@@ -5,7 +5,7 @@ from enum import Enum
 from common.tools import cprint
 from config import config_interface
 
-### DEBUG
+# DEBUG
 # Testing
 ENABLE_TEST = False
 # Silent Mode
@@ -18,9 +18,9 @@ def enable_test_mode():
 	global SILENT
 	ENABLE_TEST = True
 	SILENT = True
-###
 
-### PATHS
+
+# PATHS
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
 	PROJECT_DIR = os.path.abspath(os.path.dirname(sys.executable))
 else:
@@ -33,18 +33,18 @@ sys.path.append(os.path.join(PROJECT_DIR, 'search', 'digikey_api'))
 sys.path.append(os.path.join(PROJECT_DIR, 'kicad'))
 # Tests
 sys.path.append(os.path.join(PROJECT_DIR, 'tests'))
-###
 
-### VERSION
+
+# VERSION
 CONFIG_VERSION = os.path.join(PROJECT_DIR, 'config', 'version.yaml')
 version_info = config_interface.load_file(CONFIG_VERSION)
 try:
 	version = '.'.join([str(v) for v in version_info.values()])
 except:
 	version = '0.0.alpha'
-###
 
-### CONFIG FILES
+
+# CONFIG FILES
 CONFIG_TEMPLATES = os.path.join(PROJECT_DIR, 'config', '')
 CONFIG_USER_FILES = os.path.join(PROJECT_DIR, 'config', 'user_files', '')
 
@@ -56,13 +56,13 @@ def create_user_config_files():
 	if not os.path.exists(CONFIG_USER_FILES):
 		os.makedirs(CONFIG_USER_FILES)
 	# Create user files
-	config_interface.load_user_config_files(	path_to_templates=CONFIG_TEMPLATES,
-											 path_to_user_files=CONFIG_USER_FILES)
+	config_interface.load_user_config_files(path_to_templates=CONFIG_TEMPLATES,
+											path_to_user_files=CONFIG_USER_FILES)
 
 # Create user configuration files
 create_user_config_files()
 
-### DIGI-KEY
+# Digi-Key
 CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
 CONFIG_DIGIKEY_CATEGORIES = os.path.join(
 	CONFIG_USER_FILES, 'digikey_categories.yaml')
@@ -78,7 +78,7 @@ CONFIG_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'categories.yaml')
 CONFIG_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'parameters.yaml')
 CONFIG_PARAMETERS_FILTERS = os.path.join(
 	CONFIG_USER_FILES, 'parameters_filters.yaml')
-###
+
 
 # DIGI-KEY
 # API storage path
@@ -87,11 +87,13 @@ DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', '')
 CATEGORY_MATCH_RATIO_LIMIT = 100
 # Search results caching (stored in files)
 CACHE_ENABLED = True
+# Cache validity in days
+CACHE_VALID_DAYS = 7
 # Caching settings
 if CACHE_ENABLED:
 	search_results = {
 		'directory': os.path.join(PROJECT_DIR, 'search', 'results', ''),
-		'extension': '.dat',
+		'extension': '.yaml',
 	}
 	# Create folder if it does not exists
 	if not os.path.exists(search_results['directory']):
@@ -102,9 +104,9 @@ search_images = os.path.join(PROJECT_DIR, 'search', 'images', '')
 # Create folder if it does not exists
 if not os.path.exists(search_images):
 	os.makedirs(search_images)
-###
 
-### KICAD
+
+# KICAD
 # User Settings
 KICAD_SYMBOLS_PATH = ''
 KICAD_TEMPLATES_PATH = ''
@@ -159,9 +161,9 @@ footprint_name_default = 'TBD'
 AUTO_GENERATE_LIB = True
 symbol_template_lib = os.path.join(
 	PROJECT_DIR, 'kicad', 'templates', 'library_template.lib')
-###
 
-### INVENTREE
+
+# INVENTREE
 class Environment(Enum):
 	'''
 	Local Development/Testing: TESTING
@@ -187,8 +189,7 @@ else:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_test.yaml')
 
 # Load user settings
-inventree_settings = config_interface.load_inventree_user_settings(
-	CONFIG_INVENTREE)
+inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
 
 # Enable flag
 ENABLE_INVENTREE = inventree_settings['ENABLE']
@@ -198,14 +199,13 @@ def set_inventree_enable_flag(value: bool, save=False):
 	ENABLE_INVENTREE = value
 	if save:
 		global CONFIG_INVENTREE
-		inventree_settings = config_interface.load_inventree_user_settings(
-			CONFIG_INVENTREE)
+		inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
 		inventree_settings['ENABLE'] = value
-		config_interface.save_inventree_user_settings(	enable=inventree_settings['ENABLE'],
-													   server=inventree_settings['SERVER_ADDRESS'],
-													   username=inventree_settings['USERNAME'],
-													   password=inventree_settings['PASSWORD'],
-													   user_config_path=CONFIG_INVENTREE)
+		config_interface.save_inventree_user_settings(enable=inventree_settings['ENABLE'],
+													  server=inventree_settings['SERVER_ADDRESS'],
+													  username=inventree_settings['USERNAME'],
+													  password=inventree_settings['PASSWORD'],
+													  user_config_path=CONFIG_INVENTREE)
 	return
 
 # Server settings
@@ -224,6 +224,8 @@ def load_inventree_settings():
 	# Part URL
 	PART_URL_ROOT = SERVER_ADDRESS + 'part/'
 
+# Default revision
+INVENTREE_DEFAULT_REV = 'A'
 
 # InvenTree part dictionary template
 inventree_part_template = {
@@ -240,4 +242,3 @@ inventree_part_template = {
 	'datasheet': None,
 	'parameters': {},
 }
-###

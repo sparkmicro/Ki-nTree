@@ -75,8 +75,6 @@ Power Management:
   __Buck:
   - PMIC - Voltage Regulators - DC DC Switching Regulators
 RF:
-  Antenna: null
-  Chipset: null
   Filter:
   - Balun
 Resistors:

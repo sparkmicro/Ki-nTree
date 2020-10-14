@@ -1,10 +1,13 @@
 import logging
 import os
 import pickle
+import time
 
 import config.settings as settings
 import digikey
 from config import config_interface
+# Timeout
+from wrapt_timeout_decorator import timeout
 
 os.environ['DIGIKEY_STORAGE_PATH'] = settings.DIGIKEY_STORAGE_PATH
 
@@ -46,13 +49,19 @@ def fetch_digikey_part_info(part_number: str) -> dict:
 	if not setup_environment():
 		return part_info
 
+	@timeout(dec_timeout=20)
+	def digikey_search_timeout():
+		return digikey.product_details(part_number).to_dict()
+	
 	# Query part number
 	try:
-		part = digikey.product_details(part_number).to_dict()
+		part = digikey_search_timeout()
 	except:
+		part = None
+
+	if not part:
 		return part_info
-	# print(json.dumps(part, indent = 4, sort_keys = True))
-	
+
 	category, subcategory = find_categories(part)
 	try:
 		part_info['category'] = category
@@ -93,19 +102,41 @@ def test_digikey_api_connect() -> bool:
 	
 def load_from_file(search_file) -> dict:
 	''' Fetch Digi-Key part data from file '''
-	try:
-		file = open(search_file, 'rb')
-		part_info = pickle.load(file)
-		file.close()
-		return part_info
-	except:
-		return None
+	cache_valid = settings.CACHE_VALID_DAYS * 24 * 3600
+
+	# Load data from file if cache enabled
+	if settings.CACHE_ENABLED:
+		try:
+			part_data = config_interface.load_file(search_file)
+		except FileNotFoundError:
+			return None
+
+		if part_data:
+			# Check cache validity
+			try:
+				# Get timestamp
+				timestamp = int(time.time() - part_data['search_timestamp'])
+			except KeyError:
+				timestamp = int(time.time())
+
+			if timestamp < cache_valid:
+				return part_data
+
+	return None
 
 def save_to_file(part_info, search_file):
-	try:
-		''' Save Digi-Key part data to file '''
-		file = open(search_file, 'wb')
-		pickle.dump(part_info, file)
-		file.close()
-	except:
-		raise Exception('Error saving Digi-key search data')
+	''' Save Digi-Key part data to file '''
+
+	# Check if search/results directory needs to be created
+	if not os.path.exists(os.path.dirname(search_file)):
+		os.mkdir(os.path.dirname(search_file))
+
+	# Add timestamp
+	part_info['search_timestamp'] = int(time.time())
+
+	# Save data if cache enabled
+	if settings.CACHE_ENABLED:
+		try:
+			config_interface.dump_file(part_info, search_file)
+		except:
+			raise Exception('Error saving Digi-key search data')

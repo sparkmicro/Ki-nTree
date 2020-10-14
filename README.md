@@ -97,18 +97,13 @@ Enjoy!
 *For any problem/bug you find, please [report an issue](https://github.com/sparkmicro/Ki-nTree/issues).*
 
 ## Roadmap
-#### Version 0.3
+
+#### Version 0.4
 ##### Global
-- [ ] Inform user of part creation progress in UI and terminal
-- [ ] Add ability to create missing category-subcategory to InvenTree during part creation
 - [ ] Combine all KiCad templates in a single library file (lib+dcm)
 - [ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad
-- [ ] Add "Add Custom" menu option to add parts to KiCad and InvenTree bypassing Digi-Key API
 - [ ] Document configuration and backend
 
 ##### GUI
-- [ ] Improve cosmetics (!)
-- [ ] Show form prefilled with part API search results and allow user edits
-	- [ ] Switch to YAML file format for part search API results
-	- [ ] Add timestamp to API data for caching management
-- [ ] Add icon to GUI and executable (not successful in 0.2, try with PySimpleGUIQt?)
+- [ ] Look to improve cosmetics
+- [ ] Add icon to GUI and executable (not successful earlier, try with PySimpleGUIQt?)

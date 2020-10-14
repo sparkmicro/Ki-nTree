@@ -8,6 +8,8 @@ import config.settings as settings
 import PySimpleGUI as sg
 # Digi-Key API
 import search.digikey_api as digikey_api
+# Progress
+from common import progress
 # Tools
 from common.tools import cprint, create_library
 # Interface
@@ -71,7 +73,6 @@ def search_api_settings_window():
 			search_api_window.close()
 			return
 
-
 def inventree_settings_window():
 	''' InvenTree settings window '''
 
@@ -103,11 +104,11 @@ def inventree_settings_window():
 		inv_event, inv_values = inventree_window.read()
 
 		def save_settings():
-			config_interface.save_inventree_user_settings(	enable=settings.ENABLE_INVENTREE,
-															server=inv_values['server'],
-															username=inv_values['username'],
-															password=inv_values['password'],
-															user_config_path=settings.CONFIG_INVENTREE )
+			config_interface.save_inventree_user_settings(enable=settings.ENABLE_INVENTREE,
+														  server=inv_values['server'],
+														  username=inv_values['username'],
+														  password=inv_values['password'],
+														  user_config_path=settings.CONFIG_INVENTREE)
 
 		if inv_event == sg.WIN_CLOSED:
 			inventree_window.close()
@@ -178,47 +179,127 @@ def kicad_settings_window():
 	kicad_window.close()
 	return
 
-def user_defined_categories(category=None, subcategory=None) -> list:
-	''' User defined categories window (pops-up only if no match found) '''
-	categories = [None, None]
-	# Load supplier categories
-	categories_dict = config_interface.load_supplier_categories(settings.CONFIG_DIGIKEY_CATEGORIES)
-	# Category list
-	categories_choices = []
-	try:
-		for item in categories_dict.keys():
-			categories_choices.append(item)
-	except:
-		pass
+def add_custom_part(part_data: dict) -> dict:
+	''' Add custom part (bypass Digi-Key search) '''
+	user_values = {}
+	add_custom_layout = []
 
+	def get_default(part_data, key):
+		try:
+			default_key = list(part_data[key].keys())[0]
+			default_value = part_data[key][default_key][0]
+		except:
+			default_key = ''
+			default_value = ''
+
+		return default_key, default_value
+
+	skip_items = ['category', 'IPN', 'image', 'inventree_url', 'parameters']
+	input_keys = []
+	for key, value in settings.inventree_part_template.items():
+		if key in skip_items:
+			pass
+		elif key == 'supplier' or key == 'manufacturer':
+			# Get default values
+			name_default, number_default = get_default(part_data, key)
+
+			sub_key = key + '_name'
+			add_custom_layout.append([
+										sg.Text(sub_key.replace('_', ' ').title()),
+										sg.InputText(name_default, size=(40,1), key=sub_key),
+									])
+			input_keys.append(sub_key)
+
+			sub_key = key + '_part_number'
+			add_custom_layout.append([
+										sg.Text(sub_key.replace('_', ' ').title()),
+										sg.InputText(number_default, size=(40,1), key=sub_key),
+									])
+			input_keys.append(sub_key)
+		else:
+			default = part_data.get(key, '')
+			if not default:
+				default = ''
+
+			add_custom_layout.append([
+										sg.Text(key.capitalize()),
+										sg.InputText(default, size=(40,1), key=key),
+									])
+			input_keys.append(key)
+
+	if part_data:
+		add_custom_layout.append([ sg.Button('Submit', size=(20,1)), ])
+		window_title = 'Update Part Data'
+	else:
+		add_custom_layout.append([ sg.Button('CREATE', size=(59,1)), ])
+		window_title = 'Add Custom Part'
+
+	add_custom_window = sg.Window(
+		window_title, add_custom_layout, location=(500, 500)
+	)
+
+	cstm_event, cstm_values = add_custom_window.read()
+	if cstm_event == sg.WIN_CLOSED:  # if user closes window
+		return None
+	else:
+		for key in input_keys:
+			user_values[key] = cstm_values[key]
+		
+	add_custom_window.close()
+	return user_values
+
+def user_defined_categories(category=None, subcategory=None, extend=False) -> list:
+	''' User defined categories window '''
+	categories = [None, None]
+
+	if extend:
+		# Load and synchronize supplier categories with InvenTree categories
+		categories_dict = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
+																			  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
+	else:
+		# Load categories from supplier configuration
+		categories_dict = config_interface.load_supplier_categories(supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
+
+	# Category choices
+	categories_choices = []
 	subcategories_choices = []
 	subcategory_default = None
-	try:
-		if category:
-			# Subcategory list
-			for key, value in categories_dict[category].items():
-				if key not in subcategories_choices:
-					subcategories_choices.append(key.replace('__',''))
 
-			if subcategory:
+	try:
+		for cat in categories_dict.keys():
+			categories_choices.append(cat)
+
+			if category:
+				if category == cat:
+					# Subcategory choices
+					for subcat in categories_dict[cat].keys():
+						if subcat not in subcategories_choices:
+							subcategories_choices.append(subcat)
+
+		if subcategory:
 				subcategory_default = subcategory
 	except:
+		# categories_dict is None
 		pass
 
+	# Set default list for subcategory choices
 	if not subcategories_choices:
-		subcategories_choices = ['None']
+		if not subcategory_default:
+			subcategories_choices = ['None']
+		else:
+			subcategories_choices = [subcategory_default]
 	if not subcategory_default:
 		subcategory_default = subcategories_choices[0]
 
 	category_layout = [
 		[
 			sg.Text('Select Category:'),
-			sg.Combo(categories_choices, default_value=category, key='category'),
+			sg.Combo(sorted(categories_choices), default_value=category, key='category'),
 			sg.Button('Confirm'),
 		],
 		[
 			sg.Text('Select Subcategory:'),
-			sg.Combo(subcategories_choices, default_value=subcategory_default, size=(20,1), key='subcategory_sel'),
+			sg.Combo(sorted(subcategories_choices), default_value=subcategory_default, size=(20,1), key='subcategory_sel'),
 			sg.Text('Or Enter Name:'),
 			sg.In(size=(20,1),key='subcategory_man'),
 		],
@@ -242,8 +323,8 @@ def user_defined_categories(category=None, subcategory=None) -> list:
 		else:
 			categories[1] = category_values['subcategory_sel']
 
-		if categories[1] == 'None':
-			categories[1] = ''
+		# if categories[1] == 'None':
+		# 	categories[1] = ''
 		
 		if '' in categories:
 			missing_category = 'Missing category information'
@@ -254,12 +335,12 @@ def user_defined_categories(category=None, subcategory=None) -> list:
 
 		return categories
 
-def user_defined_symbol_template_footprint(	categories: list,
-											symbol_lib=None,
-											template=None,
-											footprint_lib=None,
-											symbol_confirm=False,
-											footprint_confirm=False ):
+def user_defined_symbol_template_footprint(categories: list,
+										   symbol_lib=None,
+										   template=None,
+										   footprint_lib=None,
+										   symbol_confirm=False,
+										   footprint_confirm=False):
 	''' Symbol and Footprint user defined window '''
 	symbol = None
 	footprint = None
@@ -514,20 +595,23 @@ def user_defined_symbol_template_footprint(	categories: list,
 			footprint = lib_values['footprint_lib'] + ':' + settings.footprint_name_default
 
 		# Save paths
-		if not config_interface.add_library_path(	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-													category=categories[0],
-													symbol_library=lib_values['symbol_lib'] ):
+		if not config_interface.add_library_path(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+												 category=categories[0],
+												 symbol_library=lib_values['symbol_lib']):
 			cprint(f'[INFO]\tWarning: Failed to add symbol library to {categories[0]} category', silent=settings.SILENT)
 
-		if not config_interface.add_footprint_library(	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-														category=categories[0],
-														library_folder=lib_values['footprint_lib'] ):
+		if not config_interface.add_footprint_library(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+													  category=categories[0],
+													  library_folder=lib_values['footprint_lib']):
 			cprint(f'[INFO]\tWarning: Failed to add footprint library to {categories[0]} category', silent=settings.SILENT)
 
 		return symbol, template, footprint
-		
+
+# Main
 def main():
 	''' Main GUI window '''
+	CREATE_CUSTOM = False
+
 	# Select PySimpleGUI theme
 	# sg.theme_previewer() # Show all
 	sg.theme('DarkTeal10')
@@ -539,6 +623,12 @@ def main():
 				'Digi-Key',
 				'KiCad',
 				'InvenTree',
+			],
+		],
+		[ 'More', 
+			[
+				# 'Synchronize',
+				'Custom Part',
 			],
 		],
 	]
@@ -565,7 +655,10 @@ def main():
 
 	# Event Loop to process 'events' and get the 'values' of the inputs
 	while True:
-		event, values = window.read()
+		if CREATE_CUSTOM:
+			event = 'CREATE_CUSTOM'
+		else:
+			event, values = window.read()
 
 		if event == sg.WIN_CLOSED:  # if user closes window or clicks cancel
 			break
@@ -579,6 +672,10 @@ def main():
 		elif 'enable' in event:
 			settings.set_inventree_enable_flag(values['enable_inventree'], save=True)
 			settings.set_kicad_enable_flag(values['enable_kicad'], save=True)
+		elif event == 'Custom Part':
+			custom_part_info = add_custom_part(part_data={})
+			if custom_part_info:
+				CREATE_CUSTOM = True
 		else:
 			# Adding part information to InvenTree
 			categories = [None, None]
@@ -590,26 +687,36 @@ def main():
 			part_info = {}
 			part_data = {}
 
-			if values['part_number']:
-				# New part separation
-				new_search = '-' * 20
-				cprint(f'\n{new_search}', silent=settings.SILENT)
+			if CREATE_CUSTOM:
+				if custom_part_info['name'] and custom_part_info['description']:
+					part_info = custom_part_info
+			else:
+				if values['part_number']:
+					# New part separation
+					new_search = '-' * 20
+					cprint(f'\n{new_search}', silent=settings.SILENT)
 
-				# Load KiCad settings
-				settings.load_kicad_settings()
+					# Load KiCad settings
+					settings.load_kicad_settings()
 
-				# Load InvenTree settings
-				settings.load_inventree_settings()
+					# Load InvenTree settings
+					settings.load_inventree_settings()
 
-				# Digi-Key Search
-				part_info = inventree_interface.digikey_search(values['part_number'])
+					# Digi-Key Search
+					part_info = inventree_interface.digikey_search(values['part_number'])
 
 			if not part_info:
-				sg.popup_ok(f'Failed to fetch part information\n'
-							'Make sure:\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
-							'\n- Part number is valid',
-							title='Digi-Key API Search',
-							location=(500, 500))
+				# Missing Part Information
+				if CREATE_CUSTOM:
+					sg.popup_ok(f'Missing "Name" or "Description"',
+								title='Incomplete Custom Part Data',
+								location=(500, 500))
+				else:
+					sg.popup_ok(f'Failed to fetch part information\n'
+								'Make sure:\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
+								'\n- Part number is valid',
+								title='Digi-Key API Search',
+								location=(500, 500))
 			else:
 				if settings.ENABLE_INVENTREE:
 					cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
@@ -622,12 +729,7 @@ def main():
 						part_info = {}
 
 			if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
-				# if settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
-				# 	categories = inventree_interface.get_categories(part_info=part_info,
-				# 													supplier_only=False)
-				# 	# Force category window
-				# 	categories = user_defined_categories()
-
+				
 				if settings.ENABLE_INVENTREE:
 					cprint('\n[MAIN]\tCreating part in Inventree', silent=settings.SILENT)
 
@@ -636,53 +738,86 @@ def main():
 			
 				# If categories do not exist: request user to fill in categories
 				if not categories[0]:
-					categories = user_defined_categories()
+					categories = user_defined_categories(extend=settings.ENABLE_INVENTREE)
 					if categories[0]:
 						cprint(f'[INFO]\tCategory: "{categories[0]}"', silent=settings.SILENT)
 					if categories[1]:
 						cprint(f'[INFO]\tSubcategory: "{categories[1]}"', silent=settings.SILENT)
 				elif categories[0] and not categories[1]:
-					categories = user_defined_categories(categories[0])
+					categories = user_defined_categories(category=categories[0],
+														 extend=settings.ENABLE_INVENTREE)
 					if categories[1]:
 						cprint(f'[INFO]\tUpdated Category: "{categories[0]}"', silent=settings.SILENT)
 						cprint(f'[INFO]\tSubcategory: "{categories[1]}"', silent=settings.SILENT)
 				else:
 					# Ask user to re-confirm categories (pre-filled)
-					categories = user_defined_categories(categories[0], categories[1])
+					categories = user_defined_categories(category=categories[0], 
+														 subcategory=categories[1],
+														 extend=settings.ENABLE_INVENTREE)
 					cprint(f'[INFO]\tUser Category: "{categories[0]}"', silent=settings.SILENT)
 					cprint(f'[INFO]\tUser Subcategory: "{categories[1]}"', silent=settings.SILENT)
 
 			if categories[0] and categories[1]:
-				# Add to supplier categories configuration file
-				category_dict = {
-					categories[0]:
-						{ categories[1]: part_info['subcategory'] }
-				}
-				if not config_interface.add_supplier_category(category_dict, settings.CONFIG_DIGIKEY_CATEGORIES):
-					config_file = settings.CONFIG_DIGIKEY_CATEGORIES.split(os.sep)[-1]
-					cprint(f'[INFO]\tWarning: Failed to add new supplier category to {config_file} file', silent=settings.SILENT)
-					cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
+				if not CREATE_CUSTOM:
+					# Add to supplier categories configuration file
+					category_dict = {
+						categories[0]:
+							{ categories[1]: part_info['subcategory'] }
+					}
+					if not config_interface.add_supplier_category(category_dict, settings.CONFIG_DIGIKEY_CATEGORIES):
+						config_file = settings.CONFIG_DIGIKEY_CATEGORIES.split(os.sep)[-1]
+						cprint(f'[INFO]\tWarning: Failed to add new supplier category to {config_file} file', silent=settings.SILENT)
+						cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
+
+					# Confirm part data with user
+					form_data = add_custom_part(inventree_interface.translate_digikey_to_inventree(part_info=part_info,
+																								   categories=categories,
+																								   skip_params=True))
+					if form_data:
+						# Translate to part info format
+						user_part_info = inventree_interface.translate_form_to_digikey(part_info=form_data,
+																				  	   categories=categories,
+																				  	   custom=False)
+
+						# Merge original part_info with user_part_info
+						part_info = {**part_info, **user_part_info}
 			
 				if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
-					# Request user to select symbol and footprint libraries
-					symbol, template, footprint = user_defined_symbol_template_footprint(categories)
-					# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
+					if settings.ENABLE_KICAD:
+						# Request user to select symbol and footprint libraries
+						symbol, template, footprint = user_defined_symbol_template_footprint(categories)
+						# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
 
-					if symbol and footprint:
+					# Create progress bar window
+					progressbar = progress.create_progress_bar_window()
+
+					if (symbol and footprint) or (settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD):
+						
+						if CREATE_CUSTOM:
+							# Translate custom part data
+							part_info = inventree_interface.translate_form_to_digikey(part_info=part_info,
+																					  categories=categories,
+																					  custom=True)
+							
 						# Create part in InvenTree
 						if settings.ENABLE_INVENTREE:
 							new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
 																								categories=categories,
+																								kicad=settings.ENABLE_KICAD,
 																								symbol=symbol,
-																								footprint=footprint)
+																								footprint=footprint,
+																								progress_window=progressbar)
 							if not part_data:
 								cprint(f'[INFO]\tError: Could not add part to InvenTree', silent=settings.SILENT)
+
 						else:
 							if not categories[0]:
 								pseudo_categories = [symbol, None]
-								part_data = inventree_interface.translate_digikey_to_inventree(part_info, pseudo_categories)
+								part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
+																							   categories=pseudo_categories)
 							else:
-								part_data = inventree_interface.translate_digikey_to_inventree(part_info, categories)
+								part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
+																							   categories=categories)
 								part_data['parameters']['Symbol'] = symbol
 								part_data['parameters']['Footprint'] = footprint
 							if not part_data:
@@ -784,14 +919,24 @@ def main():
 					if not part_pk:
 						result_message = 'Unexpected error - Contact developper'
 
+			# Update progress bar to complete and close window
+			progress.update_progress_bar_window(progress.MAX_PROGRESS)
+			progress.close_progress_bar_window()
+
 			if symbol and result_message:
 				sg.popup_ok(result_message, title='Results', location=(500, 500))
 
-			if part_data:
+			if 'inventree_url' in part_data.keys():
 				# Auto-Open Browser Window
 				cprint(f'\n[MAIN]\tOpening URL {part_data["inventree_url"]} in browser',
 					   silent=settings.SILENT)
-				webbrowser.open(part_data['inventree_url'], new=2)
+				try:
+					webbrowser.open(part_data['inventree_url'], new=2)
+				except TypeError:
+					cprint(f'[INFO]\tError: Failed to open URL', silent=settings.SILENT)
+
+			# Reset create custom flag
+			CREATE_CUSTOM = False
 
 	window.close()
 
