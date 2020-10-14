@@ -105,7 +105,7 @@ Enjoy!
 
 ##### GUI
 - [X] Inform user of part creation progress with GUI window
-- [ ] Show form prefilled with part API search results and allow user edits
+- [X] Show form prefilled with part API search results and allow user edits
 	- [X] Switch to YAML file format for part search API results
 	- [X] Add timestamp to API data for caching management
 

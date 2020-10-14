@@ -3,6 +3,7 @@ dist: bionic
 branches:
   only:
   - master
+  - 0.3_alpha
   
 language: python
 python:
