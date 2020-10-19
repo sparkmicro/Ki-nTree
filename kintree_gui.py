@@ -345,16 +345,16 @@ def user_defined_symbol_template_footprint(categories: list,
 	symbol = None
 	footprint = None
 
-	if symbol_confirm:
-		if not config_interface.add_library_path(	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-													category=categories[0],
-													symbol_library=symbol_lib ):
+	if symbol_confirm and '---' not in symbol_lib:
+		if not config_interface.add_library_path(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+												 category=categories[0],
+												 symbol_library=symbol_lib):
 			cprint(f'[INFO]\tWarning: Failed to add symbol library to {categories[0]} category', silent=settings.SILENT)
 
-	if footprint_confirm:
-		if not config_interface.add_footprint_library(	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-														category=categories[0],
-														library_folder=footprint_lib ):
+	if footprint_confirm and '---' not in footprint_lib:
+		if not config_interface.add_footprint_library(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+													  category=categories[0],
+													  library_folder=footprint_lib):
 			cprint(f'[INFO]\tWarning: Failed to add footprint library to {categories[0]} category', silent=settings.SILENT)
 	
 	# Load user settings
@@ -420,8 +420,8 @@ def user_defined_symbol_template_footprint(categories: list,
 	# Load symbol libraries
 	if not settings.KICAD_SYMBOLS_PATH:
 		sg.popup_ok(f'Error: KiCad symbol library folder path is not defined ("Settings > KiCad")',
-						title='KiCad Symbol Library Folder',
-						location=(500, 500))
+					title='KiCad Symbol Library Folder',
+					location=(500, 500))
 		return symbol, template, footprint
 
 	symbol_library = config_interface.load_libraries_paths( user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
@@ -447,8 +447,8 @@ def user_defined_symbol_template_footprint(categories: list,
 	# Load templates
 	if not settings.KICAD_TEMPLATES_PATH:
 		sg.popup_ok(f'Error: KiCad template folder path is not defined ("Settings > KiCad")',
-						title='KiCad Template Folder',
-						location=(500, 500))
+					title='KiCad Template Folder',
+					location=(500, 500))
 		return symbol, template, footprint
 
 	templates = config_interface.load_templates_paths( 	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
@@ -486,12 +486,12 @@ def user_defined_symbol_template_footprint(categories: list,
 	# Load footprint libraries
 	if not settings.KICAD_FOOTPRINTS_PATH:
 		sg.popup_ok(f'Error: KiCad footprint library folder path is not defined ("Settings > KiCad")',
-						title='KiCad Footprint Library Folder',
-						location=(500, 500))
+					title='KiCad Footprint Library Folder',
+					location=(500, 500))
 		return symbol, template, footprint
 
-	footprint_library = config_interface.load_footprint_paths(	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-																footprint_path=settings.KICAD_FOOTPRINTS_PATH )
+	footprint_library = config_interface.load_footprint_paths(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+															  footprint_path=settings.KICAD_FOOTPRINTS_PATH)
 	# cprint(f'{footprint_library=}')
 	if not footprint_library:
 		sg.popup_ok(f'Error: Footprint library files were not found in {settings.KICAD_FOOTPRINTS_PATH}',
@@ -572,17 +572,17 @@ def user_defined_symbol_template_footprint(categories: list,
 	if lib_event == sg.WIN_CLOSED:
 		return symbol, template, footprint
 	elif lib_event == 'Confirm':
-		return user_defined_symbol_template_footprint(	categories=categories,
-														symbol_lib=lib_values['symbol_lib'],
-														template=lib_values['template'],
-														footprint_lib=lib_values['footprint_lib'],
-														symbol_confirm=True )
+		return user_defined_symbol_template_footprint(categories=categories,
+													  symbol_lib=lib_values['symbol_lib'],
+													  template=lib_values['template'],
+													  footprint_lib=lib_values['footprint_lib'],
+													  symbol_confirm=True)
 	elif lib_event == 'Confirm0':
-		return user_defined_symbol_template_footprint(	categories=categories,
-														symbol_lib=lib_values['symbol_lib'],
-														template=lib_values['template'],
-														footprint_lib=lib_values['footprint_lib'],
-														footprint_confirm=True )
+		return user_defined_symbol_template_footprint(categories=categories,
+													  symbol_lib=lib_values['symbol_lib'],
+													  template=lib_values['template'],
+													  footprint_lib=lib_values['footprint_lib'],
+													  footprint_confirm=True)
 	else:
 		symbol = lib_values['symbol_lib']
 		template = lib_values['template']
@@ -709,7 +709,7 @@ def main():
 			if not part_info:
 				# Missing Part Information
 				if CREATE_CUSTOM:
-					sg.popup_ok(f'Missing "Name" or "Description"',
+					sg.popup_ok(f'Missing "Name" and "Description"',
 								title='Incomplete Custom Part Data',
 								location=(500, 500))
 				else:

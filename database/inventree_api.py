@@ -88,13 +88,6 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 
 	# Extract parameter from part info
 	new_part_parameters = part_info['parameters']
-	
-	# # Exclude symbol and footprint
-	# try:
-	# 	new_part_parameters.pop('Symbol')
-	# 	new_part_parameters.pop('Footprint')
-	# except KeyError:
-	# 	pass
 
 	template_list = ParameterTemplate.list(inventree_api)
 	def fetch_template_name(template_id):
@@ -120,21 +113,14 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 			parameter_value = parameter.data
 			part_parameters[parameter_name] = parameter_value
 
-		# # Exclude symbol and footprint
-		# try:
-		# 	part_parameters.pop('Symbol')
-		# 	part_parameters.pop('Footprint')
-		# except KeyError:
-		# 	pass
-
 		if new_part_parameters:
 			# Compare database part with new part
 			compare = part_tools.compare(new_part_parameters=new_part_parameters,
 										 db_part_parameters=part_parameters,
 										 include_filters=filters)
 		else:
-			# Compare with description
-			compare = part_info['description'] == part.description
+			# Compare with name and description
+			compare = part_info['name'] == part.name or part_info['description'] == part.description
 
 		if compare:
 			cprint(f'\n[TREE]\tFound part match in database (pk = {part.pk})', silent=settings.HIDE_DEBUG)
