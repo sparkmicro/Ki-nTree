@@ -7,7 +7,7 @@ CREATE_PART_PROGRESS: int
 MAX_PROGRESS = 100
 DEFAULT_PROGRESS = 5
 
-def create_progress_bar_window():
+def create_progress_bar_window() -> bool:
 	''' Create window for part creation progress '''
 	global CREATE_PART_PROGRESS, MAX_PROGRESS
 	global progress_window
@@ -26,7 +26,10 @@ def create_progress_bar_window():
 	CREATE_PART_PROGRESS = 0
 	update_progress_bar_window()
 
-	return progress_window
+	if progress_window:
+		return True
+
+	return False
 
 def close_progress_bar_window():
 	''' Close progress bar window after part creation '''

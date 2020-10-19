@@ -686,6 +686,7 @@ def main():
 			part_pk = 0
 			part_info = {}
 			part_data = {}
+			progressbar = False
 
 			if CREATE_CUSTOM:
 				if custom_part_info['name'] and custom_part_info['description']:
@@ -728,8 +729,8 @@ def main():
 						# Reset part info
 						part_info = {}
 
+			# User Categories
 			if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
-				
 				if settings.ENABLE_INVENTREE:
 					cprint('\n[MAIN]\tCreating part in Inventree', silent=settings.SILENT)
 
@@ -757,7 +758,10 @@ def main():
 					cprint(f'[INFO]\tUser Category: "{categories[0]}"', silent=settings.SILENT)
 					cprint(f'[INFO]\tUser Subcategory: "{categories[1]}"', silent=settings.SILENT)
 
-			if categories[0] and categories[1]:
+			# User Part Info
+			if not (categories[0] and categories[1]):
+				part_info = {}
+			else:
 				if not CREATE_CUSTOM:
 					# Add to supplier categories configuration file
 					category_dict = {
@@ -781,51 +785,54 @@ def main():
 
 						# Merge original part_info with user_part_info
 						part_info = {**part_info, **user_part_info}
-			
-				if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
-					if settings.ENABLE_KICAD:
+					else:
+						# User did not proceed
+						part_info = {}
+
+
+					if part_info and settings.ENABLE_KICAD:
 						# Request user to select symbol and footprint libraries
 						symbol, template, footprint = user_defined_symbol_template_footprint(categories)
 						# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
+						if not symbol and not footprint:
+							part_info = {}
+			
+			if part_info:
+				# Create progress bar window
+				progressbar = progress.create_progress_bar_window()
 
-					# Create progress bar window
-					progressbar = progress.create_progress_bar_window()
-
-					if (symbol and footprint) or (settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD):
+				# InvenTree
+				if (symbol and footprint) or settings.ENABLE_INVENTREE:
+					
+					if CREATE_CUSTOM:
+						# Translate custom part data
+						part_info = inventree_interface.translate_form_to_digikey(part_info=part_info,
+																				  categories=categories,
+																				  custom=True)
 						
-						if CREATE_CUSTOM:
-							# Translate custom part data
-							part_info = inventree_interface.translate_form_to_digikey(part_info=part_info,
-																					  categories=categories,
-																					  custom=True)
-							
-						# Create part in InvenTree
-						if settings.ENABLE_INVENTREE:
-							new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
-																								categories=categories,
-																								kicad=settings.ENABLE_KICAD,
-																								symbol=symbol,
-																								footprint=footprint,
-																								show_progress=progressbar)
-							if not part_data:
-								cprint(f'[INFO]\tError: Could not add part to InvenTree', silent=settings.SILENT)
+					# Create part in InvenTree
+					if settings.ENABLE_INVENTREE:
+						new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
+																							categories=categories,
+																							kicad=settings.ENABLE_KICAD,
+																							symbol=symbol,
+																							footprint=footprint,
+																							show_progress=progressbar)
+						if not part_data:
+							cprint(f'[INFO]\tError: Could not add part to InvenTree', silent=settings.SILENT)
 
+					else:
+						if not categories[0]:
+							pseudo_categories = [symbol, None]
+							part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
+																						   categories=pseudo_categories)
 						else:
-							if not categories[0]:
-								pseudo_categories = [symbol, None]
-								part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
-																							   categories=pseudo_categories)
-							else:
-								part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
-																							   categories=categories)
-								part_data['parameters']['Symbol'] = symbol
-								part_data['parameters']['Footprint'] = footprint
-							if not part_data:
-								cprint(f'[INFO]\tError: Could not format part data', silent=settings.SILENT)
-				
-
-			# Final result message
-			result_message = ''
+							part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
+																						   categories=categories)
+							part_data['parameters']['Symbol'] = symbol
+							part_data['parameters']['Footprint'] = footprint
+						if not part_data:
+							cprint(f'[INFO]\tError: Could not format part data', silent=settings.SILENT)
 
 			if part_data:
 				if not settings.ENABLE_INVENTREE:
@@ -835,6 +842,7 @@ def main():
 
 				kicad_success = False
 
+				# KiCad
 				if settings.ENABLE_KICAD:
 					# Reload paths
 					settings.load_kicad_settings()
@@ -881,9 +889,13 @@ def main():
 							try:
 								kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_data,
 																								   library_path=library_path,
-																								   template_path=template_path)
+																								   template_path=template_path,
+																								   show_progress=progressbar)
 							except:
 								cprint(f'[INFO]\tError: Failed to add part to KiCad (incomplete InvenTree data)', silent=settings.SILENT)
+
+				# Final result message
+				result_message = ''
 
 				# Result pop-up window
 				if settings.ENABLE_INVENTREE:
@@ -920,8 +932,9 @@ def main():
 						result_message = 'Unexpected error - Contact developper'
 
 			# Update progress bar to complete and close window
-			progress.update_progress_bar_window(progress.MAX_PROGRESS)
-			progress.close_progress_bar_window()
+			if progressbar:
+				progress.update_progress_bar_window(progress.MAX_PROGRESS)
+				progress.close_progress_bar_window()
 
 			if symbol and result_message:
 				sg.popup_ok(result_message, title='Results', location=(500, 500))
