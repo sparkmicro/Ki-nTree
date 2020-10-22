@@ -23,8 +23,8 @@ P 2 0 1 0 -50 0 -25 0 N
 P 2 0 1 0 -45 -40 -95 -40 N
 P 2 0 1 10 -25 -75 -25 75 N
 P 2 0 1 0 60 0 25 0 N
-X Positif 1 -150 0 100 R 60 50 1 1 P
-X Negatif 2 150 0 100 L 60 50 1 1 P
+X Positif 1 -150 0 100 R 50 50 1 1 P
+X Negatif 2 150 0 100 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #

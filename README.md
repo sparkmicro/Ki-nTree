@@ -100,7 +100,6 @@ Enjoy!
 
 #### Version 0.4
 ##### Global
-- [ ] Combine all KiCad templates in a single library file (lib+dcm)
 - [ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad
 - [ ] Fetch Digi-Key price breakdown and add it to Supplier Part (InvenTree)
 - [ ] Document configuration and backend
