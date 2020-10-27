@@ -3,6 +3,8 @@ import json
 import os
 from shutil import copyfile
 
+import requests
+
 
 ### CUSTOM PRINT METHOD
 class pcolors:
@@ -50,6 +52,7 @@ def cprint(*args, **kwargs):
 
 def create_library(library_path: str, symbol: str, template_lib:str):
 	''' Create library files if they don\'t exist '''
+
 	if not os.path.exists(library_path):
 		os.mkdir(library_path)
 	new_lib_file = os.path.join(library_path, symbol + '.lib')
@@ -59,3 +62,31 @@ def create_library(library_path: str, symbol: str, template_lib:str):
 		copyfile(template_lib, new_lib_file)
 	if not os.path.exists(new_dcm_file):
 		copyfile(template_dcm, new_dcm_file)
+
+def download_image(image_url: str, image_full_path: str, silent=False, retries=3) -> str:
+	''' Standard method to download image URL to local file '''
+
+	def download(url):
+		timeout = 3 # in seconds
+		try:
+			request = requests.get(url, timeout=timeout)
+		except:
+			if not silent:
+				print(f'[INFO]\tWarning: Image download timed out ({timeout}s)')
+			return None
+		return request
+
+	# Multiple download attempts
+	for i in range(retries):
+		request = download(image_url)
+		if request:
+			break
+
+	# Still nothing
+	if not request:
+		return False
+
+	with open(image_full_path, 'wb') as image:
+		image.write(request.content)
+
+	return True

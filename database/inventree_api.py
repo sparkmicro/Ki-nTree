@@ -2,7 +2,7 @@ import config.settings as settings
 import requests
 import validators
 from common import part_tools
-from common.tools import cprint
+from common.tools import cprint, download_image
 from config import config_interface
 # InvenTree
 from inventree.api import InvenTreeAPI
@@ -178,33 +178,13 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
 	''' Upload InvenTree part thumbnail'''
 	global inventree_api
 
-	def download(url):
-		timeout = 3 # in seconds
-		try:
-			request = requests.get(url, timeout=timeout)
-		except:
-			cprint(f'[TREE]\tWarning: Image download timed out ({timeout}s)', silent=settings.SILENT)
-			return None
-		return request
-
-	# Download image
+	# Get image full path
 	image_name = f'{str(part_id)}_thumbnail.jpeg'
 	image_location = settings.search_images + image_name
 
-	# Multiple download attempts
-	for i in range(3):
-		request = download(image_url)
-		if request:
-			break
-	# Still nothing
-	if not request:
+	# Download image (multiple attempts)
+	if not download_image(image_url, image_location):
 		return False
-
-	with open(image_location, 'wb') as image:
-		image.write(request.content)
-	
-	# Add as attachment
-	# PartAttachment.upload_attachment(inventree_api, part_id, **{'attachment':image_location})
 
 	# Upload image to InvenTree
 	part = Part(inventree_api, part_id)

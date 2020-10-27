@@ -1,7 +1,8 @@
 import json
 from urllib.request import Request, urlopen
 
-from common.tools import cprint
+import config.settings as settings
+from common.tools import cprint, download_image
 # Timeout
 from wrapt_timeout_decorator import timeout
 
@@ -36,6 +37,7 @@ def parse_snapeda_response(response: dict) -> dict:
 	data = {}
 
 	# data = {
+	# 	'part_number': None,
 	# 	'has_symbol': False,
 	# 	'has_footprint': False,
 	# 	'symbol_image': None,
@@ -51,6 +53,7 @@ def parse_snapeda_response(response: dict) -> dict:
 		pass
 	else:
 		try:
+			data['part_number'] = response['results'][0].get('part_number', None)
 			data['has_symbol'] = response['results'][0].get('has_symbol', False)
 			data['has_footprint'] = response['results'][0].get('has_footprint', False)
 			data['symbol_image'] = response['results'][0]['models'][0]['symbol_medium'].get('url', None)
@@ -61,3 +64,31 @@ def parse_snapeda_response(response: dict) -> dict:
 			pass
 
 	return data
+
+def download_snapeda_images(snapeda_data: dict) -> dict:
+	''' Download symbol and footprint images from SnapEDA's server '''
+
+	images = {
+		'symbol': None,
+		'footprint': None,
+	}
+
+	# Form path
+	image_name = f'{snapeda_data["part_number"].lower()}_symbol.png'
+	image_location = settings.search_images + image_name
+
+	# Download symbol image
+	symbol = download_image(snapeda_data['symbol_image'], image_location)
+	if symbol:
+		images['symbol'] = image_location
+
+	# Form path
+	image_name = f'{snapeda_data["part_number"].lower()}_footprint.png'
+	image_location = settings.search_images + image_name
+
+	# Download symbol image
+	footprint = download_image(snapeda_data['footprint_image'], image_location)
+	if footprint:
+		images['footprint'] = image_location
+
+	return images

@@ -8,6 +8,8 @@ import config.settings as settings
 import PySimpleGUI as sg
 # Digi-Key API
 import search.digikey_api as digikey_api
+# SnapEDA API
+import search.snapeda_api as snapeda_api
 # Progress
 from common import progress
 # Tools
@@ -178,6 +180,34 @@ def kicad_settings_window():
 		
 	kicad_window.close()
 	return
+
+def snapeda_window(part_number: str) -> bool:
+	response = snapeda_api.fetch_snapeda_part_info(part_number)
+	data = snapeda_api.parse_snapeda_response(response)
+	images = snapeda_api.download_snapeda_images(data)
+
+	snapeda_layout = [
+		[
+			sg.Text('Symbol and Footprint available on SnapEDA!'),
+		],
+		[	
+			sg.Image(images['symbol']),
+			sg.Image(images['footprint']),
+		],
+	]
+
+	snapeda_window = sg.Window(
+		'SnapEDA', snapeda_layout, location=(500, 500)
+	)
+
+	snapeda_event, snapeda_values = snapeda_window.read()
+	if snapeda_event == sg.WIN_CLOSED:  # if user closes window
+		return False
+	else:
+		pass
+		
+	snapeda_window.close()
+	return True
 
 def add_custom_part(part_data: dict) -> dict:
 	''' Add custom part (bypass Digi-Key search) '''
@@ -702,6 +732,9 @@ def main():
 
 					# Load InvenTree settings
 					settings.load_inventree_settings()
+
+					# SnapEDA window
+					snapeda_window(values['part_number'])
 
 					# Digi-Key Search
 					part_info = inventree_interface.digikey_search(values['part_number'])
