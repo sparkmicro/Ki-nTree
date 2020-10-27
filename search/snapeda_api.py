@@ -73,22 +73,28 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
 		'footprint': None,
 	}
 
-	# Form path
-	image_name = f'{snapeda_data["part_number"].lower()}_symbol.png'
-	image_location = settings.search_images + image_name
+	try:
+		# Form path
+		image_name = f'{snapeda_data["part_number"].lower()}_symbol.png'
+		image_location = settings.search_images + image_name
 
-	# Download symbol image
-	symbol = download_image(snapeda_data['symbol_image'], image_location)
-	if symbol:
-		images['symbol'] = image_location
+		# Download symbol image
+		symbol = download_image(snapeda_data['symbol_image'], image_location)
+		if symbol:
+			images['symbol'] = image_location
+	except KeyError:
+		pass
 
-	# Form path
-	image_name = f'{snapeda_data["part_number"].lower()}_footprint.png'
-	image_location = settings.search_images + image_name
+	try:
+		# Form path
+		image_name = f'{snapeda_data["part_number"].lower()}_footprint.png'
+		image_location = settings.search_images + image_name
 
-	# Download symbol image
-	footprint = download_image(snapeda_data['footprint_image'], image_location)
-	if footprint:
-		images['footprint'] = image_location
+		# Download symbol image
+		footprint = download_image(snapeda_data['footprint_image'], image_location)
+		if footprint:
+			images['footprint'] = image_location
+	except KeyError:
+		pass
 
 	return images
