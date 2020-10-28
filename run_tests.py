@@ -3,12 +3,13 @@ import sys
 from shutil import copyfile
 
 import config.settings as settings
-from common.tools import cprint, create_library
+from common.tools import cprint, create_library, download_image
 from config import config_interface
 from database import inventree_api, inventree_interface
 from kicad import kicad_interface
 from search.digikey_api import (disable_digikey_api_logger,
                                 test_digikey_api_connect)
+from search.snapeda_api import test_snapeda_api
 
 # SETTINGS
 # Enable InvenTree tests
@@ -108,7 +109,7 @@ if __name__ == '__main__':
 					kicad_result = False
 					inventree_result = False
 					# Fetch supplier data
-					part_info = inventree_interface.digikey_search(number)
+					part_info = inventree_interface.digikey_search(part_number=number, test_mode=True)
 					# Display part to be tested
 					pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 
@@ -281,6 +282,15 @@ if __name__ == '__main__':
 			sync_categories = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
 																			  	  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
 			if not sync_categories:
+				method_results = False
+
+			# Test SnapEDA API methods
+			snapeda_success = test_snapeda_api()
+			if not snapeda_success:
+				method_results = False
+
+			# Test download_image failure modes
+			if download_image('', '', silent=True) or download_image('http', '', silent=True):
 				method_results = False
 
 			if not method_results:

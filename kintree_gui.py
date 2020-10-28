@@ -8,6 +8,8 @@ import config.settings as settings
 import PySimpleGUI as sg
 # Digi-Key API
 import search.digikey_api as digikey_api
+# SnapEDA API
+import search.snapeda_api as snapeda_api
 # Progress
 from common import progress
 # Tools
@@ -179,6 +181,94 @@ def kicad_settings_window():
 	kicad_window.close()
 	return
 
+def snapeda_window(part_number: str):
+	''' Display SnapEDA API results '''
+
+	# TODO: loading animation
+	# loading_img = os.path.join(settings.PROJECT_DIR, 'images', 'loading.gif')
+	
+	snapeda_layout = [
+		[sg.Text('Downloading SnapEDA information...')],
+	]
+
+	snapeda_window = sg.Window(
+		'SnapEDA', snapeda_layout, location=(500, 500)
+	)
+
+	while True:
+		snapeda_event, snapeda_values = snapeda_window.read(timeout=10)
+
+		response = snapeda_api.fetch_snapeda_part_info(part_number)
+		data = snapeda_api.parse_snapeda_response(response)
+		images = snapeda_api.download_snapeda_images(data)
+
+		break
+
+	snapeda_window.close()
+
+	snapeda_layout = []
+
+	# Check if symbol and footprint available for download on SnapEDA's website
+	if data['has_symbol'] and data['has_footprint']:
+		snapeda_msg = f'Symbol and Footprint are available on SnapEDA!\t'
+		snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
+
+		# Display images
+		if not None in images.values():
+			snapeda_layout.append([sg.Image(images['symbol']), sg.Image(images['footprint'])])
+		else:
+			if images['symbol']:
+				snapeda_layout.append([sg.Image(images['symbol'])])
+				
+			if images['footprint']:
+				snapeda_layout.append([sg.Image(images['footprint'])])
+			else:
+				if not images['symbol']:
+					snapeda_layout.append([sg.Text('(No preview available)')])
+	elif data['has_symbol']:
+		snapeda_msg = f'Symbol is available on SnapEDA!\t'
+		snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
+
+		# Display images
+		if images['symbol']:
+			snapeda_layout.append([sg.Image(images['symbol'])])
+		else:
+			snapeda_layout.append([sg.Text('(No preview available)')])
+	elif data['has_footprint']:
+		snapeda_msg = f'Footprint is available on SnapEDA!\t'
+		snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
+
+		# Display images
+		if images['footprint']:
+			snapeda_layout.append([sg.Image(images['footprint'])])
+		else:
+			snapeda_layout.append([sg.Text('(No preview available)')])
+	else:
+		pass
+
+	if not snapeda_layout:
+		snapeda_msg = 'Unfortunately, symbol and footprint were not found on SnapEDA :('
+		snapeda_layout.append([sg.Text(snapeda_msg)])
+
+	snapeda_window = sg.Window(
+		'SnapEDA', snapeda_layout, location=(500, 500)
+	)
+
+	while True:
+		snapeda_event, snapeda_values = snapeda_window.read()
+
+		if snapeda_event == sg.WIN_CLOSED:  # if user closes window
+			break
+		elif snapeda_event == 'Download':
+			try:
+				webbrowser.open(data['part_url'], new=2)
+			except TypeError:
+				cprint(f'[INFO]\tError: Failed to open URL', silent=settings.SILENT)
+		else:
+			pass
+		
+	snapeda_window.close()
+
 def add_custom_part(part_data: dict) -> dict:
 	''' Add custom part (bypass Digi-Key search) '''
 	user_values = {}
@@ -336,6 +426,7 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
 		return categories
 
 def user_defined_symbol_template_footprint(categories: list,
+										   part_number: str,
 										   symbol_lib=None,
 										   template=None,
 										   footprint_lib=None,
@@ -562,7 +653,8 @@ def user_defined_symbol_template_footprint(categories: list,
 			sg.Text('Or Enter Name:'),
 			sg.In(size=(20,1),key='footprint_mod_man'),
 		],
-		[ sg.Button('Submit'), ],
+		[ sg.Text('') ],
+		[ sg.Button('Check SnapEDA'), sg.Button('Submit') ],
 	]
 
 	library_window = sg.Window('KiCad Libraries', library_layout, location=(500, 500))
@@ -571,14 +663,24 @@ def user_defined_symbol_template_footprint(categories: list,
 
 	if lib_event == sg.WIN_CLOSED:
 		return symbol, template, footprint
+	elif lib_event == 'Check SnapEDA':
+		# SnapEDA window
+		snapeda_window(part_number)
+		return user_defined_symbol_template_footprint(categories=categories,
+													  part_number=part_number,
+													  symbol_lib=lib_values['symbol_lib'],
+													  template=lib_values['template'],
+													  footprint_lib=lib_values['footprint_lib'])
 	elif lib_event == 'Confirm':
 		return user_defined_symbol_template_footprint(categories=categories,
+													  part_number=part_number,
 													  symbol_lib=lib_values['symbol_lib'],
 													  template=lib_values['template'],
 													  footprint_lib=lib_values['footprint_lib'],
 													  symbol_confirm=True)
 	elif lib_event == 'Confirm0':
 		return user_defined_symbol_template_footprint(categories=categories,
+													  part_number=part_number,
 													  symbol_lib=lib_values['symbol_lib'],
 													  template=lib_values['template'],
 													  footprint_lib=lib_values['footprint_lib'],
@@ -703,6 +805,9 @@ def main():
 					# Load InvenTree settings
 					settings.load_inventree_settings()
 
+					# SnapEDA test
+					# snapeda_window(values['part_number'])
+
 					# Digi-Key Search
 					part_info = inventree_interface.digikey_search(values['part_number'])
 
@@ -792,7 +897,7 @@ def main():
 
 					if part_info and settings.ENABLE_KICAD:
 						# Request user to select symbol and footprint libraries
-						symbol, template, footprint = user_defined_symbol_template_footprint(categories)
+						symbol, template, footprint = user_defined_symbol_template_footprint(categories, values['part_number'])
 						# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
 						if not symbol and not footprint:
 							part_info = {}
