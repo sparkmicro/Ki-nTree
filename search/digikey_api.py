@@ -100,7 +100,7 @@ def test_digikey_api_connect() -> bool:
 
 	return False
 	
-def load_from_file(search_file) -> dict:
+def load_from_file(search_file, test_mode=False) -> dict:
 	''' Fetch Digi-Key part data from file '''
 	cache_valid = settings.CACHE_VALID_DAYS * 24 * 3600
 
@@ -119,7 +119,7 @@ def load_from_file(search_file) -> dict:
 			except KeyError:
 				timestamp = int(time.time())
 
-			if timestamp < cache_valid:
+			if timestamp < cache_valid or test_mode:
 				return part_data
 
 	return None

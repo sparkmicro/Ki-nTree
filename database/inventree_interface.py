@@ -246,7 +246,7 @@ def translate_form_to_digikey(part_info: dict, categories: list, custom=False) -
 
 	return updated_part_info
 
-def digikey_search(part_number: str) -> dict:
+def digikey_search(part_number: str, test_mode=False) -> dict:
 	''' Wrapper for Digi-Key search, allow use of cached data (limited daily API calls) '''
 	part_info = {}
 	# Check part number exist
@@ -258,7 +258,7 @@ def digikey_search(part_number: str) -> dict:
 	search_filename = settings.search_results['directory'] + part_number + settings.search_results['extension']
 
 	# Get cached data
-	part_info = digikey_api.load_from_file(search_filename)
+	part_info = digikey_api.load_from_file(search_filename, test_mode)
 	if part_info:
 		cprint(f'\n[MAIN]\tUsing Digi-Key cached data for {part_number}', silent=settings.SILENT)
 	else:

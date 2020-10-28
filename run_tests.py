@@ -109,7 +109,7 @@ if __name__ == '__main__':
 					kicad_result = False
 					inventree_result = False
 					# Fetch supplier data
-					part_info = inventree_interface.digikey_search(number)
+					part_info = inventree_interface.digikey_search(part_number=number, test_mode=True)
 					# Display part to be tested
 					pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 
