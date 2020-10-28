@@ -17,6 +17,8 @@ def fetch_snapeda_part_info(part_number: str) -> dict:
 	api_url = API_BASE_URL + part_number
 	request = Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
 
+	cprint('SNAPEDA TEST')
+
 	with urlopen(request) as response:
 		data = json.load(response)
 
