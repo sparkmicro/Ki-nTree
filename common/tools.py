@@ -67,7 +67,8 @@ def download_image(image_url: str, image_full_path: str, silent=False, retries=3
 	''' Standard method to download image URL to local file '''
 
 	if not image_url:
-		cprint(f'[INFO]\tError: Missing image URL')
+		if not silent:
+			cprint(f'[INFO]\tError: Missing image URL')
 		return False
 
 	def download(url):

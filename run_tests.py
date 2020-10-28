@@ -3,7 +3,7 @@ import sys
 from shutil import copyfile
 
 import config.settings as settings
-from common.tools import cprint, create_library
+from common.tools import cprint, create_library, download_image
 from config import config_interface
 from database import inventree_api, inventree_interface
 from kicad import kicad_interface
@@ -287,6 +287,10 @@ if __name__ == '__main__':
 			# Test SnapEDA API methods
 			snapeda_success = test_snapeda_api()
 			if not snapeda_success:
+				method_results = False
+
+			# Test download_image failure modes
+			if download_image('', '', silent=True) or download_image('http', '', silent=True):
 				method_results = False
 
 			if not method_results:
