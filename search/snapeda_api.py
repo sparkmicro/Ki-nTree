@@ -22,15 +22,6 @@ def fetch_snapeda_part_info(part_number: str) -> dict:
 
 	return data
 
-def test_snapeda_api_connect() -> bool:
-	''' Test method for SnapEDA API '''
-
-	test_part = fetch_snapeda_part_info('SN74LV4T125PWR')
-	if test_part:
-		return True
-
-	return False
-
 def parse_snapeda_response(response: dict) -> dict:
 	''' Return only relevant information from SnapEDA API response '''
 
@@ -103,3 +94,15 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
 		pass
 
 	return images
+
+def test_snapeda_api() -> bool:
+	''' Test method for SnapEDA API '''
+
+	response = fetch_snapeda_part_info('SN74LV4T125PWR')
+	data = parse_snapeda_response(response)
+	images = download_snapeda_images(data)
+
+	if data['part_number'] and data['has_symbol'] and images['symbol']:
+		return True
+
+	return False

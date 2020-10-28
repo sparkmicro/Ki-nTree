@@ -9,6 +9,7 @@ from database import inventree_api, inventree_interface
 from kicad import kicad_interface
 from search.digikey_api import (disable_digikey_api_logger,
                                 test_digikey_api_connect)
+from search.snapeda_api import test_snapeda_api
 
 # SETTINGS
 # Enable InvenTree tests
@@ -281,6 +282,11 @@ if __name__ == '__main__':
 			sync_categories = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
 																			  	  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
 			if not sync_categories:
+				method_results = False
+
+			# Test SnapEDA API methods
+			snapeda_success = test_snapeda_api()
+			if not snapeda_success:
 				method_results = False
 
 			if not method_results:

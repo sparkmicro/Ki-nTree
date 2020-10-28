@@ -1,4 +1,4 @@
 MAJOR_REVISION: 0
 MINOR_REVISION: 3
 # Digit means stable version
-RELEASE_STATE: beta2
+RELEASE_STATE: rc
