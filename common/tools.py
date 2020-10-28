@@ -66,13 +66,17 @@ def create_library(library_path: str, symbol: str, template_lib:str):
 def download_image(image_url: str, image_full_path: str, silent=False, retries=3) -> str:
 	''' Standard method to download image URL to local file '''
 
+	if not image_url:
+		cprint(f'[INFO]\tError: Missing image URL')
+		return False
+
 	def download(url):
 		timeout = 3 # in seconds
 		try:
 			request = requests.get(url, timeout=timeout)
 		except:
 			if not silent:
-				print(f'[INFO]\tWarning: Image download timed out ({timeout}s)')
+				cprint(f'[INFO]\tWarning: Image download timed out ({timeout}s)')
 			return None
 		return request
 

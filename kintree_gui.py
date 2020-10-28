@@ -182,50 +182,69 @@ def kicad_settings_window():
 	return
 
 def snapeda_window(part_number: str):
-	response = snapeda_api.fetch_snapeda_part_info(part_number)
-	data = snapeda_api.parse_snapeda_response(response)
-	images = snapeda_api.download_snapeda_images(data)
+	''' Display SnapEDA API results '''
+
+	# TODO: loading animation
+	# loading_img = os.path.join(settings.PROJECT_DIR, 'images', 'loading.gif')
+	
+	snapeda_layout = [
+		[sg.Text('Downloading SnapEDA information...')],
+	]
+
+	snapeda_window = sg.Window(
+		'SnapEDA', snapeda_layout, location=(500, 500)
+	)
+
+	while True:
+		snapeda_event, snapeda_values = snapeda_window.read(timeout=10)
+
+		response = snapeda_api.fetch_snapeda_part_info(part_number)
+		data = snapeda_api.parse_snapeda_response(response)
+		images = snapeda_api.download_snapeda_images(data)
+
+		break
+
+	snapeda_window.close()
 
 	snapeda_layout = []
 
-	if data:
-		# Check if symbol and footprint available for download on SnapEDA's website
-		if data['has_symbol'] and data['has_footprint']:
-			snapeda_msg = f'Symbol and Footprint are available on SnapEDA!\t'
-			snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
+	# Check if symbol and footprint available for download on SnapEDA's website
+	if data['has_symbol'] and data['has_footprint']:
+		snapeda_msg = f'Symbol and Footprint are available on SnapEDA!\t'
+		snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
 
-			# Display images
-			if not None in images.values():
-				snapeda_layout.append([sg.Image(images['symbol']), sg.Image(images['footprint'])])
-			else:
-				if images['symbol']:
-					snapeda_layout.append([sg.Image(images['symbol'])])
-					
-				if images['footprint']:
-					snapeda_layout.append([sg.Image(images['footprint'])])
-				else:
-					if not images['symbol']:
-						snapeda_layout.append([sg.Text('  (No preview available)')])
-		elif data['has_symbol']:
-			snapeda_msg = f'Symbol is available on SnapEDA!\t'
-			snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
-
-			# Display images
+		# Display images
+		if not None in images.values():
+			snapeda_layout.append([sg.Image(images['symbol']), sg.Image(images['footprint'])])
+		else:
 			if images['symbol']:
 				snapeda_layout.append([sg.Image(images['symbol'])])
-			else:
-				snapeda_layout.append([sg.Text('  (No preview available)')])
-		elif data['has_footprint']:
-			snapeda_msg = f'Footprint is available on SnapEDA!\t'
-			snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
-
-			# Display images
+				
 			if images['footprint']:
 				snapeda_layout.append([sg.Image(images['footprint'])])
 			else:
-				snapeda_layout.append([sg.Text('  (No preview available)')])
+				if not images['symbol']:
+					snapeda_layout.append([sg.Text('(No preview available)')])
+	elif data['has_symbol']:
+		snapeda_msg = f'Symbol is available on SnapEDA!\t'
+		snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
+
+		# Display images
+		if images['symbol']:
+			snapeda_layout.append([sg.Image(images['symbol'])])
 		else:
-			pass
+			snapeda_layout.append([sg.Text('(No preview available)')])
+	elif data['has_footprint']:
+		snapeda_msg = f'Footprint is available on SnapEDA!\t'
+		snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
+
+		# Display images
+		if images['footprint']:
+			snapeda_layout.append([sg.Image(images['footprint'])])
+		else:
+			snapeda_layout.append([sg.Text('(No preview available)')])
+	else:
+		pass
 
 	if not snapeda_layout:
 		snapeda_msg = 'Unfortunately, symbol and footprint were not found on SnapEDA :('
@@ -785,6 +804,9 @@ def main():
 
 					# Load InvenTree settings
 					settings.load_inventree_settings()
+
+					# SnapEDA test
+					# snapeda_window(values['part_number'])
 
 					# Digi-Key Search
 					part_info = inventree_interface.digikey_search(values['part_number'])

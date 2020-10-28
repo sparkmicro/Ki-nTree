@@ -34,17 +34,15 @@ def test_snapeda_api_connect() -> bool:
 def parse_snapeda_response(response: dict) -> dict:
 	''' Return only relevant information from SnapEDA API response '''
 
-	data = {}
-
-	# data = {
-	# 	'part_number': None,
-	# 	'has_symbol': False,
-	# 	'has_footprint': False,
-	# 	'symbol_image': None,
-	# 	'footprint_image': None,
-	# 	'package': None,
-	# 	'part_url': 'https://www.snapeda.com',
-	# }
+	data = {
+		'part_number': None,
+		'has_symbol': False,
+		'has_footprint': False,
+		'symbol_image': None,
+		'footprint_image': None,
+		'package': None,
+		'part_url': 'https://www.snapeda.com',
+	}
 
 	number_results = int(response.get('hits', 0))
 
@@ -56,10 +54,15 @@ def parse_snapeda_response(response: dict) -> dict:
 			data['part_number'] = response['results'][0].get('part_number', None)
 			data['has_symbol'] = response['results'][0].get('has_symbol', False)
 			data['has_footprint'] = response['results'][0].get('has_footprint', False)
-			data['symbol_image'] = response['results'][0]['models'][0]['symbol_medium'].get('url', None)
-			data['footprint_image'] = response['results'][0]['models'][0]['package_medium'].get('url', None)
 			data['package'] = response['results'][0]['package'].get('name', None)
 			data['part_url'] = SNAPEDA_URL + response['results'][0]['_links']['self'].get('href', '')
+		except KeyError:
+			pass
+
+		# Separate as the 'models' key does not always exist
+		try:
+			data['symbol_image'] = response['results'][0]['models'][0]['symbol_medium'].get('url', None)
+			data['footprint_image'] = response['results'][0]['models'][0]['package_medium'].get('url', None)
 		except KeyError:
 			pass
 
@@ -74,26 +77,28 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
 	}
 
 	try:
-		# Form path
-		image_name = f'{snapeda_data["part_number"].lower()}_symbol.png'
-		image_location = settings.search_images + image_name
+		if snapeda_data['symbol_image']:
+			# Form path
+			image_name = f'{snapeda_data["part_number"].lower()}_symbol.png'
+			image_location = settings.search_images + image_name
 
-		# Download symbol image
-		symbol = download_image(snapeda_data['symbol_image'], image_location)
-		if symbol:
-			images['symbol'] = image_location
+			# Download symbol image
+			symbol = download_image(snapeda_data['symbol_image'], image_location)
+			if symbol:
+				images['symbol'] = image_location
 	except KeyError:
 		pass
 
 	try:
-		# Form path
-		image_name = f'{snapeda_data["part_number"].lower()}_footprint.png'
-		image_location = settings.search_images + image_name
+		if snapeda_data['footprint_image']:
+			# Form path
+			image_name = f'{snapeda_data["part_number"].lower()}_footprint.png'
+			image_location = settings.search_images + image_name
 
-		# Download symbol image
-		footprint = download_image(snapeda_data['footprint_image'], image_location)
-		if footprint:
-			images['footprint'] = image_location
+			# Download symbol image
+			footprint = download_image(snapeda_data['footprint_image'], image_location)
+			if footprint:
+				images['footprint'] = image_location
 	except KeyError:
 		pass
 
