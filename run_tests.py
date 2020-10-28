@@ -13,9 +13,9 @@ from search.snapeda_api import test_snapeda_api
 
 # SETTINGS
 # Enable InvenTree tests
-ENABLE_INVENTREE = False
+ENABLE_INVENTREE = True
 # Enable KiCad tests
-ENABLE_KICAD = False
+ENABLE_KICAD = True
 # Enable test samples deletion
 ENABLE_DELETE = True
 AUTO_DELETE = True

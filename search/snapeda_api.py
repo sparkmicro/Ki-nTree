@@ -3,13 +3,10 @@ from urllib.request import Request, urlopen
 
 import config.settings as settings
 from common.tools import cprint, download_image
-# Timeout
-from wrapt_timeout_decorator import timeout
 
 API_BASE_URL = f'https://snapeda-eeintech.herokuapp.com/snapeda?q='
 SNAPEDA_URL = 'https://www.snapeda.com'
 
-@timeout(dec_timeout=20)
 def fetch_snapeda_part_info(part_number: str) -> dict:
 	''' Fetch SnapEDA part data from API '''
 
@@ -17,9 +14,7 @@ def fetch_snapeda_part_info(part_number: str) -> dict:
 	api_url = API_BASE_URL + part_number
 	request = Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
 
-	cprint('SNAPEDA TEST')
-
-	with urlopen(request) as response:
+	with urlopen(request, timeout=20) as response:
 		data = json.load(response)
 
 	return data
