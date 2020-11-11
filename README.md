@@ -36,7 +36,7 @@ $ git submodule update --init
 2. Create and activate a new python environment (Python 3.6 and newer) inside the `Ki-nTree` folder:
 ```
 $ cd Ki-nTree
-$ python3 -m venv env-kintree
+$ python -m venv env-kintree
 $ source env-kintree/bin/activate
 ```
 3. Install `invoke` package:
@@ -107,3 +107,4 @@ Enjoy!
 ##### GUI
 - [ ] Look to improve cosmetics
 - [ ] Add icon to GUI and executable (not successful earlier, try with PySimpleGUIQt?)
+- [ ] Create loading animation for API searches (asyncio)

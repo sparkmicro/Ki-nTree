@@ -6,8 +6,6 @@ import time
 import config.settings as settings
 import digikey
 from config import config_interface
-# Timeout
-from wrapt_timeout_decorator import timeout
 
 os.environ['DIGIKEY_STORAGE_PATH'] = settings.DIGIKEY_STORAGE_PATH
 
@@ -45,6 +43,8 @@ def find_categories(part_details: str):
 
 def fetch_digikey_part_info(part_number: str) -> dict:
 	''' Fetch Digi-Key part data from API '''
+	from wrapt_timeout_decorator import timeout
+	
 	part_info = {}
 	if not setup_environment():
 		return part_info

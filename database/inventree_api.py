@@ -1,5 +1,4 @@
 import config.settings as settings
-import requests
 import validators
 from common import part_tools
 from common.tools import cprint, download_image
@@ -9,12 +8,11 @@ from inventree.api import InvenTreeAPI
 from inventree.base import Parameter, ParameterTemplate
 from inventree.company import Company, SupplierPart
 from inventree.part import Part, PartCategory
-# Timeout
-from wrapt_timeout_decorator import timeout
 
 
 def connect(server: str, username: str, password: str, connect_timeout=5, silent=False) -> bool:
 	''' Connect to InvenTree server and create API object '''
+	from wrapt_timeout_decorator import timeout
 	global inventree_api
 	
 	@timeout(dec_timeout=connect_timeout)

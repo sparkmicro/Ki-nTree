@@ -37,7 +37,7 @@ sys.path.append(os.path.join(PROJECT_DIR, 'tests'))
 
 # VERSION
 CONFIG_VERSION = os.path.join(PROJECT_DIR, 'config', 'version.yaml')
-version_info = config_interface.load_file(CONFIG_VERSION)
+version_info = config_interface.load_file(CONFIG_VERSION, silent=False)
 try:
 	version = '.'.join([str(v) for v in version_info.values()])
 except:
@@ -56,8 +56,8 @@ def create_user_config_files():
 	if not os.path.exists(CONFIG_USER_FILES):
 		os.makedirs(CONFIG_USER_FILES)
 	# Create user files
-	config_interface.load_user_config_files(path_to_templates=CONFIG_TEMPLATES,
-											path_to_user_files=CONFIG_USER_FILES)
+	return config_interface.load_user_config_files(path_to_templates=CONFIG_TEMPLATES,
+												   path_to_user_files=CONFIG_USER_FILES)
 
 # Create user configuration files
 create_user_config_files()
@@ -119,11 +119,12 @@ def load_kicad_settings():
 	global KICAD_FOOTPRINTS_PATH
 	global ENABLE_KICAD
 
-	kicad_user_settings = config_interface.load_file(CONFIG_KICAD)
-	KICAD_SYMBOLS_PATH = kicad_user_settings['KICAD_SYMBOLS_PATH']
-	KICAD_TEMPLATES_PATH = kicad_user_settings['KICAD_TEMPLATES_PATH']
-	KICAD_FOOTPRINTS_PATH = kicad_user_settings['KICAD_FOOTPRINTS_PATH']
-	ENABLE_KICAD = kicad_user_settings['KICAD_ENABLE']
+	kicad_user_settings = config_interface.load_file(CONFIG_KICAD, silent=False)
+	if kicad_user_settings:
+		KICAD_SYMBOLS_PATH = kicad_user_settings.get('KICAD_SYMBOLS_PATH', None)
+		KICAD_TEMPLATES_PATH = kicad_user_settings.get('KICAD_TEMPLATES_PATH', None)
+		KICAD_FOOTPRINTS_PATH = kicad_user_settings.get('KICAD_FOOTPRINTS_PATH', None)
+		ENABLE_KICAD = kicad_user_settings.get('KICAD_ENABLE', None)
 
 
 # Load user settings
@@ -192,7 +193,10 @@ else:
 inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
 
 # Enable flag
-ENABLE_INVENTREE = inventree_settings['ENABLE']
+try:
+	ENABLE_INVENTREE = inventree_settings['ENABLE']
+except TypeError:
+	pass
 
 def set_inventree_enable_flag(value: bool, save=False):
 	global ENABLE_INVENTREE

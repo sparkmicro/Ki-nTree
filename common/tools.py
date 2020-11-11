@@ -3,8 +3,6 @@ import json
 import os
 from shutil import copyfile
 
-import requests
-
 
 ### CUSTOM PRINT METHOD
 class pcolors:
@@ -47,7 +45,7 @@ def cprint(*args, **kwargs):
 				args = tuple(args)
 			except:
 				pass
-			return builtins.print(*args, **kwargs)
+			return builtins.print(*args, **kwargs, flush=True)
 ###
 
 def create_library(library_path: str, symbol: str, template_lib:str):
@@ -65,6 +63,7 @@ def create_library(library_path: str, symbol: str, template_lib:str):
 
 def download_image(image_url: str, image_full_path: str, silent=False, retries=3) -> str:
 	''' Standard method to download image URL to local file '''
+	import requests
 
 	if not image_url:
 		if not silent:

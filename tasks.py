@@ -58,8 +58,10 @@ def exec(c):
 		  '-p search/digikey_api/ -p kicad/ -p database/inventree-python/ '
 		  'kintree_gui.py', hide=True)
 
+@task
+def copy_configuration(c):
 	cprint(f'[MAIN]\tCopying configuration files')
-	c.run('mkdir dist/config && mkdir dist/kicad', hide=True)
+	c.run('mkdir dist/config && mkdir dist/kicad', hide=False)
 	c.run('cp -r config/kicad/ dist/config/', hide=True)
 	c.run('cp -r config/digikey/ dist/config/', hide=True)
 	c.run('cp -r config/inventree/ dist/config/', hide=True)
@@ -69,6 +71,7 @@ def exec(c):
 @task(pre=[clean], post=[package])
 def build(c):
 	exec(c)
+	copy_configuration(c)
 
 @task
 def setup_inventree(c):

@@ -712,6 +712,12 @@ def user_defined_symbol_template_footprint(categories: list,
 # Main
 def main():
 	''' Main GUI window '''
+
+	# Create user configuration files
+	if not settings.create_user_config_files():
+		cprint('\n[ERROR]\tSome Ki-nTree configuration files seem to be missing')
+		return
+
 	CREATE_CUSTOM = False
 
 	# Select PySimpleGUI theme
@@ -742,7 +748,7 @@ def main():
 			sg.InputText(key='part_number'),
 		],
 		[
-			sg.Checkbox('Add to Kicad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
+			sg.Checkbox('Add to KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
 			sg.Checkbox('Add to InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
 		],
 		[

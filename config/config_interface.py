@@ -7,14 +7,19 @@ from common.tools import cprint
 
 FUNCTION_FILTER_KEY = '__'
 
-def load_file(file_path: str) -> dict:
+def load_file(file_path: str, silent=True) -> dict:
 	''' Safe load YAML file '''
-	with open(file_path, 'r') as file:
-		try:
-			data = yaml.safe_load(file)
-		except yaml.YAMLError as exc:
-			print(exc)
-			return None
+	try:
+		with open(file_path, 'r') as file:
+			try:
+				data = yaml.safe_load(file)
+			except yaml.YAMLError as exc:
+				print(exc)
+				return None
+	except FileNotFoundError:
+		if not silent:
+			cprint(f'[ERROR] File {file_path} does not exists!')
+		return None
 
 	return data
 
@@ -29,7 +34,10 @@ def dump_file(data: dict, file_path: str) -> bool:
 
 	return True
 
-def load_user_config_files(path_to_templates: str, path_to_user_files: str):
+def load_user_config_files(path_to_templates: str, path_to_user_files: str) -> bool:
+	''' Load InvenTree user configuration '''
+	result = True
+
 	def load_config(path):
 		for template_file in os.listdir(path):
 			filename = os.path.basename(template_file)
@@ -49,28 +57,37 @@ def load_user_config_files(path_to_templates: str, path_to_user_files: str):
 		load_config(config_files)
 	except:
 		cprint(f'[INFO]\tWarning: Failed to load Digi-Key configuration')
+		result = False
 	# Load InvenTree configuration files
 	try:
 		config_files = os.path.join(path_to_templates, 'inventree', '')
 		load_config(config_files)
 	except:
 		cprint(f'[INFO]\tWarning: Failed to load InvenTree configuration')
+		result = False
 	# Load KiCad configuration files
 	try:
 		config_files = os.path.join(path_to_templates, 'kicad', '')
 		load_config(config_files)
 	except:
 		cprint(f'[INFO]\tWarning: Failed to load KiCad configuration')
+		result = False
+
+	return result
 
 def load_inventree_user_settings(user_config_path: str) -> dict:
 	''' Load InvenTree user settings from file '''
 	user_settings = load_file(user_config_path)
 
 	try:
+		password = user_settings.get('PASSWORD', None)
+	except AttributeError:
+		return user_settings
+
+	try:
 		# Use base64 encoding to make password unreadable inside the file
-		user_settings['PASSWORD'] = base64.b64decode(
-			user_settings['PASSWORD']).decode()
-	except:
+		user_settings['PASSWORD'] = base64.b64decode(password).decode()
+	except TypeError:
 		user_settings['PASSWORD'] = ''
 
 	return user_settings
