@@ -515,9 +515,9 @@ def user_defined_symbol_template_footprint(categories: list,
 					location=(500, 500))
 		return symbol, template, footprint
 
-	symbol_library = config_interface.load_libraries_paths( user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-															library_path=settings.KICAD_SYMBOLS_PATH )
-	# cprint(f'{symbol_library=}')
+	symbol_library = config_interface.load_libraries_paths(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+														   library_path=settings.KICAD_SYMBOLS_PATH)
+	# cprint(symbol_library)
 	if not symbol_library:
 		sg.popup_ok(f'Error: Symbol library files were not found in {settings.KICAD_SYMBOLS_PATH}',
 					title='KiCad Symbol Library Folder',
@@ -542,8 +542,8 @@ def user_defined_symbol_template_footprint(categories: list,
 					location=(500, 500))
 		return symbol, template, footprint
 
-	templates = config_interface.load_templates_paths( 	user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-														template_path=settings.KICAD_TEMPLATES_PATH )
+	templates = config_interface.load_templates_paths(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+													  template_path=settings.KICAD_TEMPLATES_PATH)
 	# cprint(templates)
 	if not templates:
 		sg.popup_ok(f'Error: Template files were not found in {settings.KICAD_TEMPLATES_PATH}',
@@ -603,9 +603,9 @@ def user_defined_symbol_template_footprint(categories: list,
 			pass
 
 		try:
-			footprint_mod_choices = [	item.replace('.kicad_mod','') \
-										for item in sorted(os.listdir(footprint_lib_path)) \
-										if os.path.isfile(os.path.join(footprint_lib_path, item)) ]
+			footprint_mod_choices = [ item.replace('.kicad_mod','') \
+									  for item in sorted(os.listdir(footprint_lib_path)) \
+									  if os.path.isfile(os.path.join(footprint_lib_path, item)) ]
 		except:
 			cprint(f'[INFO]\tWarning: Failed fetching footprint mod files for {footprint_lib}', silent=settings.SILENT)
 			# cprint(f'{footprint_lib=}\t{categories[0]}', silent=settings.HIDE_DEBUG)
@@ -618,9 +618,9 @@ def user_defined_symbol_template_footprint(categories: list,
 			footprint_lib_default = footprint_lib_choices[0]
 		try:
 			footprint_lib_path = footprint_library[categories[0]][footprint_lib_default]
-			footprint_mod_choices = [	item.replace('.kicad_mod','') \
-										for item in sorted(os.listdir(footprint_lib_path)) \
-										if os.path.isfile(os.path.join(footprint_lib_path, item)) ]
+			footprint_mod_choices = [ item.replace('.kicad_mod','') \
+									  for item in sorted(os.listdir(footprint_lib_path)) \
+									  if os.path.isfile(os.path.join(footprint_lib_path, item)) ]
 		except:
 			cprint(f'[INFO]\tWarning: Failed fetching footprint mod files for {footprint_lib_default}', silent=settings.SILENT)
 			# cprint(f'{footprint_lib_default=}\t{categories[0]}', silent=settings.HIDE_DEBUG)
@@ -654,8 +654,12 @@ def user_defined_symbol_template_footprint(categories: list,
 			sg.In(size=(20,1),key='footprint_mod_man'),
 		],
 		[ sg.Text('') ],
-		[ sg.Button('Check SnapEDA'), sg.Button('Submit') ],
 	]
+
+	if part_number:
+		library_layout.append([ sg.Button('Check SnapEDA'), sg.Button('Submit') ])
+	else:
+		library_layout.append([ sg.Button('Submit') ])
 
 	library_window = sg.Window('KiCad Libraries', library_layout, location=(500, 500))
 	lib_event, lib_values = library_window.read()
@@ -799,6 +803,7 @@ def main():
 			if CREATE_CUSTOM:
 				if custom_part_info['name'] and custom_part_info['description']:
 					part_info = custom_part_info
+					cprint('\n[MAIN]\tCustom Part', silent=settings.SILENT)
 			else:
 				if values['part_number']:
 					# New part separation
@@ -873,7 +878,12 @@ def main():
 			if not (categories[0] and categories[1]):
 				part_info = {}
 			else:
-				if not CREATE_CUSTOM:
+				if CREATE_CUSTOM:
+					# Translate custom part data
+					part_info = inventree_interface.translate_form_to_digikey(part_info=part_info,
+																			  categories=categories,
+																			  custom=True)
+				else:
 					# Add to supplier categories configuration file
 					category_dict = {
 						categories[0]:
@@ -900,13 +910,13 @@ def main():
 						# User did not proceed
 						part_info = {}
 
-
-					if part_info and settings.ENABLE_KICAD:
-						# Request user to select symbol and footprint libraries
-						symbol, template, footprint = user_defined_symbol_template_footprint(categories, values['part_number'])
-						# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
-						if not symbol and not footprint:
-							part_info = {}
+			# Set KiCad user libraries and symbol/footprint
+			if part_info and settings.ENABLE_KICAD:
+				# Request user to select symbol and footprint libraries
+				symbol, template, footprint = user_defined_symbol_template_footprint(categories, values['part_number'])
+				# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
+				if not symbol and not footprint:
+					part_info = {}
 			
 			if part_info:
 				# Create progress bar window
@@ -915,12 +925,6 @@ def main():
 				# InvenTree
 				if (symbol and footprint) or settings.ENABLE_INVENTREE:
 					
-					if CREATE_CUSTOM:
-						# Translate custom part data
-						part_info = inventree_interface.translate_form_to_digikey(part_info=part_info,
-																				  categories=categories,
-																				  custom=True)
-						
 					# Create part in InvenTree
 					if settings.ENABLE_INVENTREE:
 						new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
@@ -948,8 +952,16 @@ def main():
 			if part_data:
 				if not settings.ENABLE_INVENTREE:
 					# Replace IPN with part name if InvenTree is not used (no part number)
-					part_data['IPN'] = values['part_number']
-					part_data['inventree_url'] = part_data['datasheet']
+					if CREATE_CUSTOM:
+						try:
+							manufacturer = part_data['manufacturer'].keys()[0]
+							part_data['IPN'] = part_data['manufacturer'][manufacturer][0]
+						except:
+							part_data['IPN'] = part_data['name']
+					else:
+						part_data['IPN'] = values['part_number']
+					if part_data['datasheet']:
+						part_data['inventree_url'] = part_data['datasheet']
 
 				kicad_success = False
 
@@ -1050,7 +1062,7 @@ def main():
 			if symbol and result_message:
 				sg.popup_ok(result_message, title='Results', location=(500, 500))
 
-			if 'inventree_url' in part_data.keys():
+			if part_data.get('inventree_url', None):
 				# Auto-Open Browser Window
 				cprint(f'\n[MAIN]\tOpening URL {part_data["inventree_url"]} in browser',
 					   silent=settings.SILENT)

@@ -174,6 +174,15 @@ def load_libraries_paths(user_config_path: str, library_path: str) -> dict:
 	except:
 		pass
 
+	# Check that library paths are loaded
+	path_loaded = False
+	for category, paths in symbol_libraries_paths.items():
+		if paths:
+			path_loaded = True
+			break
+	if not path_loaded:
+		return None
+
 	# print(symbol_libraries_paths)
 	return symbol_libraries_paths
 
