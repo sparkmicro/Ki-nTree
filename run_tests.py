@@ -97,9 +97,9 @@ if __name__ == '__main__':
 			pretty_test_print('\n[MAIN]\tConnecting to Inventree')
 			inventree_connect = inventree_interface.connect_to_server()
 			if inventree_connect:
-				cprint(f'[ PASS ]', flush=True)
+				cprint(f'[ PASS ]')
 			else:
-				cprint(f'[ FAIL ]', flush=True)
+				cprint(f'[ FAIL ]')
 				sys.exit(-1)
 
 		if ENABLE_KICAD or ENABLE_INVENTREE:
@@ -169,9 +169,9 @@ if __name__ == '__main__':
 
 					# Print live results
 					if result:
-						cprint(f'[ PASS ]', flush=True)
+						cprint(f'[ PASS ]')
 					else:
-						cprint(f'[ FAIL ]', flush=True)
+						cprint(f'[ FAIL ]')
 						exit_code = -1
 						if ENABLE_INVENTREE:
 							cprint(f'[DBUG]\tnew_part = {new_part}')
@@ -203,13 +203,13 @@ if __name__ == '__main__':
 														library_path=test_library_path)
 						except:
 							error += 1
-							cprint(f'[KCAD]\tWarning: "{number}" could not be deleted', flush=True)
+							cprint(f'[KCAD]\tWarning: "{number}" could not be deleted')
 
 					if error > 0:
-						cprint('[ FAIL ]', flush=True)
+						cprint('[ FAIL ]')
 						exit_code = -1
 					else:
-						cprint(f'[ PASS ]', flush=True)
+						cprint(f'[ PASS ]')
 
 				if ENABLE_INVENTREE:
 					error = 0
@@ -224,10 +224,10 @@ if __name__ == '__main__':
 								error += 1
 
 					if error > 0:
-						cprint('[ FAIL ]', flush=True)
+						cprint('[ FAIL ]')
 						exit_code = -1
 					else:
-						cprint(f'[ PASS ]', flush=True)
+						cprint(f'[ PASS ]')
 
 		if ENABLE_TEST_METHODS:
 			method_results = True
@@ -294,9 +294,9 @@ if __name__ == '__main__':
 				method_results = False
 
 			if not method_results:
-				cprint('[ FAIL ]', flush=True)
+				cprint('[ FAIL ]')
 				exit_code = -1
 			else:
-				cprint(f'[ PASS ]', flush=True)
+				cprint(f'[ PASS ]')
 
 	sys.exit(exit_code)

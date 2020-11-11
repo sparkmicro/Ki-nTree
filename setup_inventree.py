@@ -10,12 +10,12 @@ SETUP_PARAMETERS = True
 
 if __name__ == '__main__':
 	if SETUP_CATEGORIES or SETUP_PARAMETERS:
-		cprint('\n[MAIN]\tStarting InvenTree setup', silent=settings.SILENT, flush=True)
+		cprint('\n[MAIN]\tStarting InvenTree setup', silent=settings.SILENT)
 		# Load category configuration file
 		categories = config_interface.load_file(settings.CONFIG_CATEGORIES)['CATEGORIES']
 		# cprint(categories)
 
-		cprint('[MAIN]\tConnecting to Inventree', silent=settings.SILENT, flush=True)
+		cprint('[MAIN]\tConnecting to Inventree', silent=settings.SILENT)
 		inventree_connect = inventree_interface.connect_to_server()
 	
 		if not inventree_connect:
@@ -26,9 +26,9 @@ if __name__ == '__main__':
 			cprint(f'\n[MAIN]\tCreating {category.upper()}')
 			category_pk, is_category_new = inventree_api.create_category(parent=None, name=category)
 			if is_category_new:
-				cprint(f'[TREE]\tSuccess: Category "{category}" was added to InvenTree', flush=True)
+				cprint(f'[TREE]\tSuccess: Category "{category}" was added to InvenTree')
 			else:
-				cprint(f'[TREE]\tWarning: Category "{category}" already exists', flush=True)
+				cprint(f'[TREE]\tWarning: Category "{category}" already exists')
 
 			if categories[category]:
 				cprint(f'[MAIN]\tCreating Subcategories')
@@ -36,9 +36,9 @@ if __name__ == '__main__':
 					sub_category_pk, is_subcategory_new = inventree_api.create_category(parent=category, name=subcategory)
 
 					if is_subcategory_new:
-						cprint(f'[TREE]\tSuccess: Subcategory "{category}/{subcategory}" was added to InvenTree', flush=True)
+						cprint(f'[TREE]\tSuccess: Subcategory "{category}/{subcategory}" was added to InvenTree')
 					else:
-						cprint(f'[TREE]\tWarning: Subcategory "{category}/{subcategory}" already exists', flush=True)
+						cprint(f'[TREE]\tWarning: Subcategory "{category}/{subcategory}" already exists')
 
 	if SETUP_PARAMETERS:
 		# Load parameter configuration file
@@ -48,6 +48,6 @@ if __name__ == '__main__':
 		for name, unit in parameters.items():
 			pk = inventree_api.create_parameter_template(name, unit)
 			if pk > 0:
-				cprint(f'[TREE]\tSuccess: Parameter "{name}" was added to InvenTree', flush=True)
+				cprint(f'[TREE]\tSuccess: Parameter "{name}" was added to InvenTree')
 			else:
-				cprint(f'[TREE]\tWarning: Parameter "{name}" already exists', flush=True)
+				cprint(f'[TREE]\tWarning: Parameter "{name}" already exists')
