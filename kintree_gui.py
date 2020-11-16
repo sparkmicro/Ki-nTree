@@ -932,7 +932,8 @@ def main():
 																							kicad=settings.ENABLE_KICAD,
 																							symbol=symbol,
 																							footprint=footprint,
-																							show_progress=progressbar)
+																							show_progress=progressbar,
+																							is_custom=CREATE_CUSTOM)
 						if not part_data:
 							cprint(f'[INFO]\tError: Could not add part to InvenTree', silent=settings.SILENT)
 

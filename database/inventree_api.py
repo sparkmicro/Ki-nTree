@@ -118,7 +118,9 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 										 include_filters=filters)
 		else:
 			# Compare with name and description
-			compare = part_info['name'] == part.name or part_info['description'] == part.description
+			compare = part_info['name'] == part.name and \
+					  part_info['description'] == part.description and \
+					  part_info['revision'] == part.revision
 
 		if compare:
 			cprint(f'\n[TREE]\tFound part match in database (pk = {part.pk})', silent=settings.HIDE_DEBUG)

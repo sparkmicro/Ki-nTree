@@ -275,7 +275,7 @@ def digikey_search(part_number: str, test_mode=False) -> dict:
 
 	return part_info
 
-def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True):
+def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
 	''' Create InvenTree part from supplier part data and categories '''
 	# TODO: Make 'supplier' a variable for use with other APIs (eg. Octopart)
 	supplier = 'Digi-Key'
@@ -284,7 +284,9 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
 
 	# Translate to InvenTree part format
 	if supplier == 'Digi-Key':
-		inventree_part = translate_digikey_to_inventree(part_info, categories)
+		inventree_part = translate_digikey_to_inventree(part_info=part_info,
+														categories=categories,
+														skip_params=is_custom)
 
 	if not inventree_part:
 		cprint(f'\n[MAIN]\tError: Failed to process {supplier} data', silent=settings.SILENT)
