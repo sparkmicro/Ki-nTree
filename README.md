@@ -100,6 +100,7 @@ Enjoy!
 
 #### Version 0.4
 ##### Global
+- [ ] Allow user to decide the category code to use for IPN
 - [ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad
 - [ ] Fetch Digi-Key price breakdown and add it to Supplier Part (InvenTree)
 - [ ] Document configuration and backend

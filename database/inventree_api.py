@@ -51,6 +51,27 @@ def get_inventree_category_id(category_name: str, parent_category_id=None) -> in
 
 	return -1
 
+def get_category_parameters(category_id: int) -> list:
+	''' Get all default parameter templates for category '''
+	global inventree_api
+
+	parameter_templates = []
+	
+	category = PartCategory(inventree_api, category_id)
+
+	category_templates = category.get_category_parameter_templates(fetch_parent=True)
+
+	if category_templates:
+		for template in category_templates:
+
+			default_value = template.default_value
+			if not default_value:
+				default_value = '-'
+
+			parameter_templates.append([template.parameter_template['name'], default_value])
+
+	return parameter_templates
+
 def get_part_number(part_id: int) -> str:
 	''' Get InvenTree part number from specified Part ID '''
 	global inventree_api
