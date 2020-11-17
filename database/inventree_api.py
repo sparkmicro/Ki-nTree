@@ -59,7 +59,10 @@ def get_category_parameters(category_id: int) -> list:
 	
 	category = PartCategory(inventree_api, category_id)
 
-	category_templates = category.get_category_parameter_templates(fetch_parent=True)
+	try:
+		category_templates = category.get_category_parameter_templates(fetch_parent=True)
+	except AttributeError:
+		category_templates = None
 
 	if category_templates:
 		for template in category_templates:
