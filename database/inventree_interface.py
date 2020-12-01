@@ -275,7 +275,7 @@ def digikey_search(part_number: str, test_mode=False) -> dict:
 
 	return part_info
 
-def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True):
+def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
 	''' Create InvenTree part from supplier part data and categories '''
 	# TODO: Make 'supplier' a variable for use with other APIs (eg. Octopart)
 	supplier = 'Digi-Key'
@@ -284,7 +284,9 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
 
 	# Translate to InvenTree part format
 	if supplier == 'Digi-Key':
-		inventree_part = translate_digikey_to_inventree(part_info, categories)
+		inventree_part = translate_digikey_to_inventree(part_info=part_info,
+														categories=categories,
+														skip_params=is_custom)
 
 	if not inventree_part:
 		cprint(f'\n[MAIN]\tError: Failed to process {supplier} data', silent=settings.SILENT)
@@ -382,12 +384,19 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
 			inventree_part['parameters']['Symbol'] = kicad_symbol
 			inventree_part['parameters']['Footprint'] = kicad_footprint
 
+		if not inventree_part['parameters']:
+			category_parameters = inventree_api.get_category_parameters(category_select)
+
+			# Add category-defined parameters
+			for parameter in category_parameters:
+				inventree_part['parameters'][parameter[0]] = parameter[1]
+
 		# Create parameters
 		if len(inventree_part['parameters']) > 0:
 			cprint('\n[MAIN]\tCreating parameters', silent=settings.SILENT)
 			parameters_lists = [
 				[], # Store new parameters
-				[], # Store existings paremeters
+				[], # Store existings parameters
 			]
 			for name, value in inventree_part['parameters'].items():
 					parameter, is_new_parameter = inventree_api.create_parameter(part_id=part_pk, template_name=name, value=value)

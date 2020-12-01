@@ -208,43 +208,48 @@ def snapeda_window(part_number: str):
 
 	snapeda_layout = []
 
-	# Check if symbol and footprint available for download on SnapEDA's website
-	if data['has_symbol'] and data['has_footprint']:
-		snapeda_msg = f'Symbol and Footprint are available on SnapEDA!\t'
-		snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
+	if data['has_single_result']:
+		# Check if symbol and footprint available for download on SnapEDA's website
+		if data['has_symbol'] and data['has_footprint']:
+			snapeda_msg = f'Symbol and Footprint are available on SnapEDA!\t'
+			snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
 
-		# Display images
-		if not None in images.values():
-			snapeda_layout.append([sg.Image(images['symbol']), sg.Image(images['footprint'])])
-		else:
+			# Display images
+			if not None in images.values():
+				snapeda_layout.append([sg.Image(images['symbol']), sg.Image(images['footprint'])])
+			else:
+				if images['symbol']:
+					snapeda_layout.append([sg.Image(images['symbol'])])
+					
+				if images['footprint']:
+					snapeda_layout.append([sg.Image(images['footprint'])])
+				else:
+					if not images['symbol']:
+						snapeda_layout.append([sg.Text('(No preview available)')])
+		elif data['has_symbol']:
+			snapeda_msg = f'Symbol is available on SnapEDA!\t'
+			snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
+
+			# Display images
 			if images['symbol']:
 				snapeda_layout.append([sg.Image(images['symbol'])])
-				
+			else:
+				snapeda_layout.append([sg.Text('(No preview available)')])
+		elif data['has_footprint']:
+			snapeda_msg = f'Footprint is available on SnapEDA!\t'
+			snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
+
+			# Display images
 			if images['footprint']:
 				snapeda_layout.append([sg.Image(images['footprint'])])
 			else:
-				if not images['symbol']:
-					snapeda_layout.append([sg.Text('(No preview available)')])
-	elif data['has_symbol']:
-		snapeda_msg = f'Symbol is available on SnapEDA!\t'
-		snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
-
-		# Display images
-		if images['symbol']:
-			snapeda_layout.append([sg.Image(images['symbol'])])
+				snapeda_layout.append([sg.Text('(No preview available)')])
 		else:
-			snapeda_layout.append([sg.Text('(No preview available)')])
-	elif data['has_footprint']:
-		snapeda_msg = f'Footprint is available on SnapEDA!\t'
-		snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('Download')])
-
-		# Display images
-		if images['footprint']:
-			snapeda_layout.append([sg.Image(images['footprint'])])
-		else:
-			snapeda_layout.append([sg.Text('(No preview available)')])
+			pass
 	else:
-		pass
+		if data['part_url']:
+			snapeda_msg = f'Multiple part matches on SnapEDA\t'
+			snapeda_layout.append([sg.Text(snapeda_msg), sg.Button('See Results')])
 
 	if not snapeda_layout:
 		snapeda_msg = 'Unfortunately, symbol and footprint were not found on SnapEDA :('
@@ -259,7 +264,7 @@ def snapeda_window(part_number: str):
 
 		if snapeda_event == sg.WIN_CLOSED:  # if user closes window
 			break
-		elif snapeda_event == 'Download':
+		elif snapeda_event == 'Download' or snapeda_event == 'See Results':
 			try:
 				webbrowser.open(data['part_url'], new=2)
 			except TypeError:
@@ -913,7 +918,7 @@ def main():
 			# Set KiCad user libraries and symbol/footprint
 			if part_info and settings.ENABLE_KICAD:
 				# Request user to select symbol and footprint libraries
-				symbol, template, footprint = user_defined_symbol_template_footprint(categories, values['part_number'])
+				symbol, template, footprint = user_defined_symbol_template_footprint(categories, part_info['manufacturer_part_number'])
 				# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
 				if not symbol and not footprint:
 					part_info = {}
@@ -932,7 +937,8 @@ def main():
 																							kicad=settings.ENABLE_KICAD,
 																							symbol=symbol,
 																							footprint=footprint,
-																							show_progress=progressbar)
+																							show_progress=progressbar,
+																							is_custom=CREATE_CUSTOM)
 						if not part_data:
 							cprint(f'[INFO]\tError: Could not add part to InvenTree', silent=settings.SILENT)
 

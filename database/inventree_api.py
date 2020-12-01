@@ -51,6 +51,30 @@ def get_inventree_category_id(category_name: str, parent_category_id=None) -> in
 
 	return -1
 
+def get_category_parameters(category_id: int) -> list:
+	''' Get all default parameter templates for category '''
+	global inventree_api
+
+	parameter_templates = []
+	
+	category = PartCategory(inventree_api, category_id)
+
+	try:
+		category_templates = category.get_category_parameter_templates(fetch_parent=True)
+	except AttributeError:
+		category_templates = None
+
+	if category_templates:
+		for template in category_templates:
+
+			default_value = template.default_value
+			if not default_value:
+				default_value = '-'
+
+			parameter_templates.append([template.parameter_template['name'], default_value])
+
+	return parameter_templates
+
 def get_part_number(part_id: int) -> str:
 	''' Get InvenTree part number from specified Part ID '''
 	global inventree_api
@@ -118,7 +142,9 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 										 include_filters=filters)
 		else:
 			# Compare with name and description
-			compare = part_info['name'] == part.name or part_info['description'] == part.description
+			compare = part_info['name'] == part.name and \
+					  part_info['description'] == part.description and \
+					  part_info['revision'] == part.revision
 
 		if compare:
 			cprint(f'\n[TREE]\tFound part match in database (pk = {part.pk})', silent=settings.HIDE_DEBUG)

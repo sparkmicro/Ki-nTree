@@ -29,21 +29,21 @@ def parse_snapeda_response(response: dict) -> dict:
 		'symbol_image': None,
 		'footprint_image': None,
 		'package': None,
-		'part_url': 'https://www.snapeda.com',
+		'part_url': None,
+		'has_single_result': False,
 	}
 
 	number_results = int(response.get('hits', 0))
 
 	# Check for single result
-	if number_results != 1:
-		pass
-	else:
+	if number_results == 1:
 		try:
 			data['part_number'] = response['results'][0].get('part_number', None)
 			data['has_symbol'] = response['results'][0].get('has_symbol', False)
 			data['has_footprint'] = response['results'][0].get('has_footprint', False)
 			data['package'] = response['results'][0]['package'].get('name', None)
 			data['part_url'] = SNAPEDA_URL + response['results'][0]['_links']['self'].get('href', '')
+			data['has_single_result'] = True
 		except KeyError:
 			pass
 
@@ -53,6 +53,13 @@ def parse_snapeda_response(response: dict) -> dict:
 			data['footprint_image'] = response['results'][0]['models'][0]['package_medium'].get('url', None)
 		except KeyError:
 			pass
+	elif number_results > 1:
+		try:
+			data['part_url'] = SNAPEDA_URL + '/search/' + response['pages'][0].get('link', None).split('&')[0]
+		except:
+			pass
+	else:
+		pass
 
 	return data
 
