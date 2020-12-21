@@ -50,6 +50,9 @@ def parse_snapeda_response(response: dict) -> dict:
 		# Separate as the 'models' key does not always exist
 		try:
 			data['symbol_image'] = response['results'][0]['models'][0]['symbol_medium'].get('url', None)
+		except KeyError:
+			pass
+		try:
 			data['footprint_image'] = response['results'][0]['models'][0]['package_medium'].get('url', None)
 		except KeyError:
 			pass
@@ -71,10 +74,12 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
 		'footprint': None,
 	}
 
+	part_number = snapeda_data["part_number"].replace('/', '').lower()
+
 	try:
 		if snapeda_data['symbol_image']:
 			# Form path
-			image_name = f'{snapeda_data["part_number"].lower()}_symbol.png'
+			image_name = f'{part_number}_symbol.png'
 			image_location = settings.search_images + image_name
 
 			# Download symbol image
@@ -87,7 +92,7 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
 	try:
 		if snapeda_data['footprint_image']:
 			# Form path
-			image_name = f'{snapeda_data["part_number"].lower()}_footprint.png'
+			image_name = f'{part_number}_footprint.png'
 			image_location = settings.search_images + image_name
 
 			# Download symbol image
