@@ -43,6 +43,7 @@ def parse_snapeda_response(response: dict) -> dict:
 			data['has_footprint'] = response['results'][0].get('has_footprint', False)
 			data['package'] = response['results'][0]['package'].get('name', None)
 			data['part_url'] = SNAPEDA_URL + response['results'][0]['_links']['self'].get('href', '')
+			data['part_url'] += '?ref=kintree'
 			data['has_single_result'] = True
 		except KeyError:
 			pass
