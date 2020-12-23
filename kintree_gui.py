@@ -353,7 +353,8 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
 																			  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
 	else:
 		# Load categories from supplier configuration
-		categories_dict = config_interface.load_supplier_categories(supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
+		categories_dict = config_interface.load_supplier_categories(supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES,
+																	clean=True)
 
 	# Category choices
 	categories_choices = []

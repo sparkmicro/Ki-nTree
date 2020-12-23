@@ -43,6 +43,7 @@ def parse_snapeda_response(response: dict) -> dict:
 			data['has_footprint'] = response['results'][0].get('has_footprint', False)
 			data['package'] = response['results'][0]['package'].get('name', None)
 			data['part_url'] = SNAPEDA_URL + response['results'][0]['_links']['self'].get('href', '')
+			data['part_url'] += '?ref=kintree'
 			data['has_single_result'] = True
 		except KeyError:
 			pass
@@ -50,6 +51,9 @@ def parse_snapeda_response(response: dict) -> dict:
 		# Separate as the 'models' key does not always exist
 		try:
 			data['symbol_image'] = response['results'][0]['models'][0]['symbol_medium'].get('url', None)
+		except KeyError:
+			pass
+		try:
 			data['footprint_image'] = response['results'][0]['models'][0]['package_medium'].get('url', None)
 		except KeyError:
 			pass
@@ -72,30 +76,36 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
 	}
 
 	try:
-		if snapeda_data['symbol_image']:
-			# Form path
-			image_name = f'{snapeda_data["part_number"].lower()}_symbol.png'
-			image_location = settings.search_images + image_name
+		part_number = snapeda_data["part_number"].replace('/', '').lower()
+	except:
+		part_number = None
 
-			# Download symbol image
-			symbol = download_image(snapeda_data['symbol_image'], image_location)
-			if symbol:
-				images['symbol'] = image_location
-	except KeyError:
-		pass
+	if part_number:
+		try:
+			if snapeda_data['symbol_image']:
+				# Form path
+				image_name = f'{part_number}_symbol.png'
+				image_location = settings.search_images + image_name
 
-	try:
-		if snapeda_data['footprint_image']:
-			# Form path
-			image_name = f'{snapeda_data["part_number"].lower()}_footprint.png'
-			image_location = settings.search_images + image_name
+				# Download symbol image
+				symbol = download_image(snapeda_data['symbol_image'], image_location)
+				if symbol:
+					images['symbol'] = image_location
+		except KeyError:
+			pass
 
-			# Download symbol image
-			footprint = download_image(snapeda_data['footprint_image'], image_location)
-			if footprint:
-				images['footprint'] = image_location
-	except KeyError:
-		pass
+		try:
+			if snapeda_data['footprint_image']:
+				# Form path
+				image_name = f'{part_number}_footprint.png'
+				image_location = settings.search_images + image_name
+
+				# Download symbol image
+				footprint = download_image(snapeda_data['footprint_image'], image_location)
+				if footprint:
+					images['footprint'] = image_location
+		except KeyError:
+			pass
 
 	return images
 
