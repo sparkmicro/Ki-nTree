@@ -75,33 +75,37 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
 		'footprint': None,
 	}
 
-	part_number = snapeda_data["part_number"].replace('/', '').lower()
-
 	try:
-		if snapeda_data['symbol_image']:
-			# Form path
-			image_name = f'{part_number}_symbol.png'
-			image_location = settings.search_images + image_name
+		part_number = snapeda_data["part_number"].replace('/', '').lower()
+	except:
+		part_number = None
 
-			# Download symbol image
-			symbol = download_image(snapeda_data['symbol_image'], image_location)
-			if symbol:
-				images['symbol'] = image_location
-	except KeyError:
-		pass
+	if part_number:
+		try:
+			if snapeda_data['symbol_image']:
+				# Form path
+				image_name = f'{part_number}_symbol.png'
+				image_location = settings.search_images + image_name
 
-	try:
-		if snapeda_data['footprint_image']:
-			# Form path
-			image_name = f'{part_number}_footprint.png'
-			image_location = settings.search_images + image_name
+				# Download symbol image
+				symbol = download_image(snapeda_data['symbol_image'], image_location)
+				if symbol:
+					images['symbol'] = image_location
+		except KeyError:
+			pass
 
-			# Download symbol image
-			footprint = download_image(snapeda_data['footprint_image'], image_location)
-			if footprint:
-				images['footprint'] = image_location
-	except KeyError:
-		pass
+		try:
+			if snapeda_data['footprint_image']:
+				# Form path
+				image_name = f'{part_number}_footprint.png'
+				image_location = settings.search_images + image_name
+
+				# Download symbol image
+				footprint = download_image(snapeda_data['footprint_image'], image_location)
+				if footprint:
+					images['footprint'] = image_location
+		except KeyError:
+			pass
 
 	return images
 
