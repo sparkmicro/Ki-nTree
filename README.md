@@ -26,21 +26,28 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 ## Get Started
 ### Installation
 1. Clone this repository with the `--recurse-submodules` option:
-```
+``` bash
 $ git clone --recurse-submodules https://github.com/sparkmicro/Ki-nTree
 ```
 Alternatively, you can clone without the `--recurse-submodules` option, then run:
-```
+``` bash
 $ git submodule update --init
 ```
 2. Create and activate a new python environment (Python 3.6 and newer) inside the `Ki-nTree` folder:
-```
+``` bash
 $ cd Ki-nTree
 $ python -m venv env-kintree
 $ source env-kintree/bin/activate
 ```
+> ##### Windows
+> 
+> In Git Bash, use this command to activate the virtual environment:
+> ``` bash
+> $ source env-kintree/Scripts/activate
+> ```
+> For any other Windows terminal, refer to the [official documentation](https://docs.python.org/library/venv.html#creating-virtual-environments)
 3. Install `invoke` package:
-```
+``` bash
 $ pip install invoke
 ```
 4. Run `invoke install` to install dependencies
@@ -48,11 +55,14 @@ $ pip install invoke
 
 #### Make it an executable
 1. Make sure you followed the previous installation steps, then run:
-```
+``` bash
 $ invoke build
 ```
 2. It will create a one-file executable in a new `dist` folder. You can now run it with `dist/kintree_gui` or simply double-clicking the `kintree_gui` file
-3. Make also create a TGZ file in the `dist` folder so that you can extract Ki-nTree and store it anywhere on your computer
+> ##### Windows
+>
+> Use `kintree_gui.exe` instead of `kintree_gui`
+3. Runing the `invoke build` command also creates two archive files (TGZ and ZIP) in the `dist` folder so that you can extract the Ki-nTree executable and configuration files and run it from anywhere on your computer!
 
 ### Usage Instructions
 #### Requirements
