@@ -10,6 +10,13 @@ python:
     - 3.7
     - 3.8
 
+# Reference: https://docs.coveralls.io/parallel-build-webhook
+# env:
+#   global:
+#     - COVERALLS_PARALLEL=true
+notifications:
+    webhooks: https://coveralls.io/webhook
+
 apt-packages:
     - sqlite3
 
@@ -31,5 +38,5 @@ install: skip
 script: invoke test
 
 after_success:
-    - invoke build
     - coveralls
+    - invoke build
