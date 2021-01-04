@@ -31,4 +31,5 @@ install: skip
 script: invoke test
 
 after_success:
+    - invoke build
     - coveralls
