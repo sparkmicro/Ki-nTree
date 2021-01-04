@@ -10,7 +10,6 @@ fake-useragent>=0.1.11,<1.0
 fuzzywuzzy>=0.18.0,<1.0
 idna>=2.10,<3.0
 inflection>=0.5.0,<1.0
-invoke>=1.4.1,<2.0
 pycparser>=2.20,<3.0
 pyinstaller>=4.0,<5.0
 pyinstaller-hooks-contrib>=2020.7,<2021.0

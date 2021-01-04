@@ -12,6 +12,8 @@ def install(c, is_install=True):
 	else:
 		cprint('[MAIN]\tUpdating required dependencies')
 	c.run('pip install -U -r requirements.txt', hide='out')
+	# Install wrapt_timeout_decorator library from GitHub
+	c.run('pip install git+https://github.com/bitranox/wrapt_timeout_decorator.git', hide='out')
 
 	if is_install:
 		cprint('[MAIN]\tInstalling optional dependencies')
@@ -44,12 +46,30 @@ def clean(c):
 
 @task
 def package(c):
+	import os
+	import shutil
+	
+	cdir = os.getcwd()
+	dist = os.path.join(cdir, 'dist')
+	
 	cprint('[MAIN]\tPackaging Ki-nTree')
+	
+	# Delete previous files
 	try:
 		c.run('rm dist/kintree.tgz', hide='err')
 	except UnexpectedExit:
 		pass
-	c.run('cd dist/ && tar -czvf kintree.tgz * && cd -', hide=True)
+	try:
+		c.run('rm dist/kintree.zip', hide='err')
+	except UnexpectedExit:
+		pass
+		
+	# Create ZIP
+	shutil.make_archive(os.path.join(cdir, 'kintree'), 'zip', dist)
+	# Create TGZ
+	c.run(f'cd {dist} && tar -czvf kintree.tgz * && cd {cdir}', hide=True)
+	# Move ZIP file into dist folder
+	c.run(f'mv kintree.zip {dist}', hide=False)
 
 @task
 def exec(c):
@@ -60,13 +80,20 @@ def exec(c):
 
 @task
 def copy_configuration(c):
+	import os
+
+	cdir = os.getcwd()
+	dist = os.path.join(cdir, 'dist')
+	config = os.path.join(dist, 'config')
+	kicad = os.path.join(dist, 'kicad')
+
 	cprint(f'[MAIN]\tCopying configuration files')
-	c.run('mkdir dist/config && mkdir dist/kicad', hide=False)
-	c.run('cp -r config/kicad/ dist/config/', hide=True)
-	c.run('cp -r config/digikey/ dist/config/', hide=True)
-	c.run('cp -r config/inventree/ dist/config/', hide=True)
-	c.run('cp config/version.yaml dist/config/', hide=True)
-	c.run('cp -r kicad/templates/ dist/kicad/', hide=True)
+	c.run(f'mkdir {config} && mkdir {kicad}', hide=False)
+	c.run('cp -r config/kicad/ dist/config/', hide=False)
+	c.run('cp -r config/digikey/ dist/config/', hide=False)
+	c.run('cp -r config/inventree/ dist/config/', hide=False)
+	c.run('cp config/version.yaml dist/config/', hide=False)
+	c.run('cp -r kicad/templates/ dist/kicad/', hide=False)
 
 @task(pre=[clean], post=[package])
 def build(c):
