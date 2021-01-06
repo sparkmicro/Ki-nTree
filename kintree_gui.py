@@ -436,11 +436,11 @@ def user_defined_symbol_template_footprint(categories: list,
 										   symbol_lib=None,
 										   template=None,
 										   footprint_lib=None,
+										   footprint=None,
 										   symbol_confirm=False,
 										   footprint_confirm=False):
 	''' Symbol and Footprint user defined window '''
 	symbol = None
-	footprint = None
 
 	if symbol_confirm and '---' not in symbol_lib:
 		if not config_interface.add_library_path(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
@@ -636,7 +636,10 @@ def user_defined_symbol_template_footprint(categories: list,
 		footprint_mod_choices = ['None']
 		footprint_mod_default = footprint_mod_choices[0]
 	else:
-		footprint_mod_default = None
+		if footprint:
+			footprint_mod_default = footprint
+		else:
+			footprint_mod_default = None
 
 	library_layout = [
 		[
@@ -680,20 +683,25 @@ def user_defined_symbol_template_footprint(categories: list,
 													  part_number=part_number,
 													  symbol_lib=lib_values['symbol_lib'],
 													  template=lib_values['template'],
-													  footprint_lib=lib_values['footprint_lib'])
+													  footprint_lib=lib_values['footprint_lib'],
+													  footprint=lib_values['footprint_mod_sel'])
+	# Symbol library confirmation
 	elif lib_event == 'Confirm':
 		return user_defined_symbol_template_footprint(categories=categories,
 													  part_number=part_number,
 													  symbol_lib=lib_values['symbol_lib'],
-													  template=lib_values['template'],
+													  template=None,
 													  footprint_lib=lib_values['footprint_lib'],
+													  footprint=lib_values['footprint_mod_sel'],
 													  symbol_confirm=True)
+	# Footprint library confirmation
 	elif lib_event == 'Confirm0':
 		return user_defined_symbol_template_footprint(categories=categories,
 													  part_number=part_number,
 													  symbol_lib=lib_values['symbol_lib'],
 													  template=lib_values['template'],
 													  footprint_lib=lib_values['footprint_lib'],
+													  footprint=None,
 													  footprint_confirm=True)
 	else:
 		symbol = lib_values['symbol_lib']
