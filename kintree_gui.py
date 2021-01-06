@@ -558,6 +558,8 @@ def user_defined_symbol_template_footprint(categories: list,
 		return symbol, template, footprint
 	
 	# Build template choices
+	template_default = None
+
 	if not categories[0]:
 		category = symbol_lib_choices[0]
 	else:
@@ -568,17 +570,21 @@ def user_defined_symbol_template_footprint(categories: list,
 		subcategory = categories[1]
 	try:
 		template_choices = build_choices(templates, category, subcategory)
-		
+	except:
+		template_choices = ['None']
+		template_default = template_choices[0]
+
+	# Select default template
+	if not template_default:
+		# If template was selected by user then use it
 		if template:
 			template_default = template
 		else:
-			template_default = template_choices[0]
-	except:
-		pass
-
-	if not template_choices:
-		template_choices = ['None']
-		template_default = template_choices[0]
+			# Automatically select template from subcategory
+			template_default = subcategory if templates[category].get(subcategory, None) else None
+			# If automatic match failed then select first entry
+			if not template_default:
+				template_default = template_choices[0]
 
 	# Load footprint libraries
 	if not settings.KICAD_FOOTPRINTS_PATH:
@@ -690,7 +696,7 @@ def user_defined_symbol_template_footprint(categories: list,
 		return user_defined_symbol_template_footprint(categories=categories,
 													  part_number=part_number,
 													  symbol_lib=lib_values['symbol_lib'],
-													  template=None,
+													  template=lib_values['template'],
 													  footprint_lib=lib_values['footprint_lib'],
 													  footprint=lib_values['footprint_mod_sel'],
 													  symbol_confirm=True)
