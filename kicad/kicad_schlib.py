@@ -91,6 +91,8 @@ class ComponentLibManager(object):
 				component_field = str(new_component.fields[field_idx]['name']).replace('"','')
 				if component_field in component_data['parameters'].keys():
 					new_component.fields[field_idx]['name'] = component_data['parameters'][component_field]
+				elif component_field == 'IPN':
+					new_component.fields[field_idx]['name'] = component_data['IPN']
 				elif component_field == 'Manufacturer':
 					for manufacturer in component_data['manufacturer'].keys():
 						manufacturer_name = manufacturer
