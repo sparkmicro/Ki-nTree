@@ -9,88 +9,86 @@ CODES:
   Inductors: IND
   Integrated Circuits: ICS
   Mechanicals: MEC
-  Power Management: PWR
   Miscellaneous: MIS
   Modules: MOD
+  Power Management: PWR
   Printed-Circuit Boards: PCB
-  Resistors: RES
   RF: RFC
+  Resistors: RES
   Transistors: TRA
 # Parents and Children Categories
 CATEGORIES:
-  Assemblies: null
+  Assemblies:
+  - Printed-Circuit Board Assembly
+  - Product
   Capacitors:
-    - Ceramic
-    - Aluminium
-    - Tantalum
-    - Polymer
-    - Super Capacitors
-    # - Feed-Thru
+  - Ceramic
+  - Aluminium
+  - Tantalum
+  - Polymer
+  - Super Capacitors
   Circuit Protections:
-    - TVS
-    # - ESD
-    - Fuses
-    - PTC
+  - TVS
+  - Fuses
+  - PTC
   Connectors:
-    - Board-to-Board
-    - Interface
-    - Coaxial
-    - FPC
-    - Header
-    # - Wire-to-Board
-    # - High-Speed
-    # - RF
-    # - Power
+  - Board-to-Board
+  - Interface
+  - Coaxial
+  - FPC
+  - Header
+# - Wire-to-Board
+# - High-Speed
+# - RF
+# - Power
   Crystals and Oscillators:
-    - Crystals
-    - Oscillators
+  - Crystals
+  - Oscillators
   Diodes:
-    - Standard
-    - Schottky
-    - Zener
-    - LED
+  - Standard
+  - Schottky
+  - Zener
+  - LED
   Inductors:
-    - Power
-    - Ferrite Bead
-    # - RF
+  - Power
+  - Ferrite Bead
+# - RF
   Integrated Circuits:
-    - Logic
-    - Interface
-    - MCU
-    - Memory
-    - Sensor
-    # - Load-Switch
-    # - SoC-CPU-GPU
-    # - FPGA-ASIC-CPLD
-    # - Driver
+  - Logic
+  - Interface
+  - MCU
+  - Memory
+  - Sensor
+# - SoC-CPU-GPU
+# - FPGA-ASIC-CPLD
+# - Driver
   Mechanicals:
-    - Switch
-    - Standoff
+  - Switch
+  - Standoff
   Miscellaneous: null
   Modules: null
   Printed-Circuit Boards: null
   Power Management:
-    - LDO
-    - Buck
-    - Boost
-    # - Buck-Boost
-    # - PMIC
-  Resistors:
-    - Surface Mount
-    - Through Hole
-    # - Current Sense
-    # - Array
-    # - Potentiometers
-    # - NTC
+  - LDO
+  - Buck
+  - Boost
+  Printed-Circuit Boards: null
   RF:
-    - Chipset
-    - Antenna
-    - Filter
-    - Shield
+  - Chipset
+  - Antenna
+  - Filter
+  - Shield
+  Resistors:
+  - Surface Mount
+  - Through Hole
+  - Potentiometers
+  - NTC
+# - Array
   Transistors:
-    - N-Channel FET
-    - P-Channel FET
-    # - N+N-Channel FET
-    # - N+P-Channel FET
-    - NPN
-    - PNP
+  - N-Channel FET
+  - P-Channel FET
+  - NPN
+  - PNP
+# - N+N-Channel FET
+# - N+P-Channel FET
+# - Load-Switch

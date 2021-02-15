@@ -333,12 +333,29 @@ def add_custom_part(part_data: dict) -> dict:
 		window_title, add_custom_layout, location=(500, 500)
 	)
 
-	cstm_event, cstm_values = add_custom_window.read()
-	if cstm_event == sg.WIN_CLOSED:  # if user closes window
-		return None
-	else:
-		for key in input_keys:
-			user_values[key] = cstm_values[key]
+	while True:
+		cstm_event, cstm_values = add_custom_window.read()
+
+		if cstm_event == sg.WIN_CLOSED:  # if user closes window
+			return None
+		elif cstm_event == 'CREATE':
+			for key in input_keys:
+				user_values[key] = cstm_values[key]
+
+			if not cstm_values['name'] and not cstm_values['description']:
+				sg.popup_ok(f'Missing "Name" and "Description"',
+							title='Incomplete Custom Part Data',
+							location=(500, 500))
+			elif not cstm_values['name']:
+				sg.popup_ok(f'Missing "Name"',
+							title='Incomplete Custom Part Data',
+							location=(500, 500))
+			elif not cstm_values['description']:
+				sg.popup_ok(f'Missing "Description"',
+							title='Incomplete Custom Part Data',
+							location=(500, 500))
+			else:
+				break
 		
 	add_custom_window.close()
 	return user_values
@@ -844,16 +861,12 @@ def main():
 
 			if not part_info:
 				# Missing Part Information
-				if CREATE_CUSTOM:
-					sg.popup_ok(f'Missing "Name" and "Description"',
-								title='Incomplete Custom Part Data',
-								location=(500, 500))
-				else:
-					sg.popup_ok(f'Failed to fetch part information\n'
-								'Make sure:\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
-								'\n- Part number is valid',
-								title='Digi-Key API Search',
-								location=(500, 500))
+				sg.popup_ok(f'Failed to fetch part information...\n\n'
+							'Make sure:'
+							'\n- Part number is valid and not blank'
+							'\n- Digi-Key API settings are correct ("Settings > Digi-Key")',
+							title='Digi-Key API Search',
+							location=(500, 500))
 			else:
 				if settings.ENABLE_INVENTREE:
 					cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
