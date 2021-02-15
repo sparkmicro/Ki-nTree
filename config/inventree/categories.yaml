@@ -32,6 +32,7 @@ CATEGORIES:
   - Fuses
   - PTC
   Connectors:
+  - Battery
   - Board-to-Board
   - Interface
   - Coaxial
@@ -56,7 +57,7 @@ CATEGORIES:
   Integrated Circuits:
   - Logic
   - Interface
-  - MCU
+  - Microcontroller
   - Memory
   - Sensor
 # - SoC-CPU-GPU
@@ -65,10 +66,14 @@ CATEGORIES:
   Mechanicals:
   - Switch
   - Standoff
-  Miscellaneous: null
+  - Nuts
+  - Screws
+  Miscellaneous:
+  - Batteries
   Modules: null
   Printed-Circuit Boards: null
   Power Management:
+  - PMIC
   - LDO
   - Buck
   - Boost
@@ -89,6 +94,6 @@ CATEGORIES:
   - P-Channel FET
   - NPN
   - PNP
+  - Load Switches
 # - N+N-Channel FET
 # - N+P-Channel FET
-# - Load-Switch

@@ -108,3 +108,5 @@ Transistors:
   - Transistors - FETs, MOSFETs - Single
   __PNP:
   - Transistors - Bipolar (BJT) - Single
+  Load Switches:
+  - PMIC - Power Distribution Switches, Load Drivers
