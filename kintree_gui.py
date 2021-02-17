@@ -338,7 +338,7 @@ def add_custom_part(part_data: dict) -> dict:
 
 		if cstm_event == sg.WIN_CLOSED:  # if user closes window
 			return None
-		elif cstm_event == 'CREATE':
+		else:
 			for key in input_keys:
 				user_values[key] = cstm_values[key]
 
