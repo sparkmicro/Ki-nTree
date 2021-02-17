@@ -1,66 +1,54 @@
 # Parameters
 # Name: Unit
-Value:
-Symbol:
-Footprint:
-Package Type:
-Package Size: mm
-Package Height: mm
-Temperature Range: °C
-Temperature Grade:
-# Capacitors
-Tolerance: '%'
-Rated Voltage: V
-Rated Current: A
-ESR: mOhm
-# Circuit Protections
-Capacitance: nF
-Rated Power: W
-Standoff Voltage: V
+(Min) Output Voltage: V
+Antenna Type: null
+B Constant: K
 Breakdown Voltage: V
+Capacitance: nF
 Clamping Voltage: V
-# Connectors
-Mating Height: mm
-Mounting Type: # (Surface Mount / Through-Hole / Mixed)
-Orientation: # (Vertical / Right-Angle)
-Locking: # (Yes / No)
-Shielding: # (Yes / No / Partial)
-Interface Type: # (USB, JTAG, etc.)
-Polarity: # (Plug / Receptacle)
-Number of Contacts:
-Number of Rows:
-Pitch: mm
-# Crystals and Oscillators
+Collector-Gate Voltage: V
+DC Resistance: mOhm
+ESR: mOhm
+Footprint: null
+Forward Voltage: V
 Frequency: Hz
 Frequency Stability: ppm
 Frequency Tolerance: ppm
+Function Type: null
+Interface Type: null
+LED Color: null
 Load Capacitance: pF
-# Diodes
-Forward Voltage: V
-LED Color:
-# ICs
-Number of Channels:
-Function Type:
-# RF
-Antenna Type:
-# Maximum Voltage: V
-Memory Size:
-# Inductors
-Saturation Current: A
-DC Resistance: mOhm
-# Resistors
-B Constant: K
-Number of Elements:
-# Transistors
+Locking: null
+Mating Height: mm
+Max Input Voltage: V
+Max Output Voltage: V
+Maximum Gate Voltage: V
+Memory Size: null
+Min Input Voltage: V
+Mounting Type: null
+Number of Channels: null
+Number of Contacts: null
+Number of Elements: null
+Number of Rows: null
+Orientation: null
+Output Current: A
+Output Type: null
+Package Height: mm
+Package Size: mm
+Package Type: null
+Pitch: mm
+Polarity: null
+Quiescent Current: A
 RDS On Resistance: Ohm
 RDS On Voltage: V
-Collector-Gate Voltage: V
-Maximum Gate Voltage: V
-# Voltage Regulators
-Min Input Voltage: V
-Max Input Voltage: V
-Output Type:
-(Min) Output Voltage: V
-Max Output Voltage: V
-Output Current: A
-Quiescent Current: A
+Rated Current: A
+Rated Power: W
+Rated Voltage: V
+Saturation Current: A
+Shielding: null
+Standoff Voltage: V
+Symbol: null
+Temperature Grade: null
+Temperature Range: "\xB0C"
+Tolerance: '%'
+Value: null

@@ -2,159 +2,157 @@
 # Each template parameter can match to multiple Digi-Key parameters
 # Categories (main keys) should match categories in kicad/kicad_map.yaml file
 Capacitors:
-  Value:
-  - Capacitance
-  Rated Voltage:
-  - Voltage - Rated
-  Tolerance:
-  - Tolerance
   ESR:
   - ESR (Equivalent Series Resistance)
-  Package Type:
-  - Package / Case
-  Package Size:
-  - Size / Dimension
   Package Height:
   - Height - Seated (Max)
+  - Thickness (Max)
+  Package Size:
+  - Size / Dimension
+  Package Type:
+  - Package / Case
+  Rated Voltage:
+  - Voltage - Rated
   Temperature Grade:
   - Temperature Coefficient
   Temperature Range:
   - Operating Temperature
-Circuit Protections:
+  Tolerance:
+  - Tolerance
   Value:
-  - Manufacturer Part Number
+  - Capacitance
+Circuit Protections:
+  Breakdown Voltage:
+  - Voltage - Breakdown (Min)
   Capacitance:
   - Capacitance @ Frequency
-  Rated Voltage:
-  - Voltage Rating - DC
-  - Voltage - Max
+  Clamping Voltage:
+  - Voltage - Clamping (Max) @ Ipp
+  Package Type:
+  - Package / Case
   Rated Current:
   - Current Rating (Amps)
   - Current - Max
   Rated Power:
   - Power - Peak Pulse
+  Rated Voltage:
+  - Voltage Rating - DC
+  - Voltage - Max
   Standoff Voltage:
   - Voltage - Reverse Standoff (Typ)
-  Breakdown Voltage:
-  - Voltage - Breakdown (Min)
-  Clamping Voltage:
-  - Voltage - Clamping (Max) @ Ipp
-  Package Type:
-  - Package / Case
   Temperature Range:
   - Operating Temperature
-Connectors:
   Value:
   - Manufacturer Part Number
-  Number of Contacts:
-  - Number of Contacts
-  - Number of Positions
-  Number of Rows:
-  Pitch:
-  - Pitch
-  Mounting Type: # (Surface Mount / Through-Hole / Mixed)
-  - Mounting Type 
-  Orientation: # (Vertical / Right-Angle)
-  - Orientation
-  Polarity: # (Plug / Receptacle)
-  - Gender 
-  Mating Height:
-  Locking: # (Yes / No)
-  - Locking Feature
-  Shielding: # (Yes / No / Partial)
-  - Shielding 
+Connectors:
   Frequency:
   - Frequency - Max
   Interface Type:
   - Connector Type
   - Flat Flex Type
+  Locking:
+  - Locking Feature
+  - Fastening Type
+  Mating Height:
+  - Mated Stacking Heights
+  Mounting Type:
+  - Mounting Type
+  Number of Contacts:
+  - Number of Contacts
+  - Number of Positions
+  Number of Rows:
+  - Number of Rows
+  Orientation:
+  - Orientation
   Package Height:
   - Height Above Board
+  - Insulation Height
+  Pitch:
+  - Pitch
+  - Pitch - Mating
+  Polarity:
+  - Gender
+  Shielding:
+  - Shielding
   Temperature Range:
   - Operating Temperature
-Crystals and Oscillators:
   Value:
-  - Frequency
-  Rated Voltage:
-  - Voltage - Supply
-  Rated Current:
-  - Current - Supply (Max)
+  - Manufacturer Part Number
+Crystals and Oscillators:
   Frequency Stability:
   - Frequency Stability
   Frequency Tolerance:
   - Frequency Tolerance
   Load Capacitance:
   - Load Capacitance
-  Temperature Range:
-  - Operating Temperature
-  Package Type:
-  - Package / Case
-  Package Size:
-  - Size / Dimension
   Package Height:
   - Height - Seated (Max)
-Diodes:
+  Package Size:
+  - Size / Dimension
+  Package Type:
+  - Package / Case
+  Rated Current:
+  - Current - Supply (Max)
+  Rated Voltage:
+  - Voltage - Supply
+  Temperature Range:
+  - Operating Temperature
   Value:
-  - Manufacturer Part Number
-  Function Type:
-  - Diode Type
+  - Frequency
+Diodes:
   Forward Voltage:
   - Voltage - Forward (Vf) (Max) @ If
   - Voltage - Forward (Vf) (Typ)
-  Rated Voltage:
-  - Voltage - DC Reverse (Vr) (Max)
-  - Voltage - Zener (Nom) (Vz)
+  Function Type:
+  - Diode Type
+  LED Color:
+  - Color
+  Package Type:
+  - Package / Case
   Rated Current:
   - Current - Average Rectified (Io)
   Rated Power:
   - Power - Max
-  LED Color:
-  - Color
+  Rated Voltage:
+  - Voltage - DC Reverse (Vr) (Max)
+  - Voltage - Zener (Nom) (Vz)
   Temperature Range:
   - Operating Temperature
   - Operating Temperature - Junction
+  Value:
+  - Manufacturer Part Number
+Inductors:
+  ESR:
+  - DC Resistance (DCR)
+  - DC Resistance (DCR) (Max)
+  Package Height:
+  - Height - Seated (Max)
+  - Height (Max)
+  Package Size:
+  - Size / Dimension
   Package Type:
   - Package / Case
-Inductors:
-  Value:
-  - Inductance
-  - Impedance @ Frequency
   Rated Current:
   - Current Rating (Max)
   - Current Rating (Amps)
   Saturation Current:
   - Current - Saturation
-  ESR:
-  - DC Resistance (DCR)
-  - DC Resistance (DCR) (Max)
-  Tolerance:
-  - Tolerance
   Shielding:
   - Shielding
-  Package Type:
-  - Package / Case
-  Package Size:
-  - Size / Dimension
-  Package Height:
-  - Height - Seated (Max)
   Temperature Range:
   - Operating Temperature
-Integrated Circuits:
+  Tolerance:
+  - Tolerance
   Value:
-  - Manufacturer Part Number
-  Number of Channels:
-  - Channels per Circuit
+  - Inductance
+  - Impedance @ Frequency
+Integrated Circuits:
   Frequency:
   - Clock Frequency
   - Speed
   - Data Rate
   - Frequency Range
-  Rated Voltage:
-  - Voltage - VCCA
-  - Voltage - VCCB
-  - Voltage - Supply
-  - Voltage - Supply (Vcc/Vdd)
-  - Voltage - Supply, Digital
+  - -3db Bandwidth
   Function Type:
   - Translator Type
   - Technology
@@ -164,100 +162,111 @@ Integrated Circuits:
   Memory Size:
   - Program Memory Size
   - Memory Size
+  Number of Channels:
+  - Channels per Circuit
   Package Type:
   - Package / Case
+  Rated Voltage:
+  - Voltage - VCCA
+  - Voltage - VCCB
+  - Voltage - Supply
+  - Voltage - Supply (Vcc/Vdd)
+  - Voltage - Supply, Digital
+  - Voltage - Supply, Single (V+)
   Temperature Range:
   - Operating Temperature
-Mechanicals:
   Value:
   - Manufacturer Part Number
-  Mounting Type:
-  - Mounting Type
-  - Features
-  Rated Current:
-  - Contact Rating @ Voltage
+Mechanicals:
   Function Type:
   - Circuit
   - Type
+  Mounting Type:
+  - Mounting Type
+  - Features
+  Package Height:
+  - Between Board Height
   Package Size:
   - Outline
   - Diameter - Outside
   Package Type:
   - Screw, Thread Size
-  Package Height:
-  - Between Board Height
+  Rated Current:
+  - Contact Rating @ Voltage
   Temperature Range:
   - Operating Temperature
-Power Management:
   Value:
   - Manufacturer Part Number
-  Function Type:
-  - Topology
-  Min Input Voltage:
-  - Voltage - Input (Min)
-  Max Input Voltage:
-  - Voltage - Input (Max)
-  Output Type:
-  - Output Type
+Power Management:
   (Min) Output Voltage:
   - Voltage - Output (Min/Fixed)
-  Max Output Voltage:
-  - Voltage - Output (Max)
-  Rated Current:
-  - Current - Output
-  Quiescent Current:
-  - Current - Quiescent (Iq)
   Frequency:
   - Frequency - Switching
+  Function Type:
+  - Topology
+  Max Input Voltage:
+  - Voltage - Input (Max)
+  Max Output Voltage:
+  - Voltage - Output (Max)
+  Min Input Voltage:
+  - Voltage - Input (Min)
+  Output Type:
+  - Output Type
   Package Type:
   - Supplier Device Package
+  Quiescent Current:
+  - Current - Quiescent (Iq)
+  Rated Current:
+  - Current - Output
   Temperature Range:
   - Operating Temperature
-Resistors:
-  Value:
-  - Resistance
-  Rated Power:
-  - Power (Watts)
-  Tolerance:
-  - Tolerance
-  Package Type:
-  - Supplier Device Package
-  Temperature Range:
-  - Operating Temperature
-RF:
   Value:
   - Manufacturer Part Number
+RF:
   Frequency:
   - Frequency Range
-  Rated Voltage: null
   Function Type: null
   Package Type:
   - Package / Case
+  Rated Voltage: null
   Temperature Range:
   - Operating Temperature
-Transistors:
   Value:
   - Manufacturer Part Number
-  Function Type:
-  - Transistor Type
-  - FET Type
-  Rated Current:
-  - Current - Collector (Ic) (Max)
-  - Current - Continuous Drain (Id) @ 25°C
-  Rated Voltage:
-  - Voltage - Collector Emitter Breakdown (Max)
-  - Drain to Source Voltage (Vdss)
+Resistors:
+  Package Type:
+  - Supplier Device Package
   Rated Power:
-  - Power - Max
-  - Power Dissipation (Max)
+  - Power (Watts)
+  Temperature Range:
+  - Operating Temperature
+  Tolerance:
+  - Tolerance
+  Value:
+  - Resistance
+Transistors:
   Collector-Gate Voltage:
   - Vce Saturation (Max) @ Ib, Ic
   - Vgs(th) (Max) @ Id
+  Function Type:
+  - Transistor Type
+  - FET Type
   Maximum Gate Voltage:
   - Vgs (Max)
-  RDS On Resistance:
-  - Rds On (Max) @ Id, Vgs
   Package Type:
   - Supplier Device Package
+  RDS On Resistance:
+  - Rds On (Max) @ Id, Vgs
+  Rated Current:
+  - Current - Collector (Ic) (Max)
+  - "Current - Continuous Drain (Id) @ 25\xB0C"
+  Rated Power:
+  - Power - Max
+  - Power Dissipation (Max)
+  Rated Voltage:
+  - Voltage - Collector Emitter Breakdown (Max)
+  - Drain to Source Voltage (Vdss)
   Temperature Range:
   - Operating Temperature
+  Value:
+  - Manufacturer Part Number

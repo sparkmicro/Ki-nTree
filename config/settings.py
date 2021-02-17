@@ -177,7 +177,7 @@ class Environment(Enum):
 
 # Pick environment
 try:
-	environment = int(os.environ.get('INVENTREE_ENV', Environment.DEVELOPMENT.value))
+	environment = int(os.environ.get('INVENTREE_ENV', Environment.TESTING.value))
 except ValueError:
 	environment = 1
 

@@ -333,12 +333,29 @@ def add_custom_part(part_data: dict) -> dict:
 		window_title, add_custom_layout, location=(500, 500)
 	)
 
-	cstm_event, cstm_values = add_custom_window.read()
-	if cstm_event == sg.WIN_CLOSED:  # if user closes window
-		return None
-	else:
-		for key in input_keys:
-			user_values[key] = cstm_values[key]
+	while True:
+		cstm_event, cstm_values = add_custom_window.read()
+
+		if cstm_event == sg.WIN_CLOSED:  # if user closes window
+			return None
+		else:
+			for key in input_keys:
+				user_values[key] = cstm_values[key]
+
+			if not cstm_values['name'] and not cstm_values['description']:
+				sg.popup_ok(f'Missing "Name" and "Description"',
+							title='Incomplete Custom Part Data',
+							location=(500, 500))
+			elif not cstm_values['name']:
+				sg.popup_ok(f'Missing "Name"',
+							title='Incomplete Custom Part Data',
+							location=(500, 500))
+			elif not cstm_values['description']:
+				sg.popup_ok(f'Missing "Description"',
+							title='Incomplete Custom Part Data',
+							location=(500, 500))
+			else:
+				break
 		
 	add_custom_window.close()
 	return user_values
@@ -805,9 +822,7 @@ def main():
 			settings.set_inventree_enable_flag(values['enable_inventree'], save=True)
 			settings.set_kicad_enable_flag(values['enable_kicad'], save=True)
 		elif event == 'Custom Part':
-			custom_part_info = add_custom_part(part_data={})
-			if custom_part_info:
-				CREATE_CUSTOM = True
+			CREATE_CUSTOM = True
 		else:
 			# Adding part information to InvenTree
 			categories = [None, None]
@@ -820,52 +835,58 @@ def main():
 			part_data = {}
 			progressbar = False
 
-			if CREATE_CUSTOM:
-				if custom_part_info['name'] and custom_part_info['description']:
-					part_info = custom_part_info
-					cprint('\n[MAIN]\tCustom Part', silent=settings.SILENT)
-			else:
-				if values['part_number']:
-					# New part separation
-					new_search = '-' * 20
-					cprint(f'\n{new_search}', silent=settings.SILENT)
+			# Check either KiCad or InvenTree are enabled
+			if not settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
+				inventree_connect = False
+				sg.popup_ok(f'Please select an endpoint (KiCad and/or InvenTree)',
+							title='No endpoint selected',
+							location=(500, 500))
+			# Check InvenTree, if enabled
+			elif settings.ENABLE_INVENTREE:
+				cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
+				inventree_connect = inventree_interface.connect_to_server()
+				if not inventree_connect:
+					sg.popup_ok(f'Failed to access InvenTree server\nMake sure your username and password are correct',
+								title='InvenTree Server Error',
+								location=(500, 500))
+			elif settings.ENABLE_KICAD:
+				inventree_connect = True
 
-					# Load KiCad settings
-					settings.load_kicad_settings()
-
-					# Load InvenTree settings
-					settings.load_inventree_settings()
-
-					# SnapEDA test
-					# snapeda_window(values['part_number'])
-
-					# Digi-Key Search
-					part_info = inventree_interface.digikey_search(values['part_number'])
-
-			if not part_info:
-				# Missing Part Information
+			# Get part information
+			if inventree_connect:
 				if CREATE_CUSTOM:
-					sg.popup_ok(f'Missing "Name" and "Description"',
-								title='Incomplete Custom Part Data',
-								location=(500, 500))
+					custom_part_info = add_custom_part(part_data={})
+					try:
+						if custom_part_info['name'] and custom_part_info['description']:
+							part_info = custom_part_info
+							cprint('\n[MAIN]\tCustom Part', silent=settings.SILENT)
+					except TypeError:
+						pass
 				else:
-					sg.popup_ok(f'Failed to fetch part information\n'
-								'Make sure:\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
-								'\n- Part number is valid',
-								title='Digi-Key API Search',
-								location=(500, 500))
-			else:
-				if settings.ENABLE_INVENTREE:
-					cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
-					inventree_connect = inventree_interface.connect_to_server()
-					if part_info and not inventree_connect:
-						sg.popup_ok(f'Failed to access InvenTree server\nMake sure your username and password are correct',
-									title='InvenTree Server Error',
-									location=(500, 500))
-						# Reset part info
-						part_info = {}
+					if values['part_number']:
+						# New part separation
+						new_search = '-' * 20
+						cprint(f'\n{new_search}', silent=settings.SILENT)
 
-			# User Categories
+						# Load KiCad settings
+						settings.load_kicad_settings()
+
+						# Load InvenTree settings
+						settings.load_inventree_settings()
+
+						# Digi-Key Search
+						part_info = inventree_interface.digikey_search(values['part_number'])
+
+					if not part_info:
+						# Missing Part Information
+						sg.popup_ok(f'Failed to fetch part information...\n\n'
+									'Make sure:'
+									'\n- Part number is valid and not blank'
+									'\n- Digi-Key API settings are correct ("Settings > Digi-Key")',
+									title='Digi-Key API Search',
+									location=(500, 500))
+
+			# Get user categories
 			if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
 				if settings.ENABLE_INVENTREE:
 					cprint('\n[MAIN]\tCreating part in Inventree', silent=settings.SILENT)
@@ -894,7 +915,7 @@ def main():
 					cprint(f'[INFO]\tUser Category: "{categories[0]}"', silent=settings.SILENT)
 					cprint(f'[INFO]\tUser Subcategory: "{categories[1]}"', silent=settings.SILENT)
 
-			# User Part Info
+			# Get user part info
 			if not (categories[0] and categories[1]):
 				part_info = {}
 			else:

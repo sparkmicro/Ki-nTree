@@ -122,22 +122,27 @@ def save_api_token(c):
 	c.run('cp search/token_storage.json tests/files/', hide=True)
 
 @task
-def test(c):
+def test(c, setup=True):
 	try:
 		c.run('pip show coverage', hide=True)
 	except UnexpectedExit:
 		c.run('pip install -U coverage', hide=True)
 
 	cprint('[MAIN]\tRunning tests using coverage\n-----')
-	c.run('cd InvenTree/InvenTree/ && python manage.py runserver',
-		  asynchronous=True)
-	c.run('cd ../.. && sleep 5')
-	setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
-	cprint('\n-----')
-	if setup_inventree.exited == 0:
-		run_tests = c.run('coverage run --parallel-mode run_tests.py')
+	if setup:
+		c.run('cd InvenTree/InvenTree/ && python manage.py runserver',
+			  asynchronous=True)
+		c.run('cd ../.. && sleep 5')
+		setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
+		cprint('\n-----')
+		if setup_inventree.exited == 0:
+			run_tests = c.run('coverage run --parallel-mode run_tests.py')
+			if run_tests.exited == 0:
+				c.run('coverage combine')
+				coverage_report(c, open_browser=False)
+	else:
+		run_tests = c.run('coverage run run_tests.py')
 		if run_tests.exited == 0:
-			c.run('coverage combine')
 			coverage_report(c, open_browser=False)
 
 @task
