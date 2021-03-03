@@ -310,7 +310,9 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
 	# Progress Update
 	if show_progress and not progress.update_progress_bar_window(): return new_part, part_pk, inventree_part
 
-	if category_select > 0:
+	if category_select <= 0:
+		cprint(f'[ERROR]\tCategories ({category_name} - {subcategory_name}) does not exist in InvenTree', silent=settings.SILENT)
+	else:
 		# Check if part already exists
 		part_pk = inventree_api.is_new_part(category_pk, inventree_part)
 		### Part exists

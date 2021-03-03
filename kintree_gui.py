@@ -588,11 +588,10 @@ def user_defined_symbol_template_footprint(categories: list,
 	try:
 		template_choices = build_choices(templates, category, subcategory)
 	except:
-		template_choices = ['None']
-		template_default = template_choices[0]
+		pass
 
 	# Select default template
-	if not template_default:
+	if template_choices:
 		# If template was selected by user then use it
 		if template:
 			template_default = template
@@ -602,6 +601,10 @@ def user_defined_symbol_template_footprint(categories: list,
 			# If automatic match failed then select first entry
 			if not template_default:
 				template_default = template_choices[0]
+	else:
+		# No template matching
+		template_choices = ['None']
+		template_default = template_choices[0]
 
 	# Load footprint libraries
 	if not settings.KICAD_FOOTPRINTS_PATH:
@@ -1101,7 +1104,7 @@ def main():
 				progress.update_progress_bar_window(progress.MAX_PROGRESS)
 				progress.close_progress_bar_window()
 
-			if symbol and result_message:
+			if result_message:
 				sg.popup_ok(result_message, title='Results', location=(500, 500))
 
 			if part_data.get('inventree_url', None):
