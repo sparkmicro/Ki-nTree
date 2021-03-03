@@ -300,15 +300,15 @@ def add_custom_part(part_data: dict) -> dict:
 
 			sub_key = key + '_name'
 			add_custom_layout.append([
-										sg.Text(sub_key.replace('_', ' ').title()),
-										sg.InputText(name_default, size=(40,1), key=sub_key),
+										sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
+										sg.InputText(name_default, size=(38, 1), key=sub_key),
 									])
 			input_keys.append(sub_key)
 
 			sub_key = key + '_part_number'
 			add_custom_layout.append([
-										sg.Text(sub_key.replace('_', ' ').title()),
-										sg.InputText(number_default, size=(40,1), key=sub_key),
+										sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
+										sg.InputText(number_default, size=(38, 1), key=sub_key),
 									])
 			input_keys.append(sub_key)
 		else:
@@ -317,13 +317,13 @@ def add_custom_part(part_data: dict) -> dict:
 				default = ''
 
 			add_custom_layout.append([
-										sg.Text(key.capitalize()),
-										sg.InputText(default, size=(40,1), key=key),
+										sg.Text(key.capitalize(), size=(22, 1)),
+										sg.InputText(default, size=(38, 1), key=key),
 									])
 			input_keys.append(key)
 
 	if part_data:
-		add_custom_layout.append([ sg.Button('Submit', size=(20,1)), ])
+		add_custom_layout.append([ sg.Button('Submit', size=(25,1)), ])
 		window_title = 'Update Part Data'
 	else:
 		add_custom_layout.append([ sg.Button('CREATE', size=(59,1)), ])
@@ -344,15 +344,15 @@ def add_custom_part(part_data: dict) -> dict:
 
 			if not cstm_values['name'] and not cstm_values['description']:
 				sg.popup_ok(f'Missing "Name" and "Description"',
-							title='Incomplete Custom Part Data',
+							title='Error',
 							location=(500, 500))
 			elif not cstm_values['name']:
 				sg.popup_ok(f'Missing "Name"',
-							title='Incomplete Custom Part Data',
+							title='Error',
 							location=(500, 500))
 			elif not cstm_values['description']:
 				sg.popup_ok(f'Missing "Description"',
-							title='Incomplete Custom Part Data',
+							title='Error',
 							location=(500, 500))
 			else:
 				break
@@ -1079,9 +1079,10 @@ def main():
 					elif not new_part and not part_pk:
 						result_message = 'Error while adding part to InvenTree (check output)'
 					elif not part_data:
-						result_message = 'Part data not found - Check part number'
-					elif not categories[0] or categories[1]:
-						result_message = 'Part categories were not set properly'
+						if not categories[0] or categories[1]:
+							result_message = 'Part categories were not set properly'
+						else:
+							result_message = 'Part data not found - Check part number'
 					else:
 						result_message = 'Part added to InvenTree database'
 
