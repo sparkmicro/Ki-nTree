@@ -837,6 +837,7 @@ def main():
 			part_info = {}
 			part_data = {}
 			progressbar = False
+			actions_complete = False
 
 			# Check either KiCad or InvenTree are enabled
 			if not settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
@@ -956,11 +957,15 @@ def main():
 
 			# Set KiCad user libraries and symbol/footprint
 			if part_info and settings.ENABLE_KICAD:
+				
 				# Request user to select symbol and footprint libraries
 				symbol, template, footprint = user_defined_symbol_template_footprint(categories, part_info['manufacturer_part_number'])
 				# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
 				if not symbol and not footprint:
 					part_info = {}
+				else:
+					# All user actions were completed
+					actions_complete = True
 			
 			if part_info:
 				# Create progress bar window
@@ -1008,9 +1013,10 @@ def main():
 					if part_data['datasheet']:
 						part_data['inventree_url'] = part_data['datasheet']
 
+				# KiCad
+				# Initialize success flag
 				kicad_success = False
 
-				# KiCad
 				if settings.ENABLE_KICAD:
 					# Reload paths
 					settings.load_kicad_settings()
@@ -1062,20 +1068,26 @@ def main():
 							except:
 								cprint(f'[INFO]\tError: Failed to add part to KiCad (incomplete InvenTree data)', silent=settings.SILENT)
 
-				# Final result message
-				result_message = ''
+			# Final result message
+			result_message = ''
 
+			if actions_complete:
 				# Result pop-up window
 				if settings.ENABLE_INVENTREE:
-					if not new_part:
-						if part_pk:
-							result_message = 'Part already in InvenTree database'
-						else:
-							result_message = 'Error while adding part to InvenTree (check output)'
+					if not new_part and part_pk:
+						result_message = 'Part already in InvenTree database'
+					elif not new_part and not part_pk:
+						result_message = 'Error while adding part to InvenTree (check output)'
+					elif not part_data:
+						result_message = 'Part data not found - Check part number'
+					elif not categories[0] or categories[1]:
+						result_message = 'Part categories were not set properly'
 					else:
 						result_message = 'Part added to InvenTree database'
-				if settings.ENABLE_KICAD and settings.ENABLE_INVENTREE:
+
+				if settings.ENABLE_INVENTREE and settings.ENABLE_KICAD:
 					result_message += '\n'
+
 				if settings.ENABLE_KICAD:
 					if not kicad_success:
 						result_message += 'Error while adding part in KiCad (check output)'
@@ -1088,16 +1100,6 @@ def main():
 							result_message += 'Part added to KiCad library'
 						else:
 							result_message += 'Part already in KiCad library'
-
-			else:
-				if settings.ENABLE_INVENTREE:
-					if not categories[0] or categories[1]:
-						result_message = 'Part categories were not set properly'
-				if settings.ENABLE_INVENTREE or settings.ENABLE_KICAD:
-					if not part_data:
-						result_message = 'Part data not found - Check part number'
-					if not part_pk:
-						result_message = 'Unexpected error - Contact developper'
 
 			# Update progress bar to complete and close window
 			if progressbar:
