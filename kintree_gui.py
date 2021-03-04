@@ -428,16 +428,13 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
 	if category_event == sg.WIN_CLOSED:
 		return categories
 	elif category_event == 'Confirm':
-		return user_defined_categories(category_values['category'])
+		return user_defined_categories(category_values['category'], extend=settings.ENABLE_INVENTREE)
 	else:
 		categories[0] = category_values['category']
 		if category_values['subcategory_man']:
 			categories[1] = category_values['subcategory_man']
 		else:
 			categories[1] = category_values['subcategory_sel']
-
-		# if categories[1] == 'None':
-		# 	categories[1] = ''
 		
 		if '' in categories:
 			missing_category = 'Missing category information'
@@ -963,11 +960,11 @@ def main():
 				# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
 				if not symbol and not footprint:
 					part_info = {}
-				else:
-					# All user actions were completed
-					actions_complete = True
 			
 			if part_info:
+				# All user actions were completed
+				actions_complete = True
+
 				# Create progress bar window
 				progressbar = progress.create_progress_bar_window()
 
@@ -1078,11 +1075,11 @@ def main():
 						result_message = 'Part already in InvenTree database'
 					elif not new_part and not part_pk:
 						result_message = 'Error while adding part to InvenTree (check output)'
-					elif not part_data:
+						# Indicate if part categories are incorrect
 						if not categories[0] or categories[1]:
-							result_message = 'Part categories were not set properly'
-						else:
-							result_message = 'Part data not found - Check part number'
+							result_message += '\n\nPart categories were not set properly or do not exist on InvenTree'
+					elif not part_data:
+						result_message = 'Part data not found - Check part number'
 					else:
 						result_message = 'Part added to InvenTree database'
 
