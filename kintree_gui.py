@@ -300,15 +300,15 @@ def add_custom_part(part_data: dict) -> dict:
 
 			sub_key = key + '_name'
 			add_custom_layout.append([
-										sg.Text(sub_key.replace('_', ' ').title()),
-										sg.InputText(name_default, size=(40,1), key=sub_key),
+										sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
+										sg.InputText(name_default, size=(38, 1), key=sub_key),
 									])
 			input_keys.append(sub_key)
 
 			sub_key = key + '_part_number'
 			add_custom_layout.append([
-										sg.Text(sub_key.replace('_', ' ').title()),
-										sg.InputText(number_default, size=(40,1), key=sub_key),
+										sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
+										sg.InputText(number_default, size=(38, 1), key=sub_key),
 									])
 			input_keys.append(sub_key)
 		else:
@@ -317,13 +317,13 @@ def add_custom_part(part_data: dict) -> dict:
 				default = ''
 
 			add_custom_layout.append([
-										sg.Text(key.capitalize()),
-										sg.InputText(default, size=(40,1), key=key),
+										sg.Text(key.capitalize(), size=(22, 1)),
+										sg.InputText(default, size=(38, 1), key=key),
 									])
 			input_keys.append(key)
 
 	if part_data:
-		add_custom_layout.append([ sg.Button('Submit', size=(20,1)), ])
+		add_custom_layout.append([ sg.Button('Submit', size=(25,1)), ])
 		window_title = 'Update Part Data'
 	else:
 		add_custom_layout.append([ sg.Button('CREATE', size=(59,1)), ])
@@ -344,15 +344,15 @@ def add_custom_part(part_data: dict) -> dict:
 
 			if not cstm_values['name'] and not cstm_values['description']:
 				sg.popup_ok(f'Missing "Name" and "Description"',
-							title='Incomplete Custom Part Data',
+							title='Error',
 							location=(500, 500))
 			elif not cstm_values['name']:
 				sg.popup_ok(f'Missing "Name"',
-							title='Incomplete Custom Part Data',
+							title='Error',
 							location=(500, 500))
 			elif not cstm_values['description']:
 				sg.popup_ok(f'Missing "Description"',
-							title='Incomplete Custom Part Data',
+							title='Error',
 							location=(500, 500))
 			else:
 				break
@@ -428,16 +428,13 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
 	if category_event == sg.WIN_CLOSED:
 		return categories
 	elif category_event == 'Confirm':
-		return user_defined_categories(category_values['category'])
+		return user_defined_categories(category_values['category'], extend=settings.ENABLE_INVENTREE)
 	else:
 		categories[0] = category_values['category']
 		if category_values['subcategory_man']:
 			categories[1] = category_values['subcategory_man']
 		else:
 			categories[1] = category_values['subcategory_sel']
-
-		# if categories[1] == 'None':
-		# 	categories[1] = ''
 		
 		if '' in categories:
 			missing_category = 'Missing category information'
@@ -588,11 +585,10 @@ def user_defined_symbol_template_footprint(categories: list,
 	try:
 		template_choices = build_choices(templates, category, subcategory)
 	except:
-		template_choices = ['None']
-		template_default = template_choices[0]
+		pass
 
 	# Select default template
-	if not template_default:
+	if template_choices:
 		# If template was selected by user then use it
 		if template:
 			template_default = template
@@ -602,6 +598,10 @@ def user_defined_symbol_template_footprint(categories: list,
 			# If automatic match failed then select first entry
 			if not template_default:
 				template_default = template_choices[0]
+	else:
+		# No template matching
+		template_choices = ['None']
+		template_default = template_choices[0]
 
 	# Load footprint libraries
 	if not settings.KICAD_FOOTPRINTS_PATH:
@@ -834,6 +834,7 @@ def main():
 			part_info = {}
 			part_data = {}
 			progressbar = False
+			actions_complete = False
 
 			# Check either KiCad or InvenTree are enabled
 			if not settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
@@ -953,6 +954,7 @@ def main():
 
 			# Set KiCad user libraries and symbol/footprint
 			if part_info and settings.ENABLE_KICAD:
+				
 				# Request user to select symbol and footprint libraries
 				symbol, template, footprint = user_defined_symbol_template_footprint(categories, part_info['manufacturer_part_number'])
 				# cprint(f'{symbol=}\t{template=}\t{footprint=}', silent=settings.HIDE_DEBUG)
@@ -960,6 +962,9 @@ def main():
 					part_info = {}
 			
 			if part_info:
+				# All user actions were completed
+				actions_complete = True
+
 				# Create progress bar window
 				progressbar = progress.create_progress_bar_window()
 
@@ -1005,9 +1010,10 @@ def main():
 					if part_data['datasheet']:
 						part_data['inventree_url'] = part_data['datasheet']
 
+				# KiCad
+				# Initialize success flag
 				kicad_success = False
 
-				# KiCad
 				if settings.ENABLE_KICAD:
 					# Reload paths
 					settings.load_kicad_settings()
@@ -1059,20 +1065,27 @@ def main():
 							except:
 								cprint(f'[INFO]\tError: Failed to add part to KiCad (incomplete InvenTree data)', silent=settings.SILENT)
 
-				# Final result message
-				result_message = ''
+			# Final result message
+			result_message = ''
 
+			if actions_complete:
 				# Result pop-up window
 				if settings.ENABLE_INVENTREE:
-					if not new_part:
-						if part_pk:
-							result_message = 'Part already in InvenTree database'
-						else:
-							result_message = 'Error while adding part to InvenTree (check output)'
+					if not new_part and part_pk:
+						result_message = 'Part already in InvenTree database'
+					elif not new_part and not part_pk:
+						result_message = 'Error while adding part to InvenTree (check output)'
+						# Indicate if part categories are incorrect
+						if not categories[0] or categories[1]:
+							result_message += '\n\nPart categories were not set properly or do not exist on InvenTree'
+					elif not part_data:
+						result_message = 'Part data not found - Check part number'
 					else:
 						result_message = 'Part added to InvenTree database'
-				if settings.ENABLE_KICAD and settings.ENABLE_INVENTREE:
+
+				if settings.ENABLE_INVENTREE and settings.ENABLE_KICAD:
 					result_message += '\n'
+
 				if settings.ENABLE_KICAD:
 					if not kicad_success:
 						result_message += 'Error while adding part in KiCad (check output)'
@@ -1086,22 +1099,12 @@ def main():
 						else:
 							result_message += 'Part already in KiCad library'
 
-			else:
-				if settings.ENABLE_INVENTREE:
-					if not categories[0] or categories[1]:
-						result_message = 'Part categories were not set properly'
-				if settings.ENABLE_INVENTREE or settings.ENABLE_KICAD:
-					if not part_data:
-						result_message = 'Part data not found - Check part number'
-					if not part_pk:
-						result_message = 'Unexpected error - Contact developper'
-
 			# Update progress bar to complete and close window
 			if progressbar:
 				progress.update_progress_bar_window(progress.MAX_PROGRESS)
 				progress.close_progress_bar_window()
 
-			if symbol and result_message:
+			if result_message:
 				sg.popup_ok(result_message, title='Results', location=(500, 500))
 
 			if part_data.get('inventree_url', None):
