@@ -89,6 +89,8 @@ Click on the "Advanced" button, then click on "Proceed to localhost (unsafe)" at
 
 <img src="images/doc/digikey_api_approval_request2.png"  width="800" height="auto">
 
+> On Chrome, if the "Proceed to localhost (unsafe)" link does not appear, enable the following flag: [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost)
+
 Lastly, a new page will open with a "You may now close this window." message, proceed to get the token.
 
 </p>
