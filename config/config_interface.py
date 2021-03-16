@@ -241,8 +241,10 @@ def load_footprint_paths(user_config_path: str, footprint_path: str) -> dict:
 				footprint_libraries_paths['uncategorized'].append(folder)
 			except:
 				footprint_libraries_paths['uncategorized'] = [folder]
-	footprint_libraries_paths['uncategorized'] = sorted(
-		footprint_libraries_paths['uncategorized'])
+	
+	if 'uncategorized' in footprint_libraries_paths:
+		footprint_libraries_paths['uncategorized'] = sorted(
+			footprint_libraries_paths['uncategorized'])
 
 	return footprint_libraries_paths
 
