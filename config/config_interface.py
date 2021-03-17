@@ -244,8 +244,8 @@ def load_footprint_paths(user_config_path: str, footprint_path: str) -> dict:
 		
 		# Sort uncategorized library paths
 		footprint_libraries_paths['uncategorized'] = sorted(
-			footprint_libraries_paths['uncategorized'])
-
+			footprint_libraries_paths.get('uncategorized', []))
+	
 	return footprint_libraries_paths
 
 def add_footprint_library(user_config_path: str, category: str, library_folder: str) -> bool:

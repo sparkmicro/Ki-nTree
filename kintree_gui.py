@@ -698,7 +698,7 @@ def user_defined_symbol_template_footprint(categories: list,
 	library_window.close()
 
 	if lib_event == sg.WIN_CLOSED:
-		return symbol, template, footprint
+		return None, None, None
 	elif lib_event == 'Check SnapEDA':
 		# SnapEDA window
 		snapeda_window(part_number)
