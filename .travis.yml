@@ -55,6 +55,7 @@ after_success:
     - git add -u
     - git commit -m "Updated token"
     - git push origin master
+    - cd ..
     # Coveralls
     - coveralls
     # Build
