@@ -5,15 +5,15 @@ branches:
   - master
   
 language: python
-matrix:
-  include:
-  - python: 3.8
-    PARALLELIZE=false
-  - python: 3.7
-    PARALLELIZE=false   
-  - python: 3.6
-    PARALLELIZE=false
-allow_failures:
+jobs:
+	include:
+	- python: 3.8
+	  env: PARALLELIZE=false
+	- python: 3.7
+	  env: PARALLELIZE=false   
+	- python: 3.6
+	  env: PARALLELIZE=false
+  	allow_failures:
     - python: 3.7
     - python: 3.6
 
