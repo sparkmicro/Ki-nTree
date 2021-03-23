@@ -5,20 +5,32 @@ from config import config_interface
 
 
 def generate_part_number(category: str, part_pk: int) -> str:
-	''' Generate Internal Part Number (IPN) based on category '''
-	CATEGORY_CODES = config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES']
-
-	for key in CATEGORY_CODES.keys():
-		if key in category:
-			break
+	''' Generate Internal Part Number (IPN) '''
 	try:
-		category_id = CATEGORY_CODES[key]
-		unique_id = str(part_pk).zfill(6)
-		variant_id = '00'
+		ipn = str(part_pk).zfill(settings.IPN_UNIQUE_ID_LENGTH)
 	except:
 		return None
 
-	return f'{category_id}-{unique_id}-{variant_id}'
+	if settings.IPN_USE_FIXED_PREFIX:
+		prefix_id = settings.IPN_PREFIX
+	else:
+		CATEGORY_CODES = config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES']
+
+		for key in CATEGORY_CODES.keys():
+			if key in category:
+				break
+		try:
+			prefix_id = CATEGORY_CODES[key]
+		except:
+			return None
+
+	if prefix_id:
+		ipn = '-'.join([prefix_id, ipn])
+
+	if settings.IPN_USE_VARIANT_SUFFIX:
+		ipn = '-'.join([ipn, settings.IPN_VARIANT_SUFFIX])
+
+	return ipn
 
 def compare(new_part_parameters: dict, db_part_parameters: dict, include_filters: list) -> bool:
 	''' Compare two InvenTree parts based on parameters (specs) '''
