@@ -3,6 +3,7 @@ dist: bionic
 branches:
   only:
   - master
+  - improve_token_flow
   
 language: python
 python:
