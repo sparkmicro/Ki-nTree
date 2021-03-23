@@ -50,9 +50,6 @@ settings.create_user_config_files()
 test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
 footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
-# Copy test files
-copyfile(os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'token_storage.json'),
-		 os.path.join(settings.PROJECT_DIR, 'search', 'token_storage.json'))
 # Disable API logging
 disable_digikey_api_logger()
 if not test_digikey_api_connect():
