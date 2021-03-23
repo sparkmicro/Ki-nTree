@@ -5,10 +5,17 @@ branches:
   - master
   
 language: python
-python:
-    - 3.6
-    - 3.7
-    - 3.8
+matrix:
+  include:
+  - python: 3.8
+    PARALLELIZE=false
+  - python: 3.7
+    PARALLELIZE=false   
+  - python: 3.6
+    PARALLELIZE=false
+allow_failures:
+    - python: 3.7
+    - python: 3.6
 
 # Reference: https://docs.coveralls.io/parallel-build-webhook
 # env:
