@@ -8,8 +8,8 @@ F0 "L" 0 100 50 H V C CNN
 F1 "IPN" 0 -450 50 H I C CNN
 F2 "Footprint" 0 -750 50 H I C CNN
 F3 "" 0 -1050 50 H I C CNN
-F4 "Manufacturer" 0 -550 50 H I C CNN "Supplier"
-F5 "MPN" 0 -650 50 H I C CNN "Supplier Part Number"
+F4 "Manufacturer" 0 -550 50 H I C CNN "Manufacturer"
+F5 "MPN" 0 -650 50 H I C CNN "Manufacturer Part Number"
 F6 "Value" 0 -100 50 H V C CNN "Inductance (Henry)"
 F7 "Rated Current" 0 -200 50 H V C CNN "Current Rating (Ampere)"
 F8 "ESR" 0 -300 50 H I C CNN "ESR (Ohm)"
