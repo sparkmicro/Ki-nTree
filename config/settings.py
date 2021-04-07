@@ -89,15 +89,21 @@ IPN_USE_VARIANT_SUFFIX = CONFIG_IPN.get('IPN_USE_VARIANT_SUFFIX', True)
 if IPN_USE_VARIANT_SUFFIX:
 	IPN_VARIANT_SUFFIX = CONFIG_IPN.get('IPN_VARIANT_SUFFIX', '00')
 
+# GENERAL SETTINGS
+CONFIG_GENERAL = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'general.yaml'))
+AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
+
 # DIGI-KEY
+# Fetch settings
+CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
 # API storage path
 DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', '')
 # Automatic category match confidence level (from 0 to 100)
-CATEGORY_MATCH_RATIO_LIMIT = 100
+CATEGORY_MATCH_RATIO_LIMIT = CONFIG_DIGIKEY.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
 # Search results caching (stored in files)
-CACHE_ENABLED = True
+CACHE_ENABLED = CONFIG_DIGIKEY.get('CACHE_ENABLED', True)
 # Cache validity in days
-CACHE_VALID_DAYS = 7
+CACHE_VALID_DAYS = CONFIG_DIGIKEY.get('CACHE_VALID_DAYS', 7)
 # Caching settings
 if CACHE_ENABLED:
 	search_results = {
@@ -203,7 +209,7 @@ inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENT
 
 # Enable flag
 try:
-	ENABLE_INVENTREE = inventree_settings['ENABLE']
+	ENABLE_INVENTREE = inventree_settings.get('ENABLE', False)
 except TypeError:
 	pass
 
@@ -215,9 +221,9 @@ def set_inventree_enable_flag(value: bool, save=False):
 		inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
 		inventree_settings['ENABLE'] = value
 		config_interface.save_inventree_user_settings(enable=inventree_settings['ENABLE'],
-													  server=inventree_settings['SERVER_ADDRESS'],
-													  username=inventree_settings['USERNAME'],
-													  password=inventree_settings['PASSWORD'],
+													  server=inventree_settings.get('SERVER_ADDRESS', None),
+													  username=inventree_settings.get('USERNAME', None),
+													  password=inventree_settings.get('PASSWORD', None),
 													  user_config_path=CONFIG_INVENTREE)
 	return
 
@@ -231,14 +237,15 @@ def load_inventree_settings():
 	inventree_settings = config_interface.load_inventree_user_settings(
 		CONFIG_INVENTREE)
 
-	SERVER_ADDRESS = inventree_settings['SERVER_ADDRESS']
-	USERNAME = inventree_settings['USERNAME']
-	PASSWORD = inventree_settings['PASSWORD']
+	SERVER_ADDRESS = inventree_settings.get('SERVER_ADDRESS', None)
+	USERNAME = inventree_settings.get('USERNAME', None)
+	PASSWORD = inventree_settings.get('PASSWORD', None)
 	# Part URL
-	PART_URL_ROOT = SERVER_ADDRESS + 'part/'
+	if SERVER_ADDRESS:
+		PART_URL_ROOT = SERVER_ADDRESS + 'part/'
 
 # Default revision
-INVENTREE_DEFAULT_REV = 'A'
+INVENTREE_DEFAULT_REV = inventree_settings.get('INVENTREE_DEFAULT_REV', 'A')
 
 # InvenTree part dictionary template
 inventree_part_template = {
