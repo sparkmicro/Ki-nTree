@@ -35,6 +35,7 @@ before_install:
     - pip uninstall inventree -y
     - invoke install
     - cp tests/files/results.tgz search/
+    - cp tests/files/inventree_test.yaml config/inventree/
     - cd search/ && tar xvf results.tgz && cd -
     # Digi-Key token
     - git config --global user.email "travis@travis-ci.com"

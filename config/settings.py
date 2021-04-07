@@ -240,9 +240,9 @@ def load_inventree_settings():
 	inventree_settings = config_interface.load_inventree_user_settings(
 		CONFIG_INVENTREE)
 
-	SERVER_ADDRESS = inventree_settings.get('SERVER_ADDRESS', 'http://127.0.0.1:8000/')
-	USERNAME = inventree_settings.get('USERNAME', 'admin')
-	PASSWORD = inventree_settings.get('PASSWORD', 'admin')
+	SERVER_ADDRESS = inventree_settings.get('SERVER_ADDRESS', None)
+	USERNAME = inventree_settings.get('USERNAME', None)
+	PASSWORD = inventree_settings.get('PASSWORD', None)
 	# Part URL
 	if SERVER_ADDRESS:
 		PART_URL_ROOT = SERVER_ADDRESS + 'part/'
