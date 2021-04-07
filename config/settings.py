@@ -191,13 +191,16 @@ class Environment(Enum):
 	PRODUCTION = 2
 
 # Pick environment
+environment = CONFIG_GENERAL.get('INVENTREE_ENV', None)
+environment = os.environ.get('INVENTREE_ENV', environment)
+
 try:
-	environment = int(os.environ.get('INVENTREE_ENV', Environment.TESTING.value))
-except ValueError:
-	environment = 1
+	environment = int(environment)
+except TypeError:
+	environment = Environment.TESTING.value
 
 # Load correct user file
-if int(environment) == Environment.PRODUCTION.value:
+if environment == Environment.PRODUCTION.value:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_prod.yaml')
 elif environment == Environment.DEVELOPMENT.value:
 	CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_dev.yaml')
@@ -237,9 +240,9 @@ def load_inventree_settings():
 	inventree_settings = config_interface.load_inventree_user_settings(
 		CONFIG_INVENTREE)
 
-	SERVER_ADDRESS = inventree_settings.get('SERVER_ADDRESS', None)
-	USERNAME = inventree_settings.get('USERNAME', None)
-	PASSWORD = inventree_settings.get('PASSWORD', None)
+	SERVER_ADDRESS = inventree_settings.get('SERVER_ADDRESS', 'http://127.0.0.1:8000/')
+	USERNAME = inventree_settings.get('USERNAME', 'admin')
+	PASSWORD = inventree_settings.get('PASSWORD', 'admin')
 	# Part URL
 	if SERVER_ADDRESS:
 		PART_URL_ROOT = SERVER_ADDRESS + 'part/'

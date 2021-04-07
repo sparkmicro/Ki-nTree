@@ -1107,8 +1107,8 @@ def main():
 			if result_message:
 				sg.popup_ok(result_message, title='Results', location=(500, 500))
 
-			if settings.AUTOMATIC_BROWSER_OPEN:
-				if part_data.get('inventree_url', None):
+			if part_data.get('inventree_url', None):
+				if settings.AUTOMATIC_BROWSER_OPEN:
 					# Auto-Open Browser Window
 					cprint(f'\n[MAIN]\tOpening URL {part_data["inventree_url"]} in browser',
 						silent=settings.SILENT)
@@ -1116,8 +1116,8 @@ def main():
 						webbrowser.open(part_data['inventree_url'], new=2)
 					except TypeError:
 						cprint(f'[INFO]\tError: Failed to open URL', silent=settings.SILENT)
-			else:
-				cprint(f'\n[MAIN]\tPart page URL: {part_data["inventree_url"]}', silent=settings.SILENT)
+				else:
+					cprint(f'\n[MAIN]\tPart page URL: {part_data["inventree_url"]}', silent=settings.SILENT)
 
 			# Reset create custom flag
 			CREATE_CUSTOM = False
