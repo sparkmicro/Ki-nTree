@@ -41,9 +41,9 @@ def connect_to_server(timeout=5) -> bool:
 
 	return connect
 
-def build_part_keywords(inventree_part: dict) -> str:
+def build_part_keywords(part_info: dict) -> str:
 	''' Build part keywords to be used in InvenTree and KiCad '''
-	return inventree_part['description']
+	return part_info.get('product_description', None)
 
 def get_categories(part_info: dict, supplier_only=False) -> list:
 	''' Find categories from part supplier data, use "somewhat automatic" matching '''
@@ -184,17 +184,17 @@ def translate_digikey_to_inventree(part_info: dict, categories: list, skip_param
 	# Insert data
 	inventree_part["category"][0] = categories[0]
 	inventree_part["category"][1] = categories[1]
-	inventree_part['name'] = part_info.get('product_name', part_info['product_description'])
-	inventree_part['description'] = part_info['product_description']
+	inventree_part['name'] = part_info.get('product_name', part_info.get('product_description', None))
+	inventree_part['description'] = part_info.get(settings.CONFIG_DIGIKEY.get('SEARCH_DESCRIPTION', None), part_info.get('product_description', None))
 	# Revision
 	inventree_part['revision'] = part_info.get('revision', settings.INVENTREE_DEFAULT_REV)
 	# Keywords (need to be after description)
-	inventree_part['keywords'] = part_info.get('keywords', build_part_keywords(inventree_part))
-	inventree_part['image'] = part_info['primary_photo']
-	inventree_part['supplier'] = {'Digi-Key': [part_info['digi_key_part_number']],}
-	inventree_part['manufacturer'] = {part_info['manufacturer']: [part_info['manufacturer_part_number']],}
+	inventree_part['keywords'] = part_info.get(settings.CONFIG_DIGIKEY.get('SEARCH_KEYWORDS', None), build_part_keywords(part_info))
+	inventree_part['image'] = part_info.get('primary_photo', None)
+	inventree_part['supplier'] = {'Digi-Key': [part_info.get('digi_key_part_number', None)],}
+	inventree_part['manufacturer'] = {part_info.get('manufacturer', 'manufacturer'): [part_info.get('manufacturer_part_number', None)]}
 	# Replace whitespaces in URL
-	inventree_part['datasheet'] = part_info['primary_datasheet'].replace(' ','%20')
+	inventree_part['datasheet'] = part_info.get(settings.CONFIG_DIGIKEY.get('SEARCH_DATASHEET', None), part_info.get('primary_datasheet', '').replace(' ','%20'))
 
 	# Load parameters map
 	parameter_map = config_interface.load_category_parameters(category=inventree_part["category"][0],
