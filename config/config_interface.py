@@ -34,7 +34,7 @@ def dump_file(data: dict, file_path: str) -> bool:
 
 	return True
 
-def load_user_config_files(path_to_templates: str, path_to_user_files: str) -> bool:
+def load_user_config_files(path_to_root: str, path_to_user_files: str) -> bool:
 	''' Load InvenTree user configuration '''
 	result = True
 
@@ -51,23 +51,30 @@ def load_user_config_files(path_to_templates: str, path_to_user_files: str) -> b
 
 			dump_file(user_settings, path_to_user_files + filename)
 
+	# Load User settings
+	try:
+		config_files = os.path.join(path_to_root, 'settings', '')
+		load_config(config_files)
+	except:
+		cprint(f'[INFO]\tWarning: Failed to load User settings')
+		result = False
 	# Load Digi-Key configuration files
 	try:
-		config_files = os.path.join(path_to_templates, 'digikey', '')
+		config_files = os.path.join(path_to_root, 'digikey', '')
 		load_config(config_files)
 	except:
 		cprint(f'[INFO]\tWarning: Failed to load Digi-Key configuration')
 		result = False
 	# Load InvenTree configuration files
 	try:
-		config_files = os.path.join(path_to_templates, 'inventree', '')
+		config_files = os.path.join(path_to_root, 'inventree', '')
 		load_config(config_files)
 	except:
 		cprint(f'[INFO]\tWarning: Failed to load InvenTree configuration')
 		result = False
 	# Load KiCad configuration files
 	try:
-		config_files = os.path.join(path_to_templates, 'kicad', '')
+		config_files = os.path.join(path_to_root, 'kicad', '')
 		load_config(config_files)
 	except:
 		cprint(f'[INFO]\tWarning: Failed to load KiCad configuration')

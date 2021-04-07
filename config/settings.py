@@ -45,18 +45,18 @@ except:
 
 
 # CONFIG FILES
-CONFIG_TEMPLATES = os.path.join(PROJECT_DIR, 'config', '')
+CONFIG_ROOT = os.path.join(PROJECT_DIR, 'config', '')
 CONFIG_USER_FILES = os.path.join(PROJECT_DIR, 'config', 'user_files', '')
 
 def create_user_config_files():
-	global CONFIG_TEMPLATES
+	global CONFIG_ROOT
 	global CONFIG_USER_FILES
 
 	# Create user files folder if it does not exists
 	if not os.path.exists(CONFIG_USER_FILES):
 		os.makedirs(CONFIG_USER_FILES)
 	# Create user files
-	return config_interface.load_user_config_files(path_to_templates=CONFIG_TEMPLATES,
+	return config_interface.load_user_config_files(path_to_root=CONFIG_ROOT,
 												   path_to_user_files=CONFIG_USER_FILES)
 
 # Create user configuration files
@@ -80,13 +80,14 @@ CONFIG_PARAMETERS_FILTERS = os.path.join(
 	CONFIG_USER_FILES, 'parameters_filters.yaml')
 
 # INTERNAL PART NUMBERS
-IPN_UNIQUE_ID_LENGTH = 6
-IPN_USE_FIXED_PREFIX = False
+CONFIG_IPN = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'internal_part_number.yaml'))
+IPN_UNIQUE_ID_LENGTH = CONFIG_IPN.get('IPN_UNIQUE_ID_LENGTH', 6)
+IPN_USE_FIXED_PREFIX = CONFIG_IPN.get('IPN_USE_FIXED_PREFIX', False)
 if IPN_USE_FIXED_PREFIX:
-	IPN_PREFIX = ''
-IPN_USE_VARIANT_SUFFIX = True
+	IPN_PREFIX = CONFIG_IPN.get('IPN_PREFIX', '')
+IPN_USE_VARIANT_SUFFIX = CONFIG_IPN.get('IPN_USE_VARIANT_SUFFIX', True)
 if IPN_USE_VARIANT_SUFFIX:
-	IPN_VARIANT_SUFFIX = '00'
+	IPN_VARIANT_SUFFIX = CONFIG_IPN.get('IPN_VARIANT_SUFFIX', '00')
 
 # DIGI-KEY
 # API storage path
