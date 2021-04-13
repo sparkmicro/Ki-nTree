@@ -70,7 +70,16 @@ def fetch_digikey_part_info(part_number: str) -> dict:
 		part_info['category'] = ''
 		part_info['subcategory'] = ''
 
-	header = ['product_description', 'digi_key_part_number', 'manufacturer', 'manufacturer_part_number', 'primary_datasheet', 'primary_photo']
+	header = [
+		'product_description',
+		'detailed_description',
+		'digi_key_part_number',
+		'manufacturer',
+		'manufacturer_part_number',
+		'product_url',
+		'primary_datasheet',
+		'primary_photo',
+	]
 	
 	for key in part:
 		if key in header:
