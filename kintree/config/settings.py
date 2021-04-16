@@ -2,6 +2,8 @@ import os
 import sys
 from enum import Enum
 
+from appdirs import user_config_dir
+
 from common.tools import cprint
 from config import config_interface
 
@@ -43,10 +45,12 @@ try:
 except:
 	version = '0.0.alpha'
 
+APP_NAME = 'kintree'
+APP_VENDOR = 'sparkmicro'
 
 # CONFIG FILES
 CONFIG_ROOT = os.path.join(PROJECT_DIR, 'config', '')
-CONFIG_USER_FILES = os.path.join(PROJECT_DIR, 'config', 'user_files', '')
+CONFIG_USER_FILES = os.path.join(user_config_dir(APP_NAME, APP_VENDOR), '')
 
 def create_user_config_files():
 	global CONFIG_ROOT
