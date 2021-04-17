@@ -5,8 +5,8 @@ from enum import Enum
 from appdirs import user_config_dir
 from appdirs import user_cache_dir
 
-from common.tools import cprint
-from config import config_interface
+from ..common.tools import cprint
+from .import config_interface
 
 # DEBUG
 # Testing

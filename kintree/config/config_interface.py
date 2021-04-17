@@ -3,7 +3,7 @@ import copy
 import os
 
 import yaml
-from common.tools import cprint
+from ..common.tools import cprint
 
 FUNCTION_FILTER_KEY = '__'
 

@@ -1,4 +1,4 @@
-from kicad import kicad_schlib
+from . import kicad_schlib
 
 klib = kicad_schlib.ComponentLibManager()
 

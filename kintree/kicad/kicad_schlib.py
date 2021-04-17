@@ -1,8 +1,8 @@
 import os
 
-import config.settings as settings
-from common import progress
-from common.tools import cprint
+from ..config import settings
+from ..common  import progress
+from ..common.tools import cprint
 from schlib import SchLib
 
 

@@ -1,8 +1,8 @@
-import config.settings as settings
+from ..config import settings
 import validators
-from common import part_tools
-from common.tools import cprint, download_image
-from config import config_interface
+from ..common  import part_tools
+from ..common.tools import cprint, download_image
+from ..config import config_interface
 # InvenTree
 from inventree.api import InvenTreeAPI
 from inventree.base import Parameter, ParameterTemplate
