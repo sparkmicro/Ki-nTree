@@ -3,8 +3,8 @@ import sys
 import platform
 from enum import Enum
 
-from common.tools import cprint
-from config import config_interface
+from ..common.tools import cprint
+from .import config_interface
 
 # VERSION INFORMATION
 version_info = {
@@ -38,6 +38,10 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     PROJECT_DIR = os.path.abspath(os.path.dirname(sys.executable))
 else:
     PROJECT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+# InvenTree API
+sys.path.append(os.path.join(PROJECT_DIR, 'database', 'inventree-python'))
+# Digi-Key API
+sys.path.append(os.path.join(PROJECT_DIR, 'search', 'digikey_api'))
 # KiCad Library Utils
 sys.path.append(os.path.join(PROJECT_DIR, 'kicad'))
 # Tests

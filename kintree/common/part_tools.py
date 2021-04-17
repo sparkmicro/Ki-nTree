@@ -1,7 +1,7 @@
 import re
 
-import config.settings as settings
-from config import config_interface
+from ..config import settings
+from ..config import config_interface
 from .tools import cprint
 
 

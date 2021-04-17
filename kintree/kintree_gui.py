@@ -6,25 +6,25 @@ import os
 import webbrowser
 
 # Settings
-import config.settings as settings
+from .config import settings as settings
 # PySimpleGUI
 import PySimpleGUI as sg
 # Digi-Key API
-import search.digikey_api as digikey_api
+from .search import digikey_api as digikey_api
 # SnapEDA API
-import search.snapeda_api as snapeda_api
+from .search import snapeda_api as snapeda_api
 # Progress
-from common import progress
+from .common import progress
 # Tools
-from common.tools import cprint, create_library
+from .common.tools import cprint, create_library
 # Interface
-from config import config_interface
+from .config import config_interface
 # InvenTree
-from database import inventree_interface
+from .database import inventree_interface
 # FuzzyWuzzy
 from fuzzywuzzy import fuzz
 # KiCad
-from kicad import kicad_interface
+from .kicad import kicad_interface
 
 
 def user_settings_window():

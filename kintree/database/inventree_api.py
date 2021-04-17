@@ -1,8 +1,8 @@
-import config.settings as settings
+from ..config import settings
 import validators
-from common import part_tools
-from common.tools import cprint, download_image
-from config import config_interface
+from ..common  import part_tools
+from ..common.tools import cprint, download_image
+from ..config import config_interface
 
 # Required to use local CA certificates on Linux
 # For more details, refer to https://github.com/sparkmicro/Ki-nTree/pull/45

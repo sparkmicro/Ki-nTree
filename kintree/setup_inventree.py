@@ -1,9 +1,9 @@
 import sys
 
-import config.settings as settings
-from common.tools import cprint
-from config import config_interface
-from database import inventree_api, inventree_interface
+from ..config import settings
+from ..common.tools import cprint
+from ..config import config_interface
+from ..database import inventree_api, inventree_interface
 
 SETUP_CATEGORIES = True
 SETUP_PARAMETERS = True

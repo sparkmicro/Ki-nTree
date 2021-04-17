@@ -2,9 +2,9 @@ import logging
 import os
 import time
 
-import config.settings as settings
+from ..config import settings
 import digikey
-from config import config_interface
+from ..config import config_interface
 
 os.environ['DIGIKEY_STORAGE_PATH'] = settings.DIGIKEY_STORAGE_PATH
 # Check if storage path exists, else create it
