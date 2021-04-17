@@ -1,6 +1,3 @@
 [submodule "database/inventree-python"]
 	path = kintree/database/inventree-python
 	url = https://github.com/inventree/inventree-python.git
-[submodule "search/digikey_api"]
-	path = kintree/search/digikey_api
-	url = https://github.com/peeter123/digikey-api.git

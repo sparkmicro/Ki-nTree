@@ -108,6 +108,23 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "digikey-api"
+version = "0.4.0"
+description = "Python client for Digikey API"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+certauth = ">=1.3.0"
+fake-useragent = ">=0.1.11"
+inflection = ">=0.3.1"
+requests = ">=2.22.0"
+retrying = ">=1.3.3"
+schematics = ">=2.1.0"
+urllib3 = ">=1.25.3"
+
+[[package]]
 name = "dill"
 version = "0.3.3"
 description = "serialize all of python"
@@ -461,7 +478,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "f587bd749083b67e20e66b3f02188fb52729562627c46eb048544d7f5807a06a"
+content-hash = "d1d9466577054558cba83fc3a09940e3e06238f15755b20077f72859bde2eaa2"
 
 [metadata.files]
 altgraph = [
@@ -598,6 +615,10 @@ cryptography = [
 decorator = [
     {file = "decorator-5.0.6-py3-none-any.whl", hash = "sha256:d9f2d2863183a3c0df05f4b786f2e6b8752c093b3547a558f287bf3022fd2bf4"},
     {file = "decorator-5.0.6.tar.gz", hash = "sha256:f2e71efb39412bfd23d878e896a51b07744f2e2250b2e87d158e76828c5ae202"},
+]
+digikey-api = [
+    {file = "digikey-api-0.4.0.tar.gz", hash = "sha256:b21c75f26cd34e6da99191b643edebb2a188bd9f91654065d42a5f70901d19de"},
+    {file = "digikey_api-0.4.0-py3-none-any.whl", hash = "sha256:591ef340faa50ba3147e2adf162ed03517efc0932b391b8f4903c85743ddb840"},
 ]
 dill = [
     {file = "dill-0.3.3-py2.py3-none-any.whl", hash = "sha256:78370261be6ea49037ace8c17e0b7dd06d0393af6513cc23f9b222d9367ce389"},
