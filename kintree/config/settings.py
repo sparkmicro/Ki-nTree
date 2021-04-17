@@ -3,6 +3,7 @@ import sys
 from enum import Enum
 
 from appdirs import user_config_dir
+from appdirs import user_cache_dir
 
 from common.tools import cprint
 from config import config_interface
@@ -49,6 +50,8 @@ APP_NAME = 'kintree'
 APP_VENDOR = 'sparkmicro'
 
 USER_CONFIG_DIR = os.path.join(user_config_dir(APP_NAME, APP_VENDOR), '')
+USER_CACHE_DIR = os.path.join(user_cache_dir(APP_NAME, APP_VENDOR), '')
+
 # CONFIG FILES
 CONFIG_ROOT = os.path.join(PROJECT_DIR, 'config', '')
 CONFIG_USER_FILES = USER_CONFIG_DIR
@@ -102,7 +105,7 @@ AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 # Fetch settings
 CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
 # API storage path
-DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', '')
+DIGIKEY_STORAGE_PATH = os.path.join(USER_CACHE_DIR, 'search', '')
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = CONFIG_DIGIKEY.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
 # Search results caching (stored in files)
@@ -112,7 +115,7 @@ CACHE_VALID_DAYS = CONFIG_DIGIKEY.get('CACHE_VALID_DAYS', 7)
 # Caching settings
 if CACHE_ENABLED:
 	search_results = {
-		'directory': os.path.join(PROJECT_DIR, 'search', 'results', ''),
+		'directory': os.path.join(USER_CACHE_DIR, 'search', 'results', ''),
 		'extension': '.yaml',
 	}
 	# Create folder if it does not exists
@@ -120,7 +123,7 @@ if CACHE_ENABLED:
 		os.makedirs(search_results['directory'])
 
 # Part images
-search_images = os.path.join(PROJECT_DIR, 'search', 'images', '')
+search_images = os.path.join(USER_CACHE_DIR, 'search', 'images', '')
 # Create folder if it does not exists
 if not os.path.exists(search_images):
 	os.makedirs(search_images)
