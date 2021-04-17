@@ -48,9 +48,10 @@ except:
 APP_NAME = 'kintree'
 APP_VENDOR = 'sparkmicro'
 
+USER_CONFIG_DIR = os.path.join(user_config_dir(APP_NAME, APP_VENDOR), '')
 # CONFIG FILES
 CONFIG_ROOT = os.path.join(PROJECT_DIR, 'config', '')
-CONFIG_USER_FILES = os.path.join(user_config_dir(APP_NAME, APP_VENDOR), '')
+CONFIG_USER_FILES = USER_CONFIG_DIR
 
 def create_user_config_files():
 	global CONFIG_ROOT
