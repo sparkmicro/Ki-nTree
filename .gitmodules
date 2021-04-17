@@ -1,3 +1,0 @@
-[submodule "database/inventree-python"]
-	path = kintree/database/inventree-python
-	url = https://github.com/inventree/inventree-python.git

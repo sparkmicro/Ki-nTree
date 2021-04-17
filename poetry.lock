@@ -203,6 +203,17 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "inventree"
+version = "0.1.4"
+description = "Python interface for InvenTree inventory management system"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+requests = "*"
+
+[[package]]
 name = "macholib"
 version = "1.14"
 description = "Mach-O header analysis and editing"
@@ -478,7 +489,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "d1d9466577054558cba83fc3a09940e3e06238f15755b20077f72859bde2eaa2"
+content-hash = "25bbb57c0f6bfd202fca16db013eeb7fd0d5aca95786492cf2e1670cbb89c4af"
 
 [metadata.files]
 altgraph = [
@@ -648,6 +659,10 @@ importlib-metadata = [
 inflection = [
     {file = "inflection-0.5.1-py2.py3-none-any.whl", hash = "sha256:f38b2b640938a4f35ade69ac3d053042959b62a0f1076a5bbaa1b9526605a8a2"},
     {file = "inflection-0.5.1.tar.gz", hash = "sha256:1a29730d366e996aaacffb2f1f1cb9593dc38e2ddd30c91250c6dde09ea9b417"},
+]
+inventree = [
+    {file = "inventree-0.1.4-py2.py3-none-any.whl", hash = "sha256:e9879a6f3f51f46938a7aa4dcde493b7bdd4542259686ad0f28098a0a47da115"},
+    {file = "inventree-0.1.4.tar.gz", hash = "sha256:7ae9988532f8d3e76bd1cac5ad4c246540e1d9502964be5f5cfce4cd41895e23"},
 ]
 macholib = [
     {file = "macholib-1.14-py2.py3-none-any.whl", hash = "sha256:c500f02867515e6c60a27875b408920d18332ddf96b4035ef03beddd782d4281"},
