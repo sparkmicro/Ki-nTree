@@ -301,7 +301,7 @@ def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> b
 		# Create
 		cprint(f'[TREE]\tCreating new manufacturer "{manufacturer_name}"', silent=settings.SILENT)
 		create_company(
-			company_name=supplier_name,
+			company_name=manufacturer_name,
 			manufacturer=True,
 		)
 		# Get all parts
