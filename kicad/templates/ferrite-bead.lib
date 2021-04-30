@@ -3,8 +3,8 @@ EESchema-LIBRARY Version 2.4
 #
 # IPN
 #
-DEF IPN L 0 0 N N 1 F N
-F0 "L" 0 100 50 H V C CNN
+DEF IPN FB 0 0 N N 1 F N
+F0 "FB" 0 100 50 H V C CNN
 F1 "IPN" 0 -450 50 H I C CNN
 F2 "Footprint" 0 -750 50 H I C CNN
 F3 "" 0 -1050 50 H I C CNN

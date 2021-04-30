@@ -6,7 +6,7 @@ from config import config_interface
 # InvenTree
 from inventree.api import InvenTreeAPI
 from inventree.base import Parameter, ParameterTemplate
-from inventree.company import Company, SupplierPart
+from inventree.company import Company, ManufacturerPart, SupplierPart
 from inventree.part import Part, PartCategory
 
 
@@ -250,52 +250,22 @@ def delete_part(part_id: int) -> bool:
 	else:
 		return True
 
-def create_supplier(supplier_name: str) -> bool:
-	''' Create InvenTree supplier '''
+def create_company(company_name: str, manufacturer=False, supplier=False) -> bool:
+	''' Create InvenTree company '''
 	global inventree_api
 
+	if not manufacturer and not supplier:
+		return None
+
 	company = Company.create(inventree_api, {
-		'name': supplier_name,
-		'description': supplier_name,
+		'name': company_name,
+		'description': company_name,
 		'is_customer': False,
-		'is_supplier': True,
-		'is_manufacturer': False,
+		'is_supplier': supplier,
+		'is_manufacturer': manufacturer,
 	})
 
 	return company
-
-def is_new_supplier_part(supplier_name: str, supplier_sku: str) -> bool:
-	''' Check if InvenTree supplier part exists to avoid duplicates '''
-	global inventree_api
-
-	# Fetch all companies
-	cprint(f'[TREE]\tFetching companies', silent=settings.HIDE_DEBUG)
-	company_list = Company.list(inventree_api, is_supplier=True, is_customer=False)
-	companies = {}
-	for company in company_list:
-		companies[company.name] = company
-
-	try:
-		# Get all parts
-		part_list = companies[supplier_name].getSuppliedParts()
-	except:
-		part_list = None
-
-	if part_list == None:
-		# Create
-		cprint(f'[TREE]\tCreating new supplier "{supplier_name}"', silent=settings.SILENT)
-		create_supplier(supplier_name)
-		# Get all parts
-		part_list = []
-
-	for item in part_list:
-		if supplier_sku in item.SKU:
-			cprint(f'[TREE]\t{item.SKU} ?= {supplier_sku} => True', silent=settings.HIDE_DEBUG)
-			return False
-		else:
-			cprint(f'[TREE]\t{item.SKU} ?= {supplier_sku} => False', silent=settings.HIDE_DEBUG)
-
-	return True
 
 def get_company_id(company_name: str) -> int:
 	''' Get company (supplier/manufacturer) primary key (ID) '''
@@ -310,63 +280,160 @@ def get_company_id(company_name: str) -> int:
 	except:
 		return 0
 
-def create_supplier_part(part_id: int, supplier_name: str, supplier_sku: str, description: str, manufacturer_name: str, manufacturer_pn: str, datasheet: str) -> bool:
-	''' Create InvenTree supplier part
+def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> bool:
+	''' Check if InvenTree manufacturer part exists to avoid duplicates '''
+	global inventree_api
+
+	# Fetch all companies
+	cprint(f'[TREE]\tFetching manufacturers', silent=settings.HIDE_DEBUG)
+	company_list = Company.list(inventree_api, is_manufacturer=True, is_customer=False)
+	companies = {}
+	for company in company_list:
+		companies[company.name] = company
+
+	try:
+		# Get all parts
+		part_list = companies[manufacturer_name].getManufacturedParts()
+	except:
+		part_list = None
+
+	if part_list == None:
+		# Create
+		cprint(f'[TREE]\tCreating new manufacturer "{manufacturer_name}"', silent=settings.SILENT)
+		create_company(
+			company_name=supplier_name,
+			manufacturer=True,
+		)
+		# Get all parts
+		part_list = []
+
+	for item in part_list:
+		try:
+			if manufacturer_mpn in item.MPN:
+				cprint(f'[TREE]\t{item.MPN} ?= {manufacturer_mpn} => True', silent=settings.HIDE_DEBUG)
+				return False
+			else:
+				cprint(f'[TREE]\t{item.MPN} ?= {manufacturer_mpn} => False', silent=settings.HIDE_DEBUG)
+		except TypeError:
+			cprint(f'[TREE]\t{item.MPN} ?= {manufacturer_mpn} => *** SKIPPED ***', silent=settings.HIDE_DEBUG)
+
+	return True
+
+def is_new_supplier_part(supplier_name: str, supplier_sku: str) -> bool:
+	''' Check if InvenTree supplier part exists to avoid duplicates '''
+	global inventree_api
+
+	# Fetch all companies
+	cprint(f'[TREE]\tFetching suppliers', silent=settings.HIDE_DEBUG)
+	company_list = Company.list(inventree_api, is_supplier=True, is_customer=False)
+	companies = {}
+	for company in company_list:
+		companies[company.name] = company
+
+	try:
+		# Get all parts
+		part_list = companies[supplier_name].getSuppliedParts()
+	except:
+		part_list = None
+
+	if part_list == None:
+		# Create
+		cprint(f'[TREE]\tCreating new supplier "{supplier_name}"', silent=settings.SILENT)
+		create_company(
+			company_name=supplier_name,
+			supplier=True,
+		)
+		# Get all parts
+		part_list = []
+
+	for item in part_list:
+		if supplier_sku in item.SKU:
+			cprint(f'[TREE]\t{item.SKU} ?= {supplier_sku} => True', silent=settings.HIDE_DEBUG)
+			return False
+		else:
+			cprint(f'[TREE]\t{item.SKU} ?= {supplier_sku} => False', silent=settings.HIDE_DEBUG)
+
+	return True
+
+def create_manufacturer_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, description: str, datasheet: str) -> bool:
+	''' Create InvenTree manufacturer part
 	
-		supplier: Company that supplies this SupplierPart object
-		SKU: Stock keeping unit (supplier part number)
+		part_id: Part the manufacturer data is linked to
 		manufacturer: Company that manufactures the SupplierPart (leave blank if it is the sample as the Supplier!)
 		MPN: Manufacture part number
-		link: Link to external website for this part
+		datasheet: Datasheet link
 		description: Descriptive notes field 
 	'''
 	global inventree_api
 
-	supplier_id = get_company_id(supplier_name)
-	if not supplier_id:
-		cprint(f'[TREE]\tError: Supplier "{supplier_name}" not found (failed to create supplier part)',
-			   silent=settings.SILENT)
-		return False
-
+	# Get Manufacturer ID
 	manufacturer_id = get_company_id(manufacturer_name)
-	if not manufacturer_id:
-		cprint(f'[TREE]\tCreating new manufacturer "{manufacturer_name}"', silent=settings.SILENT)
-		'''
-		name: Brief name of the company
-		description: Longer form description
-		is_customer: boolean value, is this company a customer
-		is_supplier: boolean value, is this company a supplier
-		is_manufacturer: boolean value, is this company a manufacturer
-		'''
-		manufacturer = Company.create(inventree_api, {
-			'name': manufacturer_name,
-			'description': manufacturer_name,
-			'is_customer': False,
-			'is_supplier': False,
-			'is_manufacturer': True,
-			})
-		try:
-			manufacturer_id = manufacturer.pk
-		except AttributeError:
-			manufacturer_id = None
 
 	if manufacturer_id:
 		# Validate datasheet link
 		if not validators.url(datasheet):
 			datasheet = ''
 
-		supplier_part = SupplierPart.create(inventree_api, {
+		manufacturer_part = ManufacturerPart.create(inventree_api, {
 			'part': part_id,
-			'supplier': supplier_id,
-			'SKU': supplier_sku,
 			'manufacturer': manufacturer_id,
-			'MPN': manufacturer_pn,
+			'MPN': manufacturer_mpn,
 			'link': datasheet,
 			'description': description,
-			})
+		})
+
+		if manufacturer_part:
+			return True
+	else:
+		cprint(f'[TREE]\tError: Manufacturer "{manufacturer_name}" not found (failed to create manufacturer part)',
+			   silent=settings.SILENT)
+
+	return False
+
+def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, supplier_name: str, supplier_sku: str, description: str, link: str) -> bool:
+	''' Create InvenTree supplier part
+
+		part_id: Part the supplier data is linked to
+		manufacturer_name: Manufacturer the supplier data is linked to
+		manufacturer_mpn: MPN the supplier data is linked to
+		supplier: Company that supplies this SupplierPart object
+		SKU: Stock keeping unit (supplier part number)
+		manufacturer: Company that manufactures the SupplierPart (leave blank if it is the sample as the Supplier!)
+		MPN: Manufacture part number
+		link: Link to part detail page on supplier's website
+		description: Descriptive notes field 
+	'''
+	global inventree_api
+
+	# Get Supplier ID
+	supplier_id = get_company_id(supplier_name)
+
+	# Get Manufacturer ID
+	manufacturer_id = get_company_id(manufacturer_name)
+	if not manufacturer_id:
+		# Unset MPN
+		manufacturer_mpn = None
+
+	if supplier_id:
+		# Validate supplier link
+		if not validators.url(link):
+			link = ''
+		
+		supplier_part = SupplierPart.create(inventree_api, {
+			'part': part_id,
+			'manufacturer': manufacturer_id,
+			'MPN': manufacturer_mpn,
+			'supplier': supplier_id,
+			'SKU': supplier_sku,
+			'link': link,
+			'description': description,
+		})
 
 		if supplier_part:
 			return True
+	else:
+		cprint(f'[TREE]\tError: Supplier "{supplier_name}" not found (failed to create supplier part)',
+			   silent=settings.SILENT)
 
 	return False
 

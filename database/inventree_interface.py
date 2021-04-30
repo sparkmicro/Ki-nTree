@@ -194,7 +194,10 @@ def translate_digikey_to_inventree(part_info: dict, categories: list, skip_param
 	inventree_part['supplier'] = {'Digi-Key': [part_info.get('digi_key_part_number', None)],}
 	inventree_part['manufacturer'] = {part_info.get('manufacturer', 'manufacturer'): [part_info.get('manufacturer_part_number', None)]}
 	# Replace whitespaces in URL
-	inventree_part['datasheet'] = part_info.get(settings.CONFIG_DIGIKEY.get('SEARCH_DATASHEET', None), part_info.get('primary_datasheet', '').replace(' ','%20'))
+	supplier_url_header = settings.CONFIG_DIGIKEY.get('SEARCH_SUPPLIER_URL', None) if settings.CONFIG_DIGIKEY.get('SEARCH_SUPPLIER_URL', None) else 'product_url'
+	inventree_part['supplier_link'] = part_info.get(supplier_url_header, '').replace(' ','%20')
+	datasheet_header = settings.CONFIG_DIGIKEY.get('SEARCH_DATASHEET', None) if settings.CONFIG_DIGIKEY.get('SEARCH_DATASHEET', None) else 'primary_datasheet'
+	inventree_part['datasheet'] = part_info.get(datasheet_header, '').replace(' ','%20')
 
 	# Load parameters map
 	parameter_map = config_interface.load_category_parameters(category=inventree_part["category"][0],
@@ -419,12 +422,38 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
 				for item in parameters_lists[1]:
 					cprint(f'--->\t{item}', silent=settings.SILENT)
 
-		# Create company part
-		supplier_sku = None
+		# Create manufacturer part
+		manufacturer_name = None
+		manufacturer_mpn = None
+		# Extract manufacturer name and number from part data
+		for key, values in inventree_part['manufacturer'].items():
+			manufacturer_name = key
+			manufacturer_mpn = values[0]
+			break
+
+		if manufacturer_mpn:
+			cprint('\n[MAIN]\tCreating manufacturer part', silent=settings.SILENT)
+			is_new_manufacturer_part = inventree_api.is_new_manufacturer_part(manufacturer_name=manufacturer_name, 
+																			  manufacturer_mpn=manufacturer_mpn)
+
+			if not is_new_manufacturer_part:
+				cprint(f'[INFO]\tManufacturer part already exists, skipping.', silent=settings.SILENT)
+			else:
+				# Create a new manufacturer part
+				is_manufacturer_part_created = inventree_api.create_manufacturer_part(part_id=part_pk,
+																			  manufacturer_name=manufacturer_name,
+																			  manufacturer_mpn=manufacturer_mpn,
+																			  datasheet=inventree_part['datasheet'],
+																			  description=inventree_part['description'] )
+				
+				if is_manufacturer_part_created:
+					cprint('[INFO]\tSuccess: Added new manufacturer part', silent=settings.SILENT)
+					
+		# Create supplier part
 		try:
 			supplier_sku = inventree_part['supplier'][supplier][0]
 		except KeyError:
-			pass
+			supplier_sku = None
 
 		if supplier_sku:
 			cprint('\n[MAIN]\tCreating supplier part', silent=settings.SILENT)
@@ -434,18 +463,14 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
 			if not is_new_supplier_part:
 				cprint(f'[INFO]\tSupplier part already exists, skipping.', silent=settings.SILENT)
 			else:
-				# Extract manufacturer name and number
-				for key, values in inventree_part['manufacturer'].items():
-					manufacturer_name = key
-					manufacturer_number = values[0]
 				# Create a new supplier part
 				is_supplier_part_created = inventree_api.create_supplier_part(part_id=part_pk,
+																			  manufacturer_name=manufacturer_name, 
+																			  manufacturer_mpn=manufacturer_mpn,
 																			  supplier_name=supplier,
 																			  supplier_sku=inventree_part['supplier'][supplier],
 																			  description=inventree_part['description'],
-																			  manufacturer_name=manufacturer_name,
-																		 	  manufacturer_pn=manufacturer_number,
-																			  datasheet=inventree_part['datasheet'] )
+																			  link=inventree_part['supplier_link'] )
 				
 				if is_supplier_part_created:
 					cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
