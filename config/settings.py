@@ -260,8 +260,9 @@ inventree_part_template = {
 	'keywords': None,
 	'image': None,
 	'inventree_url': None,
-	'supplier': {},
 	'manufacturer': {},
 	'datasheet': None,
+	'supplier': {},
+	'supplier_link': None,
 	'parameters': {},
 }

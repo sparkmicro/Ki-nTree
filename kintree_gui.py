@@ -300,26 +300,25 @@ def add_custom_part(part_data: dict) -> dict:
 
 			sub_key = key + '_name'
 			add_custom_layout.append([
-										sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
-										sg.InputText(name_default, size=(38, 1), key=sub_key),
-									])
+				sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
+				sg.InputText(name_default, size=(38, 1), key=sub_key),
+			])
 			input_keys.append(sub_key)
 
 			sub_key = key + '_part_number'
 			add_custom_layout.append([
-										sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
-										sg.InputText(number_default, size=(38, 1), key=sub_key),
-									])
+				sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
+				sg.InputText(number_default, size=(38, 1), key=sub_key),
+			])
 			input_keys.append(sub_key)
 		else:
 			default = part_data.get(key, '')
-			if not default:
-				default = ''
+			sub_key = key.replace('_', ' ').title()
 
 			add_custom_layout.append([
-										sg.Text(key.capitalize(), size=(22, 1)),
-										sg.InputText(default, size=(38, 1), key=key),
-									])
+				sg.Text(sub_key, size=(22, 1)),
+				sg.InputText(default, size=(38, 1), key=key),
+			])
 			input_keys.append(key)
 
 	if part_data:
