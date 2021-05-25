@@ -245,7 +245,12 @@ def load_inventree_settings():
 	PASSWORD = inventree_settings.get('PASSWORD', None)
 	# Part URL
 	if SERVER_ADDRESS:
-		PART_URL_ROOT = SERVER_ADDRESS + 'part/'
+		# If missing, append slash to root URL
+		root_url = SERVER_ADDRESS
+		if not SERVER_ADDRESS.endswith('/'):
+			root_url = root_url + '/'
+		# Set part URL
+		PART_URL_ROOT = root_url + 'part/'
 
 # Default revision
 INVENTREE_DEFAULT_REV = inventree_settings.get('INVENTREE_DEFAULT_REV', 'A')
