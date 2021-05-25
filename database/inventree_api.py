@@ -135,7 +135,7 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 			parameter_value = parameter.data
 			part_parameters[parameter_name] = parameter_value
 
-		if new_part_parameters:
+		if new_part_parameters and part_parameters:
 			# Compare database part with new part
 			compare = part_tools.compare(new_part_parameters=new_part_parameters,
 										 db_part_parameters=part_parameters,
