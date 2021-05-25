@@ -92,6 +92,7 @@ def copy_configuration(c):
 	c.run('cp -r config/kicad/ dist/config/', hide=False)
 	c.run('cp -r config/digikey/ dist/config/', hide=False)
 	c.run('cp -r config/inventree/ dist/config/', hide=False)
+	c.run('cp -r config/settings/ dist/config/', hide=False)
 	c.run('cp config/version.yaml dist/config/', hide=False)
 	c.run('cp -r kicad/templates/ dist/kicad/', hide=False)
 
