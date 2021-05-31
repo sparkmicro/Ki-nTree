@@ -1126,5 +1126,8 @@ def main():
 if __name__ == '__main__':
 	# Disable Digi-Key API logger
 	digikey_api.disable_digikey_api_logger()
+	# Fix for Windows EXE
+	import multiprocessing
+	multiprocessing.freeze_support()
 	# Run main window
 	main()
