@@ -26,6 +26,8 @@ apt-packages:
 
 before_install:
     - pip install invoke
+    # Check syntax
+    - invoke style
     # InvenTree Setup
     - git clone https://github.com/inventree/InvenTree/
     - cp tests/files/inventree_default_db.sqlite3 InvenTree/
