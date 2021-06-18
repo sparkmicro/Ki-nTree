@@ -157,3 +157,12 @@ def make_python_badge(c):
 	cprint('[MAIN]\tUninstall pybadges')
 	c.run('pip-autoremove pybadges -y', hide=True)
 	c.run('pip uninstall pip-autoremove -y', hide=True)
+
+@task
+def style(c):
+    """
+    Run PEP style checks against Ki-nTree sourcecode
+    """
+
+    print("Running PEP style checks...")
+    c.run('flake8 kintree_gui.py run_tests.py setup_inventree.py')
