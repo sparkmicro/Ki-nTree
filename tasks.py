@@ -165,4 +165,4 @@ def style(c):
     """
 
     print("Running PEP style checks...")
-    c.run('flake8 kintree_gui.py run_tests.py setup_inventree.py')
+    c.run('flake8 kintree_gui.py run_tests.py setup_inventree.py common/')
