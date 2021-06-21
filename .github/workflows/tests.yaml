@@ -31,7 +31,7 @@ jobs:
           cd InvenTree/ && invoke install && invoke migrate && cd -
         env:
           INVENTREE_DB_ENGINE: django.db.backends.sqlite3
-          INVENTREE_DB_NAME: inventree_default_db.sqlite3
+          INVENTREE_DB_NAME: $GITHUB_WORKSPACE/InvenTree/inventree_default_db.sqlite3
           INVENTREE_ENV: 0
       - name: Ki-nTree setup
         run: |
