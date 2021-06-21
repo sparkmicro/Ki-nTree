@@ -44,7 +44,7 @@ jobs:
           cd search/ && tar xvf results.tgz && cd -
       - name: Digi-Key API setup
         run: |
-          git clone https://${{ GITHUB_TOKEN }}@github.com/eeintech/digikey-token.git
+          git clone https://$GITHUB_TOKEN@github.com/eeintech/digikey-token.git
           cp digikey-token/token_storage.json search/
           cat search/token_storage.json
       - name: Run tests
