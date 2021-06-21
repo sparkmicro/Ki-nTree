@@ -25,7 +25,7 @@ apt-packages:
     - sqlite3
 
 before_install:
-    - pip install invoke
+    - pip install invoke flake8
     # Check syntax
     - invoke style
     # InvenTree Setup
