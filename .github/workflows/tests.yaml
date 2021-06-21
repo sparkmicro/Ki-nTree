@@ -3,8 +3,12 @@ name: Ki-nTree Tests
 on: [push]
 
 jobs:
-  style:
+  tests:
     runs-on: ubuntu-latest
+    env:
+      INVENTREE_DB_ENGINE: django.db.backends.sqlite3
+      INVENTREE_DB_NAME: ${{ github.workspace }}/InvenTree/inventree_default_db.sqlite3
+      INVENTREE_ENV: 0
 
     strategy:
       max-parallel: 1
@@ -29,10 +33,6 @@ jobs:
           git clone https://github.com/inventree/InvenTree/
           cp tests/files/inventree_default_db.sqlite3 InvenTree/
           cd InvenTree/ && invoke install && invoke migrate && cd -
-        env:
-          INVENTREE_DB_ENGINE: django.db.backends.sqlite3
-          INVENTREE_DB_NAME: ${{ GITHUB_WORKSPACE }}/InvenTree/inventree_default_db.sqlite3
-          INVENTREE_ENV: 0
       - name: Ki-nTree setup
         run: |
           pip uninstall inventree -y
