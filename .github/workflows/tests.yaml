@@ -55,7 +55,10 @@ jobs:
       - name: Run build
         run: |
           invoke build
+      - name: Post coverage
+        run: coveralls
       - name: Push updated Digi-Key token
+        if: git status --porcelain
         run: |
           cat search/token_storage.json
           cp search/token_storage.json digikey-token/
@@ -66,6 +69,4 @@ jobs:
           git commit -m "Updated token"
           git push origin master
           cd ..
-      - name: Post coverage
-        run: coveralls
       
