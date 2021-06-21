@@ -142,15 +142,9 @@ def test(c, setup=True):
 
     cprint('[MAIN]\tRunning tests using coverage\n-----')
     if setup:
-        c.run('date')
-        c.run('cd InvenTree/ && inv server > server.log && cd ..', asynchronous=True)
-        for i in range(3):
-            c.run('sleep 5')
-            c.run('date')
-            c.run('cat InvenTree/server.log')
-            setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
-            if not setup_inventree:
-                break
+        c.run('cd InvenTree/ && inv server && cd ..', asynchronous=True)
+        c.run('sleep 5')
+        setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
         cprint('\n-----')
         if setup_inventree.exited == 0:
             run_tests = c.run('coverage run --parallel-mode run_tests.py')
