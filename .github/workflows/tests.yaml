@@ -8,6 +8,7 @@ jobs:
     env:
       INVENTREE_DB_ENGINE: django.db.backends.sqlite3
       INVENTREE_DB_NAME: ${{ github.workspace }}/InvenTree/inventree_default_db.sqlite3
+      INVENTREE_MEDIA_ROOT: ${{ github.workspace }}/InvenTree
       INVENTREE_ENV: 0
 
     strategy:
