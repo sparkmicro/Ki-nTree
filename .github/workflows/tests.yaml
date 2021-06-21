@@ -57,8 +57,16 @@ jobs:
           invoke build
       - name: Post coverage
         run: coveralls
-      - name: Push updated Digi-Key token
-        if: git status --porcelain
+      - name: Check for updated Digi-Key token
+        run: |
+          cd digikey-token
+          if git diff --exit-code; then
+            echo "::set-env name=is_dk_token_new::true"
+          else
+            echo "::set-env name=is_dk_token_new::false"
+          fi
+      - name: Commit and push Digi-Key token
+        if: ${{ env.is_dk_token_new == 'true' }}
         run: |
           cat search/token_storage.json
           cp search/token_storage.json digikey-token/
