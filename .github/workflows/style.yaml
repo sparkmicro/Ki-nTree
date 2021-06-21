@@ -1,5 +1,7 @@
 name: Style Checks
 
+on: [push]
+
 jobs:
   style:
     runs-on: ubuntu-latest
