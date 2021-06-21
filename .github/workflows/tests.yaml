@@ -58,24 +58,17 @@ jobs:
           invoke build
       - name: Post coverage
         run: coveralls
-      - name: Check for updated Digi-Key token
-        run: |
-          cd digikey-token
-          if git diff --exit-code; then
-            echo "::set-env name=is_dk_token_new::false"
-          else
-            echo "::set-env name=is_dk_token_new::true"
-          fi
-      - name: Commit and push Digi-Key token
-        if: ${{ env.is_dk_token_new == 'true' }}
+      - name: Push Digi-Key token
         run: |
           cat search/token_storage.json
           cp search/token_storage.json digikey-token/
           cd digikey-token
-          git config --global user.email "github@actions.com"
-          git config --global user.name "GitHub Actions"
-          git add -u
-          git commit -m "Updated token"
-          git push origin master
+          if git diff --exit-code; then
+            git config --global user.email "github@actions.com"
+            git config --global user.name "GitHub Actions"
+            git add -u
+            git commit -m "Updated token"
+            git push origin master
+          fi
           cd ..
       
