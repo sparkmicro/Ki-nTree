@@ -25,9 +25,7 @@ apt-packages:
     - sqlite3
 
 before_install:
-    - pip install invoke flake8
-    # Check syntax
-    - invoke style
+    - pip install invoke
     # InvenTree Setup
     - git clone https://github.com/inventree/InvenTree/
     - cp tests/files/inventree_default_db.sqlite3 InvenTree/
