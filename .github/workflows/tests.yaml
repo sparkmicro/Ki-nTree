@@ -10,6 +10,7 @@ jobs:
       INVENTREE_DB_NAME: ${{ github.workspace }}/InvenTree/inventree_default_db.sqlite3
       INVENTREE_MEDIA_ROOT: ${{ github.workspace }}/InvenTree
       INVENTREE_ENV: 0
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     strategy:
       max-parallel: 1
@@ -43,7 +44,7 @@ jobs:
           cd search/ && tar xvf results.tgz && cd -
       - name: Digi-Key API setup
         run: |
-          git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/eeintech/digikey-token.git
+          git clone https://${{ GITHUB_TOKEN }}@github.com/eeintech/digikey-token.git
           cp digikey-token/token_storage.json search/
           cat search/token_storage.json
       - name: Run tests
@@ -61,9 +62,9 @@ jobs:
         run: |
           cd digikey-token
           if git diff --exit-code; then
-            echo "::set-env name=is_dk_token_new::true"
-          else
             echo "::set-env name=is_dk_token_new::false"
+          else
+            echo "::set-env name=is_dk_token_new::true"
           fi
       - name: Commit and push Digi-Key token
         if: ${{ env.is_dk_token_new == 'true' }}
