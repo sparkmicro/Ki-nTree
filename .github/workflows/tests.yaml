@@ -65,4 +65,6 @@ jobs:
           git commit -m "Updated token"
           git push origin master
           cd ..
+      - name: Post coverage
+        run: coveralls
       
