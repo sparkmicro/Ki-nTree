@@ -1,0 +1,59 @@
+name: Ki-nTree Tests
+
+on: [push]
+
+jobs:
+  style:
+    runs-on: ubuntu-latest
+
+    strategy:
+      max-parallel: 1
+      matrix:
+        python-version: [3.8]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          sudo apt install sqlite3
+          pip install -U invoke
+      - name: InvenTree setup
+        run: |
+          git clone https://github.com/inventree/InvenTree/
+          cp tests/files/inventree_default_db.sqlite3 InvenTree/
+          cd InvenTree/ && invoke install && invoke migrate && cd -
+      - name: Ki-nTree setup
+        run: |
+          pip uninstall inventree -y
+          invoke install
+          cp tests/files/results.tgz search/
+          cp tests/files/inventree_test.yaml config/inventree/
+          cd search/ && tar xvf results.tgz && cd -
+      - name: Digi-Key API setup
+        run: |
+          git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/eeintech/digikey-token.git
+          cp digikey-token/token_storage.json search/
+          cat search/token_storage.json
+      - name: Run tests
+        run: |
+          invoke test
+      - name: Run build
+        run: |
+          invoke build
+      - name: Push updated Digi-Key token
+        run: |
+          cat search/token_storage.json
+          cp search/token_storage.json digikey-token/
+          cd digikey-token
+          git config --global user.email "github@actions.com"
+          git config --global user.name "GitHub Actions"
+          git add -u
+          git commit -m "Updated token"
+          git push origin master
+          cd ..
+      
