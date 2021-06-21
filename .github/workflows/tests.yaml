@@ -27,6 +27,10 @@ jobs:
           git clone https://github.com/inventree/InvenTree/
           cp tests/files/inventree_default_db.sqlite3 InvenTree/
           cd InvenTree/ && invoke install && invoke migrate && cd -
+        with:
+          INVENTREE_DB_ENGINE: django.db.backends.sqlite3
+          INVENTREE_DB_NAME: inventree_default_db.sqlite3
+          INVENTREE_ENV: 0
       - name: Ki-nTree setup
         run: |
           pip uninstall inventree -y
@@ -42,6 +46,9 @@ jobs:
       - name: Run tests
         run: |
           invoke test
+        with:
+          DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
+          DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
       - name: Run build
         run: |
           invoke build
