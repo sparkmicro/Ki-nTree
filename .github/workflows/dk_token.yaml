@@ -15,6 +15,8 @@ jobs:
         python-version: [3.9]
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Token Test
         run: |
           git clone https://$GH_TOKEN@github.com/eeintech/digikey-token.git
