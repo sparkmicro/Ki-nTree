@@ -56,7 +56,7 @@ jobs:
           DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
       - name: Run build
         run: |
-          pip uninstall typing
+          pip uninstall typing -y
           invoke build
       - name: Coveralls
         run: | 
