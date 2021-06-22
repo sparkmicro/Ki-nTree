@@ -1,0 +1,32 @@
+name: Refresh Digi-Key Token
+
+on: [push]
+
+jobs:
+  dk_tests:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+    strategy:
+      max-parallel: 2
+      matrix:
+        python-version: [3.9]      
+      
+      - name: Token Test
+        run: |
+          git clone https://$GH_TOKEN@github.com/eeintech/digikey-token.git
+          cd digikey-token
+          cp ../tests/dk_requirements.txt requirements.txt
+          pip install -U -r requirements.txt
+          python digikey_token_refresh.py
+          git config --global user.email "github@actions.com"
+          git config --global user.name "Ki-nTree Github Actions"
+          git add -u
+          git diff-index --quiet HEAD || git commit -m "Updated token"
+          git push origin master
+          cd ..
+      env:
+          DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
+          DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
