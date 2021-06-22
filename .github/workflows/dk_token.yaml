@@ -27,6 +27,6 @@ jobs:
           git diff-index --quiet HEAD || git commit -m "Updated token"
           git push origin master
           cd ..
-      env:
-          DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
-          DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
+        env:
+            DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
+            DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
