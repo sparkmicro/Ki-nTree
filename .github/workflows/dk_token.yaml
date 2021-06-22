@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Token Test
         run: |
-          git clone https://eeintech:$GH_TOKEN@github.com/eeintech/digikey-token.git
+          git clone https://eeintech:$GITHUB_TOKEN@github.com/eeintech/digikey-token.git
           cd digikey-token
           cp ../tests/dk_requirements.txt requirements.txt
           pip install -U -r requirements.txt
