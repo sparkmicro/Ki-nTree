@@ -24,14 +24,10 @@ jobs:
           pip install -U -r requirements.txt
           echo "Refresh token"
           python digikey_token_refresh.py
-          git config --global user.email "eeintech@eeinte.ch"
-          git config --global user.name "eeintech"
-          cat .git/config
-          echo "Add"
+          git config --global user.email "kintree@github.actions"
+          git config --global user.name "Ki-nTree Github Actions"
           git add -u
-          echo "Commit"
           git diff-index --quiet HEAD || git commit -m "Updated token"
-          echo "Push"
           git push origin master
           cd ..
         env:
