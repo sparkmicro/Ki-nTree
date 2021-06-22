@@ -19,14 +19,14 @@ jobs:
         uses: actions/checkout@v2
       - name: Token Test
         run: |
-          git clone https://$GH_TOKEN@github.com/eeintech/digikey-token.git
+          git clone https://eeintech:$GH_TOKEN@github.com/eeintech/digikey-token.git
           cd digikey-token
           cp ../tests/dk_requirements.txt requirements.txt
           pip install -U -r requirements.txt
           echo "Refresh token"
           python digikey_token_refresh.py
-          git config --global user.email "eeintech@eeinte.ch"
-          git config --global user.name "eeintech"
+          git config --global user.email "github@actions.com"
+          git config --global user.name "Ki-nTree Github Actions"
           cat .git/config
           echo "Add"
           git add -u
