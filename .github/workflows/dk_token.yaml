@@ -6,8 +6,7 @@ jobs:
   dk_tests:
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      TOKEN_DIGIKEY: ${{ secrets.TOKEN_DIGIKEY }}
 
     strategy:
       max-parallel: 2
@@ -19,7 +18,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Token Test
         run: |
-          git clone https://eeintech:$GITHUB_TOKEN@github.com/eeintech/digikey-token.git
+          git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git
           cd digikey-token
           cp ../tests/dk_requirements.txt requirements.txt
           pip install -U -r requirements.txt
