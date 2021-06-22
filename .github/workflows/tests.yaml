@@ -1,0 +1,74 @@
+name: Ki-nTree Tests
+
+on: [push]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      INVENTREE_DB_ENGINE: django.db.backends.sqlite3
+      INVENTREE_DB_NAME: ${{ github.workspace }}/InvenTree/inventree_default_db.sqlite3
+      INVENTREE_MEDIA_ROOT: ${{ github.workspace }}/InvenTree
+      INVENTREE_ENV: 0
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TOKEN_DIGIKEY: ${{ secrets.TOKEN_DIGIKEY }}
+
+    strategy:
+      max-parallel: 1
+      matrix:
+        python-version: [3.6, 3.9]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          sudo apt install sqlite3
+          pip install -U invoke
+      - name: InvenTree setup
+        run: |
+          git clone https://github.com/inventree/InvenTree/
+          cp tests/files/inventree_default_db.sqlite3 InvenTree/
+          cd InvenTree/ && invoke install && invoke migrate && cd -
+      - name: Ki-nTree setup
+        run: |
+          pip uninstall inventree -y
+          invoke install
+          cp tests/files/results.tgz search/
+          cp tests/files/inventree_test.yaml config/inventree/
+          cd search/ && tar xvf results.tgz && cd -
+      - name: Digi-Key API setup
+        run: |
+          git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git
+          cp digikey-token/token_storage.json search/
+          cat search/token_storage.json
+      - name: Run tests
+        run: |
+          invoke test
+        env:
+          DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
+          DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
+      - name: Coveralls
+        run: | 
+          coveralls --version
+          coveralls
+      - name: Run build
+        run: |
+          pip uninstall typing -y
+          invoke build
+      - name: Push Digi-Key Token
+        run: |
+          cp search/token_storage.json digikey-token/
+          cd digikey-token
+          git config --global user.email "kintree@github.actions"
+          git config --global user.name "Ki-nTree Github Actions"
+          git add -u
+          git diff-index --quiet HEAD || git commit -m "Updated token"
+          git push origin master
+          cd ..
