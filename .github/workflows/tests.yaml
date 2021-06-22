@@ -58,9 +58,8 @@ jobs:
       - name: Coveralls
         run: | 
           ls -al
-          pip install -U coveralls
           coveralls --version
-          coveralls 
+          coveralls
       - name: Push Digi-Key token
         run: |
           cat search/token_storage.json
