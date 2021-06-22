@@ -58,13 +58,11 @@ jobs:
           cat search/token_storage.json
           cp search/token_storage.json digikey-token/
           cd digikey-token
-          if git status --porcelain; then
-            git config --global user.email "github@actions.com"
-            git config --global user.name "GitHub Actions"
-            git add -u
-            git commit -m "Updated token"
-            git push origin master
-          fi
+          git config --global user.email "github@actions.com"
+          git config --global user.name "GitHub Actions"
+          git add -u
+          git diff-index --quiet HEAD || git commit -m "Updated token"
+          git push origin master
           cd ..
       - name: Run build
         run: |
