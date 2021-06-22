@@ -23,11 +23,16 @@ jobs:
           cd digikey-token
           cp ../tests/dk_requirements.txt requirements.txt
           pip install -U -r requirements.txt
+          echo "Refresh token"
           python digikey_token_refresh.py
           git config --global user.email "github@actions.com"
           git config --global user.name "Ki-nTree Github Actions"
+          cat .git/config
+          echo "Add"
           git add -u
+          echo "Commit"
           git diff-index --quiet HEAD || git commit -m "Updated token"
+          echo "Push"
           git push origin master
           cd ..
         env:
