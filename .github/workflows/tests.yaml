@@ -11,6 +11,7 @@ jobs:
       INVENTREE_MEDIA_ROOT: ${{ github.workspace }}/InvenTree
       INVENTREE_ENV: 0
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     strategy:
       max-parallel: 1
@@ -44,7 +45,7 @@ jobs:
           cd search/ && tar xvf results.tgz && cd -
       - name: Digi-Key API setup
         run: |
-          git clone https://$GITHUB_TOKEN@github.com/eeintech/digikey-token.git
+          git clone https://$GH_TOKEN@github.com/eeintech/digikey-token.git
           cp digikey-token/token_storage.json search/
           cat search/token_storage.json
       - name: Run tests
