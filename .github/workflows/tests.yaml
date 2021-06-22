@@ -56,14 +56,16 @@ jobs:
       - name: Run build
         run: |
           invoke build
-      - name: Post coverage
-        run: coveralls
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: $GITHUB_TOKEN
       - name: Push Digi-Key token
         run: |
           cat search/token_storage.json
           cp search/token_storage.json digikey-token/
           cd digikey-token
-          if git diff --exit-code; then
+          if git status --porcelain; then
             git config --global user.email "github@actions.com"
             git config --global user.name "GitHub Actions"
             git add -u
