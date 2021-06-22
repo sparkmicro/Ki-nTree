@@ -51,26 +51,13 @@ jobs:
       - name: Run tests
         run: |
           invoke test
-          ls -al
         env:
           DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
           DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
       - name: Coveralls
         run: | 
-          ls -al
           coveralls --version
           coveralls
-      - name: Push Digi-Key token
-        run: |
-          cat search/token_storage.json
-          cp search/token_storage.json digikey-token/
-          cd digikey-token
-          git config --global user.email "github@actions.com"
-          git config --global user.name "GitHub Actions"
-          git add -u
-          git diff-index --quiet HEAD || git commit -m "Updated token"
-          git push origin master
-          cd ..
       - name: Run build
         run: |
           pip uninstall typing -y
