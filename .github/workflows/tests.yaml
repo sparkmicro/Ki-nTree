@@ -30,8 +30,6 @@ jobs:
         run: |
           sudo apt install sqlite3
           pip install -U invoke
-          pip install -U coveralls 
-          pip uninstall typing
       - name: InvenTree setup
         run: |
           git clone https://github.com/inventree/InvenTree/
@@ -68,9 +66,11 @@ jobs:
       #     cd ..
       - name: Run build
         run: |
+          pip uninstall typing
           invoke build
       - name: Coveralls
         run: | 
           ls -al
+          coveralls --version
           coveralls 
       
