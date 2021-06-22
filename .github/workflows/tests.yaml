@@ -31,6 +31,7 @@ jobs:
           sudo apt install sqlite3
           pip install -U invoke
           pip install -U coveralls 
+          pip uninstall typing
       - name: InvenTree setup
         run: |
           git clone https://github.com/inventree/InvenTree/
