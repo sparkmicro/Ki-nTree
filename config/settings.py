@@ -107,6 +107,8 @@ CACHE_VALID_DAYS = CONFIG_DIGIKEY.get('CACHE_VALID_DAYS', 7)
 
 # Caching settings
 def load_cache_settings():
+    global search_results
+    global search_images
     global CACHE_ENABLED
     
     USER_SETTINGS = config_interface.load_user_paths(project_dir=PROJECT_DIR)
