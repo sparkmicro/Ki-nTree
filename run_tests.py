@@ -43,8 +43,8 @@ settings.enable_test_mode()
 settings.set_inventree_enable_flag(True, save=True)
 # Enable KiCad
 settings.set_kicad_enable_flag(True, save=True)
-# Create user configuration files
-settings.create_user_config_files()
+# Load user configuration files
+settings.load_user_config()
 # Set path to test libraries
 test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
