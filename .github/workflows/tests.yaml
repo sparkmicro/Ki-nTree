@@ -62,7 +62,7 @@ jobs:
           invoke build
       - name: Push Digi-Key Token
         run: |
-          cp search/token/token_storage.json digikey-token/
+          cp ~/kintree/cache/token_storage.json digikey-token/
           cd digikey-token
           git config --global user.email "kintree@github.actions"
           git config --global user.name "Ki-nTree Github Actions"
