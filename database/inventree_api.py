@@ -255,6 +255,11 @@ def delete_part(part_id: int) -> bool:
     part = Part(inventree_api, part_id)
     if part.pk:
         part._data['active'] = False
+        # Remove image url (API rejects it as it is not a file)
+        try:
+            del part._data['image']
+        except:
+            pass
         part.save()
         return part.delete()
     else:

@@ -220,7 +220,8 @@ if __name__ == '__main__':
                     for number, result in inventree_results.items():
                         if result[2]:
                             try:
-                                inventree_api.delete_part(part_id=result[0])
+                                if not inventree_api.delete_part(part_id=result[0]):
+                                    error += 1
                             except:
                                 error += 1
 
