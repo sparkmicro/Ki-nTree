@@ -11,6 +11,7 @@ os.environ['DIGIKEY_STORAGE_PATH'] = settings.DIGIKEY_STORAGE_PATH
 if not os.path.exists(os.environ['DIGIKEY_STORAGE_PATH']):
     os.mkdir(os.environ['DIGIKEY_STORAGE_PATH'])
 
+
 def disable_digikey_api_logger():
     # Digi-Key API logger
     logging.getLogger('digikey.v3.api').setLevel(logging.WARNING)
