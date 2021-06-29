@@ -24,8 +24,60 @@ from fuzzywuzzy import fuzz
 from kicad import kicad_interface
 
 
+def user_settings_window():
+    ''' User path settings window '''
+    path_to_user_settings = config_interface.load_user_paths(settings.PROJECT_DIR)
+    USER_FILES = path_to_user_settings['USER_FILES']
+    USER_CACHE = path_to_user_settings['USER_CACHE']
+
+    user_layout = [
+        [
+            sg.Text('Select Configuration Files Folder:'),
+            sg.InputText(USER_FILES, key='user_files'),
+            sg.FolderBrowse(target='user_files', initial_folder=USER_FILES),
+        ],
+        [
+            sg.Text('Select Cache Folder:'),
+            sg.InputText(USER_CACHE, key='user_cache'),
+            sg.FolderBrowse(target='user_cache', initial_folder=USER_CACHE),
+        ],
+        [sg.Button('Save', size=(10, 1)), ],
+    ]
+    user_window = sg.Window(
+        'User Settings', user_layout, location=(500, 500)
+    )
+    us_event, us_values = user_window.read()
+    if us_event == sg.WIN_CLOSED:  # if user closes window
+        pass
+    else:
+        new_settings = {
+            'USER_FILES': us_values['user_files'],
+            'USER_CACHE': us_values['user_cache'],
+        }
+        for name, path in new_settings.items():
+            if path == '':
+                cprint(f'[INFO]\tWarning: User {name} path is empty', silent=settings.SILENT)
+            # Check if path has trailing slash
+            elif path[-1] != os.sep:
+                new_settings[name] = path + os.sep
+        # Read user settings file
+        user_settings = {**path_to_user_settings, **new_settings}
+        # Write to user settings file
+        config_interface.dump_file(user_settings, os.path.join(settings.PROJECT_DIR, 'user_config.yaml'))
+        # Reload user config and cache
+        settings.load_user_config()
+        settings.load_cache_settings()
+
+    user_window.close()
+    return
+
+
 def search_api_settings_window():
     ''' Part search API settings window '''
+
+    # Reload user config
+    settings.load_user_config()
+
     user_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
 
     search_api_layout = [
@@ -761,8 +813,8 @@ def user_defined_symbol_template_footprint(categories: list,
 def main():
     ''' Main GUI window '''
 
-    # Create user configuration files
-    if not settings.create_user_config_files():
+    # Load user configuration files
+    if not settings.load_user_config():
         cprint('\n[ERROR]\tSome Ki-nTree configuration files seem to be missing')
         return
 
@@ -776,6 +828,7 @@ def main():
     menu_def = [
         ['Settings',
          [
+             'User',
              'Digi-Key',
              'KiCad',
              'InvenTree',
@@ -818,8 +871,10 @@ def main():
 
         if event == sg.WIN_CLOSED:  # if user closes window or clicks cancel
             break
-
-        if event == 'Digi-Key':
+        
+        if event == 'User':
+            user_settings_window()
+        elif event == 'Digi-Key':
             search_api_settings_window()
         elif event == 'InvenTree':
             inventree_settings_window()

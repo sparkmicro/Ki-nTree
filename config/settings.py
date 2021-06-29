@@ -25,10 +25,6 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     PROJECT_DIR = os.path.abspath(os.path.dirname(sys.executable))
 else:
     PROJECT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-# InvenTree API
-sys.path.append(os.path.join(PROJECT_DIR, 'database', 'inventree-python'))
-# Digi-Key API
-sys.path.append(os.path.join(PROJECT_DIR, 'search', 'digikey_api'))
 # KiCad Library Utils
 sys.path.append(os.path.join(PROJECT_DIR, 'kicad'))
 # Tests
@@ -44,14 +40,15 @@ except:
     version = '0.0.alpha'
 
 
-# CONFIG FILES
-CONFIG_ROOT = os.path.join(PROJECT_DIR, 'config', '')
-CONFIG_USER_FILES = os.path.join(PROJECT_DIR, 'config', 'user_files', '')
-
-
-def create_user_config_files():
+# USER AND CONFIG FILES
+def load_user_config():
+    global USER_SETTINGS
     global CONFIG_ROOT
     global CONFIG_USER_FILES
+
+    USER_SETTINGS = config_interface.load_user_paths(project_dir=PROJECT_DIR)
+    CONFIG_ROOT = os.path.join(PROJECT_DIR, 'config', '')
+    CONFIG_USER_FILES = os.path.join(USER_SETTINGS['USER_FILES'], '')
 
     # Create user files folder if it does not exists
     if not os.path.exists(CONFIG_USER_FILES):
@@ -61,8 +58,8 @@ def create_user_config_files():
                                                    path_to_user_files=CONFIG_USER_FILES)
 
 
-# Create user configuration files
-create_user_config_files()
+# Load user config
+load_user_config()
 
 # Digi-Key
 CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
@@ -106,22 +103,32 @@ CATEGORY_MATCH_RATIO_LIMIT = CONFIG_DIGIKEY.get('CATEGORY_MATCH_RATIO_LIMIT', 10
 CACHE_ENABLED = CONFIG_DIGIKEY.get('CACHE_ENABLED', True)
 # Cache validity in days
 CACHE_VALID_DAYS = CONFIG_DIGIKEY.get('CACHE_VALID_DAYS', 7)
+
+
 # Caching settings
-if CACHE_ENABLED:
-    search_results = {
-        'directory': os.path.join(PROJECT_DIR, 'search', 'results', ''),
-        'extension': '.yaml',
-    }
+def load_cache_settings():
+    global CACHE_ENABLED
+    
+    USER_SETTINGS = config_interface.load_user_paths(project_dir=PROJECT_DIR)
+
+    if CACHE_ENABLED:
+        search_results = {
+            'directory': os.path.join(USER_SETTINGS['USER_CACHE'], 'search', ''),
+            'extension': '.yaml',
+        }
+        # Create folder if it does not exists
+        if not os.path.exists(search_results['directory']):
+            os.makedirs(search_results['directory'])
+
+    # Part images
+    search_images = os.path.join(USER_SETTINGS['USER_CACHE'], 'images', '')
     # Create folder if it does not exists
-    if not os.path.exists(search_results['directory']):
-        os.makedirs(search_results['directory'])
+    if not os.path.exists(search_images):
+        os.makedirs(search_images)
 
-# Part images
-search_images = os.path.join(PROJECT_DIR, 'search', 'images', '')
-# Create folder if it does not exists
-if not os.path.exists(search_images):
-    os.makedirs(search_images)
 
+# Load cache settings
+load_cache_settings()
 
 # KICAD
 # User Settings
@@ -145,12 +152,11 @@ def load_kicad_settings():
         ENABLE_KICAD = kicad_user_settings.get('KICAD_ENABLE', None)
 
 
-# Load user settings
+# Load kicad settings
 load_kicad_settings()
 
+
 # Enable flag
-
-
 def set_kicad_enable_flag(value: bool, save=False):
     global ENABLE_KICAD
     ENABLE_KICAD = value
@@ -238,9 +244,8 @@ def set_inventree_enable_flag(value: bool, save=False):
                                                       user_config_path=CONFIG_INVENTREE)
     return
 
+
 # Server settings
-
-
 def load_inventree_settings():
     global SERVER_ADDRESS
     global USERNAME
