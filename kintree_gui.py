@@ -131,6 +131,9 @@ def search_api_settings_window():
 def inventree_settings_window():
     ''' InvenTree settings window '''
 
+    # Reload user config
+    settings.load_user_config()
+
     user_settings = config_interface.load_inventree_user_settings(settings.CONFIG_INVENTREE)
 
     inventree_layout = [
@@ -186,6 +189,10 @@ def inventree_settings_window():
 
 def kicad_settings_window():
     ''' KiCad settings window '''
+
+    # Reload user config
+    settings.load_user_config()
+    
     kicad_user_settings = config_interface.load_file(settings.CONFIG_KICAD)
     KICAD_SYMBOLS_PATH = kicad_user_settings['KICAD_SYMBOLS_PATH']
     KICAD_TEMPLATES_PATH = kicad_user_settings['KICAD_TEMPLATES_PATH']
@@ -812,11 +819,6 @@ def user_defined_symbol_template_footprint(categories: list,
 
 def main():
     ''' Main GUI window '''
-
-    # Load user configuration files
-    if not settings.load_user_config():
-        cprint('\n[ERROR]\tSome Ki-nTree configuration files seem to be missing')
-        return
 
     CREATE_CUSTOM = False
 

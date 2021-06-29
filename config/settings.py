@@ -2,7 +2,19 @@ import os
 import sys
 from enum import Enum
 
+from common.tools import cprint
 from config import config_interface
+
+# VERSION INFORMATION
+version_info = {
+    'MAJOR_REVISION': 0,
+    'MINOR_REVISION': 3,
+    'RELEASE_STATUS': 10,  # Digit means stable version
+}
+try:
+    version = '.'.join([str(v) for v in version_info.values()])
+except:
+    version = '0.0.alpha'
 
 # DEBUG
 # Testing
@@ -31,15 +43,6 @@ sys.path.append(os.path.join(PROJECT_DIR, 'kicad'))
 sys.path.append(os.path.join(PROJECT_DIR, 'tests'))
 
 
-# VERSION
-CONFIG_VERSION = os.path.join(PROJECT_DIR, 'config', 'version.yaml')
-version_info = config_interface.load_file(CONFIG_VERSION, silent=False)
-try:
-    version = '.'.join([str(v) for v in version_info.values()])
-except:
-    version = '0.0.alpha'
-
-
 # USER AND CONFIG FILES
 def load_user_config():
     global USER_SETTINGS
@@ -55,11 +58,16 @@ def load_user_config():
         os.makedirs(CONFIG_USER_FILES)
     # Create user files
     return config_interface.load_user_config_files(path_to_root=CONFIG_ROOT,
-                                                   path_to_user_files=CONFIG_USER_FILES)
+                                                   path_to_user_files=CONFIG_USER_FILES,
+                                                   silent=HIDE_DEBUG)
 
 
 # Load user config
-load_user_config()
+if not load_user_config():
+    # Check if configuration files already exist
+    if not os.path.isfile(os.path.join(CONFIG_USER_FILES, 'categories.yaml')):
+        cprint('\n[ERROR]\tSome Ki-nTree configuration files seem to be missing')
+        exit(-1)
 
 # Digi-Key
 CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
@@ -95,8 +103,6 @@ AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 # DIGI-KEY
 # Fetch settings
 CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
-# API storage path
-DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', 'token', '')
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = CONFIG_DIGIKEY.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
 # Search results caching (stored in files)
@@ -110,6 +116,7 @@ def load_cache_settings():
     global search_results
     global search_images
     global CACHE_ENABLED
+    global DIGIKEY_STORAGE_PATH
     
     USER_SETTINGS = config_interface.load_user_paths(project_dir=PROJECT_DIR)
 
@@ -127,6 +134,9 @@ def load_cache_settings():
     # Create folder if it does not exists
     if not os.path.exists(search_images):
         os.makedirs(search_images)
+
+    # API token storage path
+    DIGIKEY_STORAGE_PATH = os.path.join(USER_SETTINGS['USER_CACHE'], '')
 
 
 # Load cache settings

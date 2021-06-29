@@ -87,16 +87,11 @@ def copy_configuration(c):
 
     cdir = os.getcwd()
     dist = os.path.join(cdir, 'dist')
-    config = os.path.join(dist, 'config')
     kicad = os.path.join(dist, 'kicad')
 
     cprint('[MAIN]\tCopying configuration files')
-    c.run(f'mkdir {config} && mkdir {kicad}', hide=False)
-    c.run('cp -r config/kicad/ dist/config/', hide=False)
-    c.run('cp -r config/digikey/ dist/config/', hide=False)
-    c.run('cp -r config/inventree/ dist/config/', hide=False)
-    c.run('cp -r config/settings/ dist/config/', hide=False)
-    c.run('cp config/version.yaml dist/config/', hide=False)
+    c.run(f'mkdir {kicad}', hide=False)
+    c.run('cp -r user_config.yaml dist/', hide=False)
     c.run('cp -r kicad/templates/ dist/kicad/', hide=False)
 
 

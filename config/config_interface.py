@@ -55,7 +55,7 @@ def load_user_paths(project_dir='') -> dict:
     return user_config
 
 
-def load_user_config_files(path_to_root: str, path_to_user_files: str) -> bool:
+def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=True) -> bool:
     ''' Load InvenTree user configuration '''
     result = True
 
@@ -77,28 +77,28 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str) -> bool:
         config_files = os.path.join(path_to_root, 'settings', '')
         load_config(config_files)
     except:
-        cprint('[INFO]\tWarning: Failed to load User settings')
+        cprint('[INFO]\tWarning: Failed to load User settings', silent=silent)
         result = False
     # Load Digi-Key configuration files
     try:
         config_files = os.path.join(path_to_root, 'digikey', '')
         load_config(config_files)
     except:
-        cprint('[INFO]\tWarning: Failed to load Digi-Key configuration')
+        cprint('[INFO]\tWarning: Failed to load Digi-Key configuration', silent=silent)
         result = False
     # Load InvenTree configuration files
     try:
         config_files = os.path.join(path_to_root, 'inventree', '')
         load_config(config_files)
     except:
-        cprint('[INFO]\tWarning: Failed to load InvenTree configuration')
+        cprint('[INFO]\tWarning: Failed to load InvenTree configuration', silent=silent)
         result = False
     # Load KiCad configuration files
     try:
         config_files = os.path.join(path_to_root, 'kicad', '')
         load_config(config_files)
     except:
-        cprint('[INFO]\tWarning: Failed to load KiCad configuration')
+        cprint('[INFO]\tWarning: Failed to load KiCad configuration', silent=silent)
         result = False
 
     return result
