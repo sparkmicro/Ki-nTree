@@ -3,7 +3,7 @@ config/user_files/
 # Search files
 search/results/
 search/images/
-search/token_storage.json
+search/token/*
 # Build files
 dist/
 build/

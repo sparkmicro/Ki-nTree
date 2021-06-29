@@ -221,7 +221,7 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
     # Upload image to InvenTree
     part = Part(inventree_api, part_id)
     if part:
-        return part.upload_image(image=image_location)
+        return part.uploadImage(image=image_location)
     else:
         return False
 

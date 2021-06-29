@@ -99,7 +99,7 @@ AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 # Fetch settings
 CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
 # API storage path
-DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', '')
+DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', 'token', '')
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = CONFIG_DIGIKEY.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
 # Search results caching (stored in files)

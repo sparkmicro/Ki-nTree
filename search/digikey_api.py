@@ -7,7 +7,9 @@ import digikey
 from config import config_interface
 
 os.environ['DIGIKEY_STORAGE_PATH'] = settings.DIGIKEY_STORAGE_PATH
-
+# Check if storage path exists, else create it
+if not os.path.exists(os.environ['DIGIKEY_STORAGE_PATH']):
+    os.mkdir(os.environ['DIGIKEY_STORAGE_PATH'])
 
 def disable_digikey_api_logger():
     # Digi-Key API logger

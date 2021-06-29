@@ -12,8 +12,6 @@ def install(c, is_install=True):
     else:
         cprint('[MAIN]\tUpdating required dependencies')
     c.run('pip install -U -r requirements.txt', hide='out')
-    # Install wrapt_timeout_decorator library from GitHub
-    c.run('pip install git+https://github.com/bitranox/wrapt_timeout_decorator.git', hide='out')
 
     if is_install:
         cprint('[MAIN]\tInstalling optional dependencies')
