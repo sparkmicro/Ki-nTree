@@ -37,9 +37,10 @@ jobs:
       - name: Ki-nTree setup
         run: |
           invoke install
-          cp tests/files/results.tgz search/
-          cp tests/files/inventree_test.yaml config/inventree/
-          cd search/ && tar xvf results.tgz && cd -
+          mkdir -p ~/kintree/user/ && mkdir -p ~/kintree/cache/search/
+          cp tests/files/inventree_test.yaml ~/kintree/user/
+          cp tests/files/results.tgz ~/kintree/cache/search/
+          cd ~/kintree/cache/search/ && tar xvf results.tgz && cd -
       - name: Digi-Key API setup
         run: |
           git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git

@@ -83,16 +83,8 @@ def exec(c):
 
 @task
 def copy_configuration(c):
-    import os
-
-    cdir = os.getcwd()
-    dist = os.path.join(cdir, 'dist')
-    kicad = os.path.join(dist, 'kicad')
-
-    cprint('[MAIN]\tCopying configuration files')
-    c.run(f'mkdir {kicad}', hide=False)
+    cprint('[MAIN]\tCopying configuration file')
     c.run('cp -r user_config.yaml dist/', hide=False)
-    c.run('cp -r kicad/templates/ dist/kicad/', hide=False)
 
 
 @task(pre=[clean], post=[package])
