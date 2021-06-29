@@ -43,8 +43,9 @@ jobs:
       - name: Digi-Key API setup
         run: |
           git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git
-          cp digikey-token/token_storage.json search/
-          cat search/token_storage.json
+          mkdir -p search/token
+          cp digikey-token/token_storage.json search/token/
+          cat search/token/token_storage.json
       - name: Run tests
         run: |
           invoke test
