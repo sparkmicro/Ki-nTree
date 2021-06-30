@@ -129,16 +129,15 @@ def load_from_file(search_file, test_mode=False) -> dict:
         except FileNotFoundError:
             return None
 
-        if part_data:
-            # Check cache validity
-            try:
-                # Get timestamp
-                timestamp = int(time.time() - part_data['search_timestamp'])
-            except KeyError:
-                timestamp = int(time.time())
+        # Check cache validity
+        try:
+            # Get timestamp
+            timestamp = int(time.time() - part_data['search_timestamp'])
+        except KeyError:
+            timestamp = int(time.time())
 
-            if timestamp < cache_valid or test_mode:
-                return part_data
+        if timestamp < cache_valid or test_mode:
+            return part_data
 
     return None
 
