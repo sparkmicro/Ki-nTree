@@ -133,7 +133,7 @@ def load_from_file(search_file, test_mode=False) -> dict:
         try:
             # Get timestamp
             timestamp = int(time.time() - part_data['search_timestamp'])
-        except KeyError:
+        except (KeyError, TypeError):
             timestamp = int(time.time())
 
         if timestamp < cache_valid or test_mode:
