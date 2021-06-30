@@ -26,7 +26,8 @@ from kicad import kicad_interface
 
 def user_settings_window():
     ''' User path settings window '''
-    path_to_user_settings = config_interface.load_user_paths(settings.PROJECT_DIR)
+    
+    path_to_user_settings = config_interface.load_user_paths(settings.HOME_DIR)
     USER_FILES = path_to_user_settings['USER_FILES']
     USER_CACHE = path_to_user_settings['USER_CACHE']
 
@@ -63,10 +64,11 @@ def user_settings_window():
         # Read user settings file
         user_settings = {**path_to_user_settings, **new_settings}
         # Write to user settings file
-        config_interface.dump_file(user_settings, os.path.join(settings.PROJECT_DIR, 'user_config.yaml'))
-        # Reload user config and cache
-        settings.load_user_config()
-        settings.load_cache_settings()
+        config_interface.dump_file(user_settings, os.path.join(settings.HOME_DIR, 'settings.yaml'))
+        # Notify user to reload Ki-nTree
+        sg.popup_ok('Please restart Ki-nTree for the new paths to be loaded',
+                    title='Restart',
+                    location=(500, 500))
 
     user_window.close()
     return
@@ -74,9 +76,6 @@ def user_settings_window():
 
 def search_api_settings_window():
     ''' Part search API settings window '''
-
-    # Reload user config
-    settings.load_user_config()
 
     user_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
 
@@ -130,9 +129,6 @@ def search_api_settings_window():
 
 def inventree_settings_window():
     ''' InvenTree settings window '''
-
-    # Reload user config
-    settings.load_user_config()
 
     user_settings = config_interface.load_inventree_user_settings(settings.CONFIG_INVENTREE)
 
@@ -190,9 +186,6 @@ def inventree_settings_window():
 def kicad_settings_window():
     ''' KiCad settings window '''
 
-    # Reload user config
-    settings.load_user_config()
-    
     kicad_user_settings = config_interface.load_file(settings.CONFIG_KICAD)
     KICAD_SYMBOLS_PATH = kicad_user_settings['KICAD_SYMBOLS_PATH']
     KICAD_TEMPLATES_PATH = kicad_user_settings['KICAD_TEMPLATES_PATH']

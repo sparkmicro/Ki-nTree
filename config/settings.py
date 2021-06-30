@@ -42,6 +42,13 @@ sys.path.append(os.path.join(PROJECT_DIR, 'kicad'))
 # Tests
 sys.path.append(os.path.join(PROJECT_DIR, 'tests'))
 
+# HOME FOLDER
+USER_HOME = os.path.expanduser("~")
+# APP NAME
+APP_NAME = 'kintree'
+# CONFIG PATH
+HOME_DIR = os.path.join(USER_HOME, APP_NAME, '')
+
 
 # USER AND CONFIG FILES
 def load_user_config():
@@ -49,7 +56,7 @@ def load_user_config():
     global CONFIG_ROOT
     global CONFIG_USER_FILES
 
-    USER_SETTINGS = config_interface.load_user_paths(project_dir=PROJECT_DIR)
+    USER_SETTINGS = config_interface.load_user_paths(home_dir=HOME_DIR)
     CONFIG_ROOT = os.path.join(PROJECT_DIR, 'config', '')
     CONFIG_USER_FILES = os.path.join(USER_SETTINGS['USER_FILES'], '')
 
@@ -118,7 +125,7 @@ def load_cache_settings():
     global CACHE_ENABLED
     global DIGIKEY_STORAGE_PATH
     
-    USER_SETTINGS = config_interface.load_user_paths(project_dir=PROJECT_DIR)
+    USER_SETTINGS = config_interface.load_user_paths(home_dir=HOME_DIR)
 
     if CACHE_ENABLED:
         search_results = {
