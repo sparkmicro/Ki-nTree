@@ -43,8 +43,8 @@ settings.enable_test_mode()
 settings.set_inventree_enable_flag(True, save=True)
 # Enable KiCad
 settings.set_kicad_enable_flag(True, save=True)
-# Create user configuration files
-settings.create_user_config_files()
+# Load user configuration files
+settings.load_user_config()
 # Set path to test libraries
 test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
@@ -106,6 +106,12 @@ if __name__ == '__main__':
         if ENABLE_KICAD or ENABLE_INVENTREE:
             for category in PART_TEST_SAMPLES.keys():
                 cprint(f'\n[MAIN]\tCategory: {category.upper()}')
+
+                # For last category, combine creation of KiCad and InvenTree parts
+                last_category = False
+                if ENABLE_KICAD and ENABLE_INVENTREE and category == list(PART_TEST_SAMPLES.keys())[-1]:
+                    last_category = True
+
                 for number, status in PART_TEST_SAMPLES[category].items():
                     kicad_result = False
                     inventree_result = False
@@ -148,6 +154,7 @@ if __name__ == '__main__':
                         if categories[0] and categories[1]:
                             new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
                                                                                                 categories=categories,
+                                                                                                kicad=last_category,
                                                                                                 show_progress=False)
 
                         inventree_result = check_result(status, new_part)
@@ -220,7 +227,8 @@ if __name__ == '__main__':
                     for number, result in inventree_results.items():
                         if result[2]:
                             try:
-                                inventree_api.delete_part(part_id=result[0])
+                                if not inventree_api.delete_part(part_id=result[0]):
+                                    error += 1
                             except:
                                 error += 1
 
@@ -235,10 +243,33 @@ if __name__ == '__main__':
             pretty_test_print('[MAIN]\tChecking untested methods')
 
             # Fuzzy category matching
-            part_info = {'category': 'Capacitors',
-                                     'subcategory': 'Super'}
+            part_info = {
+                'category': 'Capacitors',
+                'subcategory': 'Super'
+            }
             categories = tuple(inventree_interface.get_categories(part_info))
             if not (categories[0] and categories[1]):
+                method_results = False
+
+            # Test form for custom parts
+            try:
+                inventree_interface.translate_form_to_digikey(part_info, categories)
+                # If the above function does not fail, it's a problem
+                method_results = False
+            except KeyError:
+                pass
+            
+            part_info = {
+                'name': 'part_name',
+                'description': 'part_desc',
+                'revision': 'part_rev',
+                'keywords': 'part_key',
+                'supplier_part_number': 'part_sku',
+                'manufacturer_name': 'part_man',
+                'manufacturer_part_number': 'part_mpn',
+                'datasheet': 'part_data',
+            }
+            if not inventree_interface.translate_form_to_digikey(part_info, categories, custom=True):
                 method_results = False
 
             # Digi-Key search with missing part number

@@ -37,7 +37,23 @@ def dump_file(data: dict, file_path: str) -> bool:
     return True
 
 
-def load_user_config_files(path_to_root: str, path_to_user_files: str) -> bool:
+def load_user_paths(home_dir='') -> dict:
+    ''' Load user config and cache paths '''
+
+    user_settings_file = os.path.join(home_dir, 'settings.yaml')
+    user_config = load_file(user_settings_file)
+
+    if not user_config:
+        user_config = {
+            'USER_FILES': os.path.join(home_dir, 'user', ''),
+            'USER_CACHE': os.path.join(home_dir, 'cache', ''),
+        }
+        dump_file(user_config, user_settings_file)
+
+    return user_config
+
+
+def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=True) -> bool:
     ''' Load InvenTree user configuration '''
     result = True
 
@@ -59,28 +75,28 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str) -> bool:
         config_files = os.path.join(path_to_root, 'settings', '')
         load_config(config_files)
     except:
-        cprint('[INFO]\tWarning: Failed to load User settings')
+        cprint('[INFO]\tWarning: Failed to load User settings', silent=silent)
         result = False
     # Load Digi-Key configuration files
     try:
         config_files = os.path.join(path_to_root, 'digikey', '')
         load_config(config_files)
     except:
-        cprint('[INFO]\tWarning: Failed to load Digi-Key configuration')
+        cprint('[INFO]\tWarning: Failed to load Digi-Key configuration', silent=silent)
         result = False
     # Load InvenTree configuration files
     try:
         config_files = os.path.join(path_to_root, 'inventree', '')
         load_config(config_files)
     except:
-        cprint('[INFO]\tWarning: Failed to load InvenTree configuration')
+        cprint('[INFO]\tWarning: Failed to load InvenTree configuration', silent=silent)
         result = False
     # Load KiCad configuration files
     try:
         config_files = os.path.join(path_to_root, 'kicad', '')
         load_config(config_files)
     except:
-        cprint('[INFO]\tWarning: Failed to load KiCad configuration')
+        cprint('[INFO]\tWarning: Failed to load KiCad configuration', silent=silent)
         result = False
 
     return result

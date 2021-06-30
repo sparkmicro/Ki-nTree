@@ -12,8 +12,6 @@ def install(c, is_install=True):
     else:
         cprint('[MAIN]\tUpdating required dependencies')
     c.run('pip install -U -r requirements.txt', hide='out')
-    # Install wrapt_timeout_decorator library from GitHub
-    c.run('pip install git+https://github.com/bitranox/wrapt_timeout_decorator.git', hide='out')
 
     if is_install:
         cprint('[MAIN]\tInstalling optional dependencies')
@@ -83,29 +81,11 @@ def exec(c):
           'kintree_gui.py', hide=True)
 
 
-@task
-def copy_configuration(c):
-    import os
-
-    cdir = os.getcwd()
-    dist = os.path.join(cdir, 'dist')
-    config = os.path.join(dist, 'config')
-    kicad = os.path.join(dist, 'kicad')
-
-    cprint('[MAIN]\tCopying configuration files')
-    c.run(f'mkdir {config} && mkdir {kicad}', hide=False)
-    c.run('cp -r config/kicad/ dist/config/', hide=False)
-    c.run('cp -r config/digikey/ dist/config/', hide=False)
-    c.run('cp -r config/inventree/ dist/config/', hide=False)
-    c.run('cp -r config/settings/ dist/config/', hide=False)
-    c.run('cp config/version.yaml dist/config/', hide=False)
-    c.run('cp -r kicad/templates/ dist/kicad/', hide=False)
-
-
 @task(pre=[clean], post=[package])
 def build(c):
+    # Uninstall typing
+    c.run('pip uninstall typing -y', hide=True)
     exec(c)
-    copy_configuration(c)
 
 
 @task

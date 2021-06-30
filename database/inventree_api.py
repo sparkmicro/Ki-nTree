@@ -221,7 +221,7 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
     # Upload image to InvenTree
     part = Part(inventree_api, part_id)
     if part:
-        return part.upload_image(image=image_location)
+        return part.uploadImage(image=image_location)
     else:
         return False
 
@@ -255,6 +255,11 @@ def delete_part(part_id: int) -> bool:
     part = Part(inventree_api, part_id)
     if part.pk:
         part._data['active'] = False
+        # Remove image url (API rejects it as it is not a file)
+        try:
+            del part._data['image']
+        except:
+            pass
         part.save()
         return part.delete()
     else:

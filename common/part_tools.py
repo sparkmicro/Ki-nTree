@@ -2,6 +2,7 @@ import re
 
 import config.settings as settings
 from config import config_interface
+from .tools import cprint
 
 
 def generate_part_number(category: str, part_pk: int) -> str:
@@ -47,7 +48,7 @@ def compare(new_part_parameters: dict, db_part_parameters: dict, include_filters
                 if value != db_part_parameters[parameter]:
                     return False
     except KeyError:
-        settings.cprint('[INFO]\tWarning: Failed to compare part with database', silent=settings.SILENT)
+        cprint('[INFO]\tWarning: Failed to compare part with database', silent=settings.SILENT)
         return False
 
     return True
@@ -157,5 +158,5 @@ def clean_parameter_value(category: str, name: str, value: str) -> str:
     if '"' in value:
         value = value.replace('"', '\\"')
 
-    # settings.cprint(value)
+    # cprint(value)
     return value

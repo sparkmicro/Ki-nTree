@@ -21,8 +21,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -38,16 +36,16 @@ jobs:
           cd InvenTree/ && invoke install && invoke migrate && cd -
       - name: Ki-nTree setup
         run: |
-          pip uninstall inventree -y
           invoke install
-          cp tests/files/results.tgz search/
-          cp tests/files/inventree_test.yaml config/inventree/
-          cd search/ && tar xvf results.tgz && cd -
+          mkdir -p ~/kintree/user/ && mkdir -p ~/kintree/cache/search/
+          cp tests/files/inventree_test.yaml ~/kintree/user/
+          cp tests/files/results.tgz ~/kintree/cache/search/
+          cd ~/kintree/cache/search/ && tar xvf results.tgz && cd -
       - name: Digi-Key API setup
         run: |
           git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git
-          cp digikey-token/token_storage.json search/
-          cat search/token_storage.json
+          cp digikey-token/token_storage.json ~/kintree/cache/
+          cat ~/kintree/cache/token_storage.json
       - name: Run tests
         run: |
           invoke test
@@ -60,11 +58,10 @@ jobs:
           coveralls
       - name: Run build
         run: |
-          pip uninstall typing -y
           invoke build
       - name: Push Digi-Key Token
         run: |
-          cp search/token_storage.json digikey-token/
+          cp ~/kintree/cache/token_storage.json digikey-token/
           cd digikey-token
           git config --global user.email "kintree@github.actions"
           git config --global user.name "Ki-nTree Github Actions"

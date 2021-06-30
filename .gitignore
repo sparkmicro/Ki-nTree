@@ -1,9 +1,3 @@
-# User configuration files
-config/user_files/
-# Search files
-search/results/
-search/images/
-search/token_storage.json
 # Build files
 dist/
 build/

@@ -2,7 +2,19 @@ import os
 import sys
 from enum import Enum
 
+from common.tools import cprint
 from config import config_interface
+
+# VERSION INFORMATION
+version_info = {
+    'MAJOR_REVISION': 0,
+    'MINOR_REVISION': 3,
+    'RELEASE_STATUS': 10,  # Digit means stable version
+}
+try:
+    version = '.'.join([str(v) for v in version_info.values()])
+except:
+    version = '0.0.alpha'
 
 # DEBUG
 # Testing
@@ -25,44 +37,44 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     PROJECT_DIR = os.path.abspath(os.path.dirname(sys.executable))
 else:
     PROJECT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-# InvenTree API
-sys.path.append(os.path.join(PROJECT_DIR, 'database', 'inventree-python'))
-# Digi-Key API
-sys.path.append(os.path.join(PROJECT_DIR, 'search', 'digikey_api'))
 # KiCad Library Utils
 sys.path.append(os.path.join(PROJECT_DIR, 'kicad'))
 # Tests
 sys.path.append(os.path.join(PROJECT_DIR, 'tests'))
 
-
-# VERSION
-CONFIG_VERSION = os.path.join(PROJECT_DIR, 'config', 'version.yaml')
-version_info = config_interface.load_file(CONFIG_VERSION, silent=False)
-try:
-    version = '.'.join([str(v) for v in version_info.values()])
-except:
-    version = '0.0.alpha'
+# HOME FOLDER
+USER_HOME = os.path.expanduser("~")
+# APP NAME
+APP_NAME = 'kintree'
+# CONFIG PATH
+HOME_DIR = os.path.join(USER_HOME, APP_NAME, '')
 
 
-# CONFIG FILES
-CONFIG_ROOT = os.path.join(PROJECT_DIR, 'config', '')
-CONFIG_USER_FILES = os.path.join(PROJECT_DIR, 'config', 'user_files', '')
-
-
-def create_user_config_files():
+# USER AND CONFIG FILES
+def load_user_config():
+    global USER_SETTINGS
     global CONFIG_ROOT
     global CONFIG_USER_FILES
+
+    USER_SETTINGS = config_interface.load_user_paths(home_dir=HOME_DIR)
+    CONFIG_ROOT = os.path.join(PROJECT_DIR, 'config', '')
+    CONFIG_USER_FILES = os.path.join(USER_SETTINGS['USER_FILES'], '')
 
     # Create user files folder if it does not exists
     if not os.path.exists(CONFIG_USER_FILES):
         os.makedirs(CONFIG_USER_FILES)
     # Create user files
     return config_interface.load_user_config_files(path_to_root=CONFIG_ROOT,
-                                                   path_to_user_files=CONFIG_USER_FILES)
+                                                   path_to_user_files=CONFIG_USER_FILES,
+                                                   silent=HIDE_DEBUG)
 
 
-# Create user configuration files
-create_user_config_files()
+# Load user config
+if not load_user_config():
+    # Check if configuration files already exist
+    if not os.path.isfile(os.path.join(CONFIG_USER_FILES, 'categories.yaml')):
+        cprint('\n[ERROR]\tSome Ki-nTree configuration files seem to be missing')
+        exit(-1)
 
 # Digi-Key
 CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
@@ -98,30 +110,44 @@ AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 # DIGI-KEY
 # Fetch settings
 CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
-# API storage path
-DIGIKEY_STORAGE_PATH = os.path.join(PROJECT_DIR, 'search', '')
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = CONFIG_DIGIKEY.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
 # Search results caching (stored in files)
 CACHE_ENABLED = CONFIG_DIGIKEY.get('CACHE_ENABLED', True)
 # Cache validity in days
 CACHE_VALID_DAYS = CONFIG_DIGIKEY.get('CACHE_VALID_DAYS', 7)
+
+
 # Caching settings
-if CACHE_ENABLED:
-    search_results = {
-        'directory': os.path.join(PROJECT_DIR, 'search', 'results', ''),
-        'extension': '.yaml',
-    }
+def load_cache_settings():
+    global search_results
+    global search_images
+    global CACHE_ENABLED
+    global DIGIKEY_STORAGE_PATH
+    
+    USER_SETTINGS = config_interface.load_user_paths(home_dir=HOME_DIR)
+
+    if CACHE_ENABLED:
+        search_results = {
+            'directory': os.path.join(USER_SETTINGS['USER_CACHE'], 'search', ''),
+            'extension': '.yaml',
+        }
+        # Create folder if it does not exists
+        if not os.path.exists(search_results['directory']):
+            os.makedirs(search_results['directory'])
+
+    # Part images
+    search_images = os.path.join(USER_SETTINGS['USER_CACHE'], 'images', '')
     # Create folder if it does not exists
-    if not os.path.exists(search_results['directory']):
-        os.makedirs(search_results['directory'])
+    if not os.path.exists(search_images):
+        os.makedirs(search_images)
 
-# Part images
-search_images = os.path.join(PROJECT_DIR, 'search', 'images', '')
-# Create folder if it does not exists
-if not os.path.exists(search_images):
-    os.makedirs(search_images)
+    # API token storage path
+    DIGIKEY_STORAGE_PATH = os.path.join(USER_SETTINGS['USER_CACHE'], '')
 
+
+# Load cache settings
+load_cache_settings()
 
 # KICAD
 # User Settings
@@ -145,12 +171,11 @@ def load_kicad_settings():
         ENABLE_KICAD = kicad_user_settings.get('KICAD_ENABLE', None)
 
 
-# Load user settings
+# Load kicad settings
 load_kicad_settings()
 
+
 # Enable flag
-
-
 def set_kicad_enable_flag(value: bool, save=False):
     global ENABLE_KICAD
     ENABLE_KICAD = value
@@ -238,9 +263,8 @@ def set_inventree_enable_flag(value: bool, save=False):
                                                       user_config_path=CONFIG_INVENTREE)
     return
 
+
 # Server settings
-
-
 def load_inventree_settings():
     global SERVER_ADDRESS
     global USERNAME

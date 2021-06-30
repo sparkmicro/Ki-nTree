@@ -25,13 +25,9 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 
 ## Get Started
 ### Installation
-1. Clone this repository with the `--recurse-submodules` option:
+1. Clone this repository:
 ``` bash
-$ git clone --recurse-submodules https://github.com/sparkmicro/Ki-nTree
-```
-Alternatively, you can clone without the `--recurse-submodules` option, then run:
-``` bash
-$ git submodule update --init
+$ git clone https://github.com/sparkmicro/Ki-nTree
 ```
 2. Create and activate a new python environment (Python 3.6 and newer) inside the `Ki-nTree` folder:
 ``` bash

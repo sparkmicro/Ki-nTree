@@ -7,6 +7,9 @@ import digikey
 from config import config_interface
 
 os.environ['DIGIKEY_STORAGE_PATH'] = settings.DIGIKEY_STORAGE_PATH
+# Check if storage path exists, else create it
+if not os.path.exists(os.environ['DIGIKEY_STORAGE_PATH']):
+    os.makedirs(os.environ['DIGIKEY_STORAGE_PATH'], exist_ok=True)
 
 
 def disable_digikey_api_logger():
@@ -126,16 +129,15 @@ def load_from_file(search_file, test_mode=False) -> dict:
         except FileNotFoundError:
             return None
 
-        if part_data:
-            # Check cache validity
-            try:
-                # Get timestamp
-                timestamp = int(time.time() - part_data['search_timestamp'])
-            except KeyError:
-                timestamp = int(time.time())
+        # Check cache validity
+        try:
+            # Get timestamp
+            timestamp = int(time.time() - part_data['search_timestamp'])
+        except (KeyError, TypeError):
+            timestamp = int(time.time())
 
-            if timestamp < cache_valid or test_mode:
-                return part_data
+        if timestamp < cache_valid or test_mode:
+            return part_data
 
     return None
 
