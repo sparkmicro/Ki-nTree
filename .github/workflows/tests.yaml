@@ -58,7 +58,6 @@ jobs:
           coveralls
       - name: Run build
         run: |
-          pip uninstall typing -y
           invoke build
       - name: Push Digi-Key Token
         run: |

@@ -81,16 +81,11 @@ def exec(c):
           'kintree_gui.py', hide=True)
 
 
-@task
-def copy_configuration(c):
-    cprint('[MAIN]\tCopying configuration file')
-    c.run('cp -r user_config.yaml dist/', hide=False)
-
-
 @task(pre=[clean], post=[package])
 def build(c):
+    # Uninstall typing
+    c.run('pip uninstall typing -y', hide=True)
     exec(c)
-    copy_configuration(c)
 
 
 @task

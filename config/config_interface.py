@@ -40,15 +40,16 @@ def dump_file(data: dict, file_path: str) -> bool:
 def load_user_paths(project_dir='') -> dict:
     ''' Load user config and cache paths '''
 
+    USER_HOME = os.path.expanduser("~")
     APP_NAME = 'kintree'
 
-    user_settings_file = os.path.join(project_dir, 'user_config.yaml')
+    user_settings_file = os.path.join(USER_HOME, APP_NAME, 'settings.yaml')
     user_config = load_file(user_settings_file)
 
     if not user_config:
         user_config = {
-            'USER_FILES': os.path.join(os.path.expanduser("~"), APP_NAME, 'user', ''),
-            'USER_CACHE': os.path.join(os.path.expanduser("~"), APP_NAME, 'cache', ''),
+            'USER_FILES': os.path.join(USER_HOME, APP_NAME, 'user', ''),
+            'USER_CACHE': os.path.join(USER_HOME, APP_NAME, 'cache', ''),
         }
         dump_file(user_config, user_settings_file)
 
