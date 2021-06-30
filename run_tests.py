@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
                 # For last category, combine creation of KiCad and InvenTree parts
                 last_category = False
-                if ENABLE_KICAD and ENABLE_INVENTREE and category == PART_TEST_SAMPLES.keys()[-1]:
+                if ENABLE_KICAD and ENABLE_INVENTREE and category == list(PART_TEST_SAMPLES.keys())[-1]:
                     last_category = True
 
                 for number, status in PART_TEST_SAMPLES[category].items():
