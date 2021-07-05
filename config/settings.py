@@ -1,5 +1,6 @@
 import os
 import sys
+import platform
 from enum import Enum
 
 from common.tools import cprint
@@ -47,7 +48,13 @@ USER_HOME = os.path.expanduser("~")
 # APP NAME
 APP_NAME = 'kintree'
 # CONFIG PATH
-HOME_DIR = os.path.join(USER_HOME, APP_NAME, '')
+if platform.system() == 'Linux':
+    HOME_DIR = os.path.join(USER_HOME, '.config', APP_NAME, '')
+else:
+    HOME_DIR = os.path.join(USER_HOME, APP_NAME, '')
+# Create config path if it does not exists
+if not os.path.exists(HOME_DIR):
+    os.makedirs(HOME_DIR, exist_ok=True)
 
 
 # USER AND CONFIG FILES
@@ -271,8 +278,7 @@ def load_inventree_settings():
     global PASSWORD
     global PART_URL_ROOT
 
-    inventree_settings = config_interface.load_inventree_user_settings(
-        CONFIG_INVENTREE)
+    inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
 
     SERVER_ADDRESS = inventree_settings.get('SERVER_ADDRESS', None)
     USERNAME = inventree_settings.get('USERNAME', None)
