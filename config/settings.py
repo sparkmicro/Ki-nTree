@@ -278,8 +278,7 @@ def load_inventree_settings():
     global PASSWORD
     global PART_URL_ROOT
 
-    inventree_settings = config_interface.load_inventree_user_settings(
-        CONFIG_INVENTREE)
+    inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
 
     SERVER_ADDRESS = inventree_settings.get('SERVER_ADDRESS', None)
     USERNAME = inventree_settings.get('USERNAME', None)

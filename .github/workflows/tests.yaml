@@ -37,15 +37,15 @@ jobs:
       - name: Ki-nTree setup
         run: |
           invoke install
-          mkdir -p ~/kintree/user/ && mkdir -p ~/kintree/cache/search/
-          cp tests/files/inventree_test.yaml ~/kintree/user/
-          cp tests/files/results.tgz ~/kintree/cache/search/
-          cd ~/kintree/cache/search/ && tar xvf results.tgz && cd -
+          mkdir -p ~/.config/kintree/user/ && mkdir -p ~/.config/kintree/cache/search/
+          cp tests/files/inventree_test.yaml ~/.config/kintree/user/
+          cp tests/files/results.tgz ~/.config/kintree/cache/search/
+          cd ~/.config/kintree/cache/search/ && tar xvf results.tgz && cd -
       - name: Digi-Key API setup
         run: |
           git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git
-          cp digikey-token/token_storage.json ~/kintree/cache/
-          cat ~/kintree/cache/token_storage.json
+          cp digikey-token/token_storage.json ~/.config/kintree/cache/
+          cat ~/.config/kintree/cache/token_storage.json
       - name: Run tests
         run: |
           invoke test
@@ -61,7 +61,7 @@ jobs:
           invoke build
       - name: Push Digi-Key Token
         run: |
-          cp ~/kintree/cache/token_storage.json digikey-token/
+          cp ~/.config/kintree/cache/token_storage.json digikey-token/
           cd digikey-token
           git config --global user.email "kintree@github.actions"
           git config --global user.name "Ki-nTree Github Actions"
