@@ -6,6 +6,7 @@ authors = ["Placeholder Name <placeholder@test.com>"]
 license = "GPL3"
 
 [tool.poetry.dependencies]
+
 python = ">=3.7,<3.10"
 altgraph = ">=0.17,<1.0"
 certauth = ">=1.3.0,<2.0"
@@ -15,10 +16,12 @@ chardet = ">=3.0.4,<4.0"
 coverage = ">=5.2.1,<6.0"
 coveralls = ">=2.1.2,<3.0"
 cryptography = ">=3.0,<4.0"
+digikey-api = ">=0.4.0,<1.0"
 fake-useragent = ">=0.1.11,<1.0"
 fuzzywuzzy = ">=0.18.0,<1.0"
 idna = ">=2.10,<3.0"
 inflection = ">=0.5.0,<1.0"
+inventree = ">=0.2.4,<1.0"
 pycparser = ">=2.20,<3.0"
 pyinstaller = ">=4.0,<5.0"
 pyinstaller-hooks-contrib = ">=2020.7,<2021.0"
@@ -33,7 +36,7 @@ shiboken2 = ">=5.15.0,<6.0"
 six = ">=1.15.0,<2.0"
 tldextract = ">=2.2.3,<3.0"
 validators = ">=0.18.1<1.0"
-wrapt-timeout-decorator = "^1.3.1"
+wrapt_timeout_decorator = { git = "https://github.com/bitranox/wrapt_timeout_decorator.git" }
 python-Levenshtein = "^0.12.2"
 
 [tool.poetry.dev-dependencies]
