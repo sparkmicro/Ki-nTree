@@ -1,6 +1,6 @@
 import webbrowser
 
-from common.tools import cprint
+from kintree.common.tools import cprint
 from invoke import UnexpectedExit, task
 
 
@@ -90,7 +90,7 @@ def build(c):
 
 @task
 def setup_inventree(c):
-    c.run('python setup_inventree.py')
+    c.run('python -m kintree.setup_inventree')
 
 
 @task
@@ -124,7 +124,7 @@ def test(c, setup=True):
     if setup:
         c.run('cd InvenTree/ && inv server && cd ..', asynchronous=True)
         c.run('sleep 5')
-        setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
+        setup_inventree = c.run('coverage run --parallel-mode -m kintree.setup_inventree')
         cprint('\n-----')
         if setup_inventree.exited == 0:
             run_tests = c.run('coverage run --parallel-mode run_tests.py')
