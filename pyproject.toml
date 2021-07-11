@@ -14,7 +14,6 @@ certifi = ">=2020.6.20,<2021.0"
 cffi = ">=1.14.1,<2.0"
 chardet = ">=3.0.4,<4.0"
 coverage = ">=5.2.1,<6.0"
-coveralls = ">=2.1.2,<3.0"
 cryptography = ">=3.0,<4.0"
 digikey-api = ">=0.4.0,<1.0"
 fake-useragent = ">=0.1.11,<1.0"
@@ -40,6 +39,8 @@ wrapt_timeout_decorator = { git = "https://github.com/bitranox/wrapt_timeout_dec
 python-Levenshtein = "^0.12.2"
 
 [tool.poetry.dev-dependencies]
+invoke = "^1.6.0"
+coveralls = ">=2.1.2,<3.0"
 
 [tool.poetry.scripts]
 kintree = 'kintree:kintree_gui.main'

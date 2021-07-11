@@ -100,6 +100,23 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "digikey-api"
+version = "0.4.0"
+description = "Python client for Digikey API"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+certauth = ">=1.3.0"
+fake-useragent = ">=0.1.11"
+inflection = ">=0.3.1"
+requests = ">=2.22.0"
+retrying = ">=1.3.3"
+schematics = ">=2.1.0"
+urllib3 = ">=1.25.3"
+
+[[package]]
 name = "dill"
 version = "0.3.3"
 description = "serialize all of python"
@@ -176,6 +193,25 @@ description = "A port of Ruby on Rails inflector to Python"
 category = "main"
 optional = false
 python-versions = ">=3.5"
+
+[[package]]
+name = "inventree"
+version = "0.2.4"
+description = "Python interface for InvenTree inventory management system"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+requests = "*"
+
+[[package]]
+name = "invoke"
+version = "1.6.0"
+description = "Pythonic task execution"
+category = "dev"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "macholib"
@@ -381,6 +417,14 @@ requests = ">=2.1.0"
 requests-file = ">=1.4"
 
 [[package]]
+name = "typing"
+version = "3.7.4.3"
+description = "Type Hints for Python"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[[package]]
 name = "typing-extensions"
 version = "3.7.4.3"
 description = "Backported and Experimental Type Hints for Python 3.5+"
@@ -426,17 +470,25 @@ python-versions = "*"
 
 [[package]]
 name = "wrapt-timeout-decorator"
-version = "1.3.1"
-description = "wrapt_timeout_decorator"
+version = "1.4.0"
+description = "there are many timeout decorators out there - that one focuses on correctness when using with Classes, methods, class methods, static methods and so on"
 category = "main"
 optional = false
 python-versions = "*"
+develop = false
 
 [package.dependencies]
 dill = "*"
 multiprocess = "*"
 pathlib = "*"
+typing = "*"
 wrapt = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/bitranox/wrapt_timeout_decorator.git"
+reference = "master"
+resolved_reference = "a276d9bd1cd30c3a9d2efade4f2d9ace19bdcd0f"
 
 [[package]]
 name = "zipp"
@@ -453,7 +505,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "f34fc2061b344bab7383ace75c4950f9c683c832c286a484ebe81745e6abc405"
+content-hash = "9482066734556012ae8b76028ceb412064e9d7eb1bff4b27d2ff57b1648d93e5"
 
 [metadata.files]
 altgraph = [
@@ -587,6 +639,10 @@ decorator = [
     {file = "decorator-5.0.6-py3-none-any.whl", hash = "sha256:d9f2d2863183a3c0df05f4b786f2e6b8752c093b3547a558f287bf3022fd2bf4"},
     {file = "decorator-5.0.6.tar.gz", hash = "sha256:f2e71efb39412bfd23d878e896a51b07744f2e2250b2e87d158e76828c5ae202"},
 ]
+digikey-api = [
+    {file = "digikey-api-0.4.0.tar.gz", hash = "sha256:b21c75f26cd34e6da99191b643edebb2a188bd9f91654065d42a5f70901d19de"},
+    {file = "digikey_api-0.4.0-py3-none-any.whl", hash = "sha256:591ef340faa50ba3147e2adf162ed03517efc0932b391b8f4903c85743ddb840"},
+]
 dill = [
     {file = "dill-0.3.3-py2.py3-none-any.whl", hash = "sha256:78370261be6ea49037ace8c17e0b7dd06d0393af6513cc23f9b222d9367ce389"},
     {file = "dill-0.3.3.zip", hash = "sha256:efb7f6cb65dba7087c1e111bb5390291ba3616741f96840bfc75792a1a9b5ded"},
@@ -615,6 +671,15 @@ importlib-metadata = [
 inflection = [
     {file = "inflection-0.5.1-py2.py3-none-any.whl", hash = "sha256:f38b2b640938a4f35ade69ac3d053042959b62a0f1076a5bbaa1b9526605a8a2"},
     {file = "inflection-0.5.1.tar.gz", hash = "sha256:1a29730d366e996aaacffb2f1f1cb9593dc38e2ddd30c91250c6dde09ea9b417"},
+]
+inventree = [
+    {file = "inventree-0.2.4-py2.py3-none-any.whl", hash = "sha256:5d714f7a52e5f2a29218c82ba8cb53ae2928dd23c4374c22d8b35e6e25a7bac7"},
+    {file = "inventree-0.2.4.tar.gz", hash = "sha256:8f5461f4aac4bc6f19b83d2ca96ed430e46cb42a699b058d47da51ec505dc957"},
+]
+invoke = [
+    {file = "invoke-1.6.0-py2-none-any.whl", hash = "sha256:e6c9917a1e3e73e7ea91fdf82d5f151ccfe85bf30cc65cdb892444c02dbb5f74"},
+    {file = "invoke-1.6.0-py3-none-any.whl", hash = "sha256:769e90caeb1bd07d484821732f931f1ad8916a38e3f3e618644687fc09cb6317"},
+    {file = "invoke-1.6.0.tar.gz", hash = "sha256:374d1e2ecf78981da94bfaf95366216aaec27c2d6a7b7d5818d92da55aa258d3"},
 ]
 macholib = [
     {file = "macholib-1.14-py2.py3-none-any.whl", hash = "sha256:c500f02867515e6c60a27875b408920d18332ddf96b4035ef03beddd782d4281"},
@@ -719,6 +784,10 @@ tldextract = [
     {file = "tldextract-2.2.3-py2.py3-none-any.whl", hash = "sha256:c2a8a392edf3ea6fa8be80930f04c3ac29e91fa604cb2139bdf6a37fc1e1ac6d"},
     {file = "tldextract-2.2.3.tar.gz", hash = "sha256:ab0e38977a129c72729476d5f8c85a8e1f8e49e9202e1db8dca76e95da7be9a8"},
 ]
+typing = [
+    {file = "typing-3.7.4.3-py2-none-any.whl", hash = "sha256:283d868f5071ab9ad873e5e52268d611e851c870a2ba354193026f2dfb29d8b5"},
+    {file = "typing-3.7.4.3.tar.gz", hash = "sha256:1187fb9c82fd670d10aa07bbb6cfcfe4bdda42d6fab8d5134f04e8c4d0b71cc9"},
+]
 typing-extensions = [
     {file = "typing_extensions-3.7.4.3-py2-none-any.whl", hash = "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"},
     {file = "typing_extensions-3.7.4.3-py3-none-any.whl", hash = "sha256:7cb407020f00f7bfc3cb3e7881628838e69d8f3fcab2f64742a5e76b2f841918"},
@@ -735,10 +804,7 @@ validators = [
 wrapt = [
     {file = "wrapt-1.12.1.tar.gz", hash = "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"},
 ]
-wrapt-timeout-decorator = [
-    {file = "wrapt_timeout_decorator-1.3.1-py3-none-any.whl", hash = "sha256:1da30de7510e16c823bd17f020bd900ffc9959954f418f66c258073733c53bf7"},
-    {file = "wrapt_timeout_decorator-1.3.1.tar.gz", hash = "sha256:bf691d31b2fe147fc29d494c7aa31e604e3b1c17393667065bebcccd93d0daa3"},
-]
+wrapt-timeout-decorator = []
 zipp = [
     {file = "zipp-3.4.1-py3-none-any.whl", hash = "sha256:51cb66cc54621609dd593d1787f286ee42a5c0adbb4b29abea5a63edc3e03098"},
     {file = "zipp-3.4.1.tar.gz", hash = "sha256:3607921face881ba3e026887d8150cca609d517579abe052ac81fc5aeffdbd76"},
