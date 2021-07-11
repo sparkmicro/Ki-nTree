@@ -1,7 +1,7 @@
 import os
 
 from ..config import settings
-from ..common  import progress
+from ..common import progress
 from ..common.tools import cprint
 from schlib import SchLib
 

@@ -2,7 +2,7 @@ import copy
 import os
 
 from ..config import settings
-from ..common  import part_tools, progress
+from ..common import part_tools, progress
 from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
