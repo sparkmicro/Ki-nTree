@@ -23,4 +23,4 @@ jobs:
           pip install -U flake8
       - name: PEP checks
         run: |
-          flake8 tasks.py kintree_gui.py run_tests.py setup_inventree.py common/ config/ database/ kicad/*.py search/*.py
+          flake8 tasks.py kintree/kintree_gui.py run_tests.py kintree/setup_inventree.py kintree/common/ kintree/config/ kintree/database/ kintree/kicad/__init__.py kintree/kicad/kicad_interface.py kintree/kicad/kicad_schlib.py kintree/kicad/schlib.py kintree/search/*.py
