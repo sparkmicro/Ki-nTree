@@ -22,7 +22,7 @@ from inventree.part import Part, PartCategory
 
 def connect(server: str, username: str, password: str, connect_timeout=5, silent=False) -> bool:
     ''' Connect to InvenTree server and create API object '''
-    from wrapt_timeout_decorator import timeout
+    from ..wrapt_timeout_decorator import timeout
     global inventree_api
 
     @timeout(dec_timeout=connect_timeout)
