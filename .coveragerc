@@ -11,3 +11,5 @@ omit =
     # Skip UI coverage
     kintree_gui.py
     common/progress.py
+    # Skip wrapt_timeout_decorator
+    kintree/wrapt_timeout_decorator/*
