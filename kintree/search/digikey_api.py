@@ -23,7 +23,6 @@ def check_environment() -> bool:
     DIGIKEY_CLIENT_ID = os.environ.get('DIGIKEY_CLIENT_ID', None)
     DIGIKEY_CLIENT_SECRET = os.environ.get('DIGIKEY_CLIENT_SECRET', None)
 
-    print(DIGIKEY_CLIENT_ID)
     if not DIGIKEY_CLIENT_ID or not DIGIKEY_CLIENT_SECRET:
         return False
 
@@ -110,9 +109,8 @@ def fetch_digikey_part_info(part_number: str) -> dict:
 
 def test_digikey_api_connect() -> bool:
     ''' Test method for Digi-Key API token '''
-    print('Setup Environment')
     setup_environment()
-    print('Test Search')
+    
     test_part = fetch_digikey_part_info('RMCF0402JT10K0')
     if test_part:
         return True
