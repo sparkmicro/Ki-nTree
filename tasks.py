@@ -6,6 +6,10 @@ from invoke import UnexpectedExit, task
 
 @task
 def install(c, is_install=True):
+    """
+    Install Ki-nTree dependencies
+    """
+
     if is_install:
         cprint('[MAIN]\tInstalling required dependencies')
         c.run('pip install -U wheel', hide='out')
@@ -83,6 +87,15 @@ def exec(c):
 
 @task(pre=[clean], post=[package])
 def build(c):
+    """
+    Build Ki-nTree into executable file
+    """
+
+    try:
+        c.run('pip show pyinstaller', hide=True)
+    except UnexpectedExit:
+        c.run('pip install -U pyinstaller', hide=True)
+
     # Uninstall typing
     c.run('pip uninstall typing -y', hide=True)
     exec(c)
@@ -90,6 +103,10 @@ def build(c):
 
 @task
 def setup_inventree(c):
+    """
+    Setup InvenTree server
+    """
+
     c.run('python -m kintree.setup_inventree')
 
 
@@ -115,6 +132,10 @@ def save_api_token(c):
 
 @task
 def test(c, setup=True):
+    """
+    Run Ki-nTree tests
+    """
+
     try:
         c.run('pip show coverage', hide=True)
     except UnexpectedExit:
@@ -139,6 +160,10 @@ def test(c, setup=True):
 
 @task
 def make_python_badge(c):
+    """
+    Make badge for supported versions of Python
+    """
+
     cprint('[MAIN]\tInstall pybadges')
     c.run('pip install pybadges pip-autoremove', hide=True)
     cprint('[MAIN]\tCreate badge')
