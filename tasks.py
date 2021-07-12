@@ -147,6 +147,7 @@ def test(c, setup=True):
         c.run('sleep 5')
         setup_inventree = c.run('coverage run --parallel-mode -m kintree.setup_inventree')
         cprint('\n-----')
+        c.run('cp -r tests/ kintree/')
         if setup_inventree.exited == 0:
             run_tests = c.run('coverage run --parallel-mode run_tests.py')
             if run_tests.exited == 0:
