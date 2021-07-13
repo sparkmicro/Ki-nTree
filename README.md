@@ -75,7 +75,7 @@ Building kintree (0.3.10)
    step. For example:
 
 ```bash
-pip install dist/kintree-0.3.6-py3-none-any.whl
+pip install dist/kintree-0.3.10-py3-none-any.whl
 ```
 
 3. You can now start Ki-nTree by typing `kintree` in the terminal, provided
