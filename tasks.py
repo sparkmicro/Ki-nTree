@@ -28,11 +28,19 @@ def install(c, is_install=True):
 
 @task
 def update(c):
+    """
+    Update Ki-nTree dependencies
+    """
+
     install(c, is_install=False)
 
 
 @task
 def clean(c):
+    """
+    Clean project folder
+    """
+
     cprint('[MAIN]\tCleaning project directory')
     try:
         c.run('find . -name __pycache__ | xargs rm -r', hide='err')
@@ -47,37 +55,12 @@ def clean(c):
     except UnexpectedExit:
         pass
     try:
-        c.run('rm -r dist/ htmlcov', hide='err')
+        c.run('rm -r dist/ build/ htmlcov', hide='err')
     except UnexpectedExit:
         pass
+    
 
-
-@task
-def package(c):
-    import os
-
-    cdir = os.getcwd()
-    build = os.path.join(cdir, 'kintree', 'build')
-    dist = os.path.join(cdir, 'kintree', 'dist')
-
-    cprint('[MAIN]\tPackaging Ki-nTree into "dist" directory')
-
-    # Move dist folder to root
-    c.run(f'mv {dist} {cdir}', hide=True)
-    # Remove build folder
-    try:
-        c.run(f'rm -r {build}', hide='err')
-    except UnexpectedExit:
-        pass
-
-
-@task
-def exec(c):
-    cprint('[MAIN]\tBuilding Ki-nTree')
-    c.run('cd kintree/ && pyinstaller --clean --onefile kintree_gui.py && cd -', hide=True)
-
-
-@task(pre=[clean], post=[package])
+@task(pre=[clean])
 def build(c):
     """
     Build Ki-nTree into executable file
@@ -90,7 +73,9 @@ def build(c):
 
     # Uninstall typing
     c.run('pip uninstall typing -y', hide=True)
-    exec(c)
+    
+    cprint('[MAIN]\tBuilding Ki-nTree GUI into "dist" directory')
+    c.run('pyinstaller --clean --onefile -p kintree/kicad kintree_gui.py', hide=True)
 
 
 @task
@@ -104,22 +89,15 @@ def setup_inventree(c):
 
 @task
 def coverage_report(c, open_browser=True):
+    """
+    Show coverage report
+    """
+
     cprint('[MAIN]\tBuilding coverage report')
     c.run('coverage report')
     c.run('coverage html')
     if open_browser:
         webbrowser.open('htmlcov/index.html', new=2)
-
-
-@task
-def refresh_api_token(c):
-    from search.digikey_api import test_digikey_api_connect
-    test_digikey_api_connect()
-
-
-@task
-def save_api_token(c):
-    c.run('cp search/token_storage.json tests/files/', hide=True)
 
 
 @task
@@ -176,5 +154,5 @@ def style(c):
 
     c.run('pip install -U flake8', hide=True)
     print("Running PEP style checks...")
-    c.run('flake8 tasks.py run_tests.py kintree/kintree_gui.py kintree/setup_inventree.py \
+    c.run('flake8 tasks.py run_tests.py kintree_gui.py kintree/kintree_gui.py kintree/setup_inventree.py \
         kintree/common/ kintree/config/ kintree/database/ kintree/kicad/*.py kintree/search/*.py')

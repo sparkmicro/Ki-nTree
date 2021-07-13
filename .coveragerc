@@ -4,7 +4,7 @@ omit =
     env-kintree/*
     .venv/*
     # Skip KiCad library tool
-    kicad/schlib.py
+    kintree/kicad/schlib.py
     # Skip UI coverage
     kintree/kintree_gui.py
     kintree/common/progress.py
