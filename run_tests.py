@@ -185,7 +185,7 @@ if __name__ == '__main__':
                         if ENABLE_KICAD:
                             cprint(f'[DBUG]\tkicad_result = {kicad_result}')
                             cprint(f'[DBUG]\tkicad_new_part = {kicad_new_part}')
-                            cprint(os.listdir(test_library_path))
+                            cprint(os.listdir(os.path.dirname(test_library_path)))
                         if ENABLE_INVENTREE:
                             cprint(f'[DBUG]\tinventree_result = {inventree_result}')
                             cprint(f'[DBUG]\tnew_part = {new_part}')
