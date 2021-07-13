@@ -24,41 +24,62 @@ Ki-nTree works with:
 Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK Microsystems](https://www.sparkmicro.com/), who generously accepted to make it open-source!
 
 ## Get Started
+
+### Pre-requirements
+
+You need `python>=3.7` and `poetry`.
+
+You can install poetry by following the instructions [on its official
+website](https://python-poetry.org/docs/master/#installation), by using `pip
+install poetry` or by installing a package on your Linux distro.
+
 ### Installation
 1. Clone this repository:
 ``` bash
 $ git clone https://github.com/sparkmicro/Ki-nTree
 ```
-2. Create and activate a new python environment (Python 3.6 and newer) inside the `Ki-nTree` folder:
+2. Install the requirements into a `poetry`-managed virtual environment.
 ``` bash
-$ cd Ki-nTree
-$ python -m venv env-kintree
-$ source env-kintree/bin/activate
+$ poetry install --no-dev
 ```
-> ##### Windows
-> 
-> In Git Bash, use this command to activate the virtual environment:
-> ``` bash
-> $ source env-kintree/Scripts/activate
-> ```
-> For any other Windows terminal, refer to the [official documentation](https://docs.python.org/library/venv.html#creating-virtual-environments)
-3. Install `invoke` package:
-``` bash
-$ pip install invoke
+5. Run Ki-nTree in the virtual environment.
+```bash
+$ poetry run python -m kintree.kintree_gui
 ```
-4. Run `invoke install` to install dependencies
-5. Run `python kintree_gui.py` to start using Ki-nTree
+or
 
-#### Make it an executable
+```bash
+$ poetry shell
+$ python -m kintree.kintree_gui
+```
+
+#### Install it system-wide
 1. Make sure you followed the previous installation steps, then run:
 ``` bash
-$ invoke build
+$ poetry build
 ```
-2. It will create a one-file executable in a new `dist` folder. You can now run it with `dist/kintree_gui` or simply double-clicking the `kintree_gui` file
-> ##### Windows
->
-> Use `kintree_gui.exe` instead of `kintree_gui`
-3. Runing the `invoke build` command also creates two archive files (TGZ and ZIP) in the `dist` folder so that you can extract the Ki-nTree executable and configuration files and run it from anywhere on your computer!
+
+You will get a message similar to this:
+
+```
+Building kintree (0.3.10)
+  - Building sdist
+  - Built kintree-0.3.10.tar.gz
+  - Building wheel
+  - Built kintree-0.3.10-py3-none-any.whl
+```
+2. Exit the virtual environment (`Ctrl + D` on Linux; you can also close the
+   terminal and reopen it in the same folder).
+
+   Run `pip install dist/<wheel_file>.whl` with the file name from the previous
+   step. For example:
+
+```bash
+pip install dist/kintree-0.3.10-py3-none-any.whl
+```
+
+3. You can now start Ki-nTree by typing `kintree` in the terminal, provided
+   that your python dist path is a part of your `$PATH`.
 
 ### Usage Instructions
 #### Requirements

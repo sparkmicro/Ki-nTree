@@ -1,13 +1,13 @@
 import copy
 import os
 
-import config.settings as settings
-from common import part_tools, progress
-from common.tools import cprint
-from config import config_interface
-from database import inventree_api
+from ..config import settings
+from ..common import part_tools, progress
+from ..common.tools import cprint
+from ..config import config_interface
+from ..database import inventree_api
 from fuzzywuzzy import fuzz
-from search import digikey_api
+from ..search import digikey_api
 
 
 def connect_to_server(timeout=5) -> bool:

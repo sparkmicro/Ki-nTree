@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "kintree"
+version = "0.3.10"
+description = "Fast part creation in KiCad and InvenTree"
+authors = ["Placeholder Name <placeholder@test.com>"]
+license = "GPL3"
+
+[tool.poetry.dependencies]
+
+python = ">=3.7,<3.10"
+digikey-api = ">=0.4.0,<1.0"
+fuzzywuzzy = ">=0.18.0,<1.0"
+inventree = ">=0.2.4,<1.0"
+multiprocess = ">=0.70.12.2,<0.71"
+PySimpleGUI = ">=4.28.0,<5.0"
+PyYAML = ">=5.3.1,<6.0"
+validators = ">=0.18.2<1.0"
+wrapt = ">=1.12.1,<2.0"
+python-Levenshtein = "^0.12.2"
+
+[tool.poetry.dev-dependencies]
+invoke = "^1.6.0"
+coveralls = ">=2.1.2,<3.0"
+
+[tool.poetry.scripts]
+kintree = 'kintree:kintree_gui.main'
+kintree_setup_inventree = 'kintree:setup_inventree.main'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

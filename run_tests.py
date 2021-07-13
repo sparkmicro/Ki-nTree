@@ -1,14 +1,14 @@
 import os
 import sys
 
-import config.settings as settings
-from common.tools import cprint, create_library, download_image
-from config import config_interface
-from database import inventree_api, inventree_interface
-from kicad import kicad_interface
-from search.digikey_api import (disable_digikey_api_logger,
-                                test_digikey_api_connect)
-from search.snapeda_api import test_snapeda_api
+import kintree.config.settings as settings
+from kintree.common.tools import cprint, create_library, download_image
+from kintree.config import config_interface
+from kintree.database import inventree_api, inventree_interface
+from kintree.kicad import kicad_interface
+from kintree.search.digikey_api import disable_digikey_api_logger
+from kintree.search.digikey_api import test_digikey_api_connect
+from kintree.search.snapeda_api import test_snapeda_api
 
 # SETTINGS
 # Enable InvenTree tests

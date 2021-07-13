@@ -1,8 +1,8 @@
-import config.settings as settings
+from ..config import settings
 import validators
-from common import part_tools
-from common.tools import cprint, download_image
-from config import config_interface
+from ..common import part_tools
+from ..common.tools import cprint, download_image
+from ..config import config_interface
 
 # Required to use local CA certificates on Linux
 # For more details, refer to https://github.com/sparkmicro/Ki-nTree/pull/45
@@ -22,7 +22,7 @@ from inventree.part import Part, PartCategory
 
 def connect(server: str, username: str, password: str, connect_timeout=5, silent=False) -> bool:
     ''' Connect to InvenTree server and create API object '''
-    from wrapt_timeout_decorator import timeout
+    from ..wrapt_timeout_decorator import timeout
     global inventree_api
 
     @timeout(dec_timeout=connect_timeout)

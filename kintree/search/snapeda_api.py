@@ -1,8 +1,8 @@
 import json
 from urllib.request import Request, urlopen
 
-import config.settings as settings
-from common.tools import download_image
+from ..config import settings
+from ..common.tools import download_image
 
 API_BASE_URL = 'https://snapeda-eeintech.herokuapp.com/snapeda?q='
 SNAPEDA_URL = 'https://www.snapeda.com'

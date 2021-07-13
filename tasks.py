@@ -1,11 +1,15 @@
 import webbrowser
 
-from common.tools import cprint
+from kintree.common.tools import cprint
 from invoke import UnexpectedExit, task
 
 
 @task
 def install(c, is_install=True):
+    """
+    Install Ki-nTree dependencies
+    """
+
     if is_install:
         cprint('[MAIN]\tInstalling required dependencies')
         c.run('pip install -U wheel', hide='out')
@@ -83,6 +87,15 @@ def exec(c):
 
 @task(pre=[clean], post=[package])
 def build(c):
+    """
+    Build Ki-nTree into executable file
+    """
+
+    try:
+        c.run('pip show pyinstaller', hide=True)
+    except UnexpectedExit:
+        c.run('pip install -U pyinstaller', hide=True)
+
     # Uninstall typing
     c.run('pip uninstall typing -y', hide=True)
     exec(c)
@@ -90,7 +103,11 @@ def build(c):
 
 @task
 def setup_inventree(c):
-    c.run('python setup_inventree.py')
+    """
+    Setup InvenTree server
+    """
+
+    c.run('python -m kintree.setup_inventree')
 
 
 @task
@@ -115,6 +132,10 @@ def save_api_token(c):
 
 @task
 def test(c, setup=True):
+    """
+    Run Ki-nTree tests
+    """
+
     try:
         c.run('pip show coverage', hide=True)
     except UnexpectedExit:
@@ -124,8 +145,9 @@ def test(c, setup=True):
     if setup:
         c.run('cd InvenTree/ && inv server && cd ..', asynchronous=True)
         c.run('sleep 5')
-        setup_inventree = c.run('coverage run --parallel-mode setup_inventree.py')
+        setup_inventree = c.run('coverage run --parallel-mode -m kintree.setup_inventree')
         cprint('\n-----')
+        c.run('cp -r tests/ kintree/')
         if setup_inventree.exited == 0:
             run_tests = c.run('coverage run --parallel-mode run_tests.py')
             if run_tests.exited == 0:
@@ -139,6 +161,10 @@ def test(c, setup=True):
 
 @task
 def make_python_badge(c):
+    """
+    Make badge for supported versions of Python
+    """
+
     cprint('[MAIN]\tInstall pybadges')
     c.run('pip install pybadges pip-autoremove', hide=True)
     cprint('[MAIN]\tCreate badge')
