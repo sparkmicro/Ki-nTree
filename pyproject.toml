@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kintree"
-version = "0.3.6"
+version = "0.3.10"
 description = "Fast part creation in KiCad and InvenTree"
 authors = ["Placeholder Name <placeholder@test.com>"]
 license = "GPL3"

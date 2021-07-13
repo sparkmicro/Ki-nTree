@@ -62,11 +62,11 @@ $ poetry build
 You will get a message similar to this:
 
 ```
-Building kintree (0.3.6)
+Building kintree (0.3.10)
   - Building sdist
-  - Built kintree-0.3.6.tar.gz
+  - Built kintree-0.3.10.tar.gz
   - Building wheel
-  - Built kintree-0.3.6-py3-none-any.whl
+  - Built kintree-0.3.10-py3-none-any.whl
 ```
 2. Exit the virtual environment (`Ctrl + D` on Linux; you can also close the
    terminal and reopen it in the same folder).
