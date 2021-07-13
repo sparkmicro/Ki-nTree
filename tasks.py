@@ -55,7 +55,6 @@ def clean(c):
 @task
 def package(c):
     import os
-    import shutil
 
     cdir = os.getcwd()
     build = os.path.join(cdir, 'kintree', 'build')
