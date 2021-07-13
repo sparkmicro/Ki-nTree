@@ -131,7 +131,6 @@ if __name__ == '__main__':
                             if settings.AUTO_GENERATE_LIB:
                                 create_library(os.path.dirname(test_library_path), 'TEST', settings.symbol_template_lib)
 
-                            cprint(part_data)
                             kicad_result, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_data,
                                                                                               library_path=test_library_path,
                                                                                               show_progress=False)
@@ -185,7 +184,6 @@ if __name__ == '__main__':
                         if ENABLE_KICAD:
                             cprint(f'[DBUG]\tkicad_result = {kicad_result}')
                             cprint(f'[DBUG]\tkicad_new_part = {kicad_new_part}')
-                            cprint(os.listdir(os.path.dirname(test_library_path)))
                         if ENABLE_INVENTREE:
                             cprint(f'[DBUG]\tinventree_result = {inventree_result}')
                             cprint(f'[DBUG]\tnew_part = {new_part}')

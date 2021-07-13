@@ -263,8 +263,6 @@ def digikey_search(part_number: str, test_mode=False) -> dict:
 
     # Load from file if cache is enabled
     search_filename = settings.search_results['directory'] + part_number + settings.search_results['extension']
-    cprint(search_filename)
-    cprint(os.listdir(os.path.dirname(search_filename)))
 
     # Get cached data
     part_info = digikey_api.load_from_file(search_filename, test_mode)
