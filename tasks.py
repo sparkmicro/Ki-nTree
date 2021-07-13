@@ -34,7 +34,10 @@ def update(c):
 @task
 def clean(c):
     cprint('[MAIN]\tCleaning project directory')
-    c.run('find . -name __pycache__ | xargs rm -r')
+    try:
+        c.run('find . -name __pycache__ | xargs rm -r', hide='err')
+    except UnexpectedExit:
+        pass
     try:
         c.run('rm .coverage', hide='err')
     except UnexpectedExit:
@@ -44,7 +47,7 @@ def clean(c):
     except UnexpectedExit:
         pass
     try:
-        c.run('rm -r dist build htmlcov', hide='err')
+        c.run('rm -r dist/ htmlcov', hide='err')
     except UnexpectedExit:
         pass
 
@@ -55,34 +58,24 @@ def package(c):
     import shutil
 
     cdir = os.getcwd()
-    dist = os.path.join(cdir, 'dist')
+    build = os.path.join(cdir, 'kintree', 'build')
+    dist = os.path.join(cdir, 'kintree', 'dist')
 
-    cprint('[MAIN]\tPackaging Ki-nTree')
+    cprint('[MAIN]\tPackaging Ki-nTree into "dist" directory')
 
-    # Delete previous files
+    # Move dist folder to root
+    c.run(f'mv {dist} {cdir}', hide=True)
+    # Remove build folder
     try:
-        c.run('rm dist/kintree.tgz', hide='err')
+        c.run(f'rm -r {build}', hide='err')
     except UnexpectedExit:
         pass
-    try:
-        c.run('rm dist/kintree.zip', hide='err')
-    except UnexpectedExit:
-        pass
-
-    # Create ZIP
-    shutil.make_archive(os.path.join(cdir, 'kintree'), 'zip', dist)
-    # Create TGZ
-    c.run(f'cd {dist} && tar -czvf kintree.tgz * && cd {cdir}', hide=True)
-    # Move ZIP file into dist folder
-    c.run(f'mv kintree.zip {dist}', hide=False)
 
 
 @task
 def exec(c):
-    cprint('[MAIN]\tBuilding Ki-nTree into "dist" directory')
-    c.run('pyinstaller --clean --onefile '
-          '-p search/digikey_api/ -p kicad/ -p database/inventree-python/ '
-          'kintree_gui.py', hide=True)
+    cprint('[MAIN]\tBuilding Ki-nTree')
+    c.run('cd kintree/ && pyinstaller --clean --onefile kintree_gui.py && cd -', hide=True)
 
 
 @task(pre=[clean], post=[package])

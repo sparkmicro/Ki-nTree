@@ -6,8 +6,8 @@ from kintree.common.tools import cprint, create_library, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-# from kintree.search.digikey_api import disable_digikey_api_logger
-# from kintree.search.digikey_api import test_digikey_api_connect
+from kintree.search.digikey_api import disable_digikey_api_logger
+from kintree.search.digikey_api import test_digikey_api_connect
 from kintree.search.snapeda_api import test_snapeda_api
 
 # SETTINGS
@@ -21,17 +21,17 @@ AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
     'Capacitors',
-    # 'Circuit Protections',
-    # 'Connectors',
-    # 'Crystals and Oscillators',
-    # 'Diodes',
-    # 'Inductors',
-    # 'Integrated Circuits',
-    # 'Mechanicals',
-    # 'Power Management',
-    # 'Resistors',
-    # 'RF',
-    # 'Transistors',
+    'Circuit Protections',
+    'Connectors',
+    'Crystals and Oscillators',
+    'Diodes',
+    'Inductors',
+    'Integrated Circuits',
+    'Mechanicals',
+    'Power Management',
+    'Resistors',
+    'RF',
+    'Transistors',
 ]
 # Enable tests on extra methods
 ENABLE_TEST_METHODS = True
@@ -50,10 +50,10 @@ test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
 footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
 # Disable API logging
-# disable_digikey_api_logger()
-# if not test_digikey_api_connect():
-#     cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
-#     sys.exit(-1)
+disable_digikey_api_logger()
+if not test_digikey_api_connect():
+    cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+    sys.exit(-1)
 
 # Pretty test printing
 

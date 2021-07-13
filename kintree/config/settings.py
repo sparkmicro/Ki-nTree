@@ -208,7 +208,7 @@ if not ENABLE_TEST:
 # Template Paths
 symbol_templates_paths = config_interface.load_templates_paths(
     CONFIG_KICAD_CATEGORY_MAP, KICAD_TEMPLATES_PATH)
-cprint(symbol_templates_paths)
+# cprint(symbol_templates_paths)
 
 # Footprint Libraries
 footprint_libraries_paths = config_interface.load_footprint_paths(
