@@ -184,4 +184,5 @@ def style(c):
 
     c.run('pip install -U flake8', hide=True)
     print("Running PEP style checks...")
-    c.run('flake8 tasks.py kintree_gui.py run_tests.py setup_inventree.py common/ config/ database/ kicad/*.py search/*.py')
+    c.run('flake8 tasks.py run_tests.py kintree/kintree_gui.py kintree/setup_inventree.py \
+        kintree/common/ kintree/config/ kintree/database/ kintree/kicad/*.py kintree/search/*.py')

@@ -6,8 +6,8 @@ from kintree.common.tools import cprint, create_library, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search.digikey_api import disable_digikey_api_logger
-from kintree.search.digikey_api import test_digikey_api_connect
+# from kintree.search.digikey_api import disable_digikey_api_logger
+# from kintree.search.digikey_api import test_digikey_api_connect
 from kintree.search.snapeda_api import test_snapeda_api
 
 # SETTINGS

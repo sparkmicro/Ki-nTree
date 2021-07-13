@@ -2,14 +2,11 @@
 omit =
     # Do not run coverage on virtual environment files
     env-kintree/*
-    /home/travis/virtualenv/*
-    # Do not run coverage on submodules
-    database/inventree-python/*
-    search/digikey_api/digikey/*
+    .venv/*
     # Skip KiCad library tool
     kicad/schlib.py
     # Skip UI coverage
-    kintree_gui.py
-    common/progress.py
+    kintree/kintree_gui.py
+    kintree/common/progress.py
     # Skip wrapt_timeout_decorator
     kintree/wrapt_timeout_decorator/*
