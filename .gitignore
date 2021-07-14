@@ -6,7 +6,6 @@ build/
 *__pycache__*
 *.bck
 # Test files
-tests/TEST.*
 kintree/tests/*
 .coverage
 htmlcov/

@@ -181,7 +181,11 @@ if __name__ == '__main__':
                     else:
                         cprint('[ FAIL ]')
                         exit_code = -1
+                        if ENABLE_KICAD:
+                            cprint(f'[DBUG]\tkicad_result = {kicad_result}')
+                            cprint(f'[DBUG]\tkicad_new_part = {kicad_new_part}')
                         if ENABLE_INVENTREE:
+                            cprint(f'[DBUG]\tinventree_result = {inventree_result}')
                             cprint(f'[DBUG]\tnew_part = {new_part}')
                             cprint(f'[DBUG]\tpart_pk = {part_pk}')
 

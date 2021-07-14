@@ -28,13 +28,24 @@ def install(c, is_install=True):
 
 @task
 def update(c):
+    """
+    Update Ki-nTree dependencies
+    """
+
     install(c, is_install=False)
 
 
 @task
 def clean(c):
+    """
+    Clean project folder
+    """
+
     cprint('[MAIN]\tCleaning project directory')
-    c.run('find . -name __pycache__ | xargs rm -r')
+    try:
+        c.run('find . -name __pycache__ | xargs rm -r', hide='err')
+    except UnexpectedExit:
+        pass
     try:
         c.run('rm .coverage', hide='err')
     except UnexpectedExit:
@@ -44,48 +55,12 @@ def clean(c):
     except UnexpectedExit:
         pass
     try:
-        c.run('rm -r dist build htmlcov', hide='err')
+        c.run('rm -r dist/ build/ htmlcov', hide='err')
     except UnexpectedExit:
         pass
+    
 
-
-@task
-def package(c):
-    import os
-    import shutil
-
-    cdir = os.getcwd()
-    dist = os.path.join(cdir, 'dist')
-
-    cprint('[MAIN]\tPackaging Ki-nTree')
-
-    # Delete previous files
-    try:
-        c.run('rm dist/kintree.tgz', hide='err')
-    except UnexpectedExit:
-        pass
-    try:
-        c.run('rm dist/kintree.zip', hide='err')
-    except UnexpectedExit:
-        pass
-
-    # Create ZIP
-    shutil.make_archive(os.path.join(cdir, 'kintree'), 'zip', dist)
-    # Create TGZ
-    c.run(f'cd {dist} && tar -czvf kintree.tgz * && cd {cdir}', hide=True)
-    # Move ZIP file into dist folder
-    c.run(f'mv kintree.zip {dist}', hide=False)
-
-
-@task
-def exec(c):
-    cprint('[MAIN]\tBuilding Ki-nTree into "dist" directory')
-    c.run('pyinstaller --clean --onefile '
-          '-p search/digikey_api/ -p kicad/ -p database/inventree-python/ '
-          'kintree_gui.py', hide=True)
-
-
-@task(pre=[clean], post=[package])
+@task(pre=[clean])
 def build(c):
     """
     Build Ki-nTree into executable file
@@ -98,7 +73,9 @@ def build(c):
 
     # Uninstall typing
     c.run('pip uninstall typing -y', hide=True)
-    exec(c)
+    
+    cprint('[MAIN]\tBuilding Ki-nTree GUI into "dist" directory')
+    c.run('pyinstaller --clean --onefile -p kintree/kicad kintree_gui.py', hide=True)
 
 
 @task
@@ -112,22 +89,15 @@ def setup_inventree(c):
 
 @task
 def coverage_report(c, open_browser=True):
+    """
+    Show coverage report
+    """
+
     cprint('[MAIN]\tBuilding coverage report')
     c.run('coverage report')
     c.run('coverage html')
     if open_browser:
         webbrowser.open('htmlcov/index.html', new=2)
-
-
-@task
-def refresh_api_token(c):
-    from search.digikey_api import test_digikey_api_connect
-    test_digikey_api_connect()
-
-
-@task
-def save_api_token(c):
-    c.run('cp search/token_storage.json tests/files/', hide=True)
 
 
 @task
@@ -168,7 +138,7 @@ def make_python_badge(c):
     cprint('[MAIN]\tInstall pybadges')
     c.run('pip install pybadges pip-autoremove', hide=True)
     cprint('[MAIN]\tCreate badge')
-    c.run('python -m pybadges --left-text="Python" --right-text="3.6 - 3.9" '
+    c.run('python -m pybadges --left-text="Python" --right-text="3.7 - 3.9" '
           '--whole-link="https://www.python.org/" --browser --embed-logo '
           '--logo="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/python.svg"')
     cprint('[MAIN]\tUninstall pybadges')
@@ -184,4 +154,5 @@ def style(c):
 
     c.run('pip install -U flake8', hide=True)
     print("Running PEP style checks...")
-    c.run('flake8 tasks.py kintree_gui.py run_tests.py setup_inventree.py common/ config/ database/ kicad/*.py search/*.py')
+    c.run('flake8 tasks.py run_tests.py kintree_gui.py kintree/kintree_gui.py kintree/setup_inventree.py \
+        kintree/common/ kintree/config/ kintree/database/ kintree/kicad/*.py kintree/search/*.py')
