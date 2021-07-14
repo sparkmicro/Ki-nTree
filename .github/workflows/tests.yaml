@@ -1,6 +1,12 @@
 name: Ki-nTree Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
 
 jobs:
   tests:
@@ -61,8 +67,9 @@ jobs:
           invoke build
       - name: Push Digi-Key Token
         run: |
-          cp ~/.config/kintree/cache/token_storage.json digikey-token/
-          cd digikey-token
+          cd digikey-token/
+          git pull
+          cp ~/.config/kintree/cache/token_storage.json .
           git config --global user.email "kintree@github.actions"
           git config --global user.name "Ki-nTree Github Actions"
           git add -u
