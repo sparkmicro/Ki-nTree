@@ -1,4 +1,4 @@
-name: Ki-nTree tests, linting and publishing
+name: Tests | Linting | Publishing
 
 on:
   push:

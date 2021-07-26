@@ -2,11 +2,15 @@
 name = "kintree"
 version = "0.1.0" # placeholder
 description = "Fast part creation in KiCad and InvenTree"
-authors = ["Placeholder Name <placeholder@test.com>"]
-license = "GPL3"
+authors = ["eeintech <eeintech@eeinte.ch>"]
+maintainers = ["eeintech <eeintech@eeinte.ch>", "randrej <r.andrej@gmail.com>"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+homepage = "https://github.com/sparkmicro/Ki-nTree"
+repository = "https://github.com/sparkmicro/Ki-nTree"
+keywords = ["inventree", "kicad", "component", "part", "create"]
 
 [tool.poetry.dependencies]
-
 python = ">=3.7,<3.10"
 digikey-api = ">=0.4.0,<1.0"
 fuzzywuzzy = ">=0.18.0,<1.0"
