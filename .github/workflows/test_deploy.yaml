@@ -28,22 +28,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          pip install -U flake8
+          pip install -U flake8 invoke
       - name: PEP checks
         run: >
-          flake8
-          tasks.py
-          kintree/kintree_gui.py
-          run_tests.py
-          kintree/setup_inventree.py
-          kintree/common/
-          kintree/config/
-          kintree/database/
-          kintree/kicad/__init__.py
-          kintree/kicad/kicad_interface.py
-          kintree/kicad/kicad_schlib.py
-          kintree/kicad/schlib.py
-          kintree/search/*.py
+          invoke style
 
   tests:
     name: Integration tests
@@ -162,4 +150,4 @@ jobs:
           --username "__token__"
           --password "$TOKEN_PYPI"
         env:
-          TOKEN_TEST_PYPI: ${{ secrets.TOKEN_PYPI }}
+          TOKEN_PYPI: ${{ secrets.TOKEN_PYPI }}
