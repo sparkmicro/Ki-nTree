@@ -130,7 +130,7 @@ def test(c, setup=True):
 
 
 @task
-def make_python_badge(c):
+def python_badge(c):
     """
     Make badge for supported versions of Python
     """
@@ -138,7 +138,7 @@ def make_python_badge(c):
     cprint('[MAIN]\tInstall pybadges')
     c.run('pip install pybadges pip-autoremove', hide=True)
     cprint('[MAIN]\tCreate badge')
-    c.run('python -m pybadges --left-text="Python" --right-text="3.7 - 3.9" '
+    c.run('python -m pybadges --left-text="python" --right-text="3.7 - 3.9" '
           '--whole-link="https://www.python.org/" --browser --embed-logo '
           '--logo="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/python.svg"')
     cprint('[MAIN]\tUninstall pybadges')
