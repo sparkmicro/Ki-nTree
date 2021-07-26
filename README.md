@@ -8,7 +8,7 @@
 
 ## Demo Videos :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) :fast_forward: [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
 
-<img src="images/doc/kintree_example.png"  width="auto" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/kintree_example.png"  width="auto" height="auto">
 
 ## Introduction
 Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
@@ -67,12 +67,12 @@ $ kintree
 
 Enter your Digi-Key developper account credentials then login. The following page will appear (`user@email.com` will show your email address):
 
-<img src="images/doc/digikey_api_approval_request.png" width="800" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/digikey_api_approval_request.png" width="800" height="auto">
 
 Click on "Allow", another page will open.  
 Click on the "Advanced" button, then click on "Proceed to localhost (unsafe)" at the bottom of the page:
 
-<img src="images/doc/digikey_api_approval_request2.png"  width="800" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/digikey_api_approval_request2.png"  width="800" height="auto">
 
 > On Chrome, if the "Proceed to localhost (unsafe)" link does not appear, enable the following flag: [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost)
 
@@ -156,14 +156,14 @@ pip install dist/kintree-0.3.10-py3-none-any.whl
 #### Version 0.5
 ##### Global
 
-[ ] Allow user to decide the category code to use for IPN  
-[ ] Add "Synchronize" menu option to pull InvenTree parts data into KiCad  
-[ ] Fetch Digi-Key price breakdown and add it to Supplier Part (InvenTree)  
-[ ] Add option to add as alternate (supplier part) to existing part  
-[ ] Document configuration and backend
+- Allow user to decide the category code to use for IPN  
+- Add "Synchronize" menu option to pull InvenTree parts data into KiCad  
+- Fetch Digi-Key price breakdown and add it to Supplier Part (InvenTree)  
+- Add option to add as alternate (supplier part) to existing part  
+- Document configuration and backend
 
 ##### GUI
 
-[ ] Look to improve cosmetics  
-[ ] Add icon to GUI and executable (not successful earlier, try with PySimpleGUIQt?)  
-[ ] Create loading animation for API searches (asyncio)
+- Look to improve cosmetics  
+- Add icon to GUI and executable (not successful earlier, try with PySimpleGUIQt?)  
+- Create loading animation for API searches (asyncio)
