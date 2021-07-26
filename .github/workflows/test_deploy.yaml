@@ -1,0 +1,165 @@
+name: Ki-nTree tests, linting and publishing
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*.*.*"
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  style:
+    name: Style checks
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.7, 3.9]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -U flake8
+      - name: PEP checks
+        run: >
+          flake8
+          tasks.py
+          kintree/kintree_gui.py
+          run_tests.py
+          kintree/setup_inventree.py
+          kintree/common/
+          kintree/config/
+          kintree/database/
+          kintree/kicad/__init__.py
+          kintree/kicad/kicad_interface.py
+          kintree/kicad/kicad_schlib.py
+          kintree/kicad/schlib.py
+          kintree/search/*.py
+
+  tests:
+    name: Integration tests
+
+    runs-on: ubuntu-latest
+    env:
+      INVENTREE_DB_ENGINE: django.db.backends.sqlite3
+      INVENTREE_DB_NAME: ${{ github.workspace }}/InvenTree/inventree_default_db.sqlite3
+      INVENTREE_MEDIA_ROOT: ${{ github.workspace }}/InvenTree
+      INVENTREE_ENV: 0
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TOKEN_DIGIKEY: ${{ secrets.TOKEN_DIGIKEY }}
+
+    strategy:
+      matrix:
+        python-version: [3.7, 3.9]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          sudo apt install sqlite3
+          pip install -U invoke
+      - name: InvenTree setup
+        run: |
+          git clone https://github.com/inventree/InvenTree/
+          cp tests/files/inventree_default_db.sqlite3 InvenTree/
+          cd InvenTree/ && invoke install && invoke migrate && cd -
+      - name: Ki-nTree setup
+        run: |
+          invoke install
+          mkdir -p ~/.config/kintree/user/ && mkdir -p ~/.config/kintree/cache/search/
+          cp tests/files/inventree_test.yaml ~/.config/kintree/user/
+          cp tests/files/results.tgz ~/.config/kintree/cache/search/
+          cd ~/.config/kintree/cache/search/ && tar xvf results.tgz && cd -
+      - name: Digi-Key API setup
+        run: |
+          git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git
+          cp digikey-token/token_storage.json ~/.config/kintree/cache/
+          cat ~/.config/kintree/cache/token_storage.json
+      - name: Run tests
+        run: |
+          invoke test
+        env:
+          DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
+          DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
+      - name: Coveralls
+        run: |
+          coveralls --version
+          coveralls
+      - name: Run build
+        run: |
+          invoke build
+      - name: Push Digi-Key Token
+        run: |
+          cd digikey-token/
+          git pull
+          cp ~/.config/kintree/cache/token_storage.json .
+          git config --global user.email "kintree@github.actions"
+          git config --global user.name "Ki-nTree Github Actions"
+          git add -u
+          git diff-index --quiet HEAD || git commit -m "Updated token"
+          git push origin master
+          cd ..
+
+  test-publish:
+    name: Publish to Test PyPI, then PyPI
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    needs:
+      - style
+      - tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Alter the version in pyproject.toml
+        run: >
+          GTAG=$(echo $REF | sed -e 's#.*/##') &&
+          sed
+          --in-place
+          --expression
+          "s/version = \".*\" # placeholder/version = \"$GTAG\"/g"
+          pyproject.toml
+        env:
+          REF: ${{ github.ref }}
+      - name: Display the inferred version
+        run: head pyproject.toml
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: pip install -U poetry
+      - name: Install poetry dependencies
+        run: poetry install --no-root --no-dev --no-interaction
+      - name: Build the package
+        run: poetry build --no-interaction
+      - name: Set up TestPyPI repo in poetry
+        run: poetry config repositories.test https://test.pypi.org/legacy/
+      - name: Publish to Test PyPI
+        run: >
+          poetry publish
+          --repository "test"
+          --username "__token__"
+          --password "$TOKEN_TEST_PYPI"
+        env:
+          TOKEN_TEST_PYPI: ${{ secrets.TOKEN_TEST_PYPI }}
+      - name: Publish to PyPI
+        run: >
+          poetry publish
+          --username "__token__"
+          --password "$TOKEN_PYPI"
+        env:
+          TOKEN_TEST_PYPI: ${{ secrets.TOKEN_PYPI }}
