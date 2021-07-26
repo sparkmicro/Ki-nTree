@@ -32,26 +32,41 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 
-### Installation
+### Installation (system wide)
 
-1. (Optional) Create virtual environment and activate it
+1. Install using Pip
+
+``` bash
+$ pip install -U kintree
+```
+
+2. Run Ki-nTree
+
+``` bash
+$ kintree
+```
+
+### Run in virtual environment (contained)
+
+##### Linux / MacOS
+
+Create a virtual environment and activate it with:
 
 ``` bash
 $ python3 -m venv env-kintree
 $ source env-kintree/bin/activate
 ```
 
-2. Install using Pip
+Then follow the step from the [installation section](#installation-system-wide).
 
+##### Windows
+
+In Git Bash, use the following commands to create and activate a virtual environment:
 ``` bash
-$ pip install -U kintree
+$ python3 -m venv env-kintree
+$ source env-kintree/Scripts/activate
 ```
-
-3. Run Ki-nTree
-
-``` bash
-$ kintree
-```
+For any other Windows terminal, refer to the [official documentation](https://docs.python.org/library/venv.html#creating-virtual-environments)
 
 ### Usage Instructions
 
@@ -103,7 +118,7 @@ You can install poetry by following the instructions [on its official
 website](https://python-poetry.org/docs/master/#installation), by using `pip
 install poetry` or by installing a package on your Linux distro.
 
-### Installation
+### Setup and run
 1. Clone this repository:
 ``` bash
 $ git clone https://github.com/sparkmicro/Ki-nTree
@@ -123,7 +138,7 @@ $ poetry shell
 $ python -m kintree.kintree_gui
 ```
 
-#### Install it system-wide
+#### Build
 1. Make sure you followed the previous installation steps, then run:
 ``` bash
 $ poetry build
