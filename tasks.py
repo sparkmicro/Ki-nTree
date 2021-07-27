@@ -115,6 +115,8 @@ def test(c):
     # Start InvenTree server
     c.run('cd InvenTree/ && inv server && cd ..', asynchronous=True)
     c.run('sleep 5')
+    # Copy test files
+    c.run('cp -r tests/ kintree/')
     # Run Tests
     run_tests = c.run('coverage run run_tests.py')
     if run_tests.exited == 0:
