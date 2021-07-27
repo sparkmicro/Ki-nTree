@@ -89,10 +89,8 @@ if not load_user_config():
 
 # Digi-Key
 CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
-CONFIG_DIGIKEY_CATEGORIES = os.path.join(
-    CONFIG_USER_FILES, 'digikey_categories.yaml')
-CONFIG_DIGIKEY_PARAMETERS = os.path.join(
-    CONFIG_USER_FILES, 'digikey_parameters.yaml')
+CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
+CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
 
 # KiCad
 CONFIG_KICAD = os.path.join(CONFIG_USER_FILES, 'kicad.yaml')
