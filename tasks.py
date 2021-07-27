@@ -101,7 +101,7 @@ def coverage_report(c, open_browser=True):
 
 
 @task
-def test(c, setup=True):
+def test(c):
     """
     Run Ki-nTree tests
     """
@@ -112,21 +112,13 @@ def test(c, setup=True):
         c.run('pip install -U coverage', hide=True)
 
     cprint('[MAIN]\tRunning tests using coverage\n-----')
-    if setup:
-        c.run('cd InvenTree/ && inv server && cd ..', asynchronous=True)
-        c.run('sleep 5')
-        setup_inventree = c.run('coverage run --parallel-mode -m kintree.setup_inventree')
-        cprint('\n-----')
-        c.run('cp -r tests/ kintree/')
-        if setup_inventree.exited == 0:
-            run_tests = c.run('coverage run --parallel-mode run_tests.py')
-            if run_tests.exited == 0:
-                c.run('coverage combine')
-                coverage_report(c, open_browser=False)
-    else:
-        run_tests = c.run('coverage run run_tests.py')
-        if run_tests.exited == 0:
-            coverage_report(c, open_browser=False)
+    # Start InvenTree server
+    c.run('cd InvenTree/ && inv server && cd ..', asynchronous=True)
+    c.run('sleep 5')
+    # Run Tests
+    run_tests = c.run('coverage run run_tests.py')
+    if run_tests.exited == 0:
+        coverage_report(c, open_browser=False)
 
 
 @task

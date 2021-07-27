@@ -107,15 +107,40 @@ def fetch_digikey_part_info(part_number: str) -> dict:
     return part_info
 
 
-def test_digikey_api_connect() -> bool:
+def test_digikey_api_connect(check_content=False) -> bool:
     ''' Test method for Digi-Key API token '''
     setup_environment()
-    
-    test_part = fetch_digikey_part_info('RMCF0402JT10K0')
-    if test_part:
-        return True
 
-    return False
+    test_success = True
+    expected = {
+        'product_description': 'RES 10K OHM 5% 1/16W 0402',
+        'detailed_description': '10 kOhms ±5% 0.063W, 1/16W Chip Resistor 0402 (1005 '
+                                'Metric) Automotive AEC-Q200 Thick Film',
+        'digi_key_part_number': 'RMCF0402JT10K0CT-ND',
+        'manufacturer': 'Stackpole Electronics Inc',
+        'manufacturer_part_number': 'RMCF0402JT10K0',
+        'product_url': 'https://www.digikey.com/product-detail/en/stackpole-electronics-inc/RMCF0402JT10K0/RMCF0402JT10K0CT-ND/1942936',
+        'primary_datasheet': 'https://www.seielect.com/catalog/sei-rmcf_rmcp.pdf',
+        'primary_photo': 'https://media.digikey.com/photos/Stackpole%20Photos/MFG_RMC%20SERIES.jpg',
+    }
+
+    test_part = fetch_digikey_part_info('RMCF0402JT10K0')
+
+    # Check for response
+    if not test_part:
+        test_success = False
+    
+    if not check_content:
+        return test_success
+        
+    # Check content of response
+    if test_success:
+        for key, value in expected.items():
+            if test_part[key] != value:
+                test_success = False
+                break
+
+    return test_success
 
 
 def load_from_file(search_file, test_mode=False) -> dict:

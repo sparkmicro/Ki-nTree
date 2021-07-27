@@ -5,10 +5,11 @@ from .common.tools import cprint
 from .config import config_interface
 from .database import inventree_api, inventree_interface
 
-SETUP_CATEGORIES = True
-SETUP_PARAMETERS = True
 
-if __name__ == '__main__':
+def setup_inventree():
+    SETUP_CATEGORIES = True
+    SETUP_PARAMETERS = True
+
     if SETUP_CATEGORIES or SETUP_PARAMETERS:
         cprint('\n[MAIN]\tStarting InvenTree setup', silent=settings.SILENT)
         # Load category configuration file
@@ -51,3 +52,7 @@ if __name__ == '__main__':
                 cprint(f'[TREE]\tSuccess: Parameter "{name}" was added to InvenTree')
             else:
                 cprint(f'[TREE]\tWarning: Parameter "{name}" already exists')
+
+
+if __name__ == '__main__':
+    setup_inventree()

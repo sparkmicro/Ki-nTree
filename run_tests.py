@@ -9,6 +9,7 @@ from kintree.kicad import kicad_interface
 from kintree.search.digikey_api import disable_digikey_api_logger
 from kintree.search.digikey_api import test_digikey_api_connect
 from kintree.search.snapeda_api import test_snapeda_api
+from kintree.setup_inventree import setup_inventree
 
 # SETTINGS
 # Enable InvenTree tests
@@ -37,34 +38,14 @@ PART_CATEGORIES = [
 ENABLE_TEST_METHODS = True
 ###
 
-# Enable test mode
-settings.enable_test_mode()
-# Enable InvenTree
-settings.set_inventree_enable_flag(True, save=True)
-# Enable KiCad
-settings.set_kicad_enable_flag(True, save=True)
-# Load user configuration files
-settings.load_user_config()
-# Set path to test libraries
-test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
-symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
-footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
-# Disable API logging
-disable_digikey_api_logger()
-if not test_digikey_api_connect():
-    cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
-    sys.exit(-1)
 
 # Pretty test printing
-
-
 def pretty_test_print(message: str):
     message = message.ljust(65)
     cprint(message, end='')
 
+
 # Check result
-
-
 def check_result(status: str, new_part: bool) -> bool:
     # Build result
     success = False
@@ -80,6 +61,37 @@ def check_result(status: str, new_part: bool) -> bool:
     return success
 
 
+# --- SETUP ---
+
+# Enable test mode
+settings.enable_test_mode()
+# Enable InvenTree
+settings.set_inventree_enable_flag(True, save=True)
+# Enable KiCad
+settings.set_kicad_enable_flag(True, save=True)
+# Load user configuration files
+settings.load_user_config()
+# Set path to test libraries
+test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
+symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
+footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
+# Disable API logging
+disable_digikey_api_logger()
+
+# Check Digi-Key API
+pretty_test_print('\n[MAIN]\tDigi-Key API Test')
+if not test_digikey_api_connect(check_content=True):
+    cprint('[ FAIL ]')
+    cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+    sys.exit(-1)
+else:
+    cprint('[ PASS ]')
+
+# Setup InvenTree
+cprint('\n-----')
+setup_inventree()
+cprint('\n-----')
+
 # Load test samples
 samples = config_interface.load_file(os.path.abspath(
     os.path.join('tests', 'test_samples.yaml')))
@@ -92,6 +104,7 @@ exit_code = 0
 kicad_results = {}
 inventree_results = {}
 
+# --- TESTS ---
 if __name__ == '__main__':
     if settings.ENABLE_TEST:
         if ENABLE_INVENTREE:
