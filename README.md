@@ -119,15 +119,21 @@ website](https://python-poetry.org/docs/master/#installation), by using `pip
 install poetry` or by installing a package on your Linux distro.
 
 ### Setup and run
-1. Clone this repository:
+1. Clone this repository
 ``` bash
 $ git clone https://github.com/sparkmicro/Ki-nTree
 ```
-2. Install the requirements into a `poetry`-managed virtual environment.
+
+2. Install the requirements into a `poetry`-managed virtual environment
 ``` bash
-$ poetry install --no-dev
+$ poetry install
+Installing dependencies from lock file
+...
+Installing the current project: kintree (0.1.0)
 ```
-5. Run Ki-nTree in the virtual environment.
+> Note: the version is not accurate (placeholder only)
+
+3. Run Ki-nTree in the virtual environment
 ```bash
 $ poetry run python -m kintree.kintree_gui
 ```
@@ -168,17 +174,18 @@ pip install dist/kintree-0.3.10-py3-none-any.whl
 
 ## Roadmap
 
-#### Version 0.5
+#### Version 0.5 or later
 ##### Global
 
-- Allow user to decide the category code to use for IPN  
-- Add "Synchronize" menu option to pull InvenTree parts data into KiCad  
-- Fetch Digi-Key price breakdown and add it to Supplier Part (InvenTree)  
-- Add option to add as alternate (supplier part) to existing part  
+- Support other suppliers like LCSC and Mouser (Ref #50)
+- Allow user to decide the category code to use for IPN
+- Add "Synchronize" menu option to pull InvenTree parts data into KiCad
+- Fetch Digi-Key price breakdown and add it to Supplier Part (InvenTree)
+- Add option to add as alternate (supplier part) to existing part
 - Document configuration and backend
 
 ##### GUI
 
-- Look to improve cosmetics  
-- Add icon to GUI and executable (not successful earlier, try with PySimpleGUIQt?)  
+- Move to PySide2? (Ref #37)
+- Add icon to GUI (not successful using PySimpleGUI)
 - Create loading animation for API searches (asyncio)
