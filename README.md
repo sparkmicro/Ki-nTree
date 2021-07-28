@@ -57,7 +57,7 @@ $ python3 -m venv env-kintree
 $ source env-kintree/bin/activate
 ```
 
-Then follow the step from the [installation section](#installation-system-wide).
+Then follow the steps from the [installation section](#installation-system-wide).
 
 ##### Windows
 
@@ -82,12 +82,12 @@ For any other Windows terminal, refer to the [official documentation](https://do
 
 Enter your Digi-Key developper account credentials then login. The following page will appear (`user@email.com` will show your email address):
 
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/digikey_api_approval_request.png" width="800" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/digikey_api_approval_request.png" width="600" height="auto">
 
 Click on "Allow", another page will open.  
 Click on the "Advanced" button, then click on "Proceed to localhost (unsafe)" at the bottom of the page:
 
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/digikey_api_approval_request2.png"  width="800" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/digikey_api_approval_request2.png"  width="600" height="auto">
 
 > On Chrome, if the "Proceed to localhost (unsafe)" link does not appear, enable the following flag: [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost)
 

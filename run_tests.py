@@ -41,8 +41,7 @@ ENABLE_TEST_METHODS = True
 
 # Pretty test printing
 def pretty_test_print(message: str):
-    message = message.ljust(65)
-    cprint(message, end='')
+    cprint(message.ljust(65), end='')
 
 
 # Check result
@@ -269,7 +268,9 @@ if __name__ == '__main__':
                 'Download image method',
             ]
             method_success = True
-            cprint('\n[MAIN]\tChecking untested methods')
+            # Line return
+            cprint('')
+            cprint('[MAIN]\tChecking untested methods'.ljust(65))
 
             for method_idx, method_name in enumerate(methods):
                 pretty_test_print(method_name)
