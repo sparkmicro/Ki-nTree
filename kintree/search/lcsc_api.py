@@ -1,9 +1,5 @@
-import os
-import time
 import requests
 
-from ..config import settings
-from ..config import config_interface
 
 def find_categories(part_details: str):
     ''' Find categories '''
@@ -71,7 +67,5 @@ def fetch_part_info(part_number: str) -> dict:
         # Append to parameters dictionary
         part_info['parameters'][parameter_name] = parameter_value
     # print(part_info['parameters'])
-
-    print(part_info)
 
     return part_info

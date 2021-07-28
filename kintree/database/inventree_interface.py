@@ -7,7 +7,7 @@ from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
 from fuzzywuzzy import fuzz
-from ..search import digikey_api, lcsc_api
+from ..search import search_api, digikey_api, lcsc_api
 
 
 def connect_to_server(timeout=5) -> bool:
@@ -274,7 +274,7 @@ def translate_form_to_digikey(part_info: dict, categories: list, custom=False) -
 
 
 def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
-    ''' Wrapper for Digi-Key search, allow use of cached data (limited daily API calls) '''
+    ''' Wrapper for supplier search, allow use of cached data (limited daily API calls) '''
     part_info = {}
     # Check part number exist
     if not part_number:
@@ -285,7 +285,7 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
     search_filename = settings.search_results['directory'] + supplier + '_' + part_number + settings.search_results['extension']
 
     # Get cached data
-    part_info = digikey_api.load_from_file(search_filename, test_mode)
+    part_info = search_api.load_from_file(search_filename, test_mode)
     if part_info:
         cprint(f'\n[MAIN]\tUsing {supplier} cached data for {part_number}', silent=settings.SILENT)
     else:
@@ -301,7 +301,7 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
 
     # Save search results
     if part_info:
-        digikey_api.save_to_file(part_info, search_filename)
+        search_api.save_to_file(part_info, search_filename)
 
     return part_info
 
