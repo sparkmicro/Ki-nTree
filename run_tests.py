@@ -9,6 +9,7 @@ from kintree.kicad import kicad_interface
 from kintree.search.digikey_api import disable_digikey_api_logger
 from kintree.search.digikey_api import test_digikey_api_connect
 from kintree.search.snapeda_api import test_snapeda_api
+from kintree.setup_inventree import setup_inventree
 
 # SETTINGS
 # Enable InvenTree tests
@@ -37,34 +38,13 @@ PART_CATEGORIES = [
 ENABLE_TEST_METHODS = True
 ###
 
-# Enable test mode
-settings.enable_test_mode()
-# Enable InvenTree
-settings.set_inventree_enable_flag(True, save=True)
-# Enable KiCad
-settings.set_kicad_enable_flag(True, save=True)
-# Load user configuration files
-settings.load_user_config()
-# Set path to test libraries
-test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
-symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
-footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
-# Disable API logging
-disable_digikey_api_logger()
-if not test_digikey_api_connect():
-    cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
-    sys.exit(-1)
 
 # Pretty test printing
-
-
 def pretty_test_print(message: str):
-    message = message.ljust(65)
-    cprint(message, end='')
+    cprint(message.ljust(65), end='')
+
 
 # Check result
-
-
 def check_result(status: str, new_part: bool) -> bool:
     # Build result
     success = False
@@ -80,6 +60,37 @@ def check_result(status: str, new_part: bool) -> bool:
     return success
 
 
+# --- SETUP ---
+
+# Enable test mode
+settings.enable_test_mode()
+# Enable InvenTree
+settings.set_inventree_enable_flag(True, save=True)
+# Enable KiCad
+settings.set_kicad_enable_flag(True, save=True)
+# Load user configuration files
+settings.load_user_config()
+# Set path to test libraries
+test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
+symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
+footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
+# Disable API logging
+disable_digikey_api_logger()
+
+# Check Digi-Key API
+pretty_test_print('\n[MAIN]\tDigi-Key API Test')
+if not test_digikey_api_connect(check_content=True):
+    cprint('[ FAIL ]')
+    cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+    sys.exit(-1)
+else:
+    cprint('[ PASS ]')
+
+# Setup InvenTree
+cprint('\n-----')
+setup_inventree()
+cprint('\n-----')
+
 # Load test samples
 samples = config_interface.load_file(os.path.abspath(
     os.path.join('tests', 'test_samples.yaml')))
@@ -92,6 +103,7 @@ exit_code = 0
 kicad_results = {}
 inventree_results = {}
 
+# --- TESTS ---
 if __name__ == '__main__':
     if settings.ENABLE_TEST:
         if ENABLE_INVENTREE:
@@ -243,95 +255,124 @@ if __name__ == '__main__':
                         cprint('[ PASS ]')
 
         if ENABLE_TEST_METHODS:
-            method_results = True
-            pretty_test_print('[MAIN]\tChecking untested methods')
+            methods = [
+                'Fuzzy category matching',
+                'Custom parts form',
+                'Digi-Key search missing part number',
+                'Load KiCad library paths',
+                'Add symbol library to user file',
+                'Add footprint library to user file',
+                'Add supplier category',
+                'Sync InvenTree and Supplier categories',
+                'SnapEDA API methods',
+                'Download image method',
+            ]
+            method_success = True
+            # Line return
+            cprint('')
+            cprint('[MAIN]\tChecking untested methods'.ljust(65))
 
-            # Fuzzy category matching
-            part_info = {
-                'category': 'Capacitors',
-                'subcategory': 'Super'
-            }
-            categories = tuple(inventree_interface.get_categories(part_info))
-            if not (categories[0] and categories[1]):
-                method_results = False
+            for method_idx, method_name in enumerate(methods):
+                pretty_test_print(method_name)
 
-            # Test form for custom parts
-            try:
-                inventree_interface.translate_form_to_digikey(part_info, categories)
-                # If the above function does not fail, it's a problem
-                method_results = False
-            except KeyError:
-                pass
-            
-            part_info = {
-                'name': 'part_name',
-                'description': 'part_desc',
-                'revision': 'part_rev',
-                'keywords': 'part_key',
-                'supplier_part_number': 'part_sku',
-                'manufacturer_name': 'part_man',
-                'manufacturer_part_number': 'part_mpn',
-                'datasheet': 'part_data',
-            }
-            if not inventree_interface.translate_form_to_digikey(part_info, categories, custom=True):
-                method_results = False
+                if method_idx == 0:
+                    # Fuzzy category matching
+                    part_info = {
+                        'category': 'Capacitors',
+                        'subcategory': 'Super'
+                    }
+                    categories = tuple(inventree_interface.get_categories(part_info))
+                    if not (categories[0] and categories[1]):
+                        method_success = False
 
-            # Digi-Key search with missing part number
-            search = inventree_interface.digikey_search('')
-            if search:
-                method_results = False
+                elif method_idx == 1:
+                    # Custom parts form
+                    try:
+                        inventree_interface.translate_form_to_digikey(part_info, categories)
+                        # If the above function does not fail, it's a problem
+                        method_success = False
+                    except KeyError:
+                        pass
+                    
+                    part_info = {
+                        'name': 'part_name',
+                        'description': 'part_desc',
+                        'revision': 'part_rev',
+                        'keywords': 'part_key',
+                        'supplier_part_number': 'part_sku',
+                        'manufacturer_name': 'part_man',
+                        'manufacturer_part_number': 'part_mpn',
+                        'datasheet': 'part_data',
+                    }
+                    if not inventree_interface.translate_form_to_digikey(part_info, categories, custom=True):
+                        method_success = False
 
-            # Load KiCad library paths
-            config_interface.load_library_path(settings.CONFIG_KICAD, silent=True)
-            symbol_libraries_paths = config_interface.load_libraries_paths(settings.CONFIG_KICAD_CATEGORY_MAP,
-                                                                           symbol_libraries_test_path)
-            footprint_libraries_paths = config_interface.load_footprint_paths(settings.CONFIG_KICAD_CATEGORY_MAP,
-                                                                              footprint_libraries_test_path)
-            if not (symbol_libraries_paths and footprint_libraries_paths):
-                method_results = False
+                elif method_idx == 2:
+                    # Digi-Key search missing part number
+                    search = inventree_interface.digikey_search('')
+                    if search:
+                        method_success = False
 
-            # Add symbol library to user file
-            add_symbol_lib = config_interface.add_library_path(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
-                                                               category='category_test',
-                                                               symbol_library='symbol_library_test')
-            if not add_symbol_lib:
-                method_results = False
+                elif method_idx == 3:
+                    # Load KiCad library paths
+                    config_interface.load_library_path(settings.CONFIG_KICAD, silent=True)
+                    symbol_libraries_paths = config_interface.load_libraries_paths(settings.CONFIG_KICAD_CATEGORY_MAP, symbol_libraries_test_path)
+                    footprint_libraries_paths = config_interface.load_footprint_paths(settings.CONFIG_KICAD_CATEGORY_MAP, footprint_libraries_test_path)
+                    if not (symbol_libraries_paths and footprint_libraries_paths):
+                        method_success = False
 
-            # Add footprint library to user file
-            add_footprint_lib = config_interface.add_footprint_library(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+                elif method_idx == 4:
+                    # Add symbol library to user file
+                    add_symbol_lib = config_interface.add_library_path(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
                                                                        category='category_test',
-                                                                       library_folder='footprint_folder_test')
-            if not add_footprint_lib:
-                method_results = False
+                                                                       symbol_library='symbol_library_test')
+                    if not add_symbol_lib:
+                        method_success = False
 
-            # Add supplier category
-            categories = {
-                'Capacitors':
-                {'Super': 'Super'}
-            }
-            add_category = config_interface.add_supplier_category(categories, settings.CONFIG_DIGIKEY_CATEGORIES)
-            if not add_category:
-                method_results = False
+                elif method_idx == 5:
+                    # Add footprint library to user file
+                    add_footprint_lib = config_interface.add_footprint_library(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+                                                                               category='category_test',
+                                                                               library_folder='footprint_folder_test')
+                    if not add_footprint_lib:
+                        method_success = False
 
-            # Synchronize InvenTree and Supplier categories
-            sync_categories = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
-                                                                                  supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
-            if not sync_categories:
-                method_results = False
+                elif method_idx == 6:
+                    # Add supplier category
+                    categories = {
+                        'Capacitors':
+                        {'Super': 'Super'}
+                    }
+                    add_category = config_interface.add_supplier_category(categories, settings.CONFIG_DIGIKEY_CATEGORIES)
+                    if not add_category:
+                        method_success = False
 
-            # Test SnapEDA API methods
-            snapeda_success = test_snapeda_api()
-            if not snapeda_success:
-                method_results = False
+                elif method_idx == 7:
+                    # Sync InvenTree and Supplier categories
+                    sync_categories = config_interface.sync_inventree_supplier_categories(inventree_config_path=settings.CONFIG_CATEGORIES,
+                                                                                          supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
+                    if not sync_categories:
+                        method_success = False
 
-            # Test download_image failure modes
-            if download_image('', '', silent=True) or download_image('http', '', silent=True):
-                method_results = False
+                elif method_idx == 8:
+                    # Test SnapEDA API methods
+                    snapeda_success = test_snapeda_api()
+                    if not snapeda_success:
+                        method_success = False
 
-            if not method_results:
-                cprint('[ FAIL ]')
-                exit_code = -1
-            else:
-                cprint('[ PASS ]')
+                elif method_idx == 9:
+                    # Test download image
+                    if download_image('', '', silent=True) or download_image('http', '', silent=True):
+                        method_success = False
+
+                if method_success:
+                    cprint('[ PASS ]')
+                else:
+                    cprint('[ FAIL ]')
+                    exit_code = -1
+                    break
+            
+            # Line return
+            cprint('')
 
     sys.exit(exit_code)

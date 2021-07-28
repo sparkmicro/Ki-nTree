@@ -179,27 +179,47 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
     return categories
 
 
-def translate_digikey_to_inventree(part_info: dict, categories: list, skip_params=False) -> dict:
+def translate_digikey_to_inventree(part_info: dict, categories: list, supplier='Digi-Key', skip_params=False) -> dict:
     ''' Using supplier part data and categories, fill-in InvenTree part dictionary '''
+
+    def get_value_from_user_key(user_key: str, default_key: str, default_value=None) -> str:
+        ''' Get value mapped from user search key, else default search key '''
+
+        user_search_key = settings.CONFIG_DIGIKEY.get(user_key, None)
+        
+        # If no user key, use default
+        if not user_search_key:
+            return part_info.get(default_key, default_value)
+
+        # Get value for user key, return value from default key if not found
+        return part_info.get(user_search_key, part_info.get(default_key, default_value))
+
     # Copy template
     inventree_part = copy.deepcopy(settings.inventree_part_template)
     # Insert data
     inventree_part["category"][0] = categories[0]
     inventree_part["category"][1] = categories[1]
-    inventree_part['name'] = part_info.get('product_name', part_info.get('product_description', None))
-    inventree_part['description'] = part_info.get(settings.CONFIG_DIGIKEY.get('SEARCH_DESCRIPTION', None), part_info.get('product_description', None))
+    inventree_part['name'] = get_value_from_user_key('SEARCH_NAME', 'product_description')
+    inventree_part['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', 'product_description')
     # Revision
-    inventree_part['revision'] = part_info.get('revision', settings.INVENTREE_DEFAULT_REV)
+    inventree_part['revision'] = get_value_from_user_key('SEARCH_REVISION', 'revision', default_value=settings.INVENTREE_DEFAULT_REV)
     # Keywords (need to be after description)
-    inventree_part['keywords'] = part_info.get(settings.CONFIG_DIGIKEY.get('SEARCH_KEYWORDS', None), build_part_keywords(part_info))
-    inventree_part['image'] = part_info.get('primary_photo', None)
-    inventree_part['supplier'] = {'Digi-Key': [part_info.get('digi_key_part_number', None)], }
-    inventree_part['manufacturer'] = {part_info.get('manufacturer', 'manufacturer'): [part_info.get('manufacturer_part_number', None)]}
+    inventree_part['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', 'keywords', default_value=build_part_keywords(part_info))
+    inventree_part['supplier'] = {
+        supplier: [
+            get_value_from_user_key('SEARCH_SKU', 'digi_key_part_number'),
+        ],
+    }
+    inventree_part['manufacturer'] = {
+        get_value_from_user_key('SEARCH_MANUFACTURER', 'manufacturer', default_value='manufacturer'): [
+            get_value_from_user_key('SEARCH_MPN', 'manufacturer_part_number', default_value='')
+        ],
+    }
     # Replace whitespaces in URL
-    supplier_url_header = settings.CONFIG_DIGIKEY.get('SEARCH_SUPPLIER_URL', None) if settings.CONFIG_DIGIKEY.get('SEARCH_SUPPLIER_URL', None) else 'product_url'
-    inventree_part['supplier_link'] = part_info.get(supplier_url_header, '').replace(' ', '%20')
-    datasheet_header = settings.CONFIG_DIGIKEY.get('SEARCH_DATASHEET', None) if settings.CONFIG_DIGIKEY.get('SEARCH_DATASHEET', None) else 'primary_datasheet'
-    inventree_part['datasheet'] = part_info.get(datasheet_header, '').replace(' ', '%20')
+    inventree_part['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', 'product_url', default_value='').replace(' ', '%20')
+    inventree_part['datasheet'] = get_value_from_user_key('SEARCH_DATASHEET', 'primary_datasheet', default_value='').replace(' ', '%20')
+    # Image URL is not shown to user so force default key/value
+    inventree_part['image'] = get_value_from_user_key('', 'primary_photo', default_value='').replace(' ', '%20')
 
     # Load parameters map
     parameter_map = config_interface.load_category_parameters(category=inventree_part["category"][0],
@@ -285,7 +305,7 @@ def digikey_search(part_number: str, test_mode=False) -> dict:
 
 def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
     ''' Create InvenTree part from supplier part data and categories '''
-    # TODO: Make 'supplier' a variable for use with other APIs (eg. Octopart)
+    # TODO: Make 'supplier' a variable for use with other APIs (eg. LCSC, Mouser, etc)
     supplier = 'Digi-Key'
     part_pk = 0
     new_part = False
@@ -294,6 +314,7 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
     if supplier == 'Digi-Key':
         inventree_part = translate_digikey_to_inventree(part_info=part_info,
                                                         categories=categories,
+                                                        supplier=supplier,
                                                         skip_params=is_custom)
 
     if not inventree_part:
