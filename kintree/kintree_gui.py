@@ -843,15 +843,16 @@ def main():
     layout = [
         [sg.Menu(menu_def,)],
         [
-            sg.Text('Enter Part Number:'),
-            sg.InputText(key='part_number'),
+            sg.Text('Part Number'),
+            sg.InputText(key='part_number', size=(38, 1)),
+            sg.Combo(settings.SUPPORTED_SUPPLIERS_API, key='supplier', default_value='Digi-Key'),
         ],
         [
-            sg.Checkbox('Add to KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
-            sg.Checkbox('Add to InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
+            sg.Checkbox('KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
+            sg.Checkbox('InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
         ],
         [
-            sg.Button('CREATE', size=(59, 1)),
+            sg.Button('CREATE', size=(60, 1)),
         ],
     ]
 
@@ -935,16 +936,20 @@ def main():
                         # Load InvenTree settings
                         settings.load_inventree_settings()
 
-                        # Digi-Key Search
-                        part_info = inventree_interface.digikey_search(values['part_number'])
+                        # Supplier search
+                        part_info = inventree_interface.supplier_search(values['supplier'], values['part_number'])
 
                     if not part_info:
+                        error_message = 'Failed to fetch part information...\n\n' \
+                                        'Make sure:' \
+                                        '\n- Part number is valid and not blank'
+                        if values['supplier'] == 'Digi-Key':
+                            error_message += '\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
+                        elif values['supplier'] == 'LCSC':
+                            error_message += '\n- Part number starts with "C" (LCSC code)'
                         # Missing Part Information
-                        sg.popup_ok('Failed to fetch part information...\n\n'
-                                    'Make sure:'
-                                    '\n- Part number is valid and not blank'
-                                    '\n- Digi-Key API settings are correct ("Settings > Digi-Key")',
-                                    title='Digi-Key API Search',
+                        sg.popup_ok(error_message,
+                                    title='Supplier API Search',
                                     location=(500, 500))
 
             # Get user categories

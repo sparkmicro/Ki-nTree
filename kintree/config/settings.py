@@ -116,6 +116,9 @@ if IPN_USE_VARIANT_SUFFIX:
 CONFIG_GENERAL = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'general.yaml'))
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 
+# Supported suppliers APIs
+SUPPORTED_SUPPLIERS_API = ['Digi-Key', 'LCSC']
+
 # DIGI-KEY
 # Fetch settings
 CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))

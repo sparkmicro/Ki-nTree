@@ -7,7 +7,7 @@ from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
 from fuzzywuzzy import fuzz
-from ..search import digikey_api
+from ..search import digikey_api, lcsc_api
 
 
 def connect_to_server(timeout=5) -> bool:
@@ -273,7 +273,7 @@ def translate_form_to_digikey(part_info: dict, categories: list, custom=False) -
     return updated_part_info
 
 
-def digikey_search(part_number: str, test_mode=False) -> dict:
+def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
     ''' Wrapper for Digi-Key search, allow use of cached data (limited daily API calls) '''
     part_info = {}
     # Check part number exist
@@ -282,15 +282,18 @@ def digikey_search(part_number: str, test_mode=False) -> dict:
         return part_info
 
     # Load from file if cache is enabled
-    search_filename = settings.search_results['directory'] + part_number + settings.search_results['extension']
+    search_filename = settings.search_results['directory'] + supplier + '_' + part_number + settings.search_results['extension']
 
     # Get cached data
     part_info = digikey_api.load_from_file(search_filename, test_mode)
     if part_info:
-        cprint(f'\n[MAIN]\tUsing Digi-Key cached data for {part_number}', silent=settings.SILENT)
+        cprint(f'\n[MAIN]\tUsing {supplier} cached data for {part_number}', silent=settings.SILENT)
     else:
-        cprint(f'\n[MAIN]\tDigi-Key search for {part_number}', silent=settings.SILENT)
-        part_info = digikey_api.fetch_digikey_part_info(part_number)
+        cprint(f'\n[MAIN]\t{supplier} search for {part_number}', silent=settings.SILENT)
+        if supplier == 'Digi-Key':
+            part_info = digikey_api.fetch_digikey_part_info(part_number)
+        elif supplier == 'LCSC':
+            part_info = lcsc_api.fetch_part_info(part_number)
 
     # Check Digi-Key data exist
     if not part_info:
