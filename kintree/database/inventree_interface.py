@@ -122,18 +122,20 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
         # Load category map
         category_map = config_interface.load_supplier_categories(supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
 
-        def find_supplier_category_match(supplier_category: str):
+        def find_supplier_category_match(supplier_category: str, ignore_categories=False):
             # Check for match with Inventree categories
             category_match = None
             subcategory_match = None
 
             for inventree_category in category_map.keys():
-                fuzzy_match = fuzz.partial_ratio(supplier_category, inventree_category)
-                display_result = f'"{supplier_category}" ?= "{inventree_category}"'.ljust(50)
-                cprint(f'{display_result} => {fuzzy_match}', silent=settings.HIDE_DEBUG)
+                fuzzy_match = 0
+                
+                if not ignore_categories:
+                    fuzzy_match = fuzz.partial_ratio(supplier_category, inventree_category)
+                    display_result = f'"{supplier_category}" ?= "{inventree_category}"'.ljust(50)
+                    cprint(f'{display_result} => {fuzzy_match}', silent=settings.HIDE_DEBUG)
 
-                if fuzzy_match < settings.CATEGORY_MATCH_RATIO_LIMIT and \
-                        category_map[inventree_category]:
+                if fuzzy_match < settings.CATEGORY_MATCH_RATIO_LIMIT and category_map[inventree_category]:
                     # Compare to subcategories
                     for inventree_subcategory in category_map[inventree_category]:
                         fuzzy_match = fuzz.partial_ratio(supplier_category, inventree_subcategory)
@@ -159,7 +161,11 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 
         # Run match with supplier subcategory
         if not categories[0] or not categories[1]:
-            category, subcategory = find_supplier_category_match(supplier_subcategory)
+            if categories[0]:
+                # If category was found: ignore them for the comparison
+                category, subcategory = find_supplier_category_match(supplier_subcategory, ignore_categories=True)
+            else:
+                category, subcategory = find_supplier_category_match(supplier_subcategory)
 
         if category and not categories[0]:
             categories[0] = category

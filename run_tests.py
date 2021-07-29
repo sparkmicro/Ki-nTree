@@ -128,7 +128,7 @@ if __name__ == '__main__':
                     kicad_result = False
                     inventree_result = False
                     # Fetch supplier data
-                    part_info = inventree_interface.digikey_search(part_number=number, test_mode=True)
+                    part_info = inventree_interface.supplier_search(supplier='Digi-Key', part_number=number, test_mode=True)
                     # Display part to be tested
                     pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 
@@ -309,7 +309,7 @@ if __name__ == '__main__':
 
                 elif method_idx == 2:
                     # Digi-Key search missing part number
-                    search = inventree_interface.digikey_search('')
+                    search = inventree_interface.supplier_search(supplier='Digi-Key', part_number='')
                     if search:
                         method_success = False
 
