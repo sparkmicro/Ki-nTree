@@ -56,8 +56,8 @@ def setup_environment() -> bool:
 
 def get_default_search_keys():
     return [
-        'product_revision',
-        'product_revision',
+        'product_description',
+        'product_description',
         'revision',
         'keywords',
         'digi_key_part_number',

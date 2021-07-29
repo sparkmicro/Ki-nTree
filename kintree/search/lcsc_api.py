@@ -92,3 +92,26 @@ def fetch_part_info(part_number: str) -> dict:
         part_info['parameters'][parameter_name] = parameter_value
 
     return part_info
+
+
+def test_api() -> bool:
+    ''' Test method for API '''
+
+    test_success = True
+    expected = {
+        'productIntroEn': 'C0G 25V \u00b15% 100pF 0201 Multilayer Ceramic Capacitors MLCC - SMD\/SMT ROHS',
+        'productCode': 'C2181718',
+        'brandNameEn': 'TDK',
+        'productModel': 'C0603C0G1E101J030BA',
+    }
+
+    test_part = fetch_part_info('C2181718')
+        
+    # Check content of response
+    if test_success:
+        for key, value in expected.items():
+            if test_part[key] != value:
+                test_success = False
+                break
+
+    return test_success

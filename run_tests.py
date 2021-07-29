@@ -6,8 +6,7 @@ from kintree.common.tools import cprint, create_library, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search.digikey_api import disable_api_logger
-from kintree.search.digikey_api import test_api_connect
+from kintree.search import digikey_api, lcsc_api
 from kintree.search.snapeda_api import test_snapeda_api
 from kintree.setup_inventree import setup_inventree
 
@@ -74,14 +73,22 @@ settings.load_user_config()
 test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
 footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
-# Disable API logging
-disable_api_logger()
+# Disable Digi-Key API logging
+digikey_api.disable_api_logger()
 
-# Check Digi-Key API
-pretty_test_print('\n[MAIN]\tDigi-Key API Test')
-if not test_api_connect(check_content=True):
+# Test Digi-Key API
+pretty_test_print('[MAIN]\tDigi-Key API Test')
+if not digikey_api.test_api_connect(check_content=True):
     cprint('[ FAIL ]')
     cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+    sys.exit(-1)
+else:
+    cprint('[ PASS ]')
+
+# Test LCSC API
+pretty_test_print('[MAIN]\tLCSC API Test')
+if not lcsc_api.test_api():
+    cprint('[ FAIL ]')
     sys.exit(-1)
 else:
     cprint('[ PASS ]')
