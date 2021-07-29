@@ -87,10 +87,13 @@ if not load_user_config():
         cprint('\n[ERROR]\tSome Ki-nTree configuration files seem to be missing')
         exit(-1)
 
+# Common to search APIs
+CONFIG_SUPPLIER_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'supplier_parameters.yaml')
+
 # Digi-Key
 CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
 CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
-CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
+# CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
 
 # KiCad
 CONFIG_KICAD = os.path.join(CONFIG_USER_FILES, 'kicad.yaml')
@@ -116,9 +119,18 @@ if IPN_USE_VARIANT_SUFFIX:
 CONFIG_GENERAL = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'general.yaml'))
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 
-# DIGI-KEY
-# Fetch settings
+# Supported suppliers APIs
+SUPPORTED_SUPPLIERS_API = ['Digi-Key', 'LCSC']
+
+# Digi-Key user configuration
 CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
+
+# LCSC user configuration
+CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
+
+# Generic API user configuration
+CONFIG_SEARCH_API = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'search_api.yaml'))
+
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = CONFIG_DIGIKEY.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
 # Search results caching (stored in files)

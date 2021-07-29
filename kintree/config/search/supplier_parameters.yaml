@@ -1,6 +1,7 @@
-# Parameter Mapping between KiCad template symbol and Digi-Key
-# Each template parameter can match to multiple Digi-Key parameters
-# Categories (main keys) should match categories in kicad/kicad_map.yaml file
+# Parameter Mapping between InvenTree parameter template and suppliers parameters naming
+# Each template parameter can match to multiple suppliers parameters
+# Categories (main keys) should match categories in the categories.yaml file
+# Parameter template names should match those found in the parameters.yaml file
 Capacitors:
   ESR:
   - ESR (Equivalent Series Resistance)

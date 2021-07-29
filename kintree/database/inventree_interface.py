@@ -7,7 +7,7 @@ from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
 from fuzzywuzzy import fuzz
-from ..search import digikey_api
+from ..search import search_api, digikey_api, lcsc_api
 
 
 def connect_to_server(timeout=5) -> bool:
@@ -40,11 +40,6 @@ def connect_to_server(timeout=5) -> bool:
         cprint(f'[TREE]\tSuccessfully connected to InvenTree server (ENV={env})', silent=settings.SILENT)
 
     return connect
-
-
-def build_part_keywords(part_info: dict) -> str:
-    ''' Build part keywords to be used in InvenTree and KiCad '''
-    return part_info.get('product_description', None)
 
 
 def get_categories(part_info: dict, supplier_only=False) -> list:
@@ -92,7 +87,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
     if not categories[1] and function_filter:
         cprint(f'[INFO]\tSubcategory is filtered using "{filter_parameter}" parameter', silent=settings.SILENT, end='')
         # Load parameter map
-        parameter_map = config_interface.load_category_parameters(categories[0], settings.CONFIG_DIGIKEY_PARAMETERS)
+        parameter_map = config_interface.load_category_parameters(categories[0], settings.CONFIG_SUPPLIER_PARAMETERS)
         # Build compare list
         compare = []
         for supplier_parameter, inventree_parameter in parameter_map.items():
@@ -122,18 +117,20 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
         # Load category map
         category_map = config_interface.load_supplier_categories(supplier_config_path=settings.CONFIG_DIGIKEY_CATEGORIES)
 
-        def find_supplier_category_match(supplier_category: str):
+        def find_supplier_category_match(supplier_category: str, ignore_categories=False):
             # Check for match with Inventree categories
             category_match = None
             subcategory_match = None
 
             for inventree_category in category_map.keys():
-                fuzzy_match = fuzz.partial_ratio(supplier_category, inventree_category)
-                display_result = f'"{supplier_category}" ?= "{inventree_category}"'.ljust(50)
-                cprint(f'{display_result} => {fuzzy_match}', silent=settings.HIDE_DEBUG)
+                fuzzy_match = 0
+                
+                if not ignore_categories:
+                    fuzzy_match = fuzz.partial_ratio(supplier_category, inventree_category)
+                    display_result = f'"{supplier_category}" ?= "{inventree_category}"'.ljust(50)
+                    cprint(f'{display_result} => {fuzzy_match}', silent=settings.HIDE_DEBUG)
 
-                if fuzzy_match < settings.CATEGORY_MATCH_RATIO_LIMIT and \
-                        category_map[inventree_category]:
+                if fuzzy_match < settings.CATEGORY_MATCH_RATIO_LIMIT and category_map[inventree_category]:
                     # Compare to subcategories
                     for inventree_subcategory in category_map[inventree_category]:
                         fuzzy_match = fuzz.partial_ratio(supplier_category, inventree_subcategory)
@@ -159,7 +156,11 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
 
         # Run match with supplier subcategory
         if not categories[0] or not categories[1]:
-            category, subcategory = find_supplier_category_match(supplier_subcategory)
+            if categories[0]:
+                # If category was found: ignore them for the comparison
+                category, subcategory = find_supplier_category_match(supplier_subcategory, ignore_categories=True)
+            else:
+                category, subcategory = find_supplier_category_match(supplier_subcategory)
 
         if category and not categories[0]:
             categories[0] = category
@@ -179,13 +180,16 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
     return categories
 
 
-def translate_digikey_to_inventree(part_info: dict, categories: list, supplier='Digi-Key', skip_params=False) -> dict:
+def translate_supplier_to_inventree(supplier: str, part_info: dict, categories: list, skip_params=False) -> dict:
     ''' Using supplier part data and categories, fill-in InvenTree part dictionary '''
 
     def get_value_from_user_key(user_key: str, default_key: str, default_value=None) -> str:
         ''' Get value mapped from user search key, else default search key '''
-
-        user_search_key = settings.CONFIG_DIGIKEY.get(user_key, None)
+        user_search_key = None
+        if supplier == 'Digi-Key':
+            user_search_key = settings.CONFIG_DIGIKEY.get(user_key, None)
+        elif supplier == 'LCSC':
+            user_search_key = settings.CONFIG_LCSC.get(user_key, None)
         
         # If no user key, use default
         if not user_search_key:
@@ -196,34 +200,43 @@ def translate_digikey_to_inventree(part_info: dict, categories: list, supplier='
 
     # Copy template
     inventree_part = copy.deepcopy(settings.inventree_part_template)
+    # Check that supplier argument is valid
+    if not supplier or supplier not in settings.SUPPORTED_SUPPLIERS_API:
+        return inventree_part
+    # Get default keys
+    if supplier == 'Digi-Key':
+        default_search_keys = digikey_api.get_default_search_keys()
+    elif supplier == 'LCSC':
+        default_search_keys = lcsc_api.get_default_search_keys()
+
     # Insert data
     inventree_part["category"][0] = categories[0]
     inventree_part["category"][1] = categories[1]
-    inventree_part['name'] = get_value_from_user_key('SEARCH_NAME', 'product_description')
-    inventree_part['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', 'product_description')
+    inventree_part['name'] = get_value_from_user_key('SEARCH_NAME', default_search_keys[0])
+    inventree_part['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', default_search_keys[1])
     # Revision
-    inventree_part['revision'] = get_value_from_user_key('SEARCH_REVISION', 'revision', default_value=settings.INVENTREE_DEFAULT_REV)
+    inventree_part['revision'] = get_value_from_user_key('SEARCH_REVISION', default_search_keys[2], default_value=settings.INVENTREE_DEFAULT_REV)
     # Keywords (need to be after description)
-    inventree_part['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', 'keywords', default_value=build_part_keywords(part_info))
+    inventree_part['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', default_search_keys[1])
     inventree_part['supplier'] = {
         supplier: [
-            get_value_from_user_key('SEARCH_SKU', 'digi_key_part_number'),
+            get_value_from_user_key('SEARCH_SKU', default_search_keys[4]),
         ],
     }
     inventree_part['manufacturer'] = {
-        get_value_from_user_key('SEARCH_MANUFACTURER', 'manufacturer', default_value='manufacturer'): [
-            get_value_from_user_key('SEARCH_MPN', 'manufacturer_part_number', default_value='')
+        get_value_from_user_key('SEARCH_MANUFACTURER', default_search_keys[5], default_value='manufacturer'): [
+            get_value_from_user_key('SEARCH_MPN', default_search_keys[6], default_value='')
         ],
     }
     # Replace whitespaces in URL
-    inventree_part['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', 'product_url', default_value='').replace(' ', '%20')
-    inventree_part['datasheet'] = get_value_from_user_key('SEARCH_DATASHEET', 'primary_datasheet', default_value='').replace(' ', '%20')
+    inventree_part['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', default_search_keys[7], default_value='').replace(' ', '%20')
+    inventree_part['datasheet'] = get_value_from_user_key('SEARCH_DATASHEET', default_search_keys[8], default_value='').replace(' ', '%20')
     # Image URL is not shown to user so force default key/value
-    inventree_part['image'] = get_value_from_user_key('', 'primary_photo', default_value='').replace(' ', '%20')
+    inventree_part['image'] = get_value_from_user_key('', default_search_keys[9], default_value='').replace(' ', '%20')
 
     # Load parameters map
     parameter_map = config_interface.load_category_parameters(category=inventree_part["category"][0],
-                                                              supplier_config_path=settings.CONFIG_DIGIKEY_PARAMETERS, )
+                                                              supplier_config_path=settings.CONFIG_SUPPLIER_PARAMETERS, )
 
     if not skip_params:
         # Add Parameters
@@ -273,8 +286,8 @@ def translate_form_to_digikey(part_info: dict, categories: list, custom=False) -
     return updated_part_info
 
 
-def digikey_search(part_number: str, test_mode=False) -> dict:
-    ''' Wrapper for Digi-Key search, allow use of cached data (limited daily API calls) '''
+def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
+    ''' Wrapper for supplier search, allow use of cached data (limited daily API calls) '''
     part_info = {}
     # Check part number exist
     if not part_number:
@@ -282,15 +295,18 @@ def digikey_search(part_number: str, test_mode=False) -> dict:
         return part_info
 
     # Load from file if cache is enabled
-    search_filename = settings.search_results['directory'] + part_number + settings.search_results['extension']
+    search_filename = settings.search_results['directory'] + supplier + '_' + part_number + settings.search_results['extension']
 
     # Get cached data
-    part_info = digikey_api.load_from_file(search_filename, test_mode)
+    part_info = search_api.load_from_file(search_filename, test_mode)
     if part_info:
-        cprint(f'\n[MAIN]\tUsing Digi-Key cached data for {part_number}', silent=settings.SILENT)
+        cprint(f'\n[MAIN]\tUsing {supplier} cached data for {part_number}', silent=settings.SILENT)
     else:
-        cprint(f'\n[MAIN]\tDigi-Key search for {part_number}', silent=settings.SILENT)
-        part_info = digikey_api.fetch_digikey_part_info(part_number)
+        cprint(f'\n[MAIN]\t{supplier} search for {part_number}', silent=settings.SILENT)
+        if supplier == 'Digi-Key':
+            part_info = digikey_api.fetch_part_info(part_number)
+        elif supplier == 'LCSC':
+            part_info = lcsc_api.fetch_part_info(part_number)
 
     # Check Digi-Key data exist
     if not part_info:
@@ -298,24 +314,22 @@ def digikey_search(part_number: str, test_mode=False) -> dict:
 
     # Save search results
     if part_info:
-        digikey_api.save_to_file(part_info, search_filename)
+        search_api.save_to_file(part_info, search_filename)
 
     return part_info
 
 
-def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
+def inventree_create(supplier: str, part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
     ''' Create InvenTree part from supplier part data and categories '''
     # TODO: Make 'supplier' a variable for use with other APIs (eg. LCSC, Mouser, etc)
-    supplier = 'Digi-Key'
     part_pk = 0
     new_part = False
 
     # Translate to InvenTree part format
-    if supplier == 'Digi-Key':
-        inventree_part = translate_digikey_to_inventree(part_info=part_info,
-                                                        categories=categories,
-                                                        supplier=supplier,
-                                                        skip_params=is_custom)
+    inventree_part = translate_supplier_to_inventree(supplier=supplier,
+                                                     part_info=part_info,
+                                                     categories=categories,
+                                                     skip_params=is_custom)
 
     if not inventree_part:
         cprint(f'\n[MAIN]\tError: Failed to process {supplier} data', silent=settings.SILENT)

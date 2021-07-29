@@ -6,8 +6,7 @@ from kintree.common.tools import cprint, create_library, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search.digikey_api import disable_digikey_api_logger
-from kintree.search.digikey_api import test_digikey_api_connect
+from kintree.search import digikey_api, lcsc_api
 from kintree.search.snapeda_api import test_snapeda_api
 from kintree.setup_inventree import setup_inventree
 
@@ -74,14 +73,22 @@ settings.load_user_config()
 test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
 symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
 footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
-# Disable API logging
-disable_digikey_api_logger()
+# Disable Digi-Key API logging
+digikey_api.disable_api_logger()
 
-# Check Digi-Key API
-pretty_test_print('\n[MAIN]\tDigi-Key API Test')
-if not test_digikey_api_connect(check_content=True):
+# Test Digi-Key API
+pretty_test_print('[MAIN]\tDigi-Key API Test')
+if not digikey_api.test_api_connect(check_content=True):
     cprint('[ FAIL ]')
     cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+    sys.exit(-1)
+else:
+    cprint('[ PASS ]')
+
+# Test LCSC API
+pretty_test_print('[MAIN]\tLCSC API Test')
+if not lcsc_api.test_api():
+    cprint('[ FAIL ]')
     sys.exit(-1)
 else:
     cprint('[ PASS ]')
@@ -128,13 +135,13 @@ if __name__ == '__main__':
                     kicad_result = False
                     inventree_result = False
                     # Fetch supplier data
-                    part_info = inventree_interface.digikey_search(part_number=number, test_mode=True)
+                    part_info = inventree_interface.supplier_search(supplier='Digi-Key', part_number=number, test_mode=True)
                     # Display part to be tested
                     pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 
                     if ENABLE_KICAD:
                         # Translate supplier data to inventree/kicad data
-                        part_data = inventree_interface.translate_digikey_to_inventree(part_info, [category, None])
+                        part_data = inventree_interface.translate_supplier_to_inventree('Digi-Key', part_info, [category, None])
 
                         if part_data:
                             part_data['IPN'] = number
@@ -164,7 +171,8 @@ if __name__ == '__main__':
 
                         # Create part in InvenTree
                         if categories[0] and categories[1]:
-                            new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
+                            new_part, part_pk, part_data = inventree_interface.inventree_create(supplier='Digi-Key',
+                                                                                                part_info=part_info,
                                                                                                 categories=categories,
                                                                                                 kicad=last_category,
                                                                                                 show_progress=False)
@@ -309,7 +317,7 @@ if __name__ == '__main__':
 
                 elif method_idx == 2:
                     # Digi-Key search missing part number
-                    search = inventree_interface.digikey_search('')
+                    search = inventree_interface.supplier_search(supplier='Digi-Key', part_number='')
                     if search:
                         method_success = False
 

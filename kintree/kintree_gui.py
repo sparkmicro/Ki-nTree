@@ -36,12 +36,12 @@ def user_settings_window():
 
     user_layout = [
         [
-            sg.Text('Select Configuration Files Folder:'),
+            sg.Text('Configuration Files Folder '),
             sg.InputText(USER_FILES, key='user_files'),
             sg.FolderBrowse(target='user_files', initial_folder=USER_FILES),
         ],
         [
-            sg.Text('Select Cache Folder:'),
+            sg.Text('Cache Folder '),
             sg.InputText(USER_CACHE, key='user_cache'),
             sg.FolderBrowse(target='user_cache', initial_folder=USER_CACHE),
         ],
@@ -84,11 +84,11 @@ def search_api_settings_window():
 
     search_api_layout = [
         [
-            sg.Text('Enter Digi-Key API Client ID:'),
+            sg.Text('Digi-Key API Client ID '),
             sg.InputText(user_settings['DIGIKEY_CLIENT_ID'], key='client_id'),
         ],
         [
-            sg.Text('Enter Digi-Key API Client Secret:'),
+            sg.Text('Digi-Key API Client Secret '),
             sg.InputText(user_settings['DIGIKEY_CLIENT_SECRET'], key='client_secret'),
         ],
         [
@@ -117,7 +117,7 @@ def search_api_settings_window():
         elif api_event == 'Test':
             # Automatically save settings
             save_settings(user_settings)
-            if digikey_api.test_digikey_api_connect():
+            if digikey_api.test_api_connect():
                 result_message = 'Successfully connected to Digi-Key API'
             else:
                 result_message = 'Failed to connect to Digi-Key API'
@@ -137,15 +137,15 @@ def inventree_settings_window():
 
     inventree_layout = [
         [
-            sg.Text('Enter InvenTree Address:'),
+            sg.Text('InvenTree Address '),
             sg.InputText(user_settings['SERVER_ADDRESS'], key='server'),
         ],
         [
-            sg.Text('Enter Username:'),
+            sg.Text('Username '),
             sg.InputText(user_settings['USERNAME'], key='username'),
         ],
         [
-            sg.Text('Enter Password:'),
+            sg.Text('Password '),
             sg.InputText(user_settings['PASSWORD'], key='password', password_char='*'),
         ],
         [
@@ -196,17 +196,17 @@ def kicad_settings_window():
 
     kicad_layout = [
         [
-            sg.Text('Select Symbol Libraries Folder:'),
+            sg.Text('Symbol Libraries Folder '),
             sg.InputText(KICAD_SYMBOLS_PATH, key='library'),
             sg.FolderBrowse(target='library', initial_folder=KICAD_SYMBOLS_PATH),
         ],
         [
-            sg.Text('Select Symbol Templates Folder:'),
+            sg.Text('Symbol Templates Folder '),
             sg.InputText(KICAD_TEMPLATES_PATH, key='template'),
             sg.FolderBrowse(target='template', initial_folder=KICAD_TEMPLATES_PATH),
         ],
         [
-            sg.Text('Select Footprint Libraries Folder:'),
+            sg.Text('Footprint Libraries Folder '),
             sg.InputText(KICAD_FOOTPRINTS_PATH, key='footprint'),
             sg.FolderBrowse(target='footprint', initial_folder=KICAD_FOOTPRINTS_PATH),
         ],
@@ -465,14 +465,14 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
 
     category_layout = [
         [
-            sg.Text('Select Category:'),
+            sg.Text('Category '),
             sg.Combo(sorted(categories_choices), default_value=category, key='category'),
             sg.Button('Confirm'),
         ],
         [
-            sg.Text('Select Subcategory:'),
+            sg.Text('Subcategory '),
             sg.Combo(sorted(subcategories_choices), default_value=subcategory_default, size=(20, 1), key='subcategory_sel'),
-            sg.Text('Or Enter Name:'),
+            sg.Text('Or Enter Name '),
             sg.In(size=(20, 1), key='subcategory_man'),
         ],
         [
@@ -726,23 +726,23 @@ def user_defined_symbol_template_footprint(categories: list,
 
     library_layout = [
         [
-            sg.Text('Select Symbol Library:'),
+            sg.Text('Symbol Library '),
             sg.Combo(symbol_lib_choices, default_value=symbol_lib_default, key='symbol_lib'),
             sg.Button('Confirm'),
         ],
         [
-            sg.Text(f'Select Symbol Template ({categories[0]}):'),
+            sg.Text(f'Symbol Template ({categories[0]}) '),
             sg.Combo(template_choices, default_value=template_default, key='template'),
         ],
         [
-            sg.Text('Select Footprint Library:'),
+            sg.Text('Footprint Library '),
             sg.Combo(footprint_lib_choices, default_value=footprint_lib_default, key='footprint_lib'),
             sg.Button('Confirm'),
         ],
         [
-            sg.Text('Select Footprint:'),
+            sg.Text('Footprint '),
             sg.Combo(footprint_mod_choices, default_value=footprint_mod_default, key='footprint_mod_sel'),
-            sg.Text('Or Enter Name:'),
+            sg.Text('Or Enter Name '),
             sg.In(size=(20, 1), key='footprint_mod_man'),
         ],
         [sg.Text('')],
@@ -843,15 +843,16 @@ def main():
     layout = [
         [sg.Menu(menu_def,)],
         [
-            sg.Text('Enter Part Number:'),
-            sg.InputText(key='part_number'),
+            sg.Text('Part Number '),
+            sg.InputText(key='part_number', size=(38, 1)),
+            sg.Combo(settings.SUPPORTED_SUPPLIERS_API, key='supplier', default_value='Digi-Key'),
         ],
         [
-            sg.Checkbox('Add to KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
-            sg.Checkbox('Add to InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
+            sg.Checkbox('KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
+            sg.Checkbox('InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
         ],
         [
-            sg.Button('CREATE', size=(59, 1)),
+            sg.Button('CREATE', size=(60, 1)),
         ],
     ]
 
@@ -895,23 +896,29 @@ def main():
             part_data = {}
             progressbar = False
             actions_complete = False
+            inventree_connect = False
 
-            # Check either KiCad or InvenTree are enabled
-            if not settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
-                inventree_connect = False
-                sg.popup_ok('Please select an endpoint (KiCad and/or InvenTree)',
-                            title='No endpoint selected',
+            # Check supplier selection (can be overwritten)
+            if values['supplier'] not in settings.SUPPORTED_SUPPLIERS_API:
+                sg.popup_ok(f'Supplier "{values["supplier"]}"" is not in the list of supported suppliers: {settings.SUPPORTED_SUPPLIERS_API}',
+                            title='Incorrect Supplier',
                             location=(500, 500))
-            # Check InvenTree, if enabled
-            elif settings.ENABLE_INVENTREE:
-                cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
-                inventree_connect = inventree_interface.connect_to_server()
-                if not inventree_connect:
-                    sg.popup_ok('Failed to access InvenTree server\nMake sure your username and password are correct',
-                                title='InvenTree Server Error',
+            else:
+                # Check either KiCad or InvenTree are enabled
+                if not settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
+                    sg.popup_ok('Please select an endpoint (KiCad and/or InvenTree)',
+                                title='No endpoint selected',
                                 location=(500, 500))
-            elif settings.ENABLE_KICAD:
-                inventree_connect = True
+                # Check InvenTree, if enabled
+                elif settings.ENABLE_INVENTREE:
+                    cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
+                    inventree_connect = inventree_interface.connect_to_server()
+                    if not inventree_connect:
+                        sg.popup_ok('Failed to access InvenTree server\nMake sure your username and password are correct',
+                                    title='InvenTree Server Error',
+                                    location=(500, 500))
+                elif settings.ENABLE_KICAD:
+                    inventree_connect = True
 
             # Get part information
             if inventree_connect:
@@ -935,16 +942,20 @@ def main():
                         # Load InvenTree settings
                         settings.load_inventree_settings()
 
-                        # Digi-Key Search
-                        part_info = inventree_interface.digikey_search(values['part_number'])
+                        # Supplier search
+                        part_info = inventree_interface.supplier_search(values['supplier'], values['part_number'])
 
                     if not part_info:
+                        error_message = 'Failed to fetch part information...\n\n' \
+                                        'Make sure:' \
+                                        '\n- Part number is valid and not blank'
+                        if values['supplier'] == 'Digi-Key':
+                            error_message += '\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
+                        elif values['supplier'] == 'LCSC':
+                            error_message += '\n- Part number starts with "C" (LCSC code)'
                         # Missing Part Information
-                        sg.popup_ok('Failed to fetch part information...\n\n'
-                                    'Make sure:'
-                                    '\n- Part number is valid and not blank'
-                                    '\n- Digi-Key API settings are correct ("Settings > Digi-Key")',
-                                    title='Digi-Key API Search',
+                        sg.popup_ok(error_message,
+                                    title='Supplier API Search',
                                     location=(500, 500))
 
             # Get user categories
@@ -997,9 +1008,10 @@ def main():
                         cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
 
                     # Confirm part data with user
-                    form_data = add_custom_part(inventree_interface.translate_digikey_to_inventree(part_info=part_info,
-                                                                                                   categories=categories,
-                                                                                                   skip_params=True))
+                    form_data = add_custom_part(inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
+                                                                                                    part_info=part_info,
+                                                                                                    categories=categories,
+                                                                                                    skip_params=True))
                     if form_data:
                         # Translate to part info format
                         user_part_info = inventree_interface.translate_form_to_digikey(part_info=form_data,
@@ -1033,7 +1045,8 @@ def main():
 
                     # Create part in InvenTree
                     if settings.ENABLE_INVENTREE:
-                        new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
+                        new_part, part_pk, part_data = inventree_interface.inventree_create(supplier=values['supplier'],
+                                                                                            part_info=part_info,
                                                                                             categories=categories,
                                                                                             kicad=settings.ENABLE_KICAD,
                                                                                             symbol=symbol,
@@ -1046,11 +1059,13 @@ def main():
                     else:
                         if not categories[0]:
                             pseudo_categories = [symbol, None]
-                            part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
-                                                                                           categories=pseudo_categories)
+                            part_data = inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
+                                                                                            part_info=part_info,
+                                                                                            categories=pseudo_categories)
                         else:
-                            part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
-                                                                                           categories=categories)
+                            part_data = inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
+                                                                                            part_info=part_info,
+                                                                                            categories=categories)
                             part_data['parameters']['Symbol'] = symbol
                             part_data['parameters']['Footprint'] = footprint
                         if not part_data:
@@ -1187,7 +1202,7 @@ def main():
 
 if __name__ == '__main__':
     # Disable Digi-Key API logger
-    digikey_api.disable_digikey_api_logger()
+    digikey_api.disable_api_logger()
     # Fix for Windows EXE
     import multiprocessing
     multiprocessing.freeze_support()
