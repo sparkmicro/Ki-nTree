@@ -36,12 +36,12 @@ def user_settings_window():
 
     user_layout = [
         [
-            sg.Text('Select Configuration Files Folder:'),
+            sg.Text('Configuration Files Folder '),
             sg.InputText(USER_FILES, key='user_files'),
             sg.FolderBrowse(target='user_files', initial_folder=USER_FILES),
         ],
         [
-            sg.Text('Select Cache Folder:'),
+            sg.Text('Cache Folder '),
             sg.InputText(USER_CACHE, key='user_cache'),
             sg.FolderBrowse(target='user_cache', initial_folder=USER_CACHE),
         ],
@@ -84,11 +84,11 @@ def search_api_settings_window():
 
     search_api_layout = [
         [
-            sg.Text('Enter Digi-Key API Client ID:'),
+            sg.Text('Digi-Key API Client ID '),
             sg.InputText(user_settings['DIGIKEY_CLIENT_ID'], key='client_id'),
         ],
         [
-            sg.Text('Enter Digi-Key API Client Secret:'),
+            sg.Text('Digi-Key API Client Secret '),
             sg.InputText(user_settings['DIGIKEY_CLIENT_SECRET'], key='client_secret'),
         ],
         [
@@ -137,15 +137,15 @@ def inventree_settings_window():
 
     inventree_layout = [
         [
-            sg.Text('Enter InvenTree Address:'),
+            sg.Text('InvenTree Address '),
             sg.InputText(user_settings['SERVER_ADDRESS'], key='server'),
         ],
         [
-            sg.Text('Enter Username:'),
+            sg.Text('Username '),
             sg.InputText(user_settings['USERNAME'], key='username'),
         ],
         [
-            sg.Text('Enter Password:'),
+            sg.Text('Password '),
             sg.InputText(user_settings['PASSWORD'], key='password', password_char='*'),
         ],
         [
@@ -196,17 +196,17 @@ def kicad_settings_window():
 
     kicad_layout = [
         [
-            sg.Text('Select Symbol Libraries Folder:'),
+            sg.Text('Symbol Libraries Folder '),
             sg.InputText(KICAD_SYMBOLS_PATH, key='library'),
             sg.FolderBrowse(target='library', initial_folder=KICAD_SYMBOLS_PATH),
         ],
         [
-            sg.Text('Select Symbol Templates Folder:'),
+            sg.Text('Symbol Templates Folder '),
             sg.InputText(KICAD_TEMPLATES_PATH, key='template'),
             sg.FolderBrowse(target='template', initial_folder=KICAD_TEMPLATES_PATH),
         ],
         [
-            sg.Text('Select Footprint Libraries Folder:'),
+            sg.Text('Footprint Libraries Folder '),
             sg.InputText(KICAD_FOOTPRINTS_PATH, key='footprint'),
             sg.FolderBrowse(target='footprint', initial_folder=KICAD_FOOTPRINTS_PATH),
         ],
@@ -465,14 +465,14 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
 
     category_layout = [
         [
-            sg.Text('Select Category:'),
+            sg.Text('Category '),
             sg.Combo(sorted(categories_choices), default_value=category, key='category'),
             sg.Button('Confirm'),
         ],
         [
-            sg.Text('Select Subcategory:'),
+            sg.Text('Subcategory '),
             sg.Combo(sorted(subcategories_choices), default_value=subcategory_default, size=(20, 1), key='subcategory_sel'),
-            sg.Text('Or Enter Name:'),
+            sg.Text('Or Enter Name '),
             sg.In(size=(20, 1), key='subcategory_man'),
         ],
         [
@@ -726,23 +726,23 @@ def user_defined_symbol_template_footprint(categories: list,
 
     library_layout = [
         [
-            sg.Text('Select Symbol Library:'),
+            sg.Text('Symbol Library '),
             sg.Combo(symbol_lib_choices, default_value=symbol_lib_default, key='symbol_lib'),
             sg.Button('Confirm'),
         ],
         [
-            sg.Text(f'Select Symbol Template ({categories[0]}):'),
+            sg.Text(f'Symbol Template ({categories[0]}) '),
             sg.Combo(template_choices, default_value=template_default, key='template'),
         ],
         [
-            sg.Text('Select Footprint Library:'),
+            sg.Text('Footprint Library '),
             sg.Combo(footprint_lib_choices, default_value=footprint_lib_default, key='footprint_lib'),
             sg.Button('Confirm'),
         ],
         [
-            sg.Text('Select Footprint:'),
+            sg.Text('Footprint '),
             sg.Combo(footprint_mod_choices, default_value=footprint_mod_default, key='footprint_mod_sel'),
-            sg.Text('Or Enter Name:'),
+            sg.Text('Or Enter Name '),
             sg.In(size=(20, 1), key='footprint_mod_man'),
         ],
         [sg.Text('')],
@@ -843,7 +843,7 @@ def main():
     layout = [
         [sg.Menu(menu_def,)],
         [
-            sg.Text('Part Number'),
+            sg.Text('Part Number '),
             sg.InputText(key='part_number', size=(38, 1)),
             sg.Combo(settings.SUPPORTED_SUPPLIERS_API, key='supplier', default_value='Digi-Key'),
         ],

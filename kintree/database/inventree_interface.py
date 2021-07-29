@@ -87,7 +87,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
     if not categories[1] and function_filter:
         cprint(f'[INFO]\tSubcategory is filtered using "{filter_parameter}" parameter', silent=settings.SILENT, end='')
         # Load parameter map
-        parameter_map = config_interface.load_category_parameters(categories[0], settings.CONFIG_DIGIKEY_PARAMETERS)
+        parameter_map = config_interface.load_category_parameters(categories[0], settings.CONFIG_SUPPLIER_PARAMETERS)
         # Build compare list
         compare = []
         for supplier_parameter, inventree_parameter in parameter_map.items():
@@ -234,11 +234,9 @@ def translate_supplier_to_inventree(supplier: str, part_info: dict, categories: 
     # Image URL is not shown to user so force default key/value
     inventree_part['image'] = get_value_from_user_key('', default_search_keys[9], default_value='').replace(' ', '%20')
 
-    cprint(inventree_part)
-
     # Load parameters map
     parameter_map = config_interface.load_category_parameters(category=inventree_part["category"][0],
-                                                              supplier_config_path=settings.CONFIG_DIGIKEY_PARAMETERS, )
+                                                              supplier_config_path=settings.CONFIG_SUPPLIER_PARAMETERS, )
 
     if not skip_params:
         # Add Parameters

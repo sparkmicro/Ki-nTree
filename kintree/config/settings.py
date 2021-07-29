@@ -23,7 +23,7 @@ ENABLE_TEST = False
 # Silent Mode
 SILENT = False
 # Debug
-HIDE_DEBUG = False
+HIDE_DEBUG = True
 
 
 def enable_test_mode():
@@ -87,10 +87,13 @@ if not load_user_config():
         cprint('\n[ERROR]\tSome Ki-nTree configuration files seem to be missing')
         exit(-1)
 
+# Common to search APIs
+CONFIG_SUPPLIER_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'supplier_parameters.yaml')
+
 # Digi-Key
 CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
 CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
-CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
+# CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
 
 # KiCad
 CONFIG_KICAD = os.path.join(CONFIG_USER_FILES, 'kicad.yaml')
