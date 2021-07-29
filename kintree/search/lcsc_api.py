@@ -99,7 +99,7 @@ def test_api() -> bool:
 
     test_success = True
     expected = {
-        'productIntroEn': 'C0G 25V \u00b15% 100pF 0201 Multilayer Ceramic Capacitors MLCC - SMD\/SMT ROHS',
+        'productIntroEn': 'C0G 25V ±5% 100pF 0201 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS',
         'productCode': 'C2181718',
         'brandNameEn': 'TDK',
         'productModel': 'C0603C0G1E101J030BA',
@@ -111,6 +111,7 @@ def test_api() -> bool:
     if test_success:
         for key, value in expected.items():
             if test_part[key] != value:
+                print(f'"{test_part[key]}" <> "{value}"')
                 test_success = False
                 break
 
