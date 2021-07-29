@@ -42,11 +42,6 @@ def connect_to_server(timeout=5) -> bool:
     return connect
 
 
-def build_part_keywords(part_info: dict) -> str:
-    ''' Build part keywords to be used in InvenTree and KiCad '''
-    return part_info.get('product_description', None)
-
-
 def get_categories(part_info: dict, supplier_only=False) -> list:
     ''' Find categories from part supplier data, use "somewhat automatic" matching '''
     categories = [None, None]
@@ -185,13 +180,16 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
     return categories
 
 
-def translate_digikey_to_inventree(part_info: dict, categories: list, supplier='Digi-Key', skip_params=False) -> dict:
+def translate_supplier_to_inventree(supplier: str, part_info: dict, categories: list, skip_params=False) -> dict:
     ''' Using supplier part data and categories, fill-in InvenTree part dictionary '''
 
     def get_value_from_user_key(user_key: str, default_key: str, default_value=None) -> str:
         ''' Get value mapped from user search key, else default search key '''
-
-        user_search_key = settings.CONFIG_DIGIKEY.get(user_key, None)
+        user_search_key = None
+        if supplier == 'Digi-Key':
+            user_search_key = settings.CONFIG_DIGIKEY.get(user_key, None)
+        elif supplier == 'LCSC':
+            user_search_key = settings.CONFIG_LCSC.get(user_key, None)
         
         # If no user key, use default
         if not user_search_key:
@@ -202,30 +200,41 @@ def translate_digikey_to_inventree(part_info: dict, categories: list, supplier='
 
     # Copy template
     inventree_part = copy.deepcopy(settings.inventree_part_template)
+    # Check that supplier argument is valid
+    if not supplier or supplier not in settings.SUPPORTED_SUPPLIERS_API:
+        return inventree_part
+    # Get default keys
+    if supplier == 'Digi-Key':
+        default_search_keys = digikey_api.get_default_search_keys()
+    elif supplier == 'LCSC':
+        default_search_keys = lcsc_api.get_default_search_keys()
+
     # Insert data
     inventree_part["category"][0] = categories[0]
     inventree_part["category"][1] = categories[1]
-    inventree_part['name'] = get_value_from_user_key('SEARCH_NAME', 'product_description')
-    inventree_part['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', 'product_description')
+    inventree_part['name'] = get_value_from_user_key('SEARCH_NAME', default_search_keys[0])
+    inventree_part['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', default_search_keys[1])
     # Revision
-    inventree_part['revision'] = get_value_from_user_key('SEARCH_REVISION', 'revision', default_value=settings.INVENTREE_DEFAULT_REV)
+    inventree_part['revision'] = get_value_from_user_key('SEARCH_REVISION', default_search_keys[2], default_value=settings.INVENTREE_DEFAULT_REV)
     # Keywords (need to be after description)
-    inventree_part['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', 'keywords', default_value=build_part_keywords(part_info))
+    inventree_part['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', default_search_keys[1])
     inventree_part['supplier'] = {
         supplier: [
-            get_value_from_user_key('SEARCH_SKU', 'digi_key_part_number'),
+            get_value_from_user_key('SEARCH_SKU', default_search_keys[4]),
         ],
     }
     inventree_part['manufacturer'] = {
-        get_value_from_user_key('SEARCH_MANUFACTURER', 'manufacturer', default_value='manufacturer'): [
-            get_value_from_user_key('SEARCH_MPN', 'manufacturer_part_number', default_value='')
+        get_value_from_user_key('SEARCH_MANUFACTURER', default_search_keys[5], default_value='manufacturer'): [
+            get_value_from_user_key('SEARCH_MPN', default_search_keys[6], default_value='')
         ],
     }
     # Replace whitespaces in URL
-    inventree_part['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', 'product_url', default_value='').replace(' ', '%20')
-    inventree_part['datasheet'] = get_value_from_user_key('SEARCH_DATASHEET', 'primary_datasheet', default_value='').replace(' ', '%20')
+    inventree_part['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', default_search_keys[7], default_value='').replace(' ', '%20')
+    inventree_part['datasheet'] = get_value_from_user_key('SEARCH_DATASHEET', default_search_keys[8], default_value='').replace(' ', '%20')
     # Image URL is not shown to user so force default key/value
-    inventree_part['image'] = get_value_from_user_key('', 'primary_photo', default_value='').replace(' ', '%20')
+    inventree_part['image'] = get_value_from_user_key('', default_search_keys[9], default_value='').replace(' ', '%20')
+
+    cprint(inventree_part)
 
     # Load parameters map
     parameter_map = config_interface.load_category_parameters(category=inventree_part["category"][0],
@@ -297,7 +306,7 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
     else:
         cprint(f'\n[MAIN]\t{supplier} search for {part_number}', silent=settings.SILENT)
         if supplier == 'Digi-Key':
-            part_info = digikey_api.fetch_digikey_part_info(part_number)
+            part_info = digikey_api.fetch_part_info(part_number)
         elif supplier == 'LCSC':
             part_info = lcsc_api.fetch_part_info(part_number)
 
@@ -312,19 +321,17 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
     return part_info
 
 
-def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
+def inventree_create(supplier: str, part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
     ''' Create InvenTree part from supplier part data and categories '''
     # TODO: Make 'supplier' a variable for use with other APIs (eg. LCSC, Mouser, etc)
-    supplier = 'Digi-Key'
     part_pk = 0
     new_part = False
 
     # Translate to InvenTree part format
-    if supplier == 'Digi-Key':
-        inventree_part = translate_digikey_to_inventree(part_info=part_info,
-                                                        categories=categories,
-                                                        supplier=supplier,
-                                                        skip_params=is_custom)
+    inventree_part = translate_supplier_to_inventree(supplier=supplier,
+                                                     part_info=part_info,
+                                                     categories=categories,
+                                                     skip_params=is_custom)
 
     if not inventree_part:
         cprint(f'\n[MAIN]\tError: Failed to process {supplier} data', silent=settings.SILENT)

@@ -1,5 +1,35 @@
 import requests
 
+SEARCH_HEADERS = [
+    'productDescEn',
+    'productIntroEn',
+    'productCode',
+    'brandNameEn',
+    'productModel',
+    'pdfUrl',
+    'productImages',
+]
+PARAMETERS_MAP = [
+    'paramVOList',
+    'paramNameEn',
+    'paramValueEn',
+]
+
+
+def get_default_search_keys():
+    return [
+        'productIntroEn',
+        'productIntroEn',
+        'revision',
+        'keywords',
+        'productCode',
+        'brandNameEn',
+        'productModel',
+        '',
+        'pdfUrl',
+        'productImages',
+    ]
+
 
 def find_categories(part_details: str):
     ''' Find categories '''
@@ -39,18 +69,10 @@ def fetch_part_info(part_number: str) -> dict:
         part_info['category'] = ''
         part_info['subcategory'] = ''
 
-    header = [
-        'productDescEn',
-        'productIntroEn',
-        'productCode',
-        'brandNameEn',
-        'productModel',
-        'pdfUrl',
-        'productImages',
-    ]
+    headers = SEARCH_HEADERS
 
     for key in part:
-        if key in header:
+        if key in headers:
             if key == 'productImages':
                 try:
                     part_info[key] = part['productImages'][0]
@@ -61,11 +83,12 @@ def fetch_part_info(part_number: str) -> dict:
 
     # Parameters
     part_info['parameters'] = {}
-    for parameter in range(len(part['paramVOList'])):
-        parameter_name = part['paramVOList'][parameter]['paramNameEn']
-        parameter_value = part['paramVOList'][parameter]['paramValueEn']
+    [parameter_key, name_key, value_key] = PARAMETERS_MAP
+
+    for parameter in range(len(part[parameter_key])):
+        parameter_name = part[parameter_key][parameter][name_key]
+        parameter_value = part[parameter_key][parameter][value_key]
         # Append to parameters dictionary
         part_info['parameters'][parameter_name] = parameter_value
-    # print(part_info['parameters'])
 
     return part_info

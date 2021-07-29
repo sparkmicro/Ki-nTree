@@ -84,6 +84,13 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=Tr
     except:
         cprint('[INFO]\tWarning: Failed to load Digi-Key configuration', silent=silent)
         result = False
+    # Load LCSC configuration files
+    try:
+        config_files = os.path.join(path_to_root, 'lcsc', '')
+        load_config(config_files)
+    except:
+        cprint('[INFO]\tWarning: Failed to load LCSC configuration', silent=silent)
+        result = False
     # Load InvenTree configuration files
     try:
         config_files = os.path.join(path_to_root, 'inventree', '')

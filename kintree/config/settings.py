@@ -23,7 +23,7 @@ ENABLE_TEST = False
 # Silent Mode
 SILENT = False
 # Debug
-HIDE_DEBUG = True
+HIDE_DEBUG = False
 
 
 def enable_test_mode():
@@ -119,9 +119,15 @@ AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 # Supported suppliers APIs
 SUPPORTED_SUPPLIERS_API = ['Digi-Key', 'LCSC']
 
-# DIGI-KEY
-# Fetch settings
+# Digi-Key user configuration
 CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
+
+# LCSC user configuration
+CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
+
+# Generic API user configuration
+CONFIG_SEARCH_API = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'search_api.yaml'))
+
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = CONFIG_DIGIKEY.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
 # Search results caching (stored in files)

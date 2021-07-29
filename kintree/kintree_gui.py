@@ -117,7 +117,7 @@ def search_api_settings_window():
         elif api_event == 'Test':
             # Automatically save settings
             save_settings(user_settings)
-            if digikey_api.test_digikey_api_connect():
+            if digikey_api.test_api_connect():
                 result_message = 'Successfully connected to Digi-Key API'
             else:
                 result_message = 'Failed to connect to Digi-Key API'
@@ -896,23 +896,29 @@ def main():
             part_data = {}
             progressbar = False
             actions_complete = False
+            inventree_connect = False
 
-            # Check either KiCad or InvenTree are enabled
-            if not settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
-                inventree_connect = False
-                sg.popup_ok('Please select an endpoint (KiCad and/or InvenTree)',
-                            title='No endpoint selected',
+            # Check supplier selection (can be overwritten)
+            if values['supplier'] not in settings.SUPPORTED_SUPPLIERS_API:
+                sg.popup_ok(f'Supplier "{values["supplier"]}"" is not in the list of supported suppliers: {settings.SUPPORTED_SUPPLIERS_API}',
+                            title='Incorrect Supplier',
                             location=(500, 500))
-            # Check InvenTree, if enabled
-            elif settings.ENABLE_INVENTREE:
-                cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
-                inventree_connect = inventree_interface.connect_to_server()
-                if not inventree_connect:
-                    sg.popup_ok('Failed to access InvenTree server\nMake sure your username and password are correct',
-                                title='InvenTree Server Error',
+            else:
+                # Check either KiCad or InvenTree are enabled
+                if not settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
+                    sg.popup_ok('Please select an endpoint (KiCad and/or InvenTree)',
+                                title='No endpoint selected',
                                 location=(500, 500))
-            elif settings.ENABLE_KICAD:
-                inventree_connect = True
+                # Check InvenTree, if enabled
+                elif settings.ENABLE_INVENTREE:
+                    cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
+                    inventree_connect = inventree_interface.connect_to_server()
+                    if not inventree_connect:
+                        sg.popup_ok('Failed to access InvenTree server\nMake sure your username and password are correct',
+                                    title='InvenTree Server Error',
+                                    location=(500, 500))
+                elif settings.ENABLE_KICAD:
+                    inventree_connect = True
 
             # Get part information
             if inventree_connect:
@@ -1002,9 +1008,10 @@ def main():
                         cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
 
                     # Confirm part data with user
-                    form_data = add_custom_part(inventree_interface.translate_digikey_to_inventree(part_info=part_info,
-                                                                                                   categories=categories,
-                                                                                                   skip_params=True))
+                    form_data = add_custom_part(inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
+                                                                                                    part_info=part_info,
+                                                                                                    categories=categories,
+                                                                                                    skip_params=True))
                     if form_data:
                         # Translate to part info format
                         user_part_info = inventree_interface.translate_form_to_digikey(part_info=form_data,
@@ -1038,7 +1045,8 @@ def main():
 
                     # Create part in InvenTree
                     if settings.ENABLE_INVENTREE:
-                        new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
+                        new_part, part_pk, part_data = inventree_interface.inventree_create(supplier=values['supplier'],
+                                                                                            part_info=part_info,
                                                                                             categories=categories,
                                                                                             kicad=settings.ENABLE_KICAD,
                                                                                             symbol=symbol,
@@ -1051,11 +1059,13 @@ def main():
                     else:
                         if not categories[0]:
                             pseudo_categories = [symbol, None]
-                            part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
-                                                                                           categories=pseudo_categories)
+                            part_data = inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
+                                                                                            part_info=part_info,
+                                                                                            categories=pseudo_categories)
                         else:
-                            part_data = inventree_interface.translate_digikey_to_inventree(part_info=part_info,
-                                                                                           categories=categories)
+                            part_data = inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
+                                                                                            part_info=part_info,
+                                                                                            categories=categories)
                             part_data['parameters']['Symbol'] = symbol
                             part_data['parameters']['Footprint'] = footprint
                         if not part_data:
@@ -1192,7 +1202,7 @@ def main():
 
 if __name__ == '__main__':
     # Disable Digi-Key API logger
-    digikey_api.disable_digikey_api_logger()
+    digikey_api.disable_api_logger()
     # Fix for Windows EXE
     import multiprocessing
     multiprocessing.freeze_support()
