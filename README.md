@@ -68,6 +68,11 @@ $ source env-kintree/Scripts/activate
 ```
 For any other Windows terminal, refer to the [official documentation](https://docs.python.org/library/venv.html#creating-virtual-environments)
 
+### Packages
+#### Arch Linux
+
+Ki-nTree is [available on Arch Linux's AUR](https://aur.archlinux.org/packages/python-kintree/) as `python-kintree`.
+
 ### Usage Instructions
 
 #### Settings
