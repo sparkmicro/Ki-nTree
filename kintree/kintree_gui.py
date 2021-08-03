@@ -339,19 +339,15 @@ def part_user_form(part_data: dict) -> dict:
     user_values = {}
     add_custom_layout = []
 
-    skip_items = ['parameters']
     input_keys = []
     for key, value in part_data.items():
-        if key in skip_items:
-            pass
-        else:
-            label = key.replace('_', ' ').title()
+        label = key.replace('_', ' ').title()
 
-            add_custom_layout.append([
-                sg.Text(label, size=(22, 1)),
-                sg.InputText(value, size=(38, 1), key=key),
-            ])
-            input_keys.append(key)
+        add_custom_layout.append([
+            sg.Text(label, size=(22, 1)),
+            sg.InputText(value, size=(38, 1), key=key),
+        ])
+        input_keys.append(key)
 
     if part_data:
         add_custom_layout.append([sg.Button('Submit', size=(25, 1)), ])
@@ -411,19 +407,16 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
     subcategory_default = None
 
     try:
-        for cat in categories_dict.keys():
-            categories_choices.append(cat)
+        for key in categories_dict:
+            categories_choices.append(key)
 
-            if category:
-                if category == cat:
-                    # Subcategory choices
-                    for subcat in categories_dict[cat].keys():
-                        if subcat not in subcategories_choices:
-                            subcategories_choices.append(subcat)
+            if key == category:
+                # Subcategory choices
+                subcategories_choices = [item for item in categories_dict[key]]
 
         if subcategory:
             subcategory_default = subcategory
-    except:
+    except TypeError:
         # categories_dict is None
         pass
 
@@ -936,19 +929,22 @@ def main():
                                         title='Supplier API Search',
                                         location=(500, 500))
 
-                print(part_supplier_form)
                 # Do we have form data?
                 if part_supplier_form:
                     # Open part form
                     part_user_info = part_user_form(part_data=part_supplier_form)
 
-                    # Stitch parameters
+                    # Stitch back categories and parameters
                     try:
-                        part_user_info.update({'parameters':part_supplier_info['parameters']})
+                        part_user_info.update({
+                            'category': part_supplier_info['category'],
+                            'subcategory': part_supplier_info['subcategory'],
+                            'parameters': part_supplier_info['parameters'],
+                        })
                     except (KeyError, AttributeError):
                         pass
             
-            # Check that name and description are present in user form (else it means it is empty)
+            # Check that name and description are present in user form (else the form is empty)
             try:
                 if part_user_info['name'] and part_user_info['description']:
                     # Proceed
@@ -956,8 +952,6 @@ def main():
             except (KeyError, TypeError):
                 # Handle NoneType
                 pass
-
-            print(part_info)
 
             # Get user categories
             if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
@@ -1003,23 +997,6 @@ def main():
                         cprint(f'[INFO]\tWarning: Failed to add new supplier category to {config_file} file', silent=settings.SILENT)
                         cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
 
-                    # Confirm part data with user
-                    form_data = part_user_form(inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
-                                                                                                   part_info=part_info,
-                                                                                                   categories=categories,
-                                                                                                   is_custom=True))
-                    if form_data:
-                        # Translate to part info format
-                        part_user_info = inventree_interface.translate_form_to_digikey(part_info=form_data,
-                                                                                       categories=categories,
-                                                                                       is_custom=False)
-
-                        # Merge part_supplier_info with user_part_info
-                        part_info = {**part_supplier_info, **part_user_info}
-                    else:
-                        # User did not proceed
-                        part_info = {}
-
             # Set KiCad user libraries and symbol/footprint
             if part_info and settings.ENABLE_KICAD:
 
@@ -1041,8 +1018,7 @@ def main():
 
                     # Create part in InvenTree
                     if settings.ENABLE_INVENTREE:
-                        new_part, part_pk, part_data = inventree_interface.inventree_create(supplier=values['supplier'],
-                                                                                            part_info=part_info,
+                        new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
                                                                                             categories=categories,
                                                                                             kicad=settings.ENABLE_KICAD,
                                                                                             symbol=symbol,
