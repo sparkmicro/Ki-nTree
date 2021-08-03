@@ -8,7 +8,7 @@ on:
       - "*.*.*"
     paths-ignore:
       - README.md
-      - images/*
+      - images/**
   pull_request:
     branches:
       - master
