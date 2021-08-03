@@ -136,12 +136,22 @@ if __name__ == '__main__':
                     inventree_result = False
                     # Fetch supplier data
                     part_info = inventree_interface.supplier_search(supplier='Digi-Key', part_number=number, test_mode=True)
+                    # Translate to form
+                    part_form = inventree_interface.translate_supplier_to_form(supplier='Digi-Key', part_info=part_info)
+                    # Stitch categories and parameters
+                    part_form.update({
+                        'category': part_info['category'],
+                        'subcategory': part_info['subcategory'],
+                        'parameters': part_info['parameters'],
+                    })
+                    # Reset part info
+                    part_info = part_form
                     # Display part to be tested
                     pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 
                     if ENABLE_KICAD:
                         # Translate supplier data to inventree/kicad data
-                        part_data = inventree_interface.translate_supplier_to_inventree('Digi-Key', part_info, [category, None])
+                        part_data = inventree_interface.translate_form_to_inventree(part_info, [category, None])
 
                         if part_data:
                             part_data['IPN'] = number
@@ -171,8 +181,7 @@ if __name__ == '__main__':
 
                         # Create part in InvenTree
                         if categories[0] and categories[1]:
-                            new_part, part_pk, part_data = inventree_interface.inventree_create(supplier='Digi-Key',
-                                                                                                part_info=part_info,
+                            new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
                                                                                                 categories=categories,
                                                                                                 kicad=last_category,
                                                                                                 show_progress=False)
@@ -294,9 +303,9 @@ if __name__ == '__main__':
                         method_success = False
 
                 elif method_idx == 1:
-                    # Custom parts form
+                    # Custom part form
                     try:
-                        inventree_interface.translate_form_to_digikey(part_info, categories)
+                        inventree_interface.translate_form_to_inventree(part_info, categories)
                         # If the above function does not fail, it's a problem
                         method_success = False
                     except KeyError:
@@ -307,12 +316,15 @@ if __name__ == '__main__':
                         'description': 'part_desc',
                         'revision': 'part_rev',
                         'keywords': 'part_key',
+                        'supplier_name': 'part_supplier',
                         'supplier_part_number': 'part_sku',
+                        'supplier_link': 'part_link',
                         'manufacturer_name': 'part_man',
                         'manufacturer_part_number': 'part_mpn',
                         'datasheet': 'part_data',
+                        'image': 'part_image',
                     }
-                    if not inventree_interface.translate_form_to_digikey(part_info, categories, custom=True):
+                    if not inventree_interface.translate_form_to_inventree(part_info, categories, is_custom=True):
                         method_success = False
 
                 elif method_idx == 2:
