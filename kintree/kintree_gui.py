@@ -333,50 +333,23 @@ def snapeda_window(part_number: str):
     snapeda_window.close()
 
 
-def add_custom_part(part_data: dict) -> dict:
-    ''' Add custom part (bypass Digi-Key search) '''
+def part_user_form(part_data: dict) -> dict:
+    ''' User part data form '''
+
     user_values = {}
     add_custom_layout = []
 
-    def get_default(part_data, key):
-        try:
-            default_key = list(part_data[key].keys())[0]
-            default_value = part_data[key][default_key][0]
-        except:
-            default_key = ''
-            default_value = ''
-
-        return default_key, default_value
-
-    skip_items = ['category', 'IPN', 'image', 'inventree_url', 'parameters']
+    skip_items = ['parameters']
     input_keys = []
-    for key, value in settings.inventree_part_template.items():
+    for key, value in part_data.items():
         if key in skip_items:
             pass
-        elif key == 'supplier' or key == 'manufacturer':
-            # Get default values
-            name_default, number_default = get_default(part_data, key)
-
-            sub_key = key + '_name'
-            add_custom_layout.append([
-                sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
-                sg.InputText(name_default, size=(38, 1), key=sub_key),
-            ])
-            input_keys.append(sub_key)
-
-            sub_key = key + '_part_number'
-            add_custom_layout.append([
-                sg.Text(sub_key.replace('_', ' ').title(), size=(22, 1)),
-                sg.InputText(number_default, size=(38, 1), key=sub_key),
-            ])
-            input_keys.append(sub_key)
         else:
-            default = part_data.get(key, '')
-            sub_key = key.replace('_', ' ').title()
+            label = key.replace('_', ' ').title()
 
             add_custom_layout.append([
-                sg.Text(sub_key, size=(22, 1)),
-                sg.InputText(default, size=(38, 1), key=key),
+                sg.Text(label, size=(22, 1)),
+                sg.InputText(value, size=(38, 1), key=key),
             ])
             input_keys.append(key)
 
@@ -892,6 +865,9 @@ def main():
             footprint = None
             new_part = False
             part_pk = 0
+            part_supplier_info = {}
+            part_supplier_form = {}
+            part_user_info = {}
             part_info = {}
             part_data = {}
             progressbar = False
@@ -922,20 +898,18 @@ def main():
 
             # Get part information
             if inventree_connect:
-                if CREATE_CUSTOM:
-                    custom_part_info = add_custom_part(part_data={})
-                    try:
-                        if custom_part_info['name'] and custom_part_info['description']:
-                            part_info = custom_part_info
-                            cprint('\n[MAIN]\tCustom Part', silent=settings.SILENT)
-                    except TypeError:
-                        pass
-                else:
-                    if values['part_number']:
-                        # New part separation
-                        new_search = '-' * 20
-                        cprint(f'\n{new_search}', silent=settings.SILENT)
+                # New part separation
+                cprint(f'\n{"-" * 20}', silent=settings.SILENT)
 
+                # Custom part
+                if CREATE_CUSTOM:
+                    cprint('\n[MAIN]\tCustom Part', silent=settings.SILENT)
+                    # Create empty user form
+                    part_supplier_form = inventree_interface.translate_supplier_to_form(supplier='custom',
+                                                                                        part_info=part_supplier_info)
+                else:
+                    # User entered part number: process with supplier search
+                    if values['part_number']:
                         # Load KiCad settings
                         settings.load_kicad_settings()
 
@@ -943,20 +917,47 @@ def main():
                         settings.load_inventree_settings()
 
                         # Supplier search
-                        part_info = inventree_interface.supplier_search(values['supplier'], values['part_number'])
+                        part_supplier_info = inventree_interface.supplier_search(values['supplier'], values['part_number'])
 
-                    if not part_info:
-                        error_message = 'Failed to fetch part information...\n\n' \
-                                        'Make sure:' \
-                                        '\n- Part number is valid and not blank'
-                        if values['supplier'] == 'Digi-Key':
-                            error_message += '\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
-                        elif values['supplier'] == 'LCSC':
-                            error_message += '\n- Part number starts with "C" (LCSC code)'
-                        # Missing Part Information
-                        sg.popup_ok(error_message,
-                                    title='Supplier API Search',
-                                    location=(500, 500))
+                        if part_supplier_info:
+                            # Translate to user form format
+                            part_supplier_form = inventree_interface.translate_supplier_to_form(supplier=values['supplier'],
+                                                                                                part_info=part_supplier_info)
+                        else:
+                            error_message = 'Failed to fetch part information...\n\n' \
+                                            'Make sure:' \
+                                            '\n- Part number is valid and not blank'
+                            if values['supplier'] == 'Digi-Key':
+                                error_message += '\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
+                            elif values['supplier'] == 'LCSC':
+                                error_message += '\n- Part number starts with "C" (LCSC code)'
+                            # Missing Part Information
+                            sg.popup_ok(error_message,
+                                        title='Supplier API Search',
+                                        location=(500, 500))
+
+                print(part_supplier_form)
+                # Do we have form data?
+                if part_supplier_form:
+                    # Open part form
+                    part_user_info = part_user_form(part_data=part_supplier_form)
+
+                    # Stitch parameters
+                    try:
+                        part_user_info.update({'parameters':part_supplier_info['parameters']})
+                    except (KeyError, AttributeError):
+                        pass
+            
+            # Check that name and description are present in user form (else it means it is empty)
+            try:
+                if part_user_info['name'] and part_user_info['description']:
+                    # Proceed
+                    part_info = part_user_info
+            except (KeyError, TypeError):
+                # Handle NoneType
+                pass
+
+            print(part_info)
 
             # Get user categories
             if part_info and (settings.ENABLE_INVENTREE or settings.ENABLE_KICAD):
@@ -991,12 +992,7 @@ def main():
             if not (categories[0] and categories[1]):
                 part_info = {}
             else:
-                if CREATE_CUSTOM:
-                    # Translate custom part data
-                    part_info = inventree_interface.translate_form_to_digikey(part_info=part_info,
-                                                                              categories=categories,
-                                                                              custom=True)
-                else:
+                if not CREATE_CUSTOM:
                     # Add to supplier categories configuration file
                     category_dict = {
                         categories[0]:
@@ -1008,18 +1004,18 @@ def main():
                         cprint(f'[DBUG]\tcategory_dict = {category_dict}', silent=settings.SILENT)
 
                     # Confirm part data with user
-                    form_data = add_custom_part(inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
-                                                                                                    part_info=part_info,
-                                                                                                    categories=categories,
-                                                                                                    skip_params=True))
+                    form_data = part_user_form(inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
+                                                                                                   part_info=part_info,
+                                                                                                   categories=categories,
+                                                                                                   is_custom=True))
                     if form_data:
                         # Translate to part info format
-                        user_part_info = inventree_interface.translate_form_to_digikey(part_info=form_data,
+                        part_user_info = inventree_interface.translate_form_to_digikey(part_info=form_data,
                                                                                        categories=categories,
-                                                                                       custom=False)
+                                                                                       is_custom=False)
 
-                        # Merge original part_info with user_part_info
-                        part_info = {**part_info, **user_part_info}
+                        # Merge part_supplier_info with user_part_info
+                        part_info = {**part_supplier_info, **part_user_info}
                     else:
                         # User did not proceed
                         part_info = {}

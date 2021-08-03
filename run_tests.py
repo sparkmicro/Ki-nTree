@@ -312,7 +312,7 @@ if __name__ == '__main__':
                         'manufacturer_part_number': 'part_mpn',
                         'datasheet': 'part_data',
                     }
-                    if not inventree_interface.translate_form_to_digikey(part_info, categories, custom=True):
+                    if not inventree_interface.translate_form_to_digikey(part_info, categories, is_custom=True):
                         method_success = False
 
                 elif method_idx == 2:
