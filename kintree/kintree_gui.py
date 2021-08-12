@@ -537,7 +537,8 @@ def user_defined_symbol_template_footprint(categories: list,
         for cat in items.keys():
             if cat != category and cat != 'uncategorized':
                 for key in items[cat].keys():
-                    more_choices.append(key)
+                    if key not in choices and key not in more_choices:
+                        more_choices.append(key)
 
         # Process uncategorized entries
         try:
@@ -1032,13 +1033,13 @@ def main():
                     else:
                         if not categories[0]:
                             pseudo_categories = [symbol, None]
-                            part_data = inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
-                                                                                            part_info=part_info,
-                                                                                            categories=pseudo_categories)
+                            part_data = inventree_interface.translate_form_to_inventree(part_info=part_info,
+                                                                                        categories=pseudo_categories,
+                                                                                        is_custom=CREATE_CUSTOM)
                         else:
-                            part_data = inventree_interface.translate_supplier_to_inventree(supplier=values['supplier'],
-                                                                                            part_info=part_info,
-                                                                                            categories=categories)
+                            part_data = inventree_interface.translate_form_to_inventree(part_info=part_info,
+                                                                                        categories=categories,
+                                                                                        is_custom=CREATE_CUSTOM)
                             part_data['parameters']['Symbol'] = symbol
                             part_data['parameters']['Footprint'] = footprint
                         if not part_data:
@@ -1055,6 +1056,10 @@ def main():
                             part_data['IPN'] = part_data['name']
                     else:
                         part_data['IPN'] = values['part_number']
+
+                    # Replace spaces with hyphens
+                    part_data['IPN'] = part_data['IPN'].replace(' ', '-')
+
                     if part_data['datasheet']:
                         part_data['inventree_url'] = part_data['datasheet']
 
