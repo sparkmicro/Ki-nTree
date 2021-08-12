@@ -93,7 +93,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "digikey-api"
-version = "0.4.0"
+version = "0.5.0"
 description = "Python client for Digikey API"
 category = "main"
 optional = false
@@ -164,7 +164,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "inventree"
-version = "0.2.4"
+version = "0.4.4"
 description = "Python interface for InvenTree inventory management system"
 category = "main"
 optional = false
@@ -349,7 +349,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "b6dad2f9717971987d802c26c0a65d60095c30572ebbebd17b6da765bf376518"
+content-hash = "514627aac92c7b1061f5f5ff606eec7be3d7efa9157a95cf5883ed625ffc6730"
 
 [metadata.files]
 certauth = [
@@ -492,8 +492,8 @@ decorator = [
     {file = "decorator-5.0.6.tar.gz", hash = "sha256:f2e71efb39412bfd23d878e896a51b07744f2e2250b2e87d158e76828c5ae202"},
 ]
 digikey-api = [
-    {file = "digikey-api-0.4.0.tar.gz", hash = "sha256:b21c75f26cd34e6da99191b643edebb2a188bd9f91654065d42a5f70901d19de"},
-    {file = "digikey_api-0.4.0-py3-none-any.whl", hash = "sha256:591ef340faa50ba3147e2adf162ed03517efc0932b391b8f4903c85743ddb840"},
+    {file = "digikey-api-0.5.0.tar.gz", hash = "sha256:7b9b15c5880dfcfc7f8bbb2551234cb1af556bd98a71c143ce68cc4ce40d99c3"},
+    {file = "digikey_api-0.5.0-py3-none-any.whl", hash = "sha256:2f794103ac30849856cbb1d0ff5a87cf00481b62bd737f37f0f0f15d37b4c14c"},
 ]
 dill = [
     {file = "dill-0.3.4-py2.py3-none-any.whl", hash = "sha256:7e40e4a70304fd9ceab3535d36e58791d9c4a776b38ec7f7ec9afc8d3dca4d4f"},
@@ -518,8 +518,8 @@ inflection = [
     {file = "inflection-0.5.1.tar.gz", hash = "sha256:1a29730d366e996aaacffb2f1f1cb9593dc38e2ddd30c91250c6dde09ea9b417"},
 ]
 inventree = [
-    {file = "inventree-0.2.4-py2.py3-none-any.whl", hash = "sha256:5d714f7a52e5f2a29218c82ba8cb53ae2928dd23c4374c22d8b35e6e25a7bac7"},
-    {file = "inventree-0.2.4.tar.gz", hash = "sha256:8f5461f4aac4bc6f19b83d2ca96ed430e46cb42a699b058d47da51ec505dc957"},
+    {file = "inventree-0.4.4-py2.py3-none-any.whl", hash = "sha256:ec7bb0ba30c5993a070ba34834a84cfcc8e235bafa04671e790b69031b600003"},
+    {file = "inventree-0.4.4.tar.gz", hash = "sha256:721a1bb626dd8941728c923ae768d0dcfc7a2712a570d3adeac9b635826c07b2"},
 ]
 invoke = [
     {file = "invoke-1.6.0-py2-none-any.whl", hash = "sha256:e6c9917a1e3e73e7ea91fdf82d5f151ccfe85bf30cc65cdb892444c02dbb5f74"},

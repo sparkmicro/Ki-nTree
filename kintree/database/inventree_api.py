@@ -388,11 +388,11 @@ def is_new_supplier_part(supplier_name: str, supplier_sku: str) -> bool:
 def create_manufacturer_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, description: str, datasheet: str) -> bool:
     ''' Create InvenTree manufacturer part
 
-            part_id: Part the manufacturer data is linked to
-            manufacturer: Company that manufactures the SupplierPart (leave blank if it is the sample as the Supplier!)
-            MPN: Manufacture part number
-            datasheet: Datasheet link
-            description: Descriptive notes field
+        part_id: Part the manufacturer data is linked to
+        manufacturer: Company that manufactures the SupplierPart (leave blank if it is the sample as the Supplier!)
+        MPN: Manufacture part number
+        datasheet: Datasheet link
+        description: Descriptive notes field
     '''
     global inventree_api
 
@@ -424,25 +424,24 @@ def create_manufacturer_part(part_id: int, manufacturer_name: str, manufacturer_
 def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, supplier_name: str, supplier_sku: str, description: str, link: str) -> bool:
     ''' Create InvenTree supplier part
 
-            part_id: Part the supplier data is linked to
-            manufacturer_name: Manufacturer the supplier data is linked to
-            manufacturer_mpn: MPN the supplier data is linked to
-            supplier: Company that supplies this SupplierPart object
-            SKU: Stock keeping unit (supplier part number)
-            manufacturer: Company that manufactures the SupplierPart (leave blank if it is the sample as the Supplier!)
-            MPN: Manufacture part number
-            link: Link to part detail page on supplier's website
-            description: Descriptive notes field
+        part_id: Part the supplier data is linked to
+        manufacturer_name: Manufacturer the supplier data is linked to
+        manufacturer_mpn: MPN the supplier data is linked to
+        supplier: Company that supplies this SupplierPart object
+        SKU: Stock keeping unit (supplier part number)
+        manufacturer: Company that manufactures the SupplierPart (leave blank if it is the sample as the Supplier!)
+        MPN: Manufacture part number
+        link: Link to part detail page on supplier's website
+        description: Descriptive notes field
     '''
     global inventree_api
 
     # Get Supplier ID
     supplier_id = get_company_id(supplier_name)
 
-    # Get Manufacturer ID
-    manufacturer_id = get_company_id(manufacturer_name)
-    if not manufacturer_id:
-        # Unset MPN
+    if not manufacturer_name or not manufacturer_mpn:
+        # Unset manufacturer data
+        manufacturer_name = None
         manufacturer_mpn = None
 
     if supplier_id:
@@ -452,7 +451,7 @@ def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn:
 
         supplier_part = SupplierPart.create(inventree_api, {
             'part': part_id,
-            'manufacturer': manufacturer_id,
+            'manufacturer': manufacturer_name,
             'MPN': manufacturer_mpn,
             'supplier': supplier_id,
             'SKU': supplier_sku,

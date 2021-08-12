@@ -10,7 +10,7 @@ from .import config_interface
 version_info = {
     'MAJOR_REVISION': 0,
     'MINOR_REVISION': 4,
-    'RELEASE_STATUS': 2,  # Digit means stable version
+    'RELEASE_STATUS': 3,  # Digit means stable version
 }
 try:
     version = '.'.join([str(v) for v in version_info.values()])
