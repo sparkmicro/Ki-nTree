@@ -1,4 +1,4 @@
-digikey-api>=0.4.0,<1.0
+digikey-api>=0.5.0,<1.0
 fuzzywuzzy>=0.18.0,<1.0
 inventree>=0.2.4,<1.0
 multiprocess>=0.70.12.2,<0.71

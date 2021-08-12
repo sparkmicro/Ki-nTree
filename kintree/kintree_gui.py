@@ -110,6 +110,7 @@ def search_api_settings_window():
             }
             user_settings = {**user_settings, **new_settings}
             config_interface.dump_file(user_settings, settings.CONFIG_DIGIKEY_API)
+            digikey_api.setup_environment(force=True)
 
         if api_event == sg.WIN_CLOSED:
             search_api_window.close()

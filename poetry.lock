@@ -93,7 +93,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "digikey-api"
-version = "0.4.0"
+version = "0.5.0"
 description = "Python client for Digikey API"
 category = "main"
 optional = false

@@ -29,7 +29,7 @@ if not os.path.exists(os.environ['DIGIKEY_STORAGE_PATH']):
 
 def disable_api_logger():
     # Digi-Key API logger
-    logging.getLogger('digikey.v3.api').setLevel(logging.WARNING)
+    logging.getLogger('digikey.v3.api').setLevel(logging.CRITICAL)
     # Disable DEBUG
     logging.disable(logging.DEBUG)
 
@@ -44,8 +44,8 @@ def check_environment() -> bool:
     return True
 
 
-def setup_environment() -> bool:
-    if not check_environment():
+def setup_environment(force=False) -> bool:
+    if not check_environment() or force:
         # SETUP the Digikey authentication see https://developer.digikey.com/documentation/organization#production
         digikey_api_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
         os.environ['DIGIKEY_CLIENT_ID'] = digikey_api_settings['DIGIKEY_CLIENT_ID']
