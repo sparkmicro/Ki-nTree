@@ -17,7 +17,7 @@ Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
 * synchronize parts data between KiCad and InvenTree
 
 Ki-nTree works with:
-- Digi-Key's **enormous** part database and [free API](https://developer.digikey.com/)
+- [Digi-Key](https://developer.digikey.com/), [Mouser](https://www.mouser.com/api-hub/) and [LCSC](https://lcsc.com/) **enormous** part databases and free APIs
 - the awesome open-source [Digi-Key API python library](https://github.com/peeter123/digikey-api) built and maintained by [@peeter123](https://github.com/peeter123)
 - the awesome open-source [InvenTree Inventory Management System](https://github.com/inventree/inventree) built and maintained by [@SchrodingersGat](https://github.com/SchrodingersGat)
 - [KiCad](https://kicad-pcb.org/) (of course!) and their open-source [library utils](https://github.com/KiCad/kicad-library-utils)
@@ -30,6 +30,7 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 
 * Ki-nTree is currently tested for Python 3.7 to 3.9 versions.
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
+* Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 
 ### Installation (system wide)
@@ -102,10 +103,13 @@ Lastly, a new page will open with a "You may now close this window." message, pr
 </details>
 
 #### Part Number Search
-1. In the main window, enter the part number and click "OK", it will start by fetching part data using the Digi-Key API
-2. In the case the Digi-Key API token is not found or expired, a browser window will pop-up. To get a new token: [follow those steps](#get-digi-key-api-token)
-3. Once the part data has been successfully fetched from Digi-Key, you will be prompted to add/confirm/edit the `Category` and `Subcategory` to use for this part (Ki-nTree tries to match them automatically)  
-4. Then, you will be prompted with selecting the KiCad symbol library, template and footprint library to use for this part  
+
+Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser and LCSC.
+
+1. In the main window, enter the part number and select the supplier in drop-down list, then click "CREATE". It will start by fetching part data using the supplier's API
+2. In the case Digi-Key has been selected and the API token is not found or expired, a browser window will pop-up. To get a new token: [follow those steps](#get-digi-key-api-token)
+3. Once the part data has been successfully fetched from the supplier's API, you will be prompted to add/confirm/edit the part information, followed by the `Category` and `Subcategory` to use for this part (Ki-nTree tries to match them automatically)
+4. Then, you will be prompted with selecting the KiCad symbol library, template and footprint library to use for this part
 5. It will take some time to complete the part creation in InvenTree and/or KiCad, once it finishes you'll be notified of the result  
 6. Finally, if the part was created or found in InvenTree, your browser will automatically open a new tab with the part information
 
