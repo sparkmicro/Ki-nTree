@@ -7,7 +7,7 @@ from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
 from fuzzywuzzy import fuzz
-from ..search import search_api, digikey_api, lcsc_api
+from ..search import search_api, digikey_api, mouser_api, lcsc_api
 
 
 def connect_to_server(timeout=5) -> bool:
@@ -153,6 +153,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
             categories[0] = category
         if subcategory:
             categories[1] = subcategory
+        cprint(f'{category=} | {subcategory=}')
 
         # Run match with supplier subcategory
         if not categories[0] or not categories[1]:
@@ -161,7 +162,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
                 category, subcategory = find_supplier_category_match(supplier_subcategory, ignore_categories=True)
             else:
                 category, subcategory = find_supplier_category_match(supplier_subcategory)
-
+        cprint(f'{category=} | {subcategory=}')
         if category and not categories[0]:
             categories[0] = category
         if subcategory and not categories[1]:
@@ -250,6 +251,8 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
         user_search_key = None
         if supplier == 'Digi-Key':
             user_search_key = settings.CONFIG_DIGIKEY.get(user_key, None)
+        elif supplier == 'Mouser':
+            user_search_key = settings.CONFIG_MOUSER.get(user_key, None)
         elif supplier == 'LCSC':
             user_search_key = settings.CONFIG_LCSC.get(user_key, None)
         else:
@@ -268,6 +271,8 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
     # Get default keys
     if supplier == 'Digi-Key':
         default_search_keys = digikey_api.get_default_search_keys()
+    elif supplier == 'Mouser':
+        default_search_keys = mouser_api.get_default_search_keys()
     elif supplier == 'LCSC':
         default_search_keys = lcsc_api.get_default_search_keys()
     else:
@@ -309,10 +314,12 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
         cprint(f'\n[MAIN]\t{supplier} search for {part_number}', silent=settings.SILENT)
         if supplier == 'Digi-Key':
             part_info = digikey_api.fetch_part_info(part_number)
+        elif supplier == 'Mouser':
+            part_info = mouser_api.fetch_part_info(part_number)
         elif supplier == 'LCSC':
             part_info = lcsc_api.fetch_part_info(part_number)
 
-    # Check Digi-Key data exist
+    # Check supplier data exist
     if not part_info:
         cprint(f'[INFO]\tError: Failed to fetch data for "{part_number}"', silent=settings.SILENT)
 

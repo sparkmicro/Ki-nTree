@@ -91,6 +91,13 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=Tr
     except:
         cprint('[INFO]\tWarning: Failed to load Digi-Key configuration', silent=silent)
         result = False
+    # Load Mouser configuration files
+    try:
+        config_files = os.path.join(path_to_root, 'mouser', '')
+        load_config(config_files)
+    except:
+        cprint('[INFO]\tWarning: Failed to load Mouser configuration', silent=silent)
+        result = False
     # Load LCSC configuration files
     try:
         config_files = os.path.join(path_to_root, 'lcsc', '')
