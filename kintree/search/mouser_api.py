@@ -126,7 +126,9 @@ def test_api() -> bool:
     test_part = fetch_part_info('DMP2066LSN-7')
         
     # Check content of response
-    if test_success:
+    if not test_part:
+        test_success = False
+    else:
         for key, value in expected.items():
             if test_part[key] != value:
                 print(f'"{test_part[key]}" <> "{value}"')
