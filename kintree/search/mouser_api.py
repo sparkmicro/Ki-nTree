@@ -58,6 +58,7 @@ def fetch_part_info(part_number: str) -> dict:
 
     from ..wrapt_timeout_decorator import timeout
 
+    setup_environment()
     part_info = {}
 
     @timeout(dec_timeout=20)
@@ -68,12 +69,20 @@ def fetch_part_info(part_number: str) -> dict:
 
     # Query part number
     try:
-        print('SEARCH MOUSER')
         part = search_timeout()
     except:
         part = None
 
     if not part:
+        return part_info
+
+    # Check for empty response
+    empty = True
+    for key, value in part.items():
+        if value:
+            empty = False
+            break
+    if empty:
         return part_info
 
     category, subcategory = find_categories(part)
@@ -105,8 +114,6 @@ def fetch_part_info(part_number: str) -> dict:
 
 def test_api() -> bool:
     ''' Test method for API '''
-
-    setup_environment()
 
     test_success = True
     expected = {

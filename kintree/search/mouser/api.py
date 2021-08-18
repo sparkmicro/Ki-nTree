@@ -118,15 +118,11 @@ class MouserPartSearchRequest(MouserBaseRequest):
                 parts = None
 
             if parts:
-                if len(parts) > 1:
-                    # TODO
-                    pass
-                else:
-                    # Process part
-                    part_data = parts[0]
-                    # Merge
-                    for key in cleaned_data:
-                        cleaned_data[key] = part_data[key]
+                # Process first part
+                part_data = parts[0]
+                # Merge
+                for key in cleaned_data:
+                    cleaned_data[key] = part_data[key]
 
         return cleaned_data
 
