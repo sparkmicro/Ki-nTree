@@ -35,11 +35,11 @@ def get_default_search_keys():
     ]
 
 
-def setup_environment():
+def setup_environment(force=False):
     ''' Setup environmental variables '''
 
-    MOUSER_PART_API_KEY = os.environ.get('MOUSER_PART_API_KEY', None)
-    if not MOUSER_PART_API_KEY:
+    api_key = os.environ.get('MOUSER_PART_API_KEY', None)
+    if not api_key or force:
         mouser_api_settings = config_interface.load_file(settings.CONFIG_MOUSER_API)
         os.environ['MOUSER_PART_API_KEY'] = mouser_api_settings['MOUSER_PART_API_KEY']
 
@@ -125,10 +125,11 @@ def test_api() -> bool:
 
     test_part = fetch_part_info('DMP2066LSN-7')
         
-    # Check content of response
     if not test_part:
+        # Unsucessful search
         test_success = False
     else:
+        # Check content of response
         for key, value in expected.items():
             if test_part[key] != value:
                 print(f'"{test_part[key]}" <> "{value}"')

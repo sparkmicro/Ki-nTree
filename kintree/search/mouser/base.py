@@ -107,9 +107,6 @@ class MouserBaseRequest(MouserAPIRequest):
 
     def __init__(self, operation, file_keys=None, *args):
         ''' Init '''
-        print(operation)
-        print(file_keys)
-        print(args)
 
         if operation not in self.operations:
             print(f'[{self.name}]\tInvalid Operation')
