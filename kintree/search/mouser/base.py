@@ -6,8 +6,6 @@ import requests
 
 # Mouser Base URL
 BASE_URL = 'https://api.mouser.com/api/v1.0'
-# API Keys File (Default)
-API_KEYS_FILE = 'mouser_api_keys.yaml'
 
 
 def get_api_keys(filename=None):

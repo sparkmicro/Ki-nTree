@@ -40,7 +40,4 @@ def save_to_file(part_info, search_file):
 
     # Save data if cache enabled
     if settings.CACHE_ENABLED:
-        try:
-            config_interface.dump_file(part_info, search_file)
-        except:
-            raise Exception('Error saving search data')
+        config_interface.dump_file(part_info, search_file)

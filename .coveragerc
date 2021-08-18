@@ -10,3 +10,5 @@ omit =
     kintree/common/progress.py
     # Skip wrapt_timeout_decorator
     kintree/wrapt_timeout_decorator/*
+    # Skip Mouser API base files
+    kintree/search/mouser/*
