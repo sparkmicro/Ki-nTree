@@ -6,7 +6,7 @@ from kintree.common.tools import cprint, create_library, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search import digikey_api, lcsc_api
+from kintree.search import digikey_api, mouser_api, lcsc_api
 from kintree.search.snapeda_api import test_snapeda_api
 from kintree.setup_inventree import setup_inventree
 
@@ -81,6 +81,14 @@ pretty_test_print('[MAIN]\tDigi-Key API Test')
 if not digikey_api.test_api_connect(check_content=True):
     cprint('[ FAIL ]')
     cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+    sys.exit(-1)
+else:
+    cprint('[ PASS ]')
+
+# Test Mouser API
+pretty_test_print('[MAIN]\tMouser API Test')
+if not mouser_api.test_api():
+    cprint('[ FAIL ]')
     sys.exit(-1)
 else:
     cprint('[ PASS ]')
