@@ -153,7 +153,6 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
             categories[0] = category
         if subcategory:
             categories[1] = subcategory
-        cprint(f'{category=} | {subcategory=}')
 
         # Run match with supplier subcategory
         if not categories[0] or not categories[1]:
@@ -162,7 +161,7 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
                 category, subcategory = find_supplier_category_match(supplier_subcategory, ignore_categories=True)
             else:
                 category, subcategory = find_supplier_category_match(supplier_subcategory)
-        cprint(f'{category=} | {subcategory=}')
+
         if category and not categories[0]:
             categories[0] = category
         if subcategory and not categories[1]:
