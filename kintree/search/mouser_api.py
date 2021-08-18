@@ -1,55 +1,71 @@
-import requests
+import os
+
+from ..config import settings, config_interface
+from .mouser.api import MouserPartSearchRequest
 
 SEARCH_HEADERS = [
-    'productDescEn',
-    'productIntroEn',
+    'Description',
     'productCode',
-    'brandNameEn',
-    'productModel',
-    'pdfUrl',
-    'productImages',
+    'MouserPartNumber',
+    'Manufacturer',
+    'ManufacturerPartNumber',
+    'DataSheetUrl',
+    'ProductDetailUrl',
+    'ImagePath',
 ]
 PARAMETERS_MAP = [
-    'paramVOList',
-    'paramNameEn',
-    'paramValueEn',
+    'ProductAttributes',
+    'AttributeName',
+    'AttributeValue',
 ]
 
 
 def get_default_search_keys():
     return [
-        'productIntroEn',
-        'productIntroEn',
+        'Description',
+        'Description',
         'revision',
         'keywords',
-        'productCode',
-        'brandNameEn',
-        'productModel',
-        '',
-        'pdfUrl',
-        'productImages',
+        'MouserPartNumber',
+        'Manufacturer',
+        'ManufacturerPartNumber',
+        'ProductDetailUrl',
+        'DataSheetUrl',
+        'ImagePath',
     ]
+
+
+def setup_environment(force=False):
+    ''' Setup environmental variables '''
+
+    api_key = os.environ.get('MOUSER_PART_API_KEY', None)
+    if not api_key or force:
+        mouser_api_settings = config_interface.load_file(settings.CONFIG_MOUSER_API)
+        os.environ['MOUSER_PART_API_KEY'] = mouser_api_settings['MOUSER_PART_API_KEY']
 
 
 def find_categories(part_details: str):
     ''' Find categories '''
+
     try:
-        return part_details['parentCatalogName'], part_details['catalogName']
+        return part_details['Category'], None
     except:
         return None, None
 
 
 def fetch_part_info(part_number: str) -> dict:
     ''' Fetch part data from API '''
+
     from ..wrapt_timeout_decorator import timeout
 
+    setup_environment()
     part_info = {}
 
     @timeout(dec_timeout=20)
     def search_timeout():
-        url = 'https://wwwapi.lcsc.com/v1/products/detail?product_code=' + part_number
-        response = requests.get(url)
-        return response.json()
+        request = MouserPartSearchRequest('partnumber')
+        request.part_search(part_number)
+        return request.get_clean_response()
 
     # Query part number
     try:
@@ -58,6 +74,15 @@ def fetch_part_info(part_number: str) -> dict:
         part = None
 
     if not part:
+        return part_info
+
+    # Check for empty response
+    empty = True
+    for key, value in part.items():
+        if value:
+            empty = False
+            break
+    if empty:
         return part_info
 
     category, subcategory = find_categories(part)
@@ -72,13 +97,7 @@ def fetch_part_info(part_number: str) -> dict:
 
     for key in part:
         if key in headers:
-            if key == 'productImages':
-                try:
-                    part_info[key] = part['productImages'][0]
-                except IndexError:
-                    pass
-            else:
-                part_info[key] = part[key]
+            part_info[key] = part[key]
 
     # Parameters
     part_info['parameters'] = {}
@@ -98,16 +117,19 @@ def test_api() -> bool:
 
     test_success = True
     expected = {
-        'productIntroEn': 'C0G 25V ±5% 100pF 0201 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS',
-        'productCode': 'C2181718',
-        'brandNameEn': 'TDK',
-        'productModel': 'C0603C0G1E101J030BA',
+        'Description': 'MOSFET P-channel 1.25W',
+        'MouserPartNumber': '621-DMP2066LSN-7',
+        'Manufacturer': 'Diodes Incorporated',
+        'ManufacturerPartNumber': 'DMP2066LSN-7',
     }
 
-    test_part = fetch_part_info('C2181718')
+    test_part = fetch_part_info('DMP2066LSN-7')
         
-    # Check content of response
-    if test_success:
+    if not test_part:
+        # Unsucessful search
+        test_success = False
+    else:
+        # Check content of response
         for key, value in expected.items():
             if test_part[key] != value:
                 print(f'"{test_part[key]}" <> "{value}"')

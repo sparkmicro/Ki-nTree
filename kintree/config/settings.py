@@ -10,7 +10,7 @@ from .import config_interface
 version_info = {
     'MAJOR_REVISION': 0,
     'MINOR_REVISION': 4,
-    'RELEASE_STATUS': 3,  # Digit means stable version
+    'RELEASE_STATUS': 4,  # Digit means stable version
 }
 try:
     version = '.'.join([str(v) for v in version_info.values()])
@@ -95,6 +95,9 @@ CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
 CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
 # CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
 
+# Mouser
+CONFIG_MOUSER_API = os.path.join(CONFIG_USER_FILES, 'mouser_api.yaml')
+
 # KiCad
 CONFIG_KICAD = os.path.join(CONFIG_USER_FILES, 'kicad.yaml')
 CONFIG_KICAD_CATEGORY_MAP = os.path.join(CONFIG_USER_FILES, 'kicad_map.yaml')
@@ -120,13 +123,16 @@ CONFIG_GENERAL = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'gen
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 
 # Supported suppliers APIs
-SUPPORTED_SUPPLIERS_API = ['Digi-Key', 'LCSC']
+SUPPORTED_SUPPLIERS_API = ['Digi-Key', 'Mouser', 'LCSC']
 
 # Digi-Key user configuration
 CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
 
 # LCSC user configuration
 CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
+
+# Mouser user configuration
+CONFIG_MOUSER = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'mouser_config.yaml'))
 
 # Generic API user configuration
 CONFIG_SEARCH_API = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'search_api.yaml'))

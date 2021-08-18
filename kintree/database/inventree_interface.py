@@ -7,7 +7,7 @@ from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
 from fuzzywuzzy import fuzz
-from ..search import search_api, digikey_api, lcsc_api
+from ..search import search_api, digikey_api, mouser_api, lcsc_api
 
 
 def connect_to_server(timeout=5) -> bool:
@@ -250,6 +250,8 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
         user_search_key = None
         if supplier == 'Digi-Key':
             user_search_key = settings.CONFIG_DIGIKEY.get(user_key, None)
+        elif supplier == 'Mouser':
+            user_search_key = settings.CONFIG_MOUSER.get(user_key, None)
         elif supplier == 'LCSC':
             user_search_key = settings.CONFIG_LCSC.get(user_key, None)
         else:
@@ -262,12 +264,31 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
         # Get value for user key, return value from default key if not found
         return part_info.get(user_search_key, part_info.get(default_key, default_value))
 
+    def get_supplier_name(supplier: str) -> str:
+        ''' Get InvenTree supplier name '''
+        # Check that supplier is supported
+        if supplier not in settings.SUPPORTED_SUPPLIERS_API:
+            return ''
+
+        if supplier == 'Digi-Key':
+            supplier_name = settings.CONFIG_DIGIKEY.get('SUPPLIER_INVENTREE_NAME', None)
+        elif supplier == 'Mouser':
+            supplier_name = settings.CONFIG_MOUSER.get('SUPPLIER_INVENTREE_NAME', None)
+        elif supplier == 'LCSC':
+            supplier_name = settings.CONFIG_LCSC.get('SUPPLIER_INVENTREE_NAME', None)
+        else:
+            supplier_name = supplier
+        
+        return supplier_name
+
     # Check that supplier argument is valid
     if not supplier or (supplier != 'custom' and supplier not in settings.SUPPORTED_SUPPLIERS_API):
         return part_form
     # Get default keys
     if supplier == 'Digi-Key':
         default_search_keys = digikey_api.get_default_search_keys()
+    elif supplier == 'Mouser':
+        default_search_keys = mouser_api.get_default_search_keys()
     elif supplier == 'LCSC':
         default_search_keys = lcsc_api.get_default_search_keys()
     else:
@@ -279,7 +300,7 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
     part_form['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', default_search_keys[1], default_value='')
     part_form['revision'] = get_value_from_user_key('SEARCH_REVISION', default_search_keys[2], default_value=settings.INVENTREE_DEFAULT_REV)
     part_form['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', default_search_keys[1], default_value='')
-    part_form['supplier_name'] = supplier if supplier in settings.SUPPORTED_SUPPLIERS_API else ''
+    part_form['supplier_name'] = get_supplier_name(supplier)
     part_form['supplier_part_number'] = get_value_from_user_key('SEARCH_SKU', default_search_keys[4], default_value='')
     part_form['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', default_search_keys[7], default_value='')
     part_form['manufacturer_name'] = get_value_from_user_key('SEARCH_MANUFACTURER', default_search_keys[5], default_value='')
@@ -309,10 +330,12 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
         cprint(f'\n[MAIN]\t{supplier} search for {part_number}', silent=settings.SILENT)
         if supplier == 'Digi-Key':
             part_info = digikey_api.fetch_part_info(part_number)
+        elif supplier == 'Mouser':
+            part_info = mouser_api.fetch_part_info(part_number)
         elif supplier == 'LCSC':
             part_info = lcsc_api.fetch_part_info(part_number)
 
-    # Check Digi-Key data exist
+    # Check supplier data exist
     if not part_info:
         cprint(f'[INFO]\tError: Failed to fetch data for "{part_number}"', silent=settings.SILENT)
 
@@ -325,7 +348,7 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
 
 def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
     ''' Create InvenTree part from supplier part data and categories '''
-    # TODO: Make 'supplier' a variable for use with other APIs (eg. LCSC, Mouser, etc)
+
     part_pk = 0
     new_part = False
 

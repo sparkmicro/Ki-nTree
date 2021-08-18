@@ -11,6 +11,8 @@ from .config import settings as settings
 import PySimpleGUI as sg
 # Digi-Key API
 from .search import digikey_api as digikey_api
+# Mouser API
+from .search import mouser_api as mouser_api
 # SnapEDA API
 from .search import snapeda_api as snapeda_api
 # Progress
@@ -77,8 +79,8 @@ def user_settings_window():
     return
 
 
-def search_api_settings_window():
-    ''' Part search API settings window '''
+def digikey_api_settings_window():
+    ''' Digi-Key API settings window '''
 
     user_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
 
@@ -124,6 +126,55 @@ def search_api_settings_window():
                 result_message = 'Failed to connect to Digi-Key API'
             sg.popup_ok(result_message,
                         title='Digi-Key API Connect Test',
+                        location=(500, 500))
+        else:
+            save_settings(user_settings)
+            search_api_window.close()
+            return
+
+
+def mouser_api_settings_window():
+    ''' Mouser API settings window '''
+
+    user_settings = config_interface.load_file(settings.CONFIG_MOUSER_API)
+
+    search_api_layout = [
+        [
+            sg.Text('Mouser Part API Key '),
+            sg.InputText(user_settings['MOUSER_PART_API_KEY'], key='api_key'),
+        ],
+        [
+            sg.Button('Test', size=(15, 1)),
+            sg.Button('Save', size=(15, 1)),
+        ],
+    ]
+    search_api_window = sg.Window(
+        'Mouser API (v1) Settings', search_api_layout, location=(500, 500)
+    )
+
+    while True:
+        api_event, api_values = search_api_window.read()
+
+        def save_settings(user_settings: dict):
+            new_settings = {
+                'MOUSER_PART_API_KEY': api_values['api_key'],
+            }
+            user_settings = {**user_settings, **new_settings}
+            config_interface.dump_file(user_settings, settings.CONFIG_MOUSER_API)
+            mouser_api.setup_environment(force=True)
+
+        if api_event == sg.WIN_CLOSED:
+            search_api_window.close()
+            return
+        elif api_event == 'Test':
+            # Automatically save settings
+            save_settings(user_settings)
+            if mouser_api.test_api():
+                result_message = 'Successfully connected to Mouser API'
+            else:
+                result_message = 'Failed to connect to Mouser API'
+            sg.popup_ok(result_message,
+                        title='Mouser API Connect Test',
                         location=(500, 500))
         else:
             save_settings(user_settings)
@@ -778,11 +829,22 @@ def user_defined_symbol_template_footprint(categories: list,
 
         return symbol, template, footprint
 
+
+# Init
+def init():
+    # Disable Digi-Key API logger
+    digikey_api.disable_api_logger()
+    # Fix for Windows EXE
+    import multiprocessing
+    multiprocessing.freeze_support()
+
+
 # Main
-
-
 def main():
     ''' Main GUI window '''
+
+    # Disable Digi-Key logger
+    init()
 
     CREATE_CUSTOM = False
 
@@ -796,6 +858,7 @@ def main():
          [
              'User',
              'Digi-Key',
+             'Mouser',
              'KiCad',
              'InvenTree',
          ],
@@ -842,7 +905,9 @@ def main():
         if event == 'User':
             user_settings_window()
         elif event == 'Digi-Key':
-            search_api_settings_window()
+            digikey_api_settings_window()
+        elif event == 'Mouser':
+            mouser_api_settings_window()
         elif event == 'InvenTree':
             inventree_settings_window()
         elif event == 'KiCad':
@@ -924,6 +989,8 @@ def main():
                                             '\n- Part number is valid and not blank'
                             if values['supplier'] == 'Digi-Key':
                                 error_message += '\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
+                            elif values['supplier'] == 'Mouser':
+                                error_message += '\n- Mouser API settings are correct ("Settings > Mouser")'
                             elif values['supplier'] == 'LCSC':
                                 error_message += '\n- Part number starts with "C" (LCSC code)'
                             # Missing Part Information
@@ -1176,13 +1243,3 @@ def main():
             CREATE_CUSTOM = False
 
     window.close()
-
-
-if __name__ == '__main__':
-    # Disable Digi-Key API logger
-    digikey_api.disable_api_logger()
-    # Fix for Windows EXE
-    import multiprocessing
-    multiprocessing.freeze_support()
-    # Run main window
-    main()
