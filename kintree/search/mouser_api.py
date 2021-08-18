@@ -38,8 +38,10 @@ def get_default_search_keys():
 def setup_environment():
     ''' Setup environmental variables '''
 
-    mouser_api_settings = config_interface.load_file(settings.CONFIG_MOUSER_API)
-    os.environ['MOUSER_PART_API_KEY'] = mouser_api_settings['MOUSER_PART_API_KEY']
+    MOUSER_PART_API_KEY = os.environ.get('MOUSER_PART_API_KEY', None)
+    if not MOUSER_PART_API_KEY:
+        mouser_api_settings = config_interface.load_file(settings.CONFIG_MOUSER_API)
+        os.environ['MOUSER_PART_API_KEY'] = mouser_api_settings['MOUSER_PART_API_KEY']
 
 
 def find_categories(part_details: str):
