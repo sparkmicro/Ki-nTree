@@ -187,7 +187,6 @@ pip install dist/kintree-0.3.10-py3-none-any.whl
 #### Versions 0.4.x or later
 ##### Global
 
-- Support other suppliers like LCSC and Mouser ([Ref #50](https://github.com/sparkmicro/Ki-nTree/issues/50))
 - Allow user to decide the category code to use for IPN
 - Add "Synchronize" menu option to pull InvenTree parts data into KiCad
 - Fetch Digi-Key price breakdown and add it to Supplier Part (InvenTree)
