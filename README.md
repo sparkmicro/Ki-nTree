@@ -1,14 +1,14 @@
 # Ki-nTree
 ### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://inventree.readthedocs.io/) 
 [![License: GPL v3.0](https://img.shields.io/badge/license-GPL_v3.0-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Python Versions](https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/python_versions.svg)](https://www.python.org/)
+[![Python Versions](https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/python_versions.svg)](https://www.python.org/)
 [![PyPI](https://img.shields.io/pypi/v/kintree)](https://pypi.org/project/kintree/)
 [![Tests | Linting | Publishing](https://github.com/sparkmicro/Ki-nTree/actions/workflows/test_deploy.yaml/badge.svg)](https://github.com/sparkmicro/Ki-nTree/actions)
-[![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=master&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=main&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=main)
 
 ## Demo Videos :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) :fast_forward: [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
 
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/kintree_example.png"  width="auto" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_example.png"  width="auto" height="auto">
 
 ## Introduction
 Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
@@ -89,12 +89,12 @@ Ki-nTree is [available on Arch Linux's AUR](https://aur.archlinux.org/packages/p
 
 Enter your Digi-Key developper account credentials then login. The following page will appear (`user@email.com` will show your email address):
 
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/digikey_api_approval_request.png" width="600" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/digikey_api_approval_request.png" width="600" height="auto">
 
 Click on "Allow", another page will open.  
 Click on the "Advanced" button, then click on "Proceed to localhost (unsafe)" at the bottom of the page:
 
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/master/images/doc/digikey_api_approval_request2.png"  width="600" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/digikey_api_approval_request2.png"  width="600" height="auto">
 
 > On Chrome, if the "Proceed to localhost (unsafe)" link does not appear, enable the following flag: [chrome://flags/#allow-insecure-localhost](chrome://flags/#allow-insecure-localhost)
 
