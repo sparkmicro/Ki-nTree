@@ -116,7 +116,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Alter the version in pyproject.toml
+      - name: Alter the version in pyproject.toml and overwrite __version__
         run: >
           GTAG=$(echo $REF | sed -e 's#.*/##') &&
           sed
@@ -124,6 +124,7 @@ jobs:
           --expression
           "s/version = \".*\" # placeholder/version = \"$GTAG\"/g"
           pyproject.toml
+          echo "__version__ = $GTAG" > kintree/__init__.py
         env:
           REF: ${{ github.ref }}
       - name: Display the inferred version
