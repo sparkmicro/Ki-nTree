@@ -5,6 +5,8 @@ import os
 # Webbrowser
 import webbrowser
 
+# Version
+from . import __version__
 # Settings
 from .config import settings as settings
 # PySimpleGUI
@@ -888,7 +890,7 @@ def main():
     ]
 
     # Create the Window
-    window = sg.Window(f'Ki-nTree [{settings.version}]',
+    window = sg.Window(f'Ki-nTree [{__version__}]',
                        layout,
                        location=(500, 500))
 

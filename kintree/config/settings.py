@@ -6,17 +6,6 @@ from enum import Enum
 from ..common.tools import cprint
 from .import config_interface
 
-# VERSION INFORMATION
-version_info = {
-    'MAJOR_REVISION': 0,
-    'MINOR_REVISION': 4,
-    'RELEASE_STATUS': 4,  # Digit means stable version
-}
-try:
-    version = '.'.join([str(v) for v in version_info.values()])
-except:
-    version = '0.0.alpha'
-
 # DEBUG
 # Testing
 ENABLE_TEST = False
