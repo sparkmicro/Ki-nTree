@@ -124,7 +124,7 @@ jobs:
           --expression
           "s/version = \".*\" # placeholder/version = \"$GTAG\"/g"
           pyproject.toml
-          echo "__version__ = $GTAG" > kintree/__init__.py
+          && echo "__version__ = $GTAG" > kintree/__init__.py
         env:
           REF: ${{ github.ref }}
       - name: Display the inferred version
