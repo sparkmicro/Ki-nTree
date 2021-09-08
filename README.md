@@ -19,6 +19,7 @@ Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
 Ki-nTree works with:
 - [Digi-Key](https://developer.digikey.com/), [Mouser](https://www.mouser.com/api-hub/) and [LCSC](https://lcsc.com/) **enormous** part databases and free APIs
 - the awesome open-source [Digi-Key API python library](https://github.com/peeter123/digikey-api) built and maintained by [@peeter123](https://github.com/peeter123)
+- the [Mouser Python API](https://github.com/sparkmicro/mouser-api/) built and maintained by [@eeintech](https://github.com/eeintech)
 - the awesome open-source [InvenTree Inventory Management System](https://github.com/inventree/inventree) built and maintained by [@SchrodingersGat](https://github.com/SchrodingersGat)
 - [KiCad](https://kicad-pcb.org/) (of course!) and their open-source [library utils](https://github.com/KiCad/kicad-library-utils)
 
@@ -124,9 +125,7 @@ Enjoy!
 
 You need `python>=3.7` and `poetry`.
 
-You can install poetry by following the instructions [on its official
-website](https://python-poetry.org/docs/master/#installation), by using `pip
-install poetry` or by installing a package on your Linux distro.
+You can install poetry by following the instructions [on its official website](https://python-poetry.org/docs/master/#installation), by using `pip install poetry` or by installing a package on your Linux distro.
 
 ### Setup and run
 1. Clone this repository
@@ -139,35 +138,30 @@ $ git clone https://github.com/sparkmicro/Ki-nTree
 $ poetry install
 Installing dependencies from lock file
 ...
-Installing the current project: kintree (0.1.0)
+Installing the current project: kintree (0.4.99)
 ```
 > Note: the version is not accurate (placeholder only)
 
 3. Run Ki-nTree in the virtual environment
 ```bash
-$ poetry run python -m kintree.kintree_gui
+$ poetry run python -m kintree_gui
 ```
 or
 
 ```bash
 $ poetry shell
-$ python -m kintree.kintree_gui
+$ python -m kintree_gui
 ```
 
 #### Build
 1. Make sure you followed the previous installation steps, then run:
 ``` bash
 $ poetry build
-```
-
-You will get a message similar to this:
-
-```
-Building kintree (0.3.10)
+Building kintree (0.4.99)
   - Building sdist
-  - Built kintree-0.3.10.tar.gz
+  - Built kintree-0.4.99.tar.gz
   - Building wheel
-  - Built kintree-0.3.10-py3-none-any.whl
+  - Built kintree-0.4.99-py3-none-any.whl
 ```
 2. Exit the virtual environment (`Ctrl + D` on Linux; you can also close the
    terminal and reopen it in the same folder).
@@ -176,7 +170,7 @@ Building kintree (0.3.10)
    step. For example:
 
 ```bash
-pip install dist/kintree-0.3.10-py3-none-any.whl
+pip install dist/kintree-0.4.99-py3-none-any.whl
 ```
 
 3. You can now start Ki-nTree by typing `kintree` in the terminal, provided

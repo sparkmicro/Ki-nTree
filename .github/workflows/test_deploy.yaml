@@ -124,11 +124,13 @@ jobs:
           --expression
           "s/version = \".*\" # placeholder/version = \"$GTAG\"/g"
           pyproject.toml
-          && echo "__version__ = $GTAG" > kintree/__init__.py
+          && echo "__version__ = '$GTAG'" > kintree/__init__.py
         env:
           REF: ${{ github.ref }}
       - name: Display the inferred version
-        run: head pyproject.toml
+        run: |
+          head pyproject.toml
+          head kintree/__init__.py
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
