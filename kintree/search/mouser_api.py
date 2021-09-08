@@ -1,7 +1,7 @@
 import os
 
 from ..config import settings, config_interface
-from .mouser.api import MouserPartSearchRequest
+from mouser.api import MouserPartSearchRequest
 
 SEARCH_HEADERS = [
     'Description',
