@@ -892,6 +892,7 @@ def main():
     # Create the Window
     window = sg.Window(f'Ki-nTree [{__version__}]',
                        layout,
+                       icon='images/logo.png',
                        location=(500, 500))
 
     # Event Loop to process 'events' and get the 'values' of the inputs
