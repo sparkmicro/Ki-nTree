@@ -8,7 +8,7 @@ MAX_PROGRESS = 100
 DEFAULT_PROGRESS = 5
 
 
-def create_progress_bar_window() -> bool:
+def create_progress_bar_window(font=None, location=None) -> bool:
     ''' Create window for part creation progress '''
     global CREATE_PART_PROGRESS, MAX_PROGRESS
     global progress_window
@@ -18,7 +18,7 @@ def create_progress_bar_window() -> bool:
         [sg.ProgressBar(MAX_PROGRESS, orientation='h', size=(20, 30), key='progressbar')],
         [sg.Cancel()]
     ]
-    progress_window = sg.Window('Part Creation Progress', progress_layout, location=(500, 500))
+    progress_window = sg.Window('Part Creation Progress', progress_layout, font=font, location=location)
     # progress_bar = progress_window['progressbar']
 
     event, values = progress_window.read(timeout=10)
