@@ -30,6 +30,14 @@ from fuzzywuzzy import fuzz
 # KiCad
 from .kicad import kicad_interface
 
+# Define global UI elements
+gui_global = {
+    'font': ('Lato', 11),
+    'location': (500, 500),
+    'label_size': (20, 1),
+    'button_size': (15, 1),
+}
+
 
 def user_settings_window():
     ''' User path settings window '''
@@ -40,19 +48,22 @@ def user_settings_window():
 
     user_layout = [
         [
-            sg.Text('Configuration Files Folder '),
+            sg.Text('Configuration Files Folder', size=gui_global['label_size']),
             sg.InputText(USER_FILES, key='user_files'),
             sg.FolderBrowse(target='user_files', initial_folder=USER_FILES),
         ],
         [
-            sg.Text('Cache Folder '),
+            sg.Text('Cache Folder', size=gui_global['label_size']),
             sg.InputText(USER_CACHE, key='user_cache'),
             sg.FolderBrowse(target='user_cache', initial_folder=USER_CACHE),
         ],
-        [sg.Button('Save', size=(10, 1)), ],
+        [sg.Button('Save', size=gui_global['button_size']), ],
     ]
     user_window = sg.Window(
-        'User Settings', user_layout, location=(500, 500)
+        'User Settings',
+        user_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
     )
     us_event, us_values = user_window.read()
     if us_event == sg.WIN_CLOSED:  # if user closes window
@@ -75,7 +86,8 @@ def user_settings_window():
         # Notify user to reload Ki-nTree
         sg.popup_ok('Please restart Ki-nTree for the new paths to be loaded',
                     title='Restart',
-                    location=(500, 500))
+                    font=gui_global['font'],
+                    location=gui_global['location'])
 
     user_window.close()
     return
@@ -88,20 +100,23 @@ def digikey_api_settings_window():
 
     search_api_layout = [
         [
-            sg.Text('Digi-Key API Client ID '),
+            sg.Text('Digi-Key API Client ID', size=gui_global['label_size']),
             sg.InputText(user_settings['DIGIKEY_CLIENT_ID'], key='client_id'),
         ],
         [
-            sg.Text('Digi-Key API Client Secret '),
+            sg.Text('Digi-Key API Client Secret', size=gui_global['label_size']),
             sg.InputText(user_settings['DIGIKEY_CLIENT_SECRET'], key='client_secret'),
         ],
         [
-            sg.Button('Test', size=(15, 1)),
-            sg.Button('Save', size=(15, 1)),
+            sg.Button('Test', size=gui_global['button_size']),
+            sg.Button('Save', size=gui_global['button_size']),
         ],
     ]
     search_api_window = sg.Window(
-        'Digi-Key API (v3) Settings', search_api_layout, location=(500, 500)
+        'Digi-Key API (v3) Settings',
+        search_api_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
     )
 
     while True:
@@ -128,7 +143,8 @@ def digikey_api_settings_window():
                 result_message = 'Failed to connect to Digi-Key API'
             sg.popup_ok(result_message,
                         title='Digi-Key API Connect Test',
-                        location=(500, 500))
+                        font=gui_global['font'],
+                        location=gui_global['location'])
         else:
             save_settings(user_settings)
             search_api_window.close()
@@ -142,7 +158,7 @@ def mouser_api_settings_window():
 
     search_api_layout = [
         [
-            sg.Text('Mouser Part API Key '),
+            sg.Text('Mouser Part API Key', size=gui_global['label_size']),
             sg.InputText(user_settings['MOUSER_PART_API_KEY'], key='api_key'),
         ],
         [
@@ -151,7 +167,10 @@ def mouser_api_settings_window():
         ],
     ]
     search_api_window = sg.Window(
-        'Mouser API (v1) Settings', search_api_layout, location=(500, 500)
+        'Mouser API (v1) Settings',
+        search_api_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
     )
 
     while True:
@@ -177,7 +196,8 @@ def mouser_api_settings_window():
                 result_message = 'Failed to connect to Mouser API'
             sg.popup_ok(result_message,
                         title='Mouser API Connect Test',
-                        location=(500, 500))
+                        font=gui_global['font'],
+                        location=gui_global['location'])
         else:
             save_settings(user_settings)
             search_api_window.close()
@@ -191,15 +211,15 @@ def inventree_settings_window():
 
     inventree_layout = [
         [
-            sg.Text('InvenTree Address '),
+            sg.Text('InvenTree Address', size=gui_global['label_size']),
             sg.InputText(user_settings['SERVER_ADDRESS'], key='server'),
         ],
         [
-            sg.Text('Username '),
+            sg.Text('Username', size=gui_global['label_size']),
             sg.InputText(user_settings['USERNAME'], key='username'),
         ],
         [
-            sg.Text('Password '),
+            sg.Text('Password', size=gui_global['label_size']),
             sg.InputText(user_settings['PASSWORD'], key='password', password_char='*'),
         ],
         [
@@ -208,7 +228,10 @@ def inventree_settings_window():
         ],
     ]
     inventree_window = sg.Window(
-        'InvenTree Settings', inventree_layout, location=(500, 500)
+        'InvenTree Settings',
+        inventree_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
     )
 
     while True:
@@ -233,7 +256,8 @@ def inventree_settings_window():
                 result_message = 'Failed to connect to InvenTree server'
             sg.popup_ok(result_message,
                         title='InvenTree Connect Test',
-                        location=(500, 500))
+                        font=gui_global['font'],
+                        location=gui_global['location'])
         else:
             save_settings()
             inventree_window.close()
@@ -250,24 +274,27 @@ def kicad_settings_window():
 
     kicad_layout = [
         [
-            sg.Text('Symbol Libraries Folder '),
+            sg.Text('Symbol Libraries Folder', size=gui_global['label_size']),
             sg.InputText(KICAD_SYMBOLS_PATH, key='library'),
             sg.FolderBrowse(target='library', initial_folder=KICAD_SYMBOLS_PATH),
         ],
         [
-            sg.Text('Symbol Templates Folder '),
+            sg.Text('Symbol Templates Folder', size=gui_global['label_size']),
             sg.InputText(KICAD_TEMPLATES_PATH, key='template'),
             sg.FolderBrowse(target='template', initial_folder=KICAD_TEMPLATES_PATH),
         ],
         [
-            sg.Text('Footprint Libraries Folder '),
+            sg.Text('Footprint Libraries Folder', size=gui_global['label_size']),
             sg.InputText(KICAD_FOOTPRINTS_PATH, key='footprint'),
             sg.FolderBrowse(target='footprint', initial_folder=KICAD_FOOTPRINTS_PATH),
         ],
         [sg.Button('Save', size=(10, 1)), ],
     ]
     kicad_window = sg.Window(
-        'KiCad Settings', kicad_layout, location=(500, 500)
+        'KiCad Settings',
+        kicad_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
     )
     kcd_event, kcd_values = kicad_window.read()
     if kcd_event == sg.WIN_CLOSED:  # if user closes window
@@ -304,7 +331,10 @@ def snapeda_window(part_number: str):
     ]
 
     snapeda_window = sg.Window(
-        'SnapEDA', snapeda_layout, location=(500, 500)
+        'SnapEDA',
+        snapeda_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
     )
 
     while True:
@@ -368,7 +398,10 @@ def snapeda_window(part_number: str):
         snapeda_layout.append([sg.Text(snapeda_msg)])
 
     snapeda_window = sg.Window(
-        'SnapEDA', snapeda_layout, location=(500, 500)
+        'SnapEDA',
+        snapeda_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
     )
 
     while True:
@@ -387,58 +420,64 @@ def snapeda_window(part_number: str):
     snapeda_window.close()
 
 
-def part_user_form(part_data: dict) -> dict:
+def part_user_form(part_data: dict, custom=False) -> dict:
     ''' User part data form '''
 
     user_values = {}
-    add_custom_layout = []
+    part_user_form_layout = []
 
     input_keys = []
     for key, value in part_data.items():
         label = key.replace('_', ' ').title()
 
-        add_custom_layout.append([
-            sg.Text(label, size=(22, 1)),
-            sg.InputText(value, size=(38, 1), key=key),
+        part_user_form_layout.append([
+            sg.Text(label, size=gui_global['label_size']),
+            sg.InputText(value, size=(45, 1), key=key),
         ])
         input_keys.append(key)
 
-    if part_data:
-        add_custom_layout.append([sg.Button('Submit', size=(25, 1)), ])
-        window_title = 'Update Part Data'
-    else:
-        add_custom_layout.append([sg.Button('CREATE', size=(59, 1)), ])
+    if custom:
+        part_user_form_layout.append([sg.Button('CREATE', size=(64, 1)), ])
         window_title = 'Add Custom Part'
+    else:
+        part_user_form_layout.append([sg.Button('Submit', size=(25, 1)), ])
+        window_title = 'Update Part Data'
 
-    add_custom_window = sg.Window(
-        window_title, add_custom_layout, location=(500, 500)
+    part_user_form_window = sg.Window(
+        window_title,
+        part_user_form_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
     )
 
     while True:
-        cstm_event, cstm_values = add_custom_window.read()
+        form_event, form_values = part_user_form_window.read()
 
-        if cstm_event == sg.WIN_CLOSED:  # if user closes window
+        if form_event == sg.WIN_CLOSED:  # if user closes window
             return None
         else:
             for key in input_keys:
-                user_values[key] = cstm_values[key]
+                user_values[key] = form_values[key]
 
-            if not cstm_values['name'] and not cstm_values['description']:
+            if not form_values['name'] and not form_values['description']:
                 sg.popup_ok('Missing "Name" and "Description"',
                             title='Error',
-                            location=(500, 500))
-            elif not cstm_values['name']:
+                            font=gui_global['font'],
+                            location=gui_global['location'])
+            elif not form_values['name']:
                 sg.popup_ok('Missing "Name"',
                             title='Error',
-                            location=(500, 500))
-            elif not cstm_values['description']:
+                            font=gui_global['font'],
+                            location=gui_global['location'])
+            elif not form_values['description']:
                 sg.popup_ok('Missing "Description"',
                             title='Error',
-                            location=(500, 500))
+                            font=gui_global['font'],
+                            location=gui_global['location'])
             else:
                 break
 
-    add_custom_window.close()
+    part_user_form_window.close()
     return user_values
 
 
@@ -485,12 +524,12 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
 
     category_layout = [
         [
-            sg.Text('Category '),
+            sg.Text('Category', size=(12, 1)),
             sg.Combo(sorted(categories_choices), default_value=category, key='category'),
             sg.Button('Confirm'),
         ],
         [
-            sg.Text('Subcategory '),
+            sg.Text('Subcategory', size=(12, 1)),
             sg.Combo(sorted(subcategories_choices), default_value=subcategory_default, size=(20, 1), key='subcategory_sel'),
             sg.Text('Or Enter Name '),
             sg.In(size=(20, 1), key='subcategory_man'),
@@ -500,7 +539,10 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
         ],
     ]
 
-    category_window = sg.Window('Categories', category_layout, location=(500, 500))
+    category_window = sg.Window('Categories',
+                                category_layout,
+                                font=gui_global['font'],
+                                location=gui_global['location'], )
     category_event, category_values = category_window.read()
     category_window.close()
 
@@ -520,7 +562,8 @@ def user_defined_categories(category=None, subcategory=None, extend=False) -> li
             cprint(f'[INFO]\tError: {missing_category}')
             sg.popup_ok(missing_category,
                         title='Categories',
-                        location=(500, 500))
+                        font=gui_global['font'],
+                        location=gui_global['location'])
 
         return categories
 
@@ -576,7 +619,7 @@ def user_defined_symbol_template_footprint(categories: list,
             if subcategory:
                 error_message = f'Warning: No templates defined for "{category}"'
                 cprint(f'[INFO]\t{error_message}', silent=settings.SILENT)
-                # sg.popup_ok(error_message, title='No Templates', location=(500, 500))
+                # sg.popup_ok(error_message, title='No Templates', font=gui_global['font'], location=gui_global['location'])
 
         if subcategory:
             # Load templates only for given category/subcategory pair
@@ -600,7 +643,7 @@ def user_defined_symbol_template_footprint(categories: list,
         except:
             # error_message = f'Warning: No libraries defined for "{category}"'
             # cprint(f'[INFO]\t{error_message}', silent=settings.SILENT)
-            # sg.popup_ok(error_message, title='No Libraries', location=(500, 500))
+            # sg.popup_ok(error_message, title='No Libraries', font=gui_global['font'], location=gui_global['location'])
             pass
         try:
             choices.extend(sorted(more_choices))
@@ -613,7 +656,8 @@ def user_defined_symbol_template_footprint(categories: list,
     if not settings.KICAD_SYMBOLS_PATH:
         sg.popup_ok('Error: KiCad symbol library folder path is not defined ("Settings > KiCad")',
                     title='KiCad Symbol Library Folder',
-                    location=(500, 500))
+                    font=gui_global['font'],
+                    location=gui_global['location'])
         return symbol, template, footprint
 
     symbol_library = config_interface.load_libraries_paths(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
@@ -622,7 +666,8 @@ def user_defined_symbol_template_footprint(categories: list,
     if not symbol_library:
         sg.popup_ok(f'Error: Symbol library files were not found in {settings.KICAD_SYMBOLS_PATH}',
                     title='KiCad Symbol Library Folder',
-                    location=(500, 500))
+                    font=gui_global['font'],
+                    location=gui_global['location'])
         return symbol, template, footprint
 
     # Build symbol choices
@@ -640,7 +685,8 @@ def user_defined_symbol_template_footprint(categories: list,
     if not settings.KICAD_TEMPLATES_PATH:
         sg.popup_ok('Error: KiCad template folder path is not defined ("Settings > KiCad")',
                     title='KiCad Template Folder',
-                    location=(500, 500))
+                    font=gui_global['font'],
+                    location=gui_global['location'])
         return symbol, template, footprint
 
     templates = config_interface.load_templates_paths(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
@@ -649,7 +695,8 @@ def user_defined_symbol_template_footprint(categories: list,
     if not templates:
         sg.popup_ok(f'Error: Template files were not found in {settings.KICAD_TEMPLATES_PATH}',
                     title='KiCad Template Folder',
-                    location=(500, 500))
+                    font=gui_global['font'],
+                    location=gui_global['location'])
         return symbol, template, footprint
 
     # Build template choices
@@ -688,7 +735,8 @@ def user_defined_symbol_template_footprint(categories: list,
     if not settings.KICAD_FOOTPRINTS_PATH:
         sg.popup_ok('Error: KiCad footprint library folder path is not defined ("Settings > KiCad")',
                     title='KiCad Footprint Library Folder',
-                    location=(500, 500))
+                    font=gui_global['font'],
+                    location=gui_global['location'])
         return symbol, template, footprint
 
     footprint_library = config_interface.load_footprint_paths(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
@@ -697,7 +745,8 @@ def user_defined_symbol_template_footprint(categories: list,
     if not footprint_library:
         sg.popup_ok(f'Error: Footprint library files were not found in {settings.KICAD_FOOTPRINTS_PATH}',
                     title='KiCad Footprint Library Folder',
-                    location=(500, 500))
+                    font=gui_global['font'],
+                    location=gui_global['location'])
         return symbol, template, footprint
 
     # Build symbol choices
@@ -747,21 +796,22 @@ def user_defined_symbol_template_footprint(categories: list,
 
     library_layout = [
         [
-            sg.Text('Symbol Library '),
+            sg.Text('Symbol Library', size=(15, 1)),
             sg.Combo(symbol_lib_choices, default_value=symbol_lib_default, key='symbol_lib'),
             sg.Button('Confirm'),
         ],
         [
-            sg.Text(f'Symbol Template ({categories[0]}) '),
+            sg.Text('Symbol Template', size=(15, 1)),
             sg.Combo(template_choices, default_value=template_default, key='template'),
+            sg.Text(f'Category: {categories[0]}')
         ],
         [
-            sg.Text('Footprint Library '),
+            sg.Text('Footprint Library', size=(15, 1)),
             sg.Combo(footprint_lib_choices, default_value=footprint_lib_default, key='footprint_lib'),
             sg.Button('Confirm'),
         ],
         [
-            sg.Text('Footprint '),
+            sg.Text('Footprint', size=(15, 1)),
             sg.Combo(footprint_mod_choices, default_value=footprint_mod_default, key='footprint_mod_sel'),
             sg.Text('Or Enter Name '),
             sg.In(size=(20, 1), key='footprint_mod_man'),
@@ -774,7 +824,10 @@ def user_defined_symbol_template_footprint(categories: list,
     else:
         library_layout.append([sg.Button('Submit')])
 
-    library_window = sg.Window('KiCad Libraries', library_layout, location=(500, 500))
+    library_window = sg.Window('KiCad Libraries',
+                               library_layout,
+                               font=gui_global['font'],
+                               location=gui_global['location'], )
     lib_event, lib_values = library_window.read()
     library_window.close()
 
@@ -854,6 +907,12 @@ def main():
     # sg.theme_previewer() # Show all
     sg.theme('DarkTeal10')
 
+    # Load logo image in Base64 coding format (cross-platform)
+    import base64
+    logo = None
+    with open('images/logo.png', 'rb') as imagefile:
+        logo = base64.b64encode(imagefile.read())
+
     # Main Menu
     menu_def = [
         ['Settings',
@@ -885,15 +944,16 @@ def main():
             sg.Checkbox('InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
         ],
         [
-            sg.Button('CREATE', size=(60, 1)),
+            sg.Button('CREATE', size=(58, 1)),
         ],
     ]
 
     # Create the Window
-    window = sg.Window(f'Ki-nTree [{__version__}]',
+    window = sg.Window(f'Ki-nTree | {__version__}',
                        layout,
-                       icon='images/logo.png',
-                       location=(500, 500))
+                       icon=logo,
+                       font=gui_global['font'],
+                       location=gui_global['location'], )
 
     # Event Loop to process 'events' and get the 'values' of the inputs
     while True:
@@ -941,13 +1001,15 @@ def main():
             if values['supplier'] not in settings.SUPPORTED_SUPPLIERS_API:
                 sg.popup_ok(f'Supplier "{values["supplier"]}"" is not in the list of supported suppliers: {settings.SUPPORTED_SUPPLIERS_API}',
                             title='Incorrect Supplier',
-                            location=(500, 500))
+                            font=gui_global['font'],
+                            location=gui_global['location'])
             else:
                 # Check either KiCad or InvenTree are enabled
                 if not settings.ENABLE_KICAD and not settings.ENABLE_INVENTREE:
                     sg.popup_ok('Please select an endpoint (KiCad and/or InvenTree)',
                                 title='No endpoint selected',
-                                location=(500, 500))
+                                font=gui_global['font'],
+                                location=gui_global['location'])
                 # Check InvenTree, if enabled
                 elif settings.ENABLE_INVENTREE:
                     cprint('\n[MAIN]\tConnecting to Inventree server', silent=settings.SILENT)
@@ -955,7 +1017,8 @@ def main():
                     if not inventree_connect:
                         sg.popup_ok('Failed to access InvenTree server\nMake sure your username and password are correct',
                                     title='InvenTree Server Error',
-                                    location=(500, 500))
+                                    font=gui_global['font'],
+                                    location=gui_global['location'])
                 elif settings.ENABLE_KICAD:
                     inventree_connect = True
 
@@ -989,7 +1052,7 @@ def main():
                         else:
                             error_message = 'Failed to fetch part information...\n\n' \
                                             'Make sure:' \
-                                            '\n- Part number is valid and not blank'
+                                            '\n- Part number is valid'
                             if values['supplier'] == 'Digi-Key':
                                 error_message += '\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
                             elif values['supplier'] == 'Mouser':
@@ -999,12 +1062,20 @@ def main():
                             # Missing Part Information
                             sg.popup_ok(error_message,
                                         title='Supplier API Search',
-                                        location=(500, 500))
+                                        font=gui_global['font'],
+                                        location=gui_global['location'])
+                    else:
+                        # Missing Part Number
+                        cprint('\n[ERROR]\tMissing Part Number', silent=settings.SILENT)
+                        sg.popup_ok('Part Number field needs to be filled in',
+                                    title='Missing Part Number',
+                                    font=gui_global['font'],
+                                    location=gui_global['location'])
 
                 # Do we have form data?
                 if part_supplier_form:
                     # Open part form
-                    part_user_info = part_user_form(part_data=part_supplier_form)
+                    part_user_info = part_user_form(part_data=part_supplier_form, custom=CREATE_CUSTOM)
 
                     # Stitch back categories and parameters
                     try:
@@ -1083,7 +1154,7 @@ def main():
                 actions_complete = True
 
                 # Create progress bar window
-                progressbar = progress.create_progress_bar_window()
+                progressbar = progress.create_progress_bar_window(font=gui_global['font'], location=gui_global['location'])
 
                 # InvenTree
                 if (symbol and footprint) or settings.ENABLE_INVENTREE:
@@ -1228,7 +1299,10 @@ def main():
                 progress.close_progress_bar_window()
 
             if result_message:
-                sg.popup_ok(result_message, title='Results', location=(500, 500))
+                sg.popup_ok(result_message,
+                            title='Results',
+                            font=gui_global['font'],
+                            location=gui_global['location'], )
 
             if part_data.get('inventree_url', None):
                 if settings.AUTOMATIC_BROWSER_OPEN:
