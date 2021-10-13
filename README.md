@@ -194,3 +194,11 @@ pip install dist/kintree-0.4.99-py3-none-any.whl
 
 - Migrate to Qt? ([see discussion](https://github.com/sparkmicro/Ki-nTree/issues/37))
 - Create loading animation for API searches (asyncio)
+
+## License
+
+The Ki-nTree source code is licensed under the [GPL3.0 license](https://github.com/sparkmicro/Ki-nTree/blob/main/LICENSE) as it uses source code under that license:
+* https://github.com/KiCad/kicad-library-utils
+* https://github.com/peeter123/digikey-api
+
+The [KiCad templates](https://github.com/sparkmicro/Ki-nTree/tree/main/kintree/kicad/templates) are licensed under the [Creative Commons CC0 1.0 license](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/kicad/templates/LICENSE) which means that "you can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission" ([reference](https://creativecommons.org/publicdomain/zero/1.0/)).
