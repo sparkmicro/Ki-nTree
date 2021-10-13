@@ -273,8 +273,8 @@ def load_footprint_paths(user_config_path: str, footprint_path: str) -> dict:
     if not os.path.exists(footprint_path):
         return None
 
-    found_library_folders = [	item.replace('.pretty', '') for item in os.listdir(footprint_path)
-                              if os.path.isdir(footprint_path + item)]
+    found_library_folders = [item.replace('.pretty', '') for item in os.listdir(footprint_path)
+                             if os.path.isdir(footprint_path + item)]
 
     footprint_libraries_paths = {}
     assigned_folders = []
