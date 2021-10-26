@@ -21,7 +21,7 @@ Ki-nTree works with:
 - the awesome open-source [Digi-Key API python library](https://github.com/peeter123/digikey-api) built and maintained by [@peeter123](https://github.com/peeter123)
 - the [Mouser Python API](https://github.com/sparkmicro/mouser-api/) built and maintained by [@eeintech](https://github.com/eeintech)
 - the awesome open-source [InvenTree Inventory Management System](https://github.com/inventree/inventree) built and maintained by [@SchrodingersGat](https://github.com/SchrodingersGat)
-- [KiCad](https://kicad-pcb.org/) (of course!) and their open-source [library utils](https://github.com/KiCad/kicad-library-utils)
+- [KiCad](https://www.kicad.org/) (of course!) and their open-source [library utils](https://github.com/KiCad/kicad-library-utils)
 
 Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK Microsystems](https://www.sparkmicro.com/), who generously accepted to make it open-source!
 
