@@ -80,7 +80,7 @@ Ki-nTree is [available on Arch Linux's AUR](https://aur.archlinux.org/packages/p
 #### Settings
 1. With Ki-nTree GUI open, click on "Settings > Digi-Key" and fill in both Digi-Key API Client ID and Secret keys (optional: click on "Test" to [get an API token](#get-digi-key-api-token))
 2. Click on "Settings > Mouser" and fill in the Mouser part search API key
-3. Click on "Settings > KiCad", browse to the location where KiCad symbol and footprint libraries are stored on your computer then click "Save"
+3. Click on "Settings > KiCad", browse to the location where KiCad symbol, template and footprint libraries are stored on your computer then click "Save"
 4. If you intend to use InvenTree with this tool, click on "Settings > InvenTree" and fill in your InvenTree server address and credentials then click "Save" (optional: click on "Test" to get an API token)
 
 #### Get Digi-Key API token
@@ -111,7 +111,7 @@ Ki-nTree currently supports APIs for the following electronics suppliers: Digi-K
 1. In the main window, enter the part number and select the supplier in drop-down list, then click "CREATE". It will start by fetching part data using the supplier's API
 2. In the case Digi-Key has been selected and the API token is not found or expired, a browser window will pop-up. To get a new token: [follow those steps](#get-digi-key-api-token)
 3. Once the part data has been successfully fetched from the supplier's API, you will be prompted to add/confirm/edit the part information, followed by the `Category` and `Subcategory` to use for this part (Ki-nTree tries to match them automatically)
-4. Then, you will be prompted with selecting the KiCad symbol library, template and footprint library to use for this part
+4. Then, you will be prompted with selecting the KiCad symbol library, the template and the footprint library to use for this part
 5. It will take some time to complete the part creation in InvenTree and/or KiCad, once it finishes you'll be notified of the result  
 6. Finally, if the part was created or found in InvenTree, your browser will automatically open a new tab with the part information
 
