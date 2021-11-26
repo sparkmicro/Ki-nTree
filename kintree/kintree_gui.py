@@ -910,7 +910,7 @@ def main():
     # Load logo image in Base64 coding format (cross-platform)
     import base64
     logo = None
-    with open('images/logo.png', 'rb') as imagefile:
+    with open(os.path.join(settings.PROJECT_DIR, 'logo.png'), 'rb') as imagefile:
         logo = base64.b64encode(imagefile.read())
 
     # Main Menu
