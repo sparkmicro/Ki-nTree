@@ -12,7 +12,7 @@ def fetch_snapeda_part_info(part_number: str) -> dict:
     ''' Fetch SnapEDA part data from API '''
 
     data = {}
-    api_url = API_BASE_URL + part_number
+    api_url = API_BASE_URL + part_number.replace(' ', '')
     request = Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
 
     with urlopen(request, timeout=20) as response:
