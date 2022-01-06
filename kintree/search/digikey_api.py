@@ -136,8 +136,6 @@ def test_api_connect(check_content=False) -> bool:
     test_success = True
     expected = {
         'product_description': 'RES 10K OHM 5% 1/16W 0402',
-        'detailed_description': '10 kOhms ±5% 0.063W, 1/16W Chip Resistor 0402 (1005 '
-                                'Metric) Automotive AEC-Q200 Thick Film',
         'digi_key_part_number': 'RMCF0402JT10K0CT-ND',
         'manufacturer': 'Stackpole Electronics Inc',
         'manufacturer_part_number': 'RMCF0402JT10K0',
@@ -159,6 +157,7 @@ def test_api_connect(check_content=False) -> bool:
     if test_success:
         for key, value in expected.items():
             if test_part[key] != value:
+                print(f'{test_part[key]} != {value}')
                 test_success = False
                 break
 
