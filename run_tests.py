@@ -16,7 +16,7 @@ ENABLE_INVENTREE = True
 # Enable KiCad tests
 ENABLE_KICAD = True
 # Enable test samples deletion
-ENABLE_DELETE = True
+ENABLE_DELETE = False
 AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
