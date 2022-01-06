@@ -81,17 +81,25 @@ class ComponentLibManager(object):
 
         # Update properties
         for property in new_symbol.properties:
-            if property.name in ['ki_keywords', 'ki_description', 'Datasheet']:
-                if property.name == 'ki_keywords':
-                    property.value = symbol_data['keywords']
-                elif property.name == 'ki_description':
-                    property.value = symbol_data['description']
-                elif property.name == 'Datasheet':
-                    property.value = symbol_data['inventree_url']
+            # Match part data
+            if property.value in symbol_data.keys():
+                property.value = symbol_data[property.value]
                 continue
-            else:
-                if property.name in symbol_data['parameters'].keys():
-                    property.value = symbol_data['parameters'][property.name]
+
+            # Match parameters
+            if property.value in symbol_data['parameters'].keys():
+                property.value = symbol_data['parameters'][property.value]
+                continue
+
+            # Special properties
+            if property.name in ['Value', 'Manufacturer', 'Manufacturer Part Number']:
+                if property.name == 'Value':
+                    property.value = symbol_data['IPN']
+                elif property.name == 'Manufacturer':
+                    property.value = list(symbol_data['manufacturer'].keys())[0]
+                elif property.name == 'Manufacturer Part Number':
+                    property.value = list(symbol_data['manufacturer'].values())[0][0]
+                continue
 
         # Update fields
         # manufacturer_name = ''
@@ -111,7 +119,6 @@ class ComponentLibManager(object):
         #             new_symbol.fields[field_idx]['name'] = symbol_data['manufacturer'][manufacturer_name][0]
 
         # Add symbol to library
-        print(self.kicad_lib.symbols)
         self.kicad_lib.symbols.append(new_symbol)
         # Update generator version
         self.kicad_lib.version = '20211014'
