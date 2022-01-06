@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kintree"
-version = "0.4.99" # placeholder
+version = "0.5.99" # placeholder
 description = "Fast part creation in KiCad and InvenTree"
 authors = ["eeintech <eeintech@eeinte.ch>"]
 maintainers = ["eeintech <eeintech@eeinte.ch>", "randrej <r.andrej@gmail.com>"]

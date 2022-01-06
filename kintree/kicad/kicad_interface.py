@@ -1,5 +1,6 @@
 from . import kicad_symbol
 
+
 def inventree_to_kicad(part_data: dict, library_path: str, template_path=None, show_progress=True) -> bool:
     ''' Create KiCad symbol from InvenTree part data '''
     klib = kicad_symbol.ComponentLibManager(library_path)
@@ -10,8 +11,7 @@ def inventree_to_kicad(part_data: dict, library_path: str, template_path=None, s
     else:
         return False, False
 
-# NOT SUPPORTED YET
+# NOT SUPPORTED YET - REMOVE?
 # def delete_part(part_number: str, library_path: str) -> bool:
 #     ''' Delete KiCad symbol from library '''
-#     return klib.delete_component_from_lib(part_number=part_number,
-#                                           library_path=library_path)
+#     pass

@@ -13,7 +13,6 @@ import sys, os
 common = os.path.abspath(os.path.join(sys.path[0], 'kintree', 'kicad', 'common'))
 if not common in sys.path:
     sys.path.append(common)
-    print(sys.path)
 
 import sexpr
 

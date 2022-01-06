@@ -1252,6 +1252,7 @@ def main():
                                 create_library(library_directory, symbol, settings.symbol_template_lib)
 
                             try:
+                                cprint(part_data)
                                 kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_data,
                                                                                                    library_path=library_path,
                                                                                                    template_path=template_path,
