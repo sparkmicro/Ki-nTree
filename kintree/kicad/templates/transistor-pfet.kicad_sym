@@ -9,7 +9,7 @@
     (property "Footprint" "Footprint" (id 2) (at 0 -17.78 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "inventree_url" (id 3) (at 1.27 0 0)
+    (property "Datasheet" "inventree_url" (id 3) (at 0 -20.32 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Manufacturer" "Manufacturer" (id 4) (at 0 -12.7 0)

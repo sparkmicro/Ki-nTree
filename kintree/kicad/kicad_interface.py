@@ -5,9 +5,9 @@ def inventree_to_kicad(part_data: dict, library_path: str, template_path=None, s
     ''' Create KiCad symbol from InvenTree part data '''
     klib = kicad_symbol.ComponentLibManager(library_path)
     if klib:
-        return klib.add_component_to_library_from_inventree(component_data=part_data,
-                                                            template_path=template_path,
-                                                            show_progress=show_progress)
+        return klib.add_symbol_to_library_from_inventree(symbol_data=part_data,
+                                                         template_path=template_path,
+                                                         show_progress=show_progress)
     else:
         return False, False
 

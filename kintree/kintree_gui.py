@@ -1234,7 +1234,7 @@ def main():
 
                         if template == 'None':
                             cprint('[INFO]\tWarning: Missing template, using default', silent=settings.SILENT)
-                            template_path = settings.KICAD_TEMPLATES_PATH + 'default.lib'
+                            template_path = settings.KICAD_TEMPLATES_PATH + 'default.kicad_sym'
                         else:
                             try:
                                 template_path = symbol_templates_paths[categories[0]][template]
@@ -1252,7 +1252,6 @@ def main():
                                 create_library(library_directory, symbol, settings.symbol_template_lib)
 
                             try:
-                                cprint(part_data)
                                 kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_data,
                                                                                                    library_path=library_path,
                                                                                                    template_path=template_path,
