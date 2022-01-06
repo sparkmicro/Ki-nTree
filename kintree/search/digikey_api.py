@@ -139,7 +139,7 @@ def test_api_connect(check_content=False) -> bool:
         'digi_key_part_number': 'RMCF0402JT10K0CT-ND',
         'manufacturer': 'Stackpole Electronics Inc',
         'manufacturer_part_number': 'RMCF0402JT10K0',
-        'product_url': 'https://www.digikey.com/product-detail/en/stackpole-electronics-inc/RMCF0402JT10K0/RMCF0402JT10K0CT-ND/1942936',
+        'product_url': 'https://www.digikey.com/en/products/detail/stackpole-electronics-inc/RMCF0402JT10K0/1758206',
         'primary_datasheet': 'https://www.seielect.com/catalog/sei-rmcf_rmcp.pdf',
         'primary_photo': 'https://media.digikey.com/photos/Stackpole%20Photos/MFG_RMC%20SERIES.jpg',
     }
