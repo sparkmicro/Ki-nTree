@@ -16,7 +16,7 @@ ENABLE_INVENTREE = True
 # Enable KiCad tests
 ENABLE_KICAD = True
 # Enable test samples deletion
-ENABLE_DELETE = False
+ENABLE_DELETE = True
 AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
@@ -241,24 +241,25 @@ if __name__ == '__main__':
                 else:
                     cprint('')
 
-                if ENABLE_KICAD:
-                    error = 0
+                # NOT YET SUPPORTED - REMOVE?
+                # if ENABLE_KICAD:
+                #     error = 0
 
-                    pretty_test_print('[MAIN]\tDeleting KiCad test parts')
-                    # Delete all KiCad test parts
-                    for number, result in kicad_results.items():
-                        try:
-                            kicad_interface.delete_part(part_number=number,
-                                                        library_path=test_library_path)
-                        except:
-                            error += 1
-                            cprint(f'[KCAD]\tWarning: "{number}" could not be deleted')
+                #     pretty_test_print('[MAIN]\tDeleting KiCad test parts')
+                #     # Delete all KiCad test parts
+                #     for number, result in kicad_results.items():
+                #         try:
+                #             kicad_interface.delete_part(part_number=number,
+                #                                         library_path=test_library_path)
+                #         except:
+                #             error += 1
+                #             cprint(f'[KCAD]\tWarning: "{number}" could not be deleted')
 
-                    if error > 0:
-                        cprint('[ FAIL ]')
-                        exit_code = -1
-                    else:
-                        cprint('[ PASS ]')
+                #     if error > 0:
+                #         cprint('[ FAIL ]')
+                #         exit_code = -1
+                #     else:
+                #         cprint('[ PASS ]')
 
                 if ENABLE_INVENTREE:
                     error = 0
