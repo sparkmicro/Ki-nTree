@@ -72,8 +72,7 @@ def get_default_search_keys():
 def find_categories(part_details: str):
     ''' Find categories '''
     try:
-        # print(part_details['limited_taxonomy']['children'][0]['value'])
-        return part_details['limited_taxonomy']['children'][0]['value'], part_details['limited_taxonomy']['children'][0]['children'][0]['value']
+        return part_details['limited_taxonomy'].get('value'), part_details['limited_taxonomy']['children'][0].get('value')
     except:
         return None, None
 
