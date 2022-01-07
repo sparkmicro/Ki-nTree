@@ -197,8 +197,8 @@ def load_libraries_paths(user_config_path: str, library_path: str) -> dict:
 
     found_library_files = []
     for file in os.listdir(library_path):
-        if file.endswith('.lib'):
-            found_library_files.append(file.replace('.lib', ''))
+        if file.endswith('.kicad_sym'):
+            found_library_files.append(file.replace('.kicad_sym', ''))
 
     symbol_libraries_paths = {}
     assigned_files = []
@@ -209,7 +209,7 @@ def load_libraries_paths(user_config_path: str, library_path: str) -> dict:
                 for library in libraries:
                     if library in found_library_files:
                         symbol_libraries_paths[category][library] = library_path + \
-                            library + '.lib'
+                            library + '.kicad_sym'
                         assigned_files.append(library)
     except:
         pass
@@ -256,10 +256,10 @@ def load_templates_paths(user_config_path: str, template_path: str) -> dict:
                 if file_name:
                     try:
                         symbol_templates_paths[category][subcategory] = template_path + \
-                            file_name + '.lib'
+                            file_name + '.kicad_sym'
                     except:
                         symbol_templates_paths[category] = {
-                            subcategory: template_path + file_name + '.lib'}
+                            subcategory: template_path + file_name + '.kicad_sym'}
     except:
         pass
 

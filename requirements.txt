@@ -1,9 +1,9 @@
-digikey-api>=0.5.0,<1.0
+digikey-api>=0.6.1,<1.0
 fuzzywuzzy>=0.18.0,<1.0
 inventree>=0.4.4,<1.0
 mouser>=0.1.1,<1.0
 multiprocess>=0.70.12.2,<0.71
-PySimpleGUI>=4.28.0,<5.0
-PyYAML>=5.3.1,<6.0
+PySimpleGUI>=4.56.0,<5.0
+PyYAML>=5.4.1,<6.0
 validators>=0.18.2<1.0
-wrapt>=1.12.1,<2.0
+wrapt>=1.13.3,<2.0

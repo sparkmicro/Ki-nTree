@@ -4,7 +4,7 @@ omit =
     env-kintree/*
     .venv/*
     # Skip KiCad library tool
-    kintree/kicad/schlib.py
+    kintree/kicad/lib_utils/*
     # Skip UI coverage
     kintree/kintree_gui.py
     kintree/common/progress.py
@@ -12,3 +12,5 @@ omit =
     kintree/wrapt_timeout_decorator/*
     # Skip Mouser API base files
     kintree/search/mouser/*
+    # Skip test script
+    run_tests.py
