@@ -10,7 +10,7 @@ from pathlib import Path
 
 import re, math
 import sys, os
-common = os.path.abspath(os.path.join(sys.path[0], 'kintree', 'kicad', 'common'))
+common = os.path.abspath(os.path.join(sys.path[0], 'kintree', 'kicad', 'lib_utils'))
 if not common in sys.path:
     sys.path.append(common)
 

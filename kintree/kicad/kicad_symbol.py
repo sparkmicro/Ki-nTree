@@ -3,7 +3,7 @@ import os
 from ..config import settings
 from ..common import progress
 from ..common.tools import cprint
-from kintree.kicad.common import kicad_sym
+from lib_utils import kicad_sym
 
 
 # KiCad Component Library Manager
