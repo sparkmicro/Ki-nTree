@@ -181,7 +181,7 @@ pip install dist/kintree-0.4.99-py3-none-any.whl
 > Priority goes to implementing new features over GUI improvements  
 > Open to new ideas and pull requests :smiley:
 
-#### Versions 0.4.x or later
+#### Versions 0.5.x or later
 ##### New Features
 
 - Allow user to decide the category code to use for IPN
