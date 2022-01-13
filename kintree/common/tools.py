@@ -85,16 +85,14 @@ def download_image(image_url: str, image_full_path: str, silent=False) -> str:
             urllib.request.install_opener(opener)
         try:
             (image_filename, headers) = urllib.request.urlretrieve(url, filename=image_full_path)
+            return image_filename
         except socket.timeout:
             cprint(f'[INFO]\tWarning: Image download socket timed out ({timeout}s)', silent=silent)
-            return None
         except urllib.error.HTTPError:
             cprint('[INFO]\tWarning: Image download failed (HTTP Error)', silent=silent)
-            return None
-        except urllib.error.URLError:
+        except (urllib.error.URLError, ValueError):
             cprint('[INFO]\tWarning: Image download failed (URL Error)', silent=silent)
-            return None
-        return image_filename
+        return None
     
     # Try without headers
     image = download(image_url)
