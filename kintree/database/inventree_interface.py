@@ -384,7 +384,7 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
         cprint(f'[ERROR]\tCategories ({category_name} - {subcategory_name}) does not exist in InvenTree', silent=settings.SILENT)
     else:
         # Check if part already exists
-        part_pk = inventree_api.is_new_part(category_pk, inventree_part)
+        part_pk = inventree_api.is_new_part(category_select, inventree_part)
         # Part exists
         if part_pk > 0:
             cprint('[INFO]\tPart already exists, skipping.', silent=settings.SILENT)

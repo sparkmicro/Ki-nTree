@@ -124,7 +124,8 @@ def is_new_part(category_id: int, part_info: dict) -> int:
         part_list.extend(subcategory.getParts())
 
     # Extract parameter from part info
-    new_part_parameters = part_info['parameters']
+    # Verify parameters values are not empty
+    new_part_parameters = part_info['parameters'] if list(set(part_info['parameters'].values())) != ['-'] else None
 
     template_list = ParameterTemplate.list(inventree_api)
 
@@ -161,6 +162,12 @@ def is_new_part(category_id: int, part_info: dict) -> int:
             compare = part_info['name'] == part.name and \
                 part_info['description'] == part.description and \
                 part_info['revision'] == part.revision
+            
+            # Check if new manufacturer part
+            if not compare:
+                manufacturer = list(part_info['manufacturer'].keys())[0]
+                mpn = list(part_info['manufacturer'].values())[0][0]
+                compare = not is_new_manufacturer_part(manufacturer, mpn)
 
         if compare:
             cprint(f'\n[TREE]\tFound part match in database (pk = {part.pk})', silent=settings.HIDE_DEBUG)
