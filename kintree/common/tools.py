@@ -65,36 +65,46 @@ def create_library(library_path: str, symbol: str, template_lib: str):
         copyfile(template_dcm, new_dcm_file)
 
 
-def download_image(image_url: str, image_full_path: str, silent=False, retries=3) -> str:
+def download_image(image_url: str, image_full_path: str, silent=False) -> str:
     ''' Standard method to download image URL to local file '''
-    import requests
+    import socket
+    import urllib.request
 
     if not image_url:
         if not silent:
             cprint('[INFO]\tError: Missing image URL')
         return False
 
-    def download(url):
+    def download(url, enable_headers=False):
         timeout = 3  # in seconds
+        # Set default timeout for download socket
+        socket.setdefaulttimeout(timeout)
+        if enable_headers:
+            opener = urllib.request.build_opener()
+            opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+            urllib.request.install_opener(opener)
         try:
-            request = requests.get(url, timeout=timeout)
-        except:
-            if not silent:
-                cprint(f'[INFO]\tWarning: Image download timed out ({timeout}s)')
+            (image_filename, headers) = urllib.request.urlretrieve(url, filename=image_full_path)
+        except socket.timeout:
+            cprint(f'[INFO]\tWarning: Image download socket timed out ({timeout}s)', silent=silent)
             return None
-        return request
+        except urllib.error.HTTPError:
+            cprint('[INFO]\tWarning: Image download failed (HTTP Error)', silent=silent)
+            return None
+        except urllib.error.URLError:
+            cprint('[INFO]\tWarning: Image download failed (URL Error)', silent=silent)
+            return None
+        return image_filename
+    
+    # Try without headers
+    image = download(image_url)
 
-    # Multiple download attempts
-    for i in range(retries):
-        request = download(image_url)
-        if request:
-            break
+    if not image:
+        # Try with headers
+        image = download(image_url, enable_headers=True)
 
     # Still nothing
-    if not request:
+    if not image:
         return False
-
-    with open(image_full_path, 'wb') as image:
-        image.write(request.content)
 
     return True
