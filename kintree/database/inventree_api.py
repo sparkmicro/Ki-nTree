@@ -124,7 +124,8 @@ def is_new_part(category_id: int, part_info: dict) -> int:
         part_list.extend(subcategory.getParts())
 
     # Extract parameter from part info
-    new_part_parameters = part_info['parameters']
+    # Verify parameters values are not empty
+    new_part_parameters = part_info['parameters'] if list(set(part_info['parameters'].values())) != ['-'] else None
 
     template_list = ParameterTemplate.list(inventree_api)
 
