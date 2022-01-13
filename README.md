@@ -1,5 +1,5 @@
 # Ki-nTree
-### Fast part creation in [KiCad](https://kicad-pcb.org/) and [InvenTree](https://inventree.readthedocs.io/) 
+### Fast part creation in [KiCad](https://kicad.org/) and [InvenTree](https://inventree.readthedocs.io/) 
 [![License: GPL v3.0](https://img.shields.io/badge/license-GPL_v3.0-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Versions](https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/python_versions.svg)](https://www.python.org/)
 [![PyPI](https://img.shields.io/pypi/v/kintree)](https://pypi.org/project/kintree/)
