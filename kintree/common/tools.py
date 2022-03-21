@@ -65,41 +65,50 @@ def create_library(library_path: str, symbol: str, template_lib: str):
         copyfile(template_dcm, new_dcm_file)
 
 
-def download_image(image_url: str, image_full_path: str, silent=False) -> str:
-    ''' Standard method to download image URL to local file '''
+def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=False, silent=False):
+    ''' Standard method to download URL content, with option to save to local file (eg. images) '''
+
     import socket
     import urllib.request
+
+    # Set default timeout for download socket
+    socket.setdefaulttimeout(timeout)
+    if enable_headers:
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+        urllib.request.install_opener(opener)
+    try:
+        if filetype == 'Image':
+            (image, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
+            return image
+        else:
+            url_data = urllib.request.urlopen(url)
+            data = url_data.read()
+            data_json = json.loads(data.decode('utf-8'))
+            return data_json
+    except socket.timeout:
+        cprint(f'[INFO]\tWarning: {filetype} download socket timed out ({timeout}s)', silent=silent)
+    except urllib.error.HTTPError:
+        cprint(f'[INFO]\tWarning: {filetype} download failed (HTTP Error)', silent=silent)
+    except (urllib.error.URLError, ValueError):
+        cprint(f'[INFO]\tWarning: {filetype} download failed (URL Error)', silent=silent)
+    return None
+
+
+def download_image(image_url: str, image_full_path: str) -> str:
+    ''' Standard method to download image URL to local file '''
 
     if not image_url:
         if not silent:
             cprint('[INFO]\tError: Missing image URL')
         return False
-
-    def download(url, enable_headers=False):
-        timeout = 3  # in seconds
-        # Set default timeout for download socket
-        socket.setdefaulttimeout(timeout)
-        if enable_headers:
-            opener = urllib.request.build_opener()
-            opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-            urllib.request.install_opener(opener)
-        try:
-            (image_filename, headers) = urllib.request.urlretrieve(url, filename=image_full_path)
-            return image_filename
-        except socket.timeout:
-            cprint(f'[INFO]\tWarning: Image download socket timed out ({timeout}s)', silent=silent)
-        except urllib.error.HTTPError:
-            cprint('[INFO]\tWarning: Image download failed (HTTP Error)', silent=silent)
-        except (urllib.error.URLError, ValueError):
-            cprint('[INFO]\tWarning: Image download failed (URL Error)', silent=silent)
-        return None
     
     # Try without headers
-    image = download(image_url)
+    image = download(image_url, filetype='Image', fileoutput=image_full_path)
 
     if not image:
         # Try with headers
-        image = download(image_url, enable_headers=True)
+        image = download(image_url, filetype='Image', fileoutput=image_full_path, enable_headers=True)
 
     # Still nothing
     if not image:
