@@ -99,8 +99,7 @@ def download_image(image_url: str, image_full_path: str) -> str:
     ''' Standard method to download image URL to local file '''
 
     if not image_url:
-        if not silent:
-            cprint('[INFO]\tError: Missing image URL')
+        cprint('[INFO]\tError: Missing image URL', silent=False)
         return False
     
     # Try without headers
