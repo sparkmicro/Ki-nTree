@@ -220,7 +220,13 @@ def create_category(parent: str, name: str):
         })
         is_new_category = True
 
-    return category.pk, is_new_category
+    try:
+        category_pk = category.pk
+    except AttributeError:
+        # User does not have the permission to create categories
+        category_pk = 0
+
+    return category_pk, is_new_category
 
 
 def upload_part_image(image_url: str, part_id: int) -> bool:

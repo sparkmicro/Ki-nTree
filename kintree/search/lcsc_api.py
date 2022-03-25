@@ -1,4 +1,4 @@
-import requests
+from ..common.tools import download
 
 SEARCH_HEADERS = [
     'productDescEn',
@@ -41,15 +41,13 @@ def find_categories(part_details: str):
 
 def fetch_part_info(part_number: str) -> dict:
     ''' Fetch part data from API '''
-    from ..wrapt_timeout_decorator import timeout
 
     part_info = {}
 
-    @timeout(dec_timeout=20)
-    def search_timeout():
+    def search_timeout(timeout=10):
         url = 'https://wwwapi.lcsc.com/v1/products/detail?product_code=' + part_number
-        response = requests.get(url)
-        return response.json()
+        response = download(url, timeout=timeout)
+        return response
 
     # Query part number
     try:

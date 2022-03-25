@@ -391,7 +391,7 @@ if __name__ == '__main__':
 
                 elif method_idx == 9:
                     # Test download image
-                    if download_image('', '', silent=True) or download_image('http', '', silent=True):
+                    if download_image('', '') or download_image('http', ''):
                         method_success = False
 
                 if method_success:

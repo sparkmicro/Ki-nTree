@@ -371,10 +371,18 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
         # Fetch subcategory id
         subcategory_pk = inventree_api.get_inventree_category_id(category_name=subcategory_name,
                                                                  parent_category_id=category_pk)
+        
+        if subcategory_pk <= 0:
+            cprint(f'\n[TREE]\tWarning: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
+            
+            # Check if user enabled option to automatically create the subcategory in general settings
+            if settings.AUTOMATIC_SUBCATEGORY_CREATE:
+                subcategory_pk, is_subcategory_new = inventree_api.create_category(parent=category_name, name=subcategory_name)
+                if subcategory_pk > 0:
+                    cprint(f'[TREE]\tSuccess: Subcategory "{category_name}/{subcategory_name}" was automatically added to InvenTree')
+
         if subcategory_pk > 0:
             category_select = subcategory_pk
-        else:
-            cprint(f'\n[TREE]\tWarning: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
 
     # Progress Update
     if show_progress and not progress.update_progress_bar_window():
