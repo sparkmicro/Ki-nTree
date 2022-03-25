@@ -82,6 +82,31 @@ Ki-nTree is [available on Arch Linux's AUR](https://aur.archlinux.org/packages/p
 
 ### Usage Instructions
 
+#### Before Starting
+
+If you intend to use Ki-nTree with InvenTree, this tool offers to setup the InvenTree category tree with a simple script that you can run as follow:
+
+> Warining: Before running it, make sure you have setup your category tree in your category settings file (`~/.config/kintree/user/categories.yaml`) according to your own preferences, else it will use the [default setup](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/inventree/categories.yaml).
+
+``` bash
+$ python3 -m kintree.setup_inventree
+```
+
+If the InvenTree category tree is not setup before starting to use Ki-nTree, you will not be able to add parts to InvenTree.
+
+#### InvenTree Permissions
+
+Each InvenTree user has a set of permissions associated to them.
+Please refer to the [InvenTree documentation](https://inventree.readthedocs.io/en/latest/settings/permissions/) to understand how to setup user permissions.
+
+The minimum set of user/group permission required to add parts to InvenTree is:
+- "Part - Add" to add InvenTree parts
+- "Purchase Orders - Add" to add manufacturers, suppliers and their associated parts
+
+If you wish to automatically add subcategories while creating InvenTree parts, you will need to enable the "Part Categories - Add" permission.
+
+Note that each time you enable the "Add" permission to an object, InvenTree automatically enables the "Change" permission to that object too.
+
 #### Settings
 1. With Ki-nTree GUI open, click on "Settings > Digi-Key" and fill in both Digi-Key API Client ID and Secret keys (optional: click on "Test" to [get an API token](#get-digi-key-api-token))
 2. Click on "Settings > Mouser" and fill in the Mouser part search API key
