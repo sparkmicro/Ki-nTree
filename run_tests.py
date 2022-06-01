@@ -94,12 +94,12 @@ else:
     cprint('[ PASS ]')
 
 # Test LCSC API
-pretty_test_print('[MAIN]\tLCSC API Test')
-if not lcsc_api.test_api():
-    cprint('[ FAIL ]')
-    sys.exit(-1)
-else:
-    cprint('[ PASS ]')
+# pretty_test_print('[MAIN]\tLCSC API Test')
+# if not lcsc_api.test_api():
+#     cprint('[ FAIL ]')
+#     sys.exit(-1)
+# else:
+#     cprint('[ PASS ]')
 
 # Setup InvenTree
 cprint('\n-----')
