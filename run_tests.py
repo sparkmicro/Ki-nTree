@@ -6,7 +6,7 @@ from kintree.common.tools import cprint, create_library, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search import digikey_api, mouser_api  # , lcsc_api
+from kintree.search import digikey_api, mouser_api, lcsc_api
 from kintree.search.snapeda_api import test_snapeda_api
 from kintree.setup_inventree import setup_inventree
 
@@ -94,12 +94,12 @@ else:
     cprint('[ PASS ]')
 
 # Test LCSC API
-# pretty_test_print('[MAIN]\tLCSC API Test')
-# if not lcsc_api.test_api():
-#     cprint('[ FAIL ]')
-#     sys.exit(-1)
-# else:
-#     cprint('[ PASS ]')
+pretty_test_print('[MAIN]\tLCSC API Test')
+if not lcsc_api.test_api():
+    cprint('[ FAIL ]')
+    sys.exit(-1)
+else:
+    cprint('[ PASS ]')
 
 # Setup InvenTree
 cprint('\n-----')

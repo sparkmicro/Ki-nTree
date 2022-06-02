@@ -100,7 +100,7 @@ def test_api() -> bool:
 
     test_success = True
     expected = {
-        'productIntroEn': '25V 100pF C0G ±5% 0201 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS',
+        'productIntroEn': '25V 100pF C0G ±5% 0201  Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS',
         'productCode': 'C2181718',
         'brandNameEn': 'TDK',
         'productModel': 'C0603C0G1E101J030BA',
