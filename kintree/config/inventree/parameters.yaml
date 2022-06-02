@@ -1,12 +1,12 @@
 # Parameters
 # Name: Unit
-(Min) Output Voltage: V
+Min Output Voltage: V
 Antenna Type: null
 B Constant: K
 Breakdown Voltage: V
 Capacitance: nF
 Clamping Voltage: V
-Collector-Gate Voltage: V
+Collector Gate Voltage: V
 DC Resistance: mOhm
 ESR: mOhm
 Footprint: null
