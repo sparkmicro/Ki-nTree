@@ -11,16 +11,16 @@ repository = "https://github.com/sparkmicro/Ki-nTree"
 keywords = ["inventree", "kicad", "component", "part", "create"]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
+python = ">=3.8,<3.11"
 digikey-api = "^0.6.1"
 fuzzywuzzy = "^0.18.0"
-inventree = "^0.4.4"
-multiprocess = "^0.70.12.2"
+inventree = "^0.7.1"
+multiprocess = "^0.70.13"
 mouser = "^0.1.1"
-PySimpleGUI = "^4.56.0"
+PySimpleGUI = "^4.60.1"
 PyYAML = "^5.4.1"
-validators = "^0.18.2"
-wrapt = "^1.13.3"
+validators = "^0.19.0"
+wrapt = "^1.14.1"
 python-Levenshtein = "^0.12.2"
 
 [tool.poetry.dev-dependencies]

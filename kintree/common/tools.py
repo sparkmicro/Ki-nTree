@@ -95,19 +95,19 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
     return None
 
 
-def download_image(image_url: str, image_full_path: str) -> str:
+def download_image(image_url: str, image_full_path: str, silent=False) -> str:
     ''' Standard method to download image URL to local file '''
 
     if not image_url:
-        cprint('[INFO]\tError: Missing image URL', silent=False)
+        cprint('[INFO]\tError: Missing image URL', silent=silent)
         return False
     
     # Try without headers
-    image = download(image_url, filetype='Image', fileoutput=image_full_path)
+    image = download(image_url, filetype='Image', fileoutput=image_full_path, silent=silent)
 
     if not image:
         # Try with headers
-        image = download(image_url, filetype='Image', fileoutput=image_full_path, enable_headers=True)
+        image = download(image_url, filetype='Image', fileoutput=image_full_path, enable_headers=True, silent=silent)
 
     # Still nothing
     if not image:

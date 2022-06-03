@@ -15,9 +15,8 @@ if platform.system() == 'Linux':
 
 # InvenTree
 from inventree.api import InvenTreeAPI
-from inventree.base import Parameter, ParameterTemplate
 from inventree.company import Company, ManufacturerPart, SupplierPart
-from inventree.part import Part, PartCategory
+from inventree.part import Part, PartCategory, Parameter, ParameterTemplate
 
 
 def connect(server: str, username: str, password: str, connect_timeout=5, silent=False) -> bool:
