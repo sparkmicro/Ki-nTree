@@ -1,6 +1,6 @@
 digikey-api>=0.6.1,<1.0
 fuzzywuzzy>=0.18.0,<1.0
-inventree>=0.7.0,<1.0
+inventree>=0.7.1,<1.0
 mouser>=0.1.1,<1.0
 multiprocess>=0.70.13,<0.71
 PySimpleGUI>=4.60.1,<5.0

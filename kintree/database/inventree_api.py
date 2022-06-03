@@ -144,7 +144,7 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 
     for part in part_list:
         # Get part parameters
-        db_part_parameters = Parameter.list(inventree_api, part=part.pk)
+        db_part_parameters = part.getParameters()
         part_parameters = {}
         for parameter in db_part_parameters:
             parameter_name = fetch_template_name(parameter.template)
@@ -514,7 +514,7 @@ def create_parameter(part_id: int, template_name: int, value: str):
 
     # Check if template_id already exists for this part
     part = Part(inventree_api, part_id)
-    part_parameters = Parameter.list(inventree_api, part=part.pk)
+    part_parameters = part.getParameters()
     is_new_part_parameters_template_id = True
     for item in part_parameters:
         # cprint(f'[TREE]\t{parameter.template} ?= {template_id}', silent=SILENT)

@@ -189,7 +189,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "inventree"
-version = "0.7.0"
+version = "0.7.1"
 description = "Python interface for InvenTree inventory management system"
 category = "main"
 optional = false
@@ -385,7 +385,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "8677891b303f0b19dca7f813ab4ae5ba684bacad14f608f85fad465f616db3df"
+content-hash = "5ca975891ff04e4f07002237cddc7cafbf2259312342091085a054bb12a2e11a"
 
 [metadata.files]
 certauth = [
@@ -574,8 +574,8 @@ inflection = [
     {file = "inflection-0.5.1.tar.gz", hash = "sha256:1a29730d366e996aaacffb2f1f1cb9593dc38e2ddd30c91250c6dde09ea9b417"},
 ]
 inventree = [
-    {file = "inventree-0.7.0-py2.py3-none-any.whl", hash = "sha256:6b533e24981ed2615ec21320f3cfd853b84ba8ecc88f1cefddaa9a2442feea68"},
-    {file = "inventree-0.7.0.tar.gz", hash = "sha256:27d9ee56dd75ac1ec017c9e5f413064b3b2bc6636699781102c0e795ecf9425e"},
+    {file = "inventree-0.7.1-py2.py3-none-any.whl", hash = "sha256:baa5d45f84695eb34f1802f5a35e7237a90e3df3af025476cd290961faf8b4e6"},
+    {file = "inventree-0.7.1.tar.gz", hash = "sha256:218dd112c325764d4027de509d8cf466fc2a6a16a1bba297ee71687c6a8378dd"},
 ]
 invoke = [
     {file = "invoke-1.7.1-py3-none-any.whl", hash = "sha256:2dc975b4f92be0c0a174ad2d063010c8a1fdb5e9389d69871001118b4fcac4fb"},
