@@ -937,7 +937,7 @@ def main():
         [
             sg.Text('Part Number '),
             sg.InputText(key='part_number', size=(38, 1)),
-            sg.Combo(settings.SUPPORTED_SUPPLIERS_API, key='supplier', default_value='Digi-Key'),
+            sg.Combo(settings.SUPPORTED_SUPPLIERS_API, key='supplier', default_value=settings.DEFAULT_SUPPLIER, enable_events=True),
         ],
         [
             sg.Checkbox('KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
@@ -980,6 +980,8 @@ def main():
             settings.set_kicad_enable_flag(values['enable_kicad'], save=True)
         elif event == 'Custom Part':
             CREATE_CUSTOM = True
+        elif 'supplier' in event:
+            settings.set_default_supplier(values['supplier'], save=True)
         else:
             # Adding part information to InvenTree
             categories = [None, None]
