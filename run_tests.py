@@ -6,7 +6,7 @@ from kintree.common.tools import cprint, create_library, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search import digikey_api, mouser_api, element14_api, lcsc_api
+from kintree.search import digikey_api, mouser_api, element14_api, lcsc_api, tme_api
 from kintree.search.snapeda_api import test_snapeda_api
 from kintree.setup_inventree import setup_inventree
 
@@ -111,6 +111,13 @@ if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
     else:
         cprint('[ PASS ]')
 
+# Test TME API
+pretty_test_print('[MAIN]\tTME API Test')
+if not tme_api.test_api():
+    cprint('[ FAIL ]')
+    sys.exit(-1)
+else:
+    cprint('[ PASS ]')
 # Setup InvenTree
 cprint('\n-----')
 setup_inventree()

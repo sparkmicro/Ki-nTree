@@ -4,7 +4,6 @@
 import os
 # Webbrowser
 import webbrowser
-
 # Version
 from . import __version__
 # Settings
@@ -19,6 +18,8 @@ from .search import mouser_api as mouser_api
 from .search import element14_api as element14_api
 # LCSC API
 from .search import lcsc_api as lcsc_api
+# TME API
+from .search import tme_api as tme_api
 # SnapEDA API
 from .search import snapeda_api as snapeda_api
 # Progress
@@ -150,6 +151,113 @@ def digikey_api_settings_window():
                         title='Digi-Key API Connect Test',
                         font=gui_global['font'],
                         location=gui_global['location'])
+        else:
+            save_settings(user_settings)
+            search_api_window.close()
+            return
+
+
+def tme_api_settings_window():
+    ''' TME API settings window '''
+
+    user_settings = config_interface.load_file(settings.CONFIG_TME_API)
+    if 'TME_API_LANGUAGES' not in user_settings or len(user_settings['TME_API_LANGUAGES']) == 0:
+        user_settings['TME_API_LANGUAGES'] = ['en', 'de']
+
+    if 'TME_API_LANGUAGE' not in user_settings:
+        user_settings['TME_API_LANGUAGE'] = 'en'
+
+    if 'TME_API_COUNTRIES' not in user_settings or len(user_settings['TME_API_COUNTRIES']) == 0:
+        user_settings['TME_API_COUNTRIES'] = ['GB', 'DE']
+
+    if 'TME_API_COUNTRY' not in user_settings:
+        user_settings['TME_API_COUNTRY'] = 'GB'
+
+    search_api_layout = [
+        [
+            sg.Text('Token', size=gui_global['label_size']),
+            sg.InputText(user_settings['TME_API_TOKEN'], key='token'),
+        ],
+        [
+            sg.Text('Secret', size=gui_global['label_size']),
+            sg.InputText(user_settings['TME_API_SECRET'], key='secret'),
+        ],
+        [
+            sg.Text('Language', size=gui_global['label_size']),
+            sg.Combo(user_settings['TME_API_LANGUAGES'],
+                     default_value=user_settings['TME_API_LANGUAGE'],
+                     key='lang'),
+        ],
+        [
+            sg.Text('Country', size=gui_global['label_size']),
+            sg.Combo(user_settings['TME_API_COUNTRIES'],
+                     default_value=user_settings['TME_API_COUNTRY'],
+                     key='country'),
+        ],
+        [
+            sg.Button('Retrive languages', size=(15, 1)),
+            sg.Button('Retrive countries', size=(15, 1)),
+            sg.Button('Create categories', size=(15, 1)),
+        ],
+        [
+            sg.Button('Test', size=(15, 1)),
+            sg.Button('Save', size=(15, 1)),
+        ],
+    ]
+    search_api_window = sg.Window(
+        'TME API Settings',
+        search_api_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
+    )
+
+    while True:
+        api_event, api_values = search_api_window.read()
+
+        def save_settings(user_settings: dict):
+            new_settings = {
+                'TME_API_TOKEN': api_values['token'],
+                'TME_API_SECRET': api_values['secret'],
+                'TME_API_LANGUAGE': api_values['lang'],
+                'TME_API_COUNTRY': api_values['country'],
+            }
+            user_settings = {**user_settings, **new_settings}
+            config_interface.dump_file(user_settings, settings.CONFIG_TME_API)
+
+        if api_event == sg.WIN_CLOSED:
+            search_api_window.close()
+            return
+        elif api_event == 'Test':
+            # Automatically save settings
+            save_settings(user_settings)
+            if tme_api.test_api():
+                result_message = 'Successfully connected to TME API'
+            else:
+                result_message = 'Failed to connect to TME API'
+            sg.popup_ok(result_message,
+                        title='TME API Connect Test',
+                        font=gui_global['font'],
+                        location=gui_global['location'])
+        elif api_event == 'Retrive languages':
+            langs = tme_api.get_lang_list(user_settings['TME_API_TOKEN'], user_settings['TME_API_SECRET'])
+            if len(langs) > 0:
+                new_settings = {
+                    'TME_API_LANGUAGES': langs,
+                }
+                user_settings = {**user_settings, **new_settings}
+                config_interface.dump_file(user_settings, settings.CONFIG_TME_API)
+                search_api_window['lang'].update(value=user_settings['TME_API_LANGUAGE'], values=langs)
+        elif api_event == 'Retrive countries':
+            countries = tme_api.get_country_list(user_settings['TME_API_TOKEN'], user_settings['TME_API_SECRET'])
+            if (len(countries) > 0):
+                new_settings = {
+                    'TME_API_COUNTRIES': countries,
+                }
+                user_settings = {**user_settings, **new_settings}
+                config_interface.dump_file(user_settings, settings.CONFIG_TME_API)
+                search_api_window['country'].update(value=user_settings['TME_API_COUNTRY'], values=countries)
+        elif api_event == 'Create categories':
+            tme_api.createAllCategories()
         else:
             save_settings(user_settings)
             search_api_window.close()
@@ -1095,13 +1203,13 @@ def main():
                 'KiCad',
                 'InvenTree',
             ],
-         ],
+        ],
         ['More',
             [
                 # 'Synchronize',
                 'Custom Part',
             ],
-         ],
+        ],
     ]
     # Main Window
     default_supplier = settings.DEFAULT_SUPPLIER if settings.DEFAULT_SUPPLIER in settings.SUPPORTED_SUPPLIERS_API else settings.SUPPORTED_SUPPLIERS_API[0]
@@ -1138,7 +1246,6 @@ def main():
 
         if event == sg.WIN_CLOSED:  # if user closes window or clicks cancel
             break
-        
         if event == 'User':
             user_settings_window()
         elif event == 'Digi-Key':
@@ -1149,6 +1256,8 @@ def main():
             element14_api_settings_window(supplier=event)
         elif event == 'LCSC':
             lcsc_api_settings_window()
+        elif event == 'TME':
+            tme_api_settings_window()
         elif event == 'InvenTree':
             inventree_settings_window()
         elif event == 'KiCad':
@@ -1250,8 +1359,10 @@ def main():
                                 error_message += f'\n- {values["supplier"]} API key is correct and a store is selected ("Settings > Supplier > {values["supplier"]}")' \
                                                  f'\n- Part number is a valid number on {values["supplier"]}\'s website'
                             elif values['supplier'] == 'LCSC':
-                                error_message += '\n- Mouser API settings are correct ("Settings > Supplier > LCSC")' \
+                                error_message += '\n- LCSC API settings are correct ("Settings > Supplier > LCSC")' \
                                                  '\n- Part number is a valid LCSC number (eg. starts with "C")'
+                            elif values['supplier'] == 'TME':
+                                error_message += '\n- TME API settings are correct ("Settings > TME")'
                             # Missing Part Information
                             sg.popup_ok(error_message,
                                         title='Supplier API Search',

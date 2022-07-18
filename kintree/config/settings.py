@@ -117,6 +117,7 @@ SUPPORTED_SUPPLIERS_API = [
     'Newark',
     'Element14',
     'LCSC',
+    'TME'
 ]
 
 # Generic API user configuration
@@ -144,6 +145,11 @@ if 'Element14' in SUPPORTED_SUPPLIERS_API:
 if 'LCSC' in SUPPORTED_SUPPLIERS_API:
     CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
     CONFIG_LCSC_API = os.path.join(CONFIG_USER_FILES, 'lcsc_api.yaml')
+
+# TME user configuration
+if 'TME' in SUPPORTED_SUPPLIERS_API:
+    CONFIG_TME = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'tme_config.yaml'))
+    CONFIG_TME_API = os.path.join(CONFIG_USER_FILES, 'tme_api.yaml')
 
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = CONFIG_SEARCH_API.get('CATEGORY_MATCH_RATIO_LIMIT', 100)

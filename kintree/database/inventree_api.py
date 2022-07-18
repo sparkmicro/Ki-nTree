@@ -222,6 +222,25 @@ def is_new_part(category_id: int, part_info: dict) -> int:
     return 0
 
 
+def create_category_force(parent_pk: int, name: str):
+    ''' Create InvenTree category, use parent for subcategories '''
+    global inventree_api
+
+    # No parent
+    category = PartCategory.create(inventree_api, {
+        'name': name,
+        'parent': parent_pk,
+    })
+
+    try:
+        category_pk = category.pk
+    except AttributeError:
+        # User does not have the permission to create categories
+        category_pk = 0
+
+    return category_pk
+
+
 def create_category(parent: str, name: str):
     ''' Create InvenTree category, use parent for subcategories '''
     global inventree_api

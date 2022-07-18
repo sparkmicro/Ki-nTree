@@ -1,0 +1,3 @@
+[submodule "kintree/search/tme_api"]
+	path = kintree/search/api_client_python3/
+	url = git@github.com:krzych82/api-client-python3.git

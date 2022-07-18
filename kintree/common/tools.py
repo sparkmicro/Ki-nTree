@@ -99,6 +99,33 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
     return None
 
 
+def download_request(request, timeout=30, enable_headers=False, silent=False):
+
+    import socket
+    import urllib.request
+
+    # Set default timeout for download socket
+    socket.setdefaulttimeout(timeout)
+
+    if enable_headers:
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+        urllib.request.install_opener(opener)
+
+    try:
+        url_data = urllib.request.urlopen(request)
+        data = url_data.read()
+        data_json = json.loads(data.decode('utf-8'))
+        return data_json
+    except socket.timeout:
+        cprint('[INFO]\tWarning: download socket timed out', silent=silent)
+    except urllib.error.HTTPError as e:
+        cprint(f'[INFO]\tWarning: download failed (HTTP Error): {e.reason}', silent=silent)
+    except (urllib.error.URLError, ValueError):
+        cprint('[INFO]\tWarning: download failed (URL Error)', silent=silent)
+    return None
+
+
 def download_image(image_url: str, image_full_path: str, silent=False) -> str:
     ''' Standard method to download image URL to local file '''
 
