@@ -31,7 +31,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          pip install -U flake8 invoke
+          pip install -U flake8 invoke coveralls
       - name: PEP checks
         run: >
           invoke style
