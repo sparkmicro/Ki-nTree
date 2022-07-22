@@ -111,6 +111,7 @@ if IPN_USE_VARIANT_SUFFIX:
 CONFIG_GENERAL = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'general.yaml'))
 AUTOMATIC_SUBCATEGORY_CREATE = CONFIG_GENERAL.get('AUTOMATIC_SUBCATEGORY_CREATE', False)
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
+DEFAULT_SUPPLIER = CONFIG_GENERAL.get('DEFAULT_SUPPLIER', 'Digi-Key')
 
 # Supported suppliers APIs
 SUPPORTED_SUPPLIERS_API = ['Digi-Key', 'Mouser', 'LCSC']
@@ -202,6 +203,16 @@ def set_kicad_enable_flag(value: bool, save=False):
             CONFIG_KICAD)
         kicad_user_settings['KICAD_ENABLE'] = value
         config_interface.dump_file(kicad_user_settings, CONFIG_KICAD)
+    return
+
+
+def set_default_supplier(value: str, save=False):
+    global DEFAULT_SUPPLIER
+    DEFAULT_SUPPLIER = value
+    if save:
+        user_settings = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'general.yaml'))
+        user_settings['DEFAULT_SUPPLIER'] = value
+        config_interface.dump_file(user_settings, os.path.join(CONFIG_USER_FILES, 'general.yaml'))
     return
 
 
