@@ -24,8 +24,8 @@ wrapt = "^1.14.1"
 python-Levenshtein = "^0.12.2"
 
 [tool.poetry.dev-dependencies]
-invoke = "^1.6.0"
-coveralls = "^2.2.0"
+invoke = "^1.7.0"
+coveralls = "^3.3.0"
 
 [tool.poetry.scripts]
 kintree = 'kintree.kintree_gui:main'
