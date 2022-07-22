@@ -90,7 +90,7 @@ jobs:
       - name: Coveralls
         run: |
           coveralls --version
-          coveralls
+          coveralls --service=github
       - name: Run build
         run: |
           invoke build
