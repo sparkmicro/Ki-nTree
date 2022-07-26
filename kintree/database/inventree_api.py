@@ -143,7 +143,6 @@ def is_new_part(category_id: int, part_info: dict) -> int:
     # cprint(filters)
 
     for part in part_list:
-        print(part.pk)
         # Get part parameters
         db_part_parameters = part.getParameters()
         part_parameters = {}
@@ -162,11 +161,8 @@ def is_new_part(category_id: int, part_info: dict) -> int:
             compare = part_info['name'] == part.name and \
                 part_info['description'] == part.description and \
                 part_info['revision'] == part.revision
-            print("part_A = "+part_info['name'] +"; part_B = " + part.name)
-            print("part_A = "+part_info['description'] +"; part_B = " + part.description)
-            print("part_A = "+part_info['revision'] +"; part_B = " + part.revision)
-            print(compare)
-            # Check if new manufacturer part
+            
+            # Check if new manufacturer part exist in Inventree
             if not compare:
                 manufacturer = list(part_info['manufacturer'].keys())[0]
                 mpn = list(part_info['manufacturer'].values())[0][0]
