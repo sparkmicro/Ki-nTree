@@ -143,6 +143,7 @@ def is_new_part(category_id: int, part_info: dict) -> int:
     # cprint(filters)
 
     for part in part_list:
+        print(part.pk)
         # Get part parameters
         db_part_parameters = part.getParameters()
         part_parameters = {}
@@ -161,12 +162,21 @@ def is_new_part(category_id: int, part_info: dict) -> int:
             compare = part_info['name'] == part.name and \
                 part_info['description'] == part.description and \
                 part_info['revision'] == part.revision
-            
+            print("part_A = "+part_info['name'] +"; part_B = " + part.name)
+            print("part_A = "+part_info['description'] +"; part_B = " + part.description)
+            print("part_A = "+part_info['revision'] +"; part_B = " + part.revision)
+            print(compare)
             # Check if new manufacturer part
             if not compare:
                 manufacturer = list(part_info['manufacturer'].keys())[0]
                 mpn = list(part_info['manufacturer'].values())[0][0]
-                compare = not is_new_manufacturer_part(manufacturer, mpn)
+                mpn_exists = not is_new_manufacturer_part(manufacturer, mpn)
+                if mpn_exists:
+                    #get the part pk from the manufacturer part number
+                    print(manufacturer)
+                    print(mpn)
+                    pk=get_pk_from_mpn(manufacturer, mpn)
+                    return pk
 
         if compare:
             cprint(f'\n[TREE]\tFound part match in database (pk = {part.pk})', silent=settings.HIDE_DEBUG)
@@ -287,6 +297,34 @@ def delete_part(part_id: int) -> bool:
     else:
         return True
 
+def get_pk_from_mpn(manufacturer_name: str, manufacturer_mpn: str):
+    '''Gets the part pk by the manufacturer name and mpn'''
+    global inventree_api
+    # Fetch all companies
+    company_list = Company.list(inventree_api, is_manufacturer=True, is_customer=False)
+    companies = {}
+    for company in company_list:
+        companies[company.name] = company
+
+    try:
+        # Get all parts from the manufacturer_name
+        part_list = companies[manufacturer_name].getManufacturedParts()
+    except:
+        part_list = None
+
+    if part_list is None:
+            part_list = []
+
+    for item in part_list:
+        try:
+            if manufacturer_mpn in item.MPN:
+                print(item.MPN + " = "+ manufacturer_mpn)
+                #return the PK of the part
+                print(item.part)
+                return item.part
+        except:
+            pass
+            return None
 
 def create_company(company_name: str, manufacturer=False, supplier=False) -> bool:
     ''' Create InvenTree company '''
