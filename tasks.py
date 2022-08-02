@@ -113,7 +113,7 @@ def test(c):
 
     cprint('[MAIN]\tRunning tests using coverage\n-----')
     # Start InvenTree server
-    c.run('cd InvenTree/ && inv server && cd ..', asynchronous=True)
+    c.run('cd InvenTree/ && inv server && cd ..')#, asynchronous=True)
     c.run('sleep 15')
     # Copy test files
     c.run('cp -r tests/ kintree/')
