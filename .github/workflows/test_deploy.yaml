@@ -44,7 +44,7 @@ jobs:
       INVENTREE_DB_ENGINE: django.db.backends.sqlite3
       INVENTREE_DB_NAME: ${{ github.workspace }}/InvenTree/inventree_default_db.sqlite3
       INVENTREE_MEDIA_ROOT: ${{ github.workspace }}/InvenTree
-      INVENTREE_STATIC_ROOT: ${{ github.workspace }}/InvenTree
+      INVENTREE_STATIC_ROOT: ${{ github.workspace }}/InvenTree/static
       INVENTREE_ENV: 0
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TOKEN_DIGIKEY: ${{ secrets.TOKEN_DIGIKEY }}
@@ -67,6 +67,7 @@ jobs:
       - name: InvenTree setup
         run: |
           git clone https://github.com/inventree/InvenTree/
+          mkdir InvenTree/static
           cp tests/files/inventree_default_db.sqlite3 InvenTree/
           cd InvenTree/ && invoke install && invoke migrate && cd -
       - name: Ki-nTree setup
