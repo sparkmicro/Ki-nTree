@@ -189,7 +189,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "inventree"
-version = "0.7.3"
+version = "0.8.1"
 description = "Python interface for InvenTree inventory management system"
 category = "main"
 optional = false
@@ -254,7 +254,7 @@ test = ["flaky", "pretend", "pytest (>=3.0.1)"]
 
 [[package]]
 name = "pysimplegui"
-version = "4.60.1"
+version = "4.60.3"
 description = "Python GUIs for Humans. Launched in 2018. It's 2022 & PySimpleGUI is an ACTIVE & supported project. Super-simple to create custom GUI's. 325+ Demo programs & Cookbook for rapid start. Extensive documentation. Main docs at www.PySimpleGUI.org. Fun & your success are the focus. Examples using Machine Learning (GUI, OpenCV Integration), Rainmeter Style Desktop Widgets, Matplotlib + Pyplot, PIL support, add GUI to command line scripts, PDF & Image Viewers. Great for beginners & advanced GUI programmers."
 category = "main"
 optional = false
@@ -349,7 +349,7 @@ requests-file = ">=1.4"
 
 [[package]]
 name = "urllib3"
-version = "1.26.10"
+version = "1.26.11"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
@@ -385,7 +385,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "8bd1d4f00cc3820d9ba9abf4da23f9606ee28de1167d01ed3b77ec8ff802fadf"
+content-hash = "1e43834a2e6615ec6b94c7a23aa1b7ce6fcc4f07bbb7e020b906e00cd2b5acf3"
 
 [metadata.files]
 certauth = [
@@ -474,10 +474,7 @@ pyopenssl = [
     {file = "pyOpenSSL-22.0.0-py2.py3-none-any.whl", hash = "sha256:ea252b38c87425b64116f808355e8da644ef9b07e429398bfece610f893ee2e0"},
     {file = "pyOpenSSL-22.0.0.tar.gz", hash = "sha256:660b1b1425aac4a1bea1d94168a85d99f0b3144c869dd4390d27629d0087f1bf"},
 ]
-pysimplegui = [
-    {file = "PySimpleGUI-4.60.1-py3-none-any.whl", hash = "sha256:c31c168deb1816d56811bfb4c881b3f4bcaca03b7d5f0ea7ada9772f397582a3"},
-    {file = "PySimpleGUI-4.60.1.tar.gz", hash = "sha256:3ea18e3aaea515bdf40e7d73015d101d92abddf214b134ae7674e99c58b96598"},
-]
+pysimplegui = []
 python-levenshtein = [
     {file = "python-Levenshtein-0.12.2.tar.gz", hash = "sha256:dc2395fbd148a1ab31090dd113c366695934b9e85fe5a4b2a032745efd0346f6"},
 ]

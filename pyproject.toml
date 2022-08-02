@@ -14,7 +14,7 @@ keywords = ["inventree", "kicad", "component", "part", "create"]
 python = ">=3.8,<3.11"
 digikey-api = "^0.6.1"
 fuzzywuzzy = "^0.18.0"
-inventree = "^0.7.1"
+inventree = "^0.8.1"
 multiprocess = "^0.70.13"
 mouser = "^0.1.1"
 PySimpleGUI = "^4.60.1"

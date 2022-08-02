@@ -71,7 +71,7 @@ def get_category_parameters(category_id: int) -> list:
     category = PartCategory(inventree_api, category_id)
 
     try:
-        category_templates = category.get_category_parameter_templates(fetch_parent=True)
+        category_templates = category.getCategoryParameterTemplates(fetch_parent=True)
     except AttributeError:
         category_templates = None
 
@@ -82,7 +82,7 @@ def get_category_parameters(category_id: int) -> list:
             if not default_value:
                 default_value = '-'
 
-            parameter_templates.append([template.parameter_template['name'], default_value])
+            parameter_templates.append([template.getTemplate().name, default_value])
 
     return parameter_templates
 
