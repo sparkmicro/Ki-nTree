@@ -491,7 +491,7 @@ def create_parameter_template(name: str, units: str) -> int:
 
     parameter_template = ParameterTemplate.create(inventree_api, {
         'name': name,
-        'units': units,
+        'units': units if units else '',
     })
 
     if parameter_template:

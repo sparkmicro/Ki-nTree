@@ -394,6 +394,11 @@ if __name__ == '__main__':
                     if download_image('', '', silent=True) or download_image('http', '', silent=True):
                         method_success = False
 
+                elif method_idx == 10:
+                    # Test InvenTree category parameters
+                    if inventree_api.get_category_parameters(1):
+                        method_success = False
+
                 if method_success:
                     cprint('[ PASS ]')
                 else:
