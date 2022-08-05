@@ -544,7 +544,7 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
                                                                                   manufacturer_name=manufacturer_name,
                                                                                   manufacturer_mpn=manufacturer_mpn,
                                                                                   supplier_name=supplier_name,
-                                                                                  supplier_sku=inventree_part['supplier'][supplier_name],
+                                                                                  supplier_sku=supplier_sku,
                                                                                   description=inventree_part['description'],
                                                                                   link=inventree_part['supplier_link'])
 
