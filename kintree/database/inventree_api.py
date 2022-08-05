@@ -162,15 +162,19 @@ def is_new_part(category_id: int, part_info: dict) -> int:
                 part_info['description'] == part.description and \
                 part_info['revision'] == part.revision
             
-            # Check if new manufacturer part
-            if not compare:
-                manufacturer = list(part_info['manufacturer'].keys())[0]
-                mpn = list(part_info['manufacturer'].values())[0][0]
-                compare = not is_new_manufacturer_part(manufacturer, mpn)
-
         if compare:
-            cprint(f'\n[TREE]\tFound part match in database (pk = {part.pk})', silent=settings.HIDE_DEBUG)
+            cprint(f'[TREE]\tWarning: Found part match in database (pk = {part.pk})', silent=settings.SILENT)
             return part.pk
+
+    # Check if manufacturer part exists in database
+    if not compare:
+        manufacturer = list(part_info['manufacturer'].keys())[0]
+        mpn = list(part_info['manufacturer'].values())[0][0]
+        part_pk = is_new_manufacturer_part(manufacturer, mpn)
+
+        if part_pk:
+            cprint(f'[TREE]\tWarning: Found part with same manufacturer part in database (pk = {part_pk})', silent=settings.SILENT)
+            return part_pk
 
     cprint('\n[TREE]\tNo match found in database', silent=settings.HIDE_DEBUG)
     return 0
@@ -320,7 +324,7 @@ def get_company_id(company_name: str) -> int:
         return 0
 
 
-def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> bool:
+def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> int:
     ''' Check if InvenTree manufacturer part exists to avoid duplicates '''
     global inventree_api
 
@@ -351,13 +355,13 @@ def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> b
         try:
             if manufacturer_mpn in item.MPN:
                 cprint(f'[TREE]\t{item.MPN} ?= {manufacturer_mpn} => True', silent=settings.HIDE_DEBUG)
-                return False
+                return item.part
             else:
                 cprint(f'[TREE]\t{item.MPN} ?= {manufacturer_mpn} => False', silent=settings.HIDE_DEBUG)
         except TypeError:
             cprint(f'[TREE]\t{item.MPN} ?= {manufacturer_mpn} => *** SKIPPED ***', silent=settings.HIDE_DEBUG)
 
-    return True
+    return 0
 
 
 def is_new_supplier_part(supplier_name: str, supplier_sku: str) -> bool:

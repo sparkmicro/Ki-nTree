@@ -509,10 +509,10 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
 
             if manufacturer_mpn:
                 cprint('\n[MAIN]\tCreating manufacturer part', silent=settings.SILENT)
-                is_new_manufacturer_part = inventree_api.is_new_manufacturer_part(manufacturer_name=manufacturer_name,
-                                                                                  manufacturer_mpn=manufacturer_mpn)
+                manufacturer_part = inventree_api.is_new_manufacturer_part(manufacturer_name=manufacturer_name,
+                                                                           manufacturer_mpn=manufacturer_mpn)
 
-                if not is_new_manufacturer_part:
+                if manufacturer_part:
                     cprint('[INFO]\tManufacturer part already exists, skipping.', silent=settings.SILENT)
                 else:
                     # Create a new manufacturer part
