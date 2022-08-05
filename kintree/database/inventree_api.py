@@ -167,14 +167,13 @@ def is_new_part(category_id: int, part_info: dict) -> int:
             return part.pk
 
     # Check if manufacturer part exists in database
-    if not compare:
-        manufacturer = list(part_info['manufacturer'].keys())[0]
-        mpn = list(part_info['manufacturer'].values())[0][0]
-        part_pk = is_new_manufacturer_part(manufacturer, mpn)
+    manufacturer = list(part_info['manufacturer'].keys())[0]
+    mpn = list(part_info['manufacturer'].values())[0][0]
+    part_pk = is_new_manufacturer_part(manufacturer, mpn)
 
-        if part_pk:
-            cprint(f'[TREE]\tWarning: Found part with same manufacturer part in database (pk = {part_pk})', silent=settings.SILENT)
-            return part_pk
+    if part_pk:
+        cprint(f'[TREE]\tWarning: Found part with same manufacturer part in database (pk = {part_pk})', silent=settings.SILENT)
+        return part_pk
 
     cprint('\n[TREE]\tNo match found in database', silent=settings.HIDE_DEBUG)
     return 0
