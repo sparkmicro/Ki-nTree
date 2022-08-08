@@ -169,7 +169,7 @@ def is_new_part(category_id: int, part_info: dict) -> int:
     # Check if manufacturer part exists in database
     manufacturer = list(part_info['manufacturer'].keys())[0]
     mpn = list(part_info['manufacturer'].values())[0][0]
-    part_pk = is_new_manufacturer_part(manufacturer, mpn)
+    part_pk = is_new_manufacturer_part(manufacturer, mpn, create=False)
 
     if part_pk:
         cprint(f'[TREE]\tWarning: Found part with same manufacturer part in database (pk = {part_pk})', silent=settings.SILENT)
@@ -323,7 +323,7 @@ def get_company_id(company_name: str) -> int:
         return 0
 
 
-def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> int:
+def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str, create=True) -> int:
     ''' Check if InvenTree manufacturer part exists to avoid duplicates '''
     global inventree_api
 
@@ -341,12 +341,13 @@ def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> i
         part_list = None
 
     if part_list is None:
-        # Create
-        cprint(f'[TREE]\tCreating new manufacturer "{manufacturer_name}"', silent=settings.SILENT)
-        create_company(
-            company_name=manufacturer_name,
-            manufacturer=True,
-        )
+        if create:
+            # Create manufacturer
+            cprint(f'[TREE]\tCreating new manufacturer "{manufacturer_name}"', silent=settings.SILENT)
+            create_company(
+                company_name=manufacturer_name,
+                manufacturer=True,
+            )
         # Get all parts
         part_list = []
 
