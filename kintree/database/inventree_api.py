@@ -327,6 +327,9 @@ def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str, crea
     ''' Check if InvenTree manufacturer part exists to avoid duplicates '''
     global inventree_api
 
+    if not manufacturer_name:
+        return 0
+
     # Fetch all companies
     cprint('[TREE]\tFetching manufacturers', silent=settings.HIDE_DEBUG)
     company_list = Company.list(inventree_api, is_manufacturer=True, is_customer=False)
