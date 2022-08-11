@@ -86,7 +86,7 @@ Mechanicals:
 
 Power Management:
   # Buck, Adjustable
-  AOZ1282CI: original
+  # AOZ1282CI: original
   # Buck, Fixed
   SC189CULTRT: original
   # Boost, Fixed
