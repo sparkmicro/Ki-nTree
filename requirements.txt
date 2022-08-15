@@ -1,4 +1,4 @@
-digikey-api>=0.6.1,<1.0
+digikey-api>=1.0.0,<2.0
 fuzzywuzzy>=0.18.0,<1.0
 inventree>=0.8.1,<1.0
 mouser>=0.1.1,<1.0
