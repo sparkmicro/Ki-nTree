@@ -71,7 +71,7 @@ def get_category_parameters(category_id: int) -> list:
     category = PartCategory(inventree_api, category_id)
 
     try:
-        category_templates = category.get_category_parameter_templates(fetch_parent=True)
+        category_templates = category.getCategoryParameterTemplates(fetch_parent=True)
     except AttributeError:
         category_templates = None
 
@@ -82,7 +82,7 @@ def get_category_parameters(category_id: int) -> list:
             if not default_value:
                 default_value = '-'
 
-            parameter_templates.append([template.parameter_template['name'], default_value])
+            parameter_templates.append([template.getTemplate().name, default_value])
 
     return parameter_templates
 
@@ -162,15 +162,18 @@ def is_new_part(category_id: int, part_info: dict) -> int:
                 part_info['description'] == part.description and \
                 part_info['revision'] == part.revision
             
-            # Check if new manufacturer part
-            if not compare:
-                manufacturer = list(part_info['manufacturer'].keys())[0]
-                mpn = list(part_info['manufacturer'].values())[0][0]
-                compare = not is_new_manufacturer_part(manufacturer, mpn)
-
         if compare:
-            cprint(f'\n[TREE]\tFound part match in database (pk = {part.pk})', silent=settings.HIDE_DEBUG)
+            cprint(f'[TREE]\tWarning: Found part match in database (pk = {part.pk})', silent=settings.SILENT)
             return part.pk
+
+    # Check if manufacturer part exists in database
+    manufacturer = list(part_info['manufacturer'].keys())[0]
+    mpn = list(part_info['manufacturer'].values())[0][0]
+    part_pk = is_new_manufacturer_part(manufacturer, mpn, create=False)
+
+    if part_pk:
+        cprint(f'[TREE]\tWarning: Found part with same manufacturer part in database (pk = {part_pk})', silent=settings.SILENT)
+        return part_pk
 
     cprint('\n[TREE]\tNo match found in database', silent=settings.HIDE_DEBUG)
     return 0
@@ -320,9 +323,12 @@ def get_company_id(company_name: str) -> int:
         return 0
 
 
-def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> bool:
+def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str, create=True) -> int:
     ''' Check if InvenTree manufacturer part exists to avoid duplicates '''
     global inventree_api
+
+    if not manufacturer_name:
+        return 0
 
     # Fetch all companies
     cprint('[TREE]\tFetching manufacturers', silent=settings.HIDE_DEBUG)
@@ -338,12 +344,13 @@ def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> b
         part_list = None
 
     if part_list is None:
-        # Create
-        cprint(f'[TREE]\tCreating new manufacturer "{manufacturer_name}"', silent=settings.SILENT)
-        create_company(
-            company_name=manufacturer_name,
-            manufacturer=True,
-        )
+        if create:
+            # Create manufacturer
+            cprint(f'[TREE]\tCreating new manufacturer "{manufacturer_name}"', silent=settings.SILENT)
+            create_company(
+                company_name=manufacturer_name,
+                manufacturer=True,
+            )
         # Get all parts
         part_list = []
 
@@ -351,13 +358,13 @@ def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str) -> b
         try:
             if manufacturer_mpn in item.MPN:
                 cprint(f'[TREE]\t{item.MPN} ?= {manufacturer_mpn} => True', silent=settings.HIDE_DEBUG)
-                return False
+                return item.part
             else:
                 cprint(f'[TREE]\t{item.MPN} ?= {manufacturer_mpn} => False', silent=settings.HIDE_DEBUG)
         except TypeError:
             cprint(f'[TREE]\t{item.MPN} ?= {manufacturer_mpn} => *** SKIPPED ***', silent=settings.HIDE_DEBUG)
 
-    return True
+    return 0
 
 
 def is_new_supplier_part(supplier_name: str, supplier_sku: str) -> bool:
@@ -491,7 +498,7 @@ def create_parameter_template(name: str, units: str) -> int:
 
     parameter_template = ParameterTemplate.create(inventree_api, {
         'name': name,
-        'units': units,
+        'units': units if units else '',
     })
 
     if parameter_template:

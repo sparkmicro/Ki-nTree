@@ -48,7 +48,7 @@ def compare(new_part_parameters: dict, db_part_parameters: dict, include_filters
                 if value != db_part_parameters[parameter]:
                     return False
     except KeyError:
-        cprint('[INFO]\tWarning: Failed to compare part with database', silent=settings.SILENT)
+        cprint('[INFO]\tWarning: Failed to compare part with database', silent=settings.HIDE_DEBUG)
         return False
 
     return True
