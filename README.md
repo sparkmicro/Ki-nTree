@@ -136,7 +136,7 @@ Lastly, a new page will open with a "You may now close this window." message, pr
 
 #### Part Parameters
 
-Ki-nTree uses **supplier** parameters to populate **InvenTree** parameters. In order to match between supplier and InvenTree, user need to setup the config file `~/.config/kintree/user/supplier_parameters.yaml` with the following mapping for each category:
+Ki-nTree uses **supplier** parameters to populate **InvenTree** parameters. In order to match between supplier and InvenTree, users need to setup the config file `~/.config/kintree/user/supplier_parameters.yaml` with the following mapping for each category:
 ``` yaml
 CATEGORY_NAME:
   INVENTREE_PARAMETER_NAME:

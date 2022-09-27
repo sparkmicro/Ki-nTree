@@ -63,10 +63,8 @@ def check_result(status: str, new_part: bool) -> bool:
 
 # Enable test mode
 settings.enable_test_mode()
-# Enable InvenTree
-settings.set_inventree_enable_flag(True, save=True)
-# Enable KiCad
-settings.set_kicad_enable_flag(True, save=True)
+# Enable InvenTree and KiCad
+settings.set_enable_flags([True, True, False])
 # Load user configuration files
 settings.load_user_config()
 # Set path to test libraries

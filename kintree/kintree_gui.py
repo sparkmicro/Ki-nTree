@@ -942,6 +942,7 @@ def main():
         [
             sg.Checkbox('KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
             sg.Checkbox('InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
+            sg.Checkbox('Alternate', enable_events=True, default=settings.ENABLE_ALTERNATE, key='enable_alternate'),
         ],
         [
             sg.Button('CREATE', size=(58, 1)),
@@ -976,8 +977,10 @@ def main():
         elif event == 'KiCad':
             kicad_settings_window()
         elif 'enable' in event:
-            settings.set_inventree_enable_flag(values['enable_inventree'], save=True)
-            settings.set_kicad_enable_flag(values['enable_kicad'], save=True)
+            write_values = [values['enable_kicad'],
+                            values['enable_inventree'],
+                            values['enable_alternate'], ]
+            settings.set_enable_flags(write_values)
         elif event == 'Custom Part':
             CREATE_CUSTOM = True
         elif 'supplier' in event:
