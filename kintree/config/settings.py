@@ -247,7 +247,7 @@ environment = os.environ.get('INVENTREE_ENV', environment)
 try:
     environment = int(environment)
 except TypeError:
-    environment = Environment.TESTING.value
+    environment = 0
 
 # Load correct user file
 if environment == Environment.PRODUCTION.value:

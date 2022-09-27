@@ -320,6 +320,41 @@ def kicad_settings_window():
     return
 
 
+def alternate_window() -> dict:
+    ''' Alternate supplier window '''
+
+    alternate_layout = [
+        [
+            sg.Text('InvenTree IPN', size=gui_global['label_size']),
+            sg.InputText('', key='original_part_ipn'),
+            sg.Text('InvenTree ID', size=gui_global['label_size']),
+            sg.InputText('', key='original_part_id'),
+        ],
+        [
+            sg.Button('Continue', size=(15, 1)),
+        ],
+    ]
+    alternate_window = sg.Window(
+        'Create alternate of...',
+        alternate_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
+    )
+
+    while True:
+        event, values = alternate_window.read()
+
+        if event == sg.WIN_CLOSED:
+            alternate_window.close()
+            return
+        else:
+            alternate_window.close()
+            return {
+                values['original_part_ipn'],
+                values['original_part_id'],
+            }
+
+
 def snapeda_window(part_number: str):
     ''' Display SnapEDA API results '''
 
@@ -420,7 +455,7 @@ def snapeda_window(part_number: str):
     snapeda_window.close()
 
 
-def part_user_form(part_data: dict, custom=False) -> dict:
+def part_user_form(part_data: dict, alternate=False, custom=False) -> dict:
     ''' User part data form '''
 
     user_values = {}
@@ -428,6 +463,10 @@ def part_user_form(part_data: dict, custom=False) -> dict:
 
     input_keys = []
     for key, value in part_data.items():
+        if alternate:
+            if key in ['name', 'description', 'revision', 'keywords', 'image']:
+                continue
+
         label = key.replace('_', ' ').title()
 
         part_user_form_layout.append([
@@ -435,7 +474,7 @@ def part_user_form(part_data: dict, custom=False) -> dict:
             sg.InputText(value, size=(45, 1), key=key),
         ])
         input_keys.append(key)
-
+    
     if custom:
         part_user_form_layout.append([sg.Button('CREATE', size=(64, 1)), ])
         window_title = 'Add Custom Part'
@@ -942,7 +981,7 @@ def main():
         [
             sg.Checkbox('KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
             sg.Checkbox('InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
-            sg.Checkbox('Alternate', enable_events=True, default=settings.ENABLE_ALTERNATE, key='enable_alternate'),
+            sg.Checkbox('Alternate', enable_events=True, default=settings.ENABLE_ALTERNATE, key='enable_alternate', disabled=not(settings.ENABLE_INVENTREE)),
         ],
         [
             sg.Button('CREATE', size=(58, 1)),
@@ -979,7 +1018,11 @@ def main():
         elif 'enable' in event:
             write_values = [values['enable_kicad'],
                             values['enable_inventree'],
-                            values['enable_alternate'], ]
+                            values['enable_alternate'] if values['enable_inventree'] and not values['enable_kicad'] else False, ]
+            if values['enable_inventree'] and not values['enable_kicad']:
+                window.find_element('enable_alternate').Update(disabled=False)
+            else:
+                window.find_element('enable_alternate').Update(disabled=True)
             settings.set_enable_flags(write_values)
         elif event == 'Custom Part':
             CREATE_CUSTOM = True
@@ -1077,10 +1120,16 @@ def main():
                                     font=gui_global['font'],
                                     location=gui_global['location'])
 
+
+                if settings.ENABLE_ALTERNATE:
+                    cprint('Warning: Alternate')
+
                 # Do we have form data?
                 if part_supplier_form:
                     # Open part form
-                    part_user_info = part_user_form(part_data=part_supplier_form, custom=CREATE_CUSTOM)
+                    part_user_info = part_user_form(part_data=part_supplier_form,
+                                                    alternate=settings.ENABLE_ALTERNATE,
+                                                    custom=CREATE_CUSTOM)
 
                     # Stitch back categories and parameters
                     try:
