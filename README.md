@@ -200,11 +200,11 @@ $ python -m kintree_gui
 1. Make sure you followed the previous installation steps, then run:
 ``` bash
 $ poetry build
-Building kintree (0.4.99)
+Building kintree (0.6.99)
   - Building sdist
-  - Built kintree-0.4.99.tar.gz
+  - Built kintree-0.6.99.tar.gz
   - Building wheel
-  - Built kintree-0.4.99-py3-none-any.whl
+  - Built kintree-0.6.99-py3-none-any.whl
 ```
 2. Exit the virtual environment (`Ctrl + D` on Linux; you can also close the
    terminal and reopen it in the same folder).
@@ -213,7 +213,7 @@ Building kintree (0.4.99)
    step. For example:
 
 ```bash
-pip install dist/kintree-0.4.99-py3-none-any.whl
+pip install dist/kintree-0.6.99-py3-none-any.whl
 ```
 
 3. You can now start Ki-nTree by typing `kintree` in the terminal, provided

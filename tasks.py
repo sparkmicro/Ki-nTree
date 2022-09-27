@@ -63,19 +63,16 @@ def clean(c):
 @task(pre=[clean])
 def build(c):
     """
-    Build Ki-nTree into executable file
+    Build Ki-nTree into dist/wheel
     """
 
     try:
-        c.run('pip show pyinstaller', hide=True)
+        c.run('pip show poetry', hide=True)
     except UnexpectedExit:
-        c.run('pip install -U pyinstaller', hide=True)
+        c.run('pip install -U poetry', hide=True)
 
-    # Uninstall typing
-    c.run('pip uninstall typing -y', hide=True)
-    
     cprint('[MAIN]\tBuilding Ki-nTree GUI into "dist" directory')
-    c.run('pyinstaller --clean --onefile -p kintree/kicad kintree_gui.py', hide=True)
+    c.run('poetry build', hide=True)
 
 
 @task
