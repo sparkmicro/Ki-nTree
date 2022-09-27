@@ -4,7 +4,7 @@
 # VERSION INFORMATION
 version_info = {
     'MAJOR_REVISION': 0,
-    'MINOR_REVISION': 5,
+    'MINOR_REVISION': 6,
     'RELEASE_STATUS': 99,  # Dev = 99
 }
 

@@ -134,6 +134,19 @@ Lastly, a new page will open with a "You may now close this window." message, pr
 </p>
 </details>
 
+#### Part Parameters
+
+Ki-nTree uses **supplier** parameters to populate **InvenTree** parameters. In order to match between supplier and InvenTree, user need to setup the config file `~/.config/kintree/user/supplier_parameters.yaml` with the following mapping for each category:
+``` yaml
+CATEGORY_NAME:
+  INVENTREE_PARAMETER_NAME:
+    - SUPPLIER_1_PARAMETER_NAME_1
+    - SUPPLIER_1_PARAMETER_NAME_2
+    - SUPPLIER_2_PARAMETER_NAME_1
+```
+
+Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/search/supplier_parameters.yaml) as a starting point / example.
+
 #### Part Number Search
 
 Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser and LCSC.
