@@ -556,3 +556,12 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
         pass
 
     return new_part, part_pk, inventree_part
+
+
+def inventree_create_alternate(part_info: dict, part_id='', part_ipn=''):
+    part_pk = inventree_api.fetch_part_id(part_id, part_ipn)
+
+    if part_pk:
+        cprint(f'[INFO] Success: Found original part in database (part ID = {part_pk})')
+    else:
+        cprint('[INFO] Error: Original part was not found in database')

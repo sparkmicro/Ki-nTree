@@ -325,13 +325,15 @@ def alternate_window() -> dict:
 
     alternate_layout = [
         [
-            sg.Text('InvenTree IPN', size=gui_global['label_size']),
-            sg.InputText('', key='original_part_ipn'),
-            sg.Text('InvenTree ID', size=gui_global['label_size']),
-            sg.InputText('', key='original_part_id'),
+            sg.Text('Original Part ID', size=gui_global['label_size']),
+            sg.InputText('', key='part_id'),
         ],
         [
-            sg.Button('Continue', size=(15, 1)),
+            sg.Text('Original Part IPN', size=gui_global['label_size']),
+            sg.InputText('', key='part_ipn'),
+        ],
+        [
+            sg.Button('Submit', size=(15, 1)),
         ],
     ]
     alternate_window = sg.Window(
@@ -348,11 +350,16 @@ def alternate_window() -> dict:
             alternate_window.close()
             return
         else:
-            alternate_window.close()
-            return {
-                values['original_part_ipn'],
-                values['original_part_id'],
-            }
+            if values['part_ipn'] or values['part_id']:
+                break
+            else:
+                sg.popup_ok('Missing original part "IPN" or "ID"',
+                            title='Error',
+                            font=gui_global['font'],
+                            location=gui_global['location'])
+
+    alternate_window.close()
+    return values
 
 
 def snapeda_window(part_number: str):
@@ -498,23 +505,26 @@ def part_user_form(part_data: dict, alternate=False, custom=False) -> dict:
             for key in input_keys:
                 user_values[key] = form_values[key]
 
-            if not form_values['name'] and not form_values['description']:
-                sg.popup_ok('Missing "Name" and "Description"',
-                            title='Error',
-                            font=gui_global['font'],
-                            location=gui_global['location'])
-            elif not form_values['name']:
-                sg.popup_ok('Missing "Name"',
-                            title='Error',
-                            font=gui_global['font'],
-                            location=gui_global['location'])
-            elif not form_values['description']:
-                sg.popup_ok('Missing "Description"',
-                            title='Error',
-                            font=gui_global['font'],
-                            location=gui_global['location'])
-            else:
+            if alternate:
                 break
+            else:
+                if not form_values['name'] and not form_values['description']:
+                    sg.popup_ok('Missing "Name" and "Description"',
+                                title='Error',
+                                font=gui_global['font'],
+                                location=gui_global['location'])
+                elif not form_values['name']:
+                    sg.popup_ok('Missing "Name"',
+                                title='Error',
+                                font=gui_global['font'],
+                                location=gui_global['location'])
+                elif not form_values['description']:
+                    sg.popup_ok('Missing "Description"',
+                                title='Error',
+                                font=gui_global['font'],
+                                location=gui_global['location'])
+                else:
+                    break
 
     part_user_form_window.close()
     return user_values
@@ -941,6 +951,8 @@ def main():
     init()
 
     CREATE_CUSTOM = False
+    # Default alternate checkbox state
+    alt_checkbox_disable = True if not settings.ENABLE_INVENTREE or settings.ENABLE_KICAD else False
 
     # Select PySimpleGUI theme
     # sg.theme_previewer() # Show all
@@ -981,7 +993,7 @@ def main():
         [
             sg.Checkbox('KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
             sg.Checkbox('InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
-            sg.Checkbox('Alternate', enable_events=True, default=settings.ENABLE_ALTERNATE, key='enable_alternate', disabled=not(settings.ENABLE_INVENTREE)),
+            sg.Checkbox('Alternate', enable_events=True, default=settings.ENABLE_ALTERNATE, key='enable_alternate', disabled=alt_checkbox_disable),
         ],
         [
             sg.Button('CREATE', size=(58, 1)),
@@ -1016,13 +1028,13 @@ def main():
         elif event == 'KiCad':
             kicad_settings_window()
         elif 'enable' in event:
+            # Update alternate checkbox state
+            alt_checkbox_disable = True if not values['enable_inventree'] or values['enable_kicad'] else False
             write_values = [values['enable_kicad'],
                             values['enable_inventree'],
-                            values['enable_alternate'] if values['enable_inventree'] and not values['enable_kicad'] else False, ]
-            if values['enable_inventree'] and not values['enable_kicad']:
-                window.find_element('enable_alternate').Update(disabled=False)
-            else:
-                window.find_element('enable_alternate').Update(disabled=True)
+                            values['enable_alternate'] if not alt_checkbox_disable else False, ]
+            # Update alternate checkbox
+            window.find_element('enable_alternate').Update(disabled=alt_checkbox_disable)
             settings.set_enable_flags(write_values)
         elif event == 'Custom Part':
             CREATE_CUSTOM = True
@@ -1044,6 +1056,8 @@ def main():
             progressbar = False
             actions_complete = False
             inventree_connect = False
+            # Get alternate enable state
+            CREATE_ALTERNATE = values['enable_alternate'] if values['enable_inventree'] and not values['enable_kicad'] else False
 
             # Check supplier selection (can be overwritten)
             if values['supplier'] not in settings.SUPPORTED_SUPPLIERS_API:
@@ -1120,27 +1134,32 @@ def main():
                                     font=gui_global['font'],
                                     location=gui_global['location'])
 
-
-                if settings.ENABLE_ALTERNATE:
-                    cprint('Warning: Alternate')
-
                 # Do we have form data?
                 if part_supplier_form:
                     # Open part form
                     part_user_info = part_user_form(part_data=part_supplier_form,
-                                                    alternate=settings.ENABLE_ALTERNATE,
+                                                    alternate=CREATE_ALTERNATE,
                                                     custom=CREATE_CUSTOM)
+                    
+                    if not CREATE_ALTERNATE:
+                        # Stitch back categories and parameters
+                        try:
+                            part_user_info.update({
+                                'category': part_supplier_info['category'],
+                                'subcategory': part_supplier_info['subcategory'],
+                                'parameters': part_supplier_info['parameters'],
+                            })
+                        except (KeyError, AttributeError):
+                            pass
 
-                    # Stitch back categories and parameters
-                    try:
-                        part_user_info.update({
-                            'category': part_supplier_info['category'],
-                            'subcategory': part_supplier_info['subcategory'],
-                            'parameters': part_supplier_info['parameters'],
-                        })
-                    except (KeyError, AttributeError):
-                        pass
-            
+            if CREATE_ALTERNATE:
+                # cprint(part_user_info)
+                original_part = alternate_window()
+                # cprint(original_part)
+
+                # Create alternate
+                inventree_interface.inventree_create_alternate(part_user_info, original_part['part_id'], original_part['part_ipn'])
+
             # Check that name and description are present in user form (else the form is empty)
             try:
                 if part_user_info['name'] and part_user_info['description']:

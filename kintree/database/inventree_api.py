@@ -109,6 +109,46 @@ def set_part_number(part_id: int, ipn: str) -> bool:
         return False
 
 
+def get_part_id_from_ipn(part_ipn='') -> int:
+    ''' Get Part ID from Part IPN '''
+    global inventree_api
+
+    parts = Part.list(inventree_api)
+
+    for part in parts:
+        if part.IPN == part_ipn:
+            return part.pk
+    
+    # No part found
+    return 0
+
+
+def fetch_part_id(part_id='', part_ipn='') -> int:
+    ''' Fetch part information from database '''
+    from requests.exceptions import HTTPError
+    global inventree_api
+
+    part = 0
+    if part_id:
+        try:
+            part = Part(inventree_api, part_id)
+        except TypeError:
+            # Part ID is invalid (eg. decimal value)
+            cprint('[TREE] Error: Part ID type is invalid')
+        except ValueError:
+            # Part ID is not a positive integer
+            cprint('[TREE] Error: Part ID must be positive')
+        except HTTPError:
+            # Part ID does not exist
+            cprint('[TREE] Error: Part ID does not exist in database')
+    elif part_ipn:
+        part = get_part_id_from_ipn(part_ipn)
+    else:
+        pass
+
+    return part
+
+
 def is_new_part(category_id: int, part_info: dict) -> int:
     ''' Check if part exists based on parameters (or description) '''
     global inventree_api
