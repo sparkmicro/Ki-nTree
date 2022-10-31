@@ -109,7 +109,7 @@ def set_part_number(part_id: int, ipn: str) -> bool:
         return False
 
 
-def get_part_id_from_ipn(part_ipn='') -> int:
+def get_part_from_ipn(part_ipn='') -> int:
     ''' Get Part ID from Part IPN '''
     global inventree_api
 
@@ -117,18 +117,18 @@ def get_part_id_from_ipn(part_ipn='') -> int:
 
     for part in parts:
         if part.IPN == part_ipn:
-            return part.pk
+            return part
     
     # No part found
-    return 0
+    return None
 
 
-def fetch_part_id(part_id='', part_ipn='') -> int:
-    ''' Fetch part information from database '''
+def fetch_part(part_id='', part_ipn='') -> int:
+    ''' Fetch part from database using either ID or IPN '''
     from requests.exceptions import HTTPError
     global inventree_api
 
-    part = 0
+    part = None
     if part_id:
         try:
             part = Part(inventree_api, part_id)
@@ -142,7 +142,7 @@ def fetch_part_id(part_id='', part_ipn='') -> int:
             # Part ID does not exist
             cprint('[TREE] Error: Part ID does not exist in database')
     elif part_ipn:
-        part = get_part_id_from_ipn(part_ipn)
+        part = get_part_from_ipn(part_ipn)
     else:
         pass
 
