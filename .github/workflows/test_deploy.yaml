@@ -45,6 +45,7 @@ jobs:
       INVENTREE_DB_NAME: ${{ github.workspace }}/InvenTree/inventree_default_db.sqlite3
       INVENTREE_MEDIA_ROOT: ${{ github.workspace }}/InvenTree
       INVENTREE_STATIC_ROOT: ${{ github.workspace }}/InvenTree/static
+      INVENTREE_BACKUP_DIR: ${{ github.workspace }}/InvenTree/backup
       INVENTREE_ENV: 0
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TOKEN_DIGIKEY: ${{ secrets.TOKEN_DIGIKEY }}
