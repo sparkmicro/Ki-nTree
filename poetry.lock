@@ -391,8 +391,8 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [metadata]
 lock-version = "1.1"
-python-versions = ">=3.9,<3.12"
-content-hash = "3223a36328af587f9286bc1e36e85ce356c70ca053c6075a7c048a553b574de1"
+python-versions = ">=3.9,<3.11"
+content-hash = "fcf8c5508aaa6d03b600efaa6d16b4a77d8cf92c0664f62067ecb8e05f650337"
 
 [metadata.files]
 certauth = [
