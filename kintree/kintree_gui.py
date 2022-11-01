@@ -1155,7 +1155,7 @@ def main():
             if CREATE_ALTERNATE:
                 # Alternate window
                 original_part = alternate_window()
-                
+
                 # Check if original_part is empty
                 if original_part:
                     # Create progress bar window
@@ -1163,9 +1163,9 @@ def main():
 
                     # Create alternate
                     inventree_interface.inventree_create_alternate(part_info=part_user_info,
-                                                                part_id=original_part['part_id'],
-                                                                part_ipn=original_part['part_ipn'],
-                                                                show_progress=progressbar)
+                                                                   part_id=original_part['part_id'],
+                                                                   part_ipn=original_part['part_ipn'],
+                                                                   show_progress=progressbar)
 
             # Check that name and description are present in user form (else the form is empty)
             try:
