@@ -558,9 +558,10 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
     return new_part, part_pk, inventree_part
 
 
-def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_progress=True):
+def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_progress=True) -> bool:
     ''' Create alternate manufacturer and supplier entries for an existing InvenTree part '''
 
+    result = False
     cprint('\n[MAIN]\tSearching for original part in database', silent=settings.SILENT)
     part = inventree_api.fetch_part(part_id, part_ipn)
 
@@ -597,6 +598,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
 
             if is_manufacturer_part_created:
                 cprint('[INFO]\tSuccess: Added new manufacturer part', silent=settings.SILENT)
+                result = True
 
     # Progress Update
     if show_progress and not progress.update_progress_bar_window(3):
@@ -626,5 +628,6 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
 
             if is_supplier_part_created:
                 cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
+                result = True
 
-    return
+    return result
