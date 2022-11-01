@@ -575,6 +575,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
         cprint(f'[INFO] Success: Found original part in database (ID = {part_pk} | Description = "{part_description}")', silent=settings.SILENT)
     else:
         cprint('[INFO] Error: Original part was not found in database', silent=settings.SILENT)
+        return result
 
     manufacturer_name = part_info.get('manufacturer_name', '')
     manufacturer_mpn = part_info.get('manufacturer_part_number', '')

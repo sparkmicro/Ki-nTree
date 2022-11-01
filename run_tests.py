@@ -244,6 +244,7 @@ if __name__ == '__main__':
                 'Sync InvenTree and Supplier categories',
                 'SnapEDA API methods',
                 'Download image method',
+                'Get category parameters',
                 'Add valid alternate supplier part using part ID',
                 'Add invalid alternate supplier part using part IPN',
             ]
