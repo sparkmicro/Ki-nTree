@@ -94,8 +94,14 @@ def fetch_part_info(part_number: str) -> dict:
 
     @timeout(dec_timeout=20)
     def digikey_search_timeout():
+        # Set parametric filter for Cut Tape
+        parametric_filters = {
+            "ParameterId": 7,
+            "ValueId": "2",
+        }
         # Create search request body
-        search_request = ManufacturerProductDetailsRequest(manufacturer_product=part_number, record_count=1)
+        # TODO: record_count and filters parameter do not work
+        search_request = ManufacturerProductDetailsRequest(manufacturer_product=part_number, record_count=1, filters=parametric_filters)
         # Run search
         manufacturer_product_details = digikey.manufacturer_product_details(body=search_request).to_dict()
         if type(manufacturer_product_details.get('product_details', None)) == list:
