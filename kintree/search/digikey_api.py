@@ -150,7 +150,7 @@ def test_api_connect(check_content=False) -> bool:
     test_success = True
     expected = {
         'product_description': 'RES 10K OHM 5% 1/16W 0402',
-        'digi_key_part_number': 'RMCF0402JT10K0CT-ND',
+        'digi_key_part_number': 'RMCF0402JT10K0TR-ND',
         'manufacturer': 'Stackpole Electronics Inc',
         'manufacturer_part_number': 'RMCF0402JT10K0',
         'product_url': 'https://www.digikey.com/en/products/detail/stackpole-electronics-inc/RMCF0402JT10K0/1758206',
