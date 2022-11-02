@@ -334,7 +334,7 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
             part_info = mouser_api.fetch_part_info(part_number)
         elif supplier == 'LCSC':
             part_info = lcsc_api.fetch_part_info(part_number)
-    cprint(part_info)
+
     # Check supplier data exist
     if not part_info:
         cprint(f'[INFO]\tError: Failed to fetch data for "{part_number}"', silent=settings.SILENT)

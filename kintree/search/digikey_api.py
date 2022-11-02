@@ -80,14 +80,29 @@ def find_categories(part_details: str):
 def fetch_part_info(part_number: str) -> dict:
     ''' Fetch part data from API '''
     from ..wrapt_timeout_decorator import timeout
+    from digikey.v3.productinformation.models.manufacturer_product_details_request import ManufacturerProductDetailsRequest
 
     part_info = {}
     if not setup_environment():
         return part_info
 
+    # OLD METHOD OF SEARCHING DIGI-KEY
+    # THIS METHOD WOULD SOMETIMES RETURN INCORRECT MATCH
+    # @timeout(dec_timeout=20)
+    # def digikey_search_timeout():
+    #     return digikey.product_details(part_number).to_dict()
+
     @timeout(dec_timeout=20)
     def digikey_search_timeout():
-        return digikey.product_details(part_number).to_dict()
+        # Create search request body
+        search_request = ManufacturerProductDetailsRequest(manufacturer_product=part_number, record_count=1)
+        # Run search
+        manufacturer_product_details = digikey.manufacturer_product_details(body=search_request).to_dict()
+        if type(manufacturer_product_details.get('product_details', None)) == list:
+            # Return the first item only
+            return manufacturer_product_details.get('product_details', None)[0]
+        else:
+            return {}
 
     # Query part number
     try:
