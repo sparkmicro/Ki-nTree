@@ -349,16 +349,23 @@ def create_company(company_name: str, manufacturer=False, supplier=False) -> boo
     return company
 
 
-def get_company_id(company_name: str) -> int:
-    ''' Get company (supplier/manufacturer) primary key (ID) '''
+def get_all_companies() -> dict:
+    ''' Get all existing companies (supplier/manufacturer) from database '''
     global inventree_api
 
     company_list = Company.list(inventree_api)
     companies = {}
     for company in company_list:
         companies[company.name] = company.pk
+
+    return companies
+
+
+def get_company_id(company_name: str) -> int:
+    ''' Get company (supplier/manufacturer) primary key (ID) '''
+
     try:
-        return companies[company_name]
+        return get_all_companies()[company_name]
     except:
         return 0
 
