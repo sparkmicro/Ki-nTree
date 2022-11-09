@@ -4,7 +4,11 @@ from urllib.request import Request, urlopen
 from ..config import settings
 from ..common.tools import download_image
 
-API_BASE_URL = 'https://snapeda-eeintech.herokuapp.com/snapeda?q='
+API_BASE_URL = 'https://snapeda.eeinte.ch/?'
+#
+# OLD ENDPOINT (HEROKU)
+# API_BASE_URL = 'https://snapeda-eeintech.herokuapp.com/snapeda?q='
+#
 SNAPEDA_URL = 'https://www.snapeda.com'
 
 
@@ -13,10 +17,10 @@ def fetch_snapeda_part_info(part_number: str) -> dict:
 
     data = {}
     api_url = API_BASE_URL + part_number.replace(' ', '%20')
-    request = Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
+    request = Request(api_url)  # headers={'User-Agent': 'Mozilla/5.0'})
 
     with urlopen(request, timeout=20) as response:
-        data = json.load(response)
+        data = json.loads(response.read().decode('utf8'))
 
     return data
 
