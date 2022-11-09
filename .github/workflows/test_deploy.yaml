@@ -55,6 +55,10 @@ jobs:
         python-version: ['3.9', '3.10']
 
     steps:
+      - name: Test SnapEDA
+        run: |
+          ping snapeda.eeinte.ch -c 2
+          curl snapeda.eeinte.ch/?SN74LV4T125PWR
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
