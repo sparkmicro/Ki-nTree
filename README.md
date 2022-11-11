@@ -224,18 +224,20 @@ pip install dist/kintree-0.6.99-py3-none-any.whl
 > Priority goes to implementing new features over GUI improvements  
 > Open to new ideas and pull requests :smiley:
 
-#### Versions 0.5.x or later
+#### Versions 0.6.x or later
 ##### New Features
 
+- Revamp category selection based on hierarchical structure from InvenTree ([reference](https://github.com/sparkmicro/Ki-nTree/issues/87)) 
 - Allow user to decide the category code to use for IPN
 - Add "Synchronize" menu option to pull InvenTree parts data into KiCad
-- Fetch Digi-Key price breakdowns and add them to Supplier Part (InvenTree)
-- Add option to add as alternate (supplier part) to existing part
-- Document configuration and backend
+
+##### Improvements
+
+- Optimize the category search ([reference](https://github.com/sparkmicro/Ki-nTree/issues/104))
 
 ##### GUI
 
-- Migrate to Qt? ([see discussion](https://github.com/sparkmicro/Ki-nTree/issues/37))
+- Migrate to Qt? ([reference](https://github.com/sparkmicro/Ki-nTree/issues/37))
 - Create loading animation for API searches (asyncio)
 
 ## License
