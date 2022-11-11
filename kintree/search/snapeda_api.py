@@ -121,11 +121,21 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
 def test_snapeda_api() -> bool:
     ''' Test method for SnapEDA API '''
 
+    result = False
+
+    # Test single result
     response = fetch_snapeda_part_info('SN74LV4T125PWR')
     data = parse_snapeda_response(response)
     images = download_snapeda_images(data)
 
-    if data['part_number'] and data['has_symbol'] and images['symbol']:
-        return True
+    if not (data['part_number'] and data['has_symbol'] and images['symbol']):
+        result = True
 
-    return False
+    # Test multiple results
+    if result:
+        response = fetch_snapeda_part_info('1N4148W-7-F')
+        data = parse_snapeda_response(response)
+        if data['part_url'] != 'https://www.snapeda.com/search/?q=1N4148W-7-F&ref=kintree':
+            result = False
+
+    return result

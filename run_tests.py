@@ -241,12 +241,13 @@ if __name__ == '__main__':
                 'Add symbol library to user file',
                 'Add footprint library to user file',
                 'Add supplier category',
-                'Sync InvenTree and Supplier categories',
+                'Sync InvenTree and supplier categories',
                 'SnapEDA API methods',
                 'Download image method',
                 'Get category parameters',
                 'Add valid alternate supplier part using part ID',
                 'Add invalid alternate supplier part using part IPN',
+                'Save InvenTree settings',
             ]
             method_success = True
             # Line return
@@ -374,6 +375,15 @@ if __name__ == '__main__':
                     if inventree_interface.inventree_create_alternate(part_info=part_info,
                                                                       part_ipn='CAP-000001-00',
                                                                       show_progress=False, ):
+                        method_success = False
+
+                elif method_idx == 13:
+                    # Save InvenTree settings
+                    if not config_interface.save_inventree_user_settings(enable=True,
+                                                                         server='http://127.0.0.1:8000',
+                                                                         username='admin',
+                                                                         password='admin',
+                                                                         user_path=settings.CONFIG_INVENTREE):
                         method_success = False
 
                 if method_success:
