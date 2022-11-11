@@ -128,14 +128,14 @@ def test_snapeda_api() -> bool:
     data = parse_snapeda_response(response)
     images = download_snapeda_images(data)
 
-    if not (data['part_number'] and data['has_symbol'] and images['symbol']):
+    if data['part_number'] and data['has_symbol'] and images['symbol']:
         result = True
 
     # Test multiple results
     if result:
         response = fetch_snapeda_part_info('1N4148W-7-F')
         data = parse_snapeda_response(response)
-        if data['part_url'] != 'https://www.snapeda.com/search/?q=1N4148W-7-F&ref=kintree':
+        if data['has_single_result']:
             result = False
 
     return result
