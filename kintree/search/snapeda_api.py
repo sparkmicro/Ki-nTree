@@ -1,10 +1,11 @@
 import json
 from urllib.request import Request, urlopen
+from urllib.error import URLError
 
 from ..config import settings
 from ..common.tools import download_image
 
-API_BASE_URL = 'https://snapeda-eeintech.herokuapp.com/snapeda?q='
+API_BASE_URL = 'https://snapeda.eeinte.ch/?'
 SNAPEDA_URL = 'https://www.snapeda.com'
 
 
@@ -13,10 +14,14 @@ def fetch_snapeda_part_info(part_number: str) -> dict:
 
     data = {}
     api_url = API_BASE_URL + part_number.replace(' ', '%20')
-    request = Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
+    request = Request(api_url)  # headers={'User-Agent': 'Mozilla/5.0'})
 
-    with urlopen(request, timeout=20) as response:
-        data = json.load(response)
+    try:
+        with urlopen(request, timeout=30) as response:
+            data = json.loads(response.read().decode('utf8'))
+    except (TimeoutError, URLError):
+        # Timeout kicked in
+        pass
 
     return data
 
@@ -116,11 +121,21 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
 def test_snapeda_api() -> bool:
     ''' Test method for SnapEDA API '''
 
+    result = False
+
+    # Test single result
     response = fetch_snapeda_part_info('SN74LV4T125PWR')
     data = parse_snapeda_response(response)
     images = download_snapeda_images(data)
 
     if data['part_number'] and data['has_symbol'] and images['symbol']:
-        return True
+        result = True
 
-    return False
+    # Test multiple results
+    if result:
+        response = fetch_snapeda_part_info('1N4148W-7-F')
+        data = parse_snapeda_response(response)
+        if data['has_single_result']:
+            result = False
+
+    return result

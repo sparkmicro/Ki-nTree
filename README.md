@@ -34,7 +34,7 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 
 ### Requirements
 
-* Ki-nTree is currently tested for Python 3.8 to 3.10 versions.
+* Ki-nTree is currently tested for Python 3.9 to 3.10 versions.
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
@@ -134,6 +134,19 @@ Lastly, a new page will open with a "You may now close this window." message, pr
 </p>
 </details>
 
+#### Part Parameters
+
+Ki-nTree uses **supplier** parameters to populate **InvenTree** parameters. In order to match between supplier and InvenTree, users need to setup the config file `~/.config/kintree/user/supplier_parameters.yaml` with the following mapping for each category:
+``` yaml
+CATEGORY_NAME:
+  INVENTREE_PARAMETER_NAME:
+    - SUPPLIER_1_PARAMETER_NAME_1
+    - SUPPLIER_1_PARAMETER_NAME_2
+    - SUPPLIER_2_PARAMETER_NAME_1
+```
+
+Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/search/supplier_parameters.yaml) as a starting point / example.
+
 #### Part Number Search
 
 Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser and LCSC.
@@ -187,11 +200,11 @@ $ python -m kintree_gui
 1. Make sure you followed the previous installation steps, then run:
 ``` bash
 $ poetry build
-Building kintree (0.4.99)
+Building kintree (0.6.99)
   - Building sdist
-  - Built kintree-0.4.99.tar.gz
+  - Built kintree-0.6.99.tar.gz
   - Building wheel
-  - Built kintree-0.4.99-py3-none-any.whl
+  - Built kintree-0.6.99-py3-none-any.whl
 ```
 2. Exit the virtual environment (`Ctrl + D` on Linux; you can also close the
    terminal and reopen it in the same folder).
@@ -200,7 +213,7 @@ Building kintree (0.4.99)
    step. For example:
 
 ```bash
-pip install dist/kintree-0.4.99-py3-none-any.whl
+pip install dist/kintree-0.6.99-py3-none-any.whl
 ```
 
 3. You can now start Ki-nTree by typing `kintree` in the terminal, provided
@@ -211,18 +224,20 @@ pip install dist/kintree-0.4.99-py3-none-any.whl
 > Priority goes to implementing new features over GUI improvements  
 > Open to new ideas and pull requests :smiley:
 
-#### Versions 0.5.x or later
+#### Versions 0.6.x or later
 ##### New Features
 
+- Revamp category selection based on hierarchical structure from InvenTree ([reference](https://github.com/sparkmicro/Ki-nTree/issues/87)) 
 - Allow user to decide the category code to use for IPN
 - Add "Synchronize" menu option to pull InvenTree parts data into KiCad
-- Fetch Digi-Key price breakdowns and add them to Supplier Part (InvenTree)
-- Add option to add as alternate (supplier part) to existing part
-- Document configuration and backend
+
+##### Improvements
+
+- Optimize the category search ([reference](https://github.com/sparkmicro/Ki-nTree/issues/104))
 
 ##### GUI
 
-- Migrate to Qt? ([see discussion](https://github.com/sparkmicro/Ki-nTree/issues/37))
+- Migrate to Qt? ([reference](https://github.com/sparkmicro/Ki-nTree/issues/37))
 - Create loading animation for API searches (asyncio)
 
 ## License

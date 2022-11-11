@@ -346,6 +346,45 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
     return part_info
 
 
+def inventree_fuzzy_company_match(name: str) -> str:
+    ''' Fuzzy match company name to exisiting companies '''
+    inventree_companies = inventree_api.get_all_companies()
+
+    for company_name in inventree_companies.keys():
+        if fuzz.partial_ratio(name.lower(), company_name.lower()) == 100:
+            return company_name
+    
+    return name
+
+
+def inventree_create_manufacturer_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, datasheet: str, description: str) -> bool:
+    ''' Create manufacturer part '''
+
+    cprint('\n[MAIN]\tCreating manufacturer part', silent=settings.SILENT)
+    manufacturer_part = inventree_api.is_new_manufacturer_part(manufacturer_name=manufacturer_name,
+                                                               manufacturer_mpn=manufacturer_mpn)
+
+    if manufacturer_part:
+        cprint('[INFO]\tManufacturer part already exists, skipping.', silent=settings.SILENT)
+    else:
+        # Create a new manufacturer part
+        is_manufacturer_part_created = inventree_api.create_manufacturer_part(part_id=part_id,
+                                                                              manufacturer_name=manufacturer_name,
+                                                                              manufacturer_mpn=manufacturer_mpn,
+                                                                              datasheet=datasheet,
+                                                                              description=description)
+
+        if is_manufacturer_part_created:
+            cprint('[INFO]\tSuccess: Added new manufacturer part', silent=settings.SILENT)
+            return True
+
+    return False
+
+
+def inventree_create_supplier_part(part) -> bool:
+    return
+
+
 def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
     ''' Create InvenTree part from supplier part data and categories '''
 
@@ -556,3 +595,68 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
         pass
 
     return new_part, part_pk, inventree_part
+
+
+def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_progress=True) -> bool:
+    ''' Create alternate manufacturer and supplier entries for an existing InvenTree part '''
+
+    result = False
+    cprint('\n[MAIN]\tSearching for original part in database', silent=settings.SILENT)
+    part = inventree_api.fetch_part(part_id, part_ipn)
+
+    # Progress Update
+    if show_progress and not progress.update_progress_bar_window(3):
+        return
+
+    if part:
+        part_pk = part.pk
+        part_description = part.description
+        cprint(f'[INFO] Success: Found original part in database (ID = {part_pk} | Description = "{part_description}")', silent=settings.SILENT)
+    else:
+        cprint('[INFO] Error: Original part was not found in database', silent=settings.SILENT)
+        return result
+
+    # Overwrite manufacturer with matching one from database
+    manufacturer_name = inventree_fuzzy_company_match(part_info.get('manufacturer_name', ''))
+    manufacturer_mpn = part_info.get('manufacturer_part_number', '')
+    datasheet = part_info.get('datasheet', '')
+
+    # Create manufacturer part
+    if manufacturer_mpn:
+        inventree_create_manufacturer_part(part_id=part_pk,
+                                           manufacturer_name=manufacturer_name,
+                                           manufacturer_mpn=manufacturer_mpn,
+                                           datasheet=datasheet,
+                                           description=part_description)
+
+    # Progress Update
+    if show_progress and not progress.update_progress_bar_window(3):
+        return
+
+    supplier_name = part_info.get('supplier_name', '')
+    supplier_sku = part_info.get('supplier_part_number', '')
+    supplier_link = part_info.get('supplier_link', '')
+
+    # Add supplier alternate
+    if supplier_sku:
+        cprint('\n[MAIN]\tCreating supplier part', silent=settings.SILENT)
+        is_new_supplier_part = inventree_api.is_new_supplier_part(supplier_name=supplier_name,
+                                                                  supplier_sku=supplier_sku)
+
+        if not is_new_supplier_part:
+            cprint('[INFO]\tSupplier part already exists, skipping.', silent=settings.SILENT)
+        else:
+            # Create a new supplier part
+            is_supplier_part_created = inventree_api.create_supplier_part(part_id=part_pk,
+                                                                          manufacturer_name=manufacturer_name,
+                                                                          manufacturer_mpn=manufacturer_mpn,
+                                                                          supplier_name=supplier_name,
+                                                                          supplier_sku=supplier_sku,
+                                                                          description=part_description,
+                                                                          link=supplier_link)
+
+            if is_supplier_part_created:
+                cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
+                result = True
+
+    return result

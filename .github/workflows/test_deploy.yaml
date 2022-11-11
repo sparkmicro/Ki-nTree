@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.8', '3.10']
+        python-version: ['3.9', '3.10']
 
     steps:
       - name: Checkout code
@@ -45,15 +45,19 @@ jobs:
       INVENTREE_DB_NAME: ${{ github.workspace }}/InvenTree/inventree_default_db.sqlite3
       INVENTREE_MEDIA_ROOT: ${{ github.workspace }}/InvenTree
       INVENTREE_STATIC_ROOT: ${{ github.workspace }}/InvenTree/static
+      INVENTREE_BACKUP_DIR: ${{ github.workspace }}/InvenTree/backup
       INVENTREE_ENV: 0
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TOKEN_DIGIKEY: ${{ secrets.TOKEN_DIGIKEY }}
 
     strategy:
       matrix:
-        python-version: ['3.8', '3.10']
+        python-version: ['3.9', '3.10']
 
     steps:
+      # - name: Test SnapEDA API
+      #   run: |
+      #     curl snapeda.eeinte.ch/?SN74LV4T125PWR
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -74,7 +78,8 @@ jobs:
         run: |
           invoke install
           mkdir -p ~/.config/kintree/user/ && mkdir -p ~/.config/kintree/cache/search/
-          cp tests/files/inventree_test.yaml ~/.config/kintree/user/
+          cp tests/files/inventree_dev.yaml ~/.config/kintree/user/
+          cp tests/files/kicad_map.yaml ~/.config/kintree/user/
           cp tests/files/results.tgz ~/.config/kintree/cache/search/
           cd ~/.config/kintree/cache/search/ && tar xvf results.tgz && cd -
       - name: Digi-Key API setup

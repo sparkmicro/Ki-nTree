@@ -320,6 +320,48 @@ def kicad_settings_window():
     return
 
 
+def alternate_window() -> dict:
+    ''' Alternate supplier window '''
+
+    alternate_layout = [
+        [
+            sg.Text('Original Part ID', size=gui_global['label_size']),
+            sg.InputText('', key='part_id'),
+        ],
+        [
+            sg.Text('Original Part IPN', size=gui_global['label_size']),
+            sg.InputText('', key='part_ipn'),
+        ],
+        [
+            sg.Button('Submit', size=(15, 1)),
+        ],
+    ]
+    alternate_window = sg.Window(
+        'Create alternate of...',
+        alternate_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
+    )
+
+    while True:
+        event, values = alternate_window.read()
+
+        if event == sg.WIN_CLOSED:
+            alternate_window.close()
+            return
+        else:
+            if values['part_ipn'] or values['part_id']:
+                break
+            else:
+                sg.popup_ok('Missing original part "IPN" or "ID"',
+                            title='Error',
+                            font=gui_global['font'],
+                            location=gui_global['location'])
+
+    alternate_window.close()
+    return values
+
+
 def snapeda_window(part_number: str):
     ''' Display SnapEDA API results '''
 
@@ -420,7 +462,7 @@ def snapeda_window(part_number: str):
     snapeda_window.close()
 
 
-def part_user_form(part_data: dict, custom=False) -> dict:
+def part_user_form(part_data: dict, alternate=False, custom=False) -> dict:
     ''' User part data form '''
 
     user_values = {}
@@ -428,6 +470,10 @@ def part_user_form(part_data: dict, custom=False) -> dict:
 
     input_keys = []
     for key, value in part_data.items():
+        if alternate:
+            if key in ['name', 'description', 'revision', 'keywords', 'image']:
+                continue
+
         label = key.replace('_', ' ').title()
 
         part_user_form_layout.append([
@@ -435,7 +481,7 @@ def part_user_form(part_data: dict, custom=False) -> dict:
             sg.InputText(value, size=(45, 1), key=key),
         ])
         input_keys.append(key)
-
+    
     if custom:
         part_user_form_layout.append([sg.Button('CREATE', size=(64, 1)), ])
         window_title = 'Add Custom Part'
@@ -459,23 +505,26 @@ def part_user_form(part_data: dict, custom=False) -> dict:
             for key in input_keys:
                 user_values[key] = form_values[key]
 
-            if not form_values['name'] and not form_values['description']:
-                sg.popup_ok('Missing "Name" and "Description"',
-                            title='Error',
-                            font=gui_global['font'],
-                            location=gui_global['location'])
-            elif not form_values['name']:
-                sg.popup_ok('Missing "Name"',
-                            title='Error',
-                            font=gui_global['font'],
-                            location=gui_global['location'])
-            elif not form_values['description']:
-                sg.popup_ok('Missing "Description"',
-                            title='Error',
-                            font=gui_global['font'],
-                            location=gui_global['location'])
-            else:
+            if alternate:
                 break
+            else:
+                if not form_values['name'] and not form_values['description']:
+                    sg.popup_ok('Missing "Name" and "Description"',
+                                title='Error',
+                                font=gui_global['font'],
+                                location=gui_global['location'])
+                elif not form_values['name']:
+                    sg.popup_ok('Missing "Name"',
+                                title='Error',
+                                font=gui_global['font'],
+                                location=gui_global['location'])
+                elif not form_values['description']:
+                    sg.popup_ok('Missing "Description"',
+                                title='Error',
+                                font=gui_global['font'],
+                                location=gui_global['location'])
+                else:
+                    break
 
     part_user_form_window.close()
     return user_values
@@ -902,6 +951,8 @@ def main():
     init()
 
     CREATE_CUSTOM = False
+    # Default alternate checkbox state
+    alt_checkbox_disable = True if not settings.ENABLE_INVENTREE or settings.ENABLE_KICAD else False
 
     # Select PySimpleGUI theme
     # sg.theme_previewer() # Show all
@@ -942,6 +993,7 @@ def main():
         [
             sg.Checkbox('KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
             sg.Checkbox('InvenTree', enable_events=True, default=settings.ENABLE_INVENTREE, key='enable_inventree'),
+            sg.Checkbox('Alternate', enable_events=True, default=settings.ENABLE_ALTERNATE, key='enable_alternate', disabled=alt_checkbox_disable),
         ],
         [
             sg.Button('CREATE', size=(58, 1)),
@@ -976,8 +1028,14 @@ def main():
         elif event == 'KiCad':
             kicad_settings_window()
         elif 'enable' in event:
-            settings.set_inventree_enable_flag(values['enable_inventree'], save=True)
-            settings.set_kicad_enable_flag(values['enable_kicad'], save=True)
+            # Update alternate checkbox state
+            alt_checkbox_disable = True if not values['enable_inventree'] or values['enable_kicad'] else False
+            write_values = [values['enable_kicad'],
+                            values['enable_inventree'],
+                            values['enable_alternate'] if not alt_checkbox_disable else False, ]
+            # Update alternate checkbox
+            window.find_element('enable_alternate').Update(disabled=alt_checkbox_disable)
+            settings.set_enable_flags(write_values)
         elif event == 'Custom Part':
             CREATE_CUSTOM = True
         elif 'supplier' in event:
@@ -998,6 +1056,8 @@ def main():
             progressbar = False
             actions_complete = False
             inventree_connect = False
+            # Get alternate enable state
+            CREATE_ALTERNATE = values['enable_alternate'] if values['enable_inventree'] and not values['enable_kicad'] else False
 
             # Check supplier selection (can be overwritten)
             if values['supplier'] not in settings.SUPPORTED_SUPPLIERS_API:
@@ -1076,19 +1136,55 @@ def main():
 
                 # Do we have form data?
                 if part_supplier_form:
-                    # Open part form
-                    part_user_info = part_user_form(part_data=part_supplier_form, custom=CREATE_CUSTOM)
+                    # Check if query matches manufacturer or supplier part numbers found with supplier search
+                    if not values['part_number'] in [part_supplier_form['manufacturer_part_number'], part_supplier_form['supplier_part_number']]:
+                        # Search returned incorrect match
+                        cprint('[ERROR]\tSearch returned an incorrect match: try again with the supplier part number', silent=settings.SILENT)
+                        sg.popup_ok('Supplier search returned an incorrect match (eg. query and result part numbers are different) \
+                                     \n\nTry again with the supplier part number',
+                                    title='Wrong Search Result',
+                                    font=gui_global['font'],
+                                    location=gui_global['location'])
+                    else:
+                        # Open part form
+                        part_user_info = part_user_form(part_data=part_supplier_form,
+                                                        alternate=CREATE_ALTERNATE,
+                                                        custom=CREATE_CUSTOM)
+                        
+                        if not CREATE_ALTERNATE:
+                            # Stitch back categories and parameters
+                            try:
+                                part_user_info.update({
+                                    'category': part_supplier_info['category'],
+                                    'subcategory': part_supplier_info['subcategory'],
+                                    'parameters': part_supplier_info['parameters'],
+                                })
+                            except (KeyError, AttributeError):
+                                pass
 
-                    # Stitch back categories and parameters
-                    try:
-                        part_user_info.update({
-                            'category': part_supplier_info['category'],
-                            'subcategory': part_supplier_info['subcategory'],
-                            'parameters': part_supplier_info['parameters'],
-                        })
-                    except (KeyError, AttributeError):
-                        pass
-            
+            if CREATE_ALTERNATE and part_user_info:
+                # Alternate window
+                original_part = alternate_window()
+
+                # Check if original_part is empty
+                if original_part:
+                    # Create progress bar window
+                    progressbar = progress.create_progress_bar_window(font=gui_global['font'], location=gui_global['location'])
+
+                    # Create alternate
+                    alt_result = inventree_interface.inventree_create_alternate(part_info=part_user_info,
+                                                                                part_id=original_part['part_id'],
+                                                                                part_ipn=original_part['part_ipn'],
+                                                                                show_progress=progressbar)
+
+                    # Alternate creation failed
+                    if not alt_result:
+                        progress.close_progress_bar_window()
+                        sg.popup_ok('Failed to create alternate part',
+                                    title='Alternate',
+                                    font=gui_global['font'],
+                                    location=gui_global['location'], )
+
             # Check that name and description are present in user form (else the form is empty)
             try:
                 if part_user_info['name'] and part_user_info['description']:

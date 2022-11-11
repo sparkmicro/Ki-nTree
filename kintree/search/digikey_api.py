@@ -85,9 +85,33 @@ def fetch_part_info(part_number: str) -> dict:
     if not setup_environment():
         return part_info
 
+    # THIS METHOD CAN SOMETIMES RETURN INCORRECT MATCH
+    # Added logic to check the result in the GUI flow
     @timeout(dec_timeout=20)
     def digikey_search_timeout():
         return digikey.product_details(part_number).to_dict()
+
+    # THIS METHOD WILL NOT WORK WITH DIGI-KEY PART NUMBERS...
+    # @timeout(dec_timeout=20)
+    # def digikey_search_timeout():
+    #     from digikey.v3.productinformation.models.manufacturer_product_details_request import ManufacturerProductDetailsRequest
+    #     # Set parametric filter for Cut Tape
+    #     parametric_filters = {
+    #         "ParameterId": 7,
+    #         "ValueId": "2",
+    #     }
+    #     # Create search request body
+    #     # TODO: record_count and filters parameter do not seem to work as intended
+    #     search_request = ManufacturerProductDetailsRequest(manufacturer_product=part_number, record_count=1, filters=parametric_filters)
+    #     # Run search
+    #     manufacturer_product_details = digikey.manufacturer_product_details(body=search_request).to_dict()
+    #     from ..common.tools import cprint
+    #     print(f'length of response = {len(manufacturer_product_details.get("product_details", None))}')
+    #     if type(manufacturer_product_details.get('product_details', None)) == list:
+    #         # Return the first item only
+    #         return manufacturer_product_details.get('product_details', None)[0]
+    #     else:
+    #         return {}
 
     # Query part number
     try:

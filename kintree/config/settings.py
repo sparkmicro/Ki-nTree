@@ -112,6 +112,13 @@ CONFIG_GENERAL = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'gen
 AUTOMATIC_SUBCATEGORY_CREATE = CONFIG_GENERAL.get('AUTOMATIC_SUBCATEGORY_CREATE', False)
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 DEFAULT_SUPPLIER = CONFIG_GENERAL.get('DEFAULT_SUPPLIER', 'Digi-Key')
+# Load enable flags
+try:
+    ENABLE_KICAD = CONFIG_GENERAL.get('ENABLE_KICAD', False)
+    ENABLE_INVENTREE = CONFIG_GENERAL.get('ENABLE_INVENTREE', False)
+    ENABLE_ALTERNATE = CONFIG_GENERAL.get('ENABLE_ALTERNATE', False)
+except TypeError:
+    pass
 
 # Supported suppliers APIs
 SUPPORTED_SUPPLIERS_API = ['Digi-Key', 'Mouser', 'LCSC']
@@ -179,31 +186,16 @@ def load_kicad_settings():
     global KICAD_SYMBOLS_PATH
     global KICAD_TEMPLATES_PATH
     global KICAD_FOOTPRINTS_PATH
-    global ENABLE_KICAD
 
     kicad_user_settings = config_interface.load_file(CONFIG_KICAD, silent=False)
     if kicad_user_settings:
         KICAD_SYMBOLS_PATH = kicad_user_settings.get('KICAD_SYMBOLS_PATH', None)
         KICAD_TEMPLATES_PATH = kicad_user_settings.get('KICAD_TEMPLATES_PATH', None)
         KICAD_FOOTPRINTS_PATH = kicad_user_settings.get('KICAD_FOOTPRINTS_PATH', None)
-        ENABLE_KICAD = kicad_user_settings.get('KICAD_ENABLE', None)
 
 
 # Load kicad settings
 load_kicad_settings()
-
-
-# Enable flag
-def set_kicad_enable_flag(value: bool, save=False):
-    global ENABLE_KICAD
-    ENABLE_KICAD = value
-    if save:
-        global CONFIG_KICAD
-        kicad_user_settings = config_interface.load_inventree_user_settings(
-            CONFIG_KICAD)
-        kicad_user_settings['KICAD_ENABLE'] = value
-        config_interface.dump_file(kicad_user_settings, CONFIG_KICAD)
-    return
 
 
 def set_default_supplier(value: str, save=False):
@@ -241,13 +233,11 @@ symbol_template_lib = os.path.join(
 # INVENTREE
 class Environment(Enum):
     '''
-    Local Development/Testing: TESTING
     Server/Remote Development: DEVELOPMENT
     Server/Remote Production: PRODUCTION
     '''
-    TESTING = 0
-    DEVELOPMENT = 1
-    PRODUCTION = 2
+    DEVELOPMENT = 0
+    PRODUCTION = 1
 
 
 # Pick environment
@@ -257,39 +247,16 @@ environment = os.environ.get('INVENTREE_ENV', environment)
 try:
     environment = int(environment)
 except TypeError:
-    environment = Environment.TESTING.value
+    environment = 0
 
 # Load correct user file
 if environment == Environment.PRODUCTION.value:
     CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_prod.yaml')
-elif environment == Environment.DEVELOPMENT.value:
-    CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_dev.yaml')
 else:
-    CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_test.yaml')
+    CONFIG_INVENTREE = os.path.join(CONFIG_USER_FILES, 'inventree_dev.yaml')
 
 # Load user settings
 inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
-
-# Enable flag
-try:
-    ENABLE_INVENTREE = inventree_settings.get('ENABLE', False)
-except TypeError:
-    pass
-
-
-def set_inventree_enable_flag(value: bool, save=False):
-    global ENABLE_INVENTREE
-    ENABLE_INVENTREE = value
-    if save:
-        global CONFIG_INVENTREE
-        inventree_settings = config_interface.load_inventree_user_settings(CONFIG_INVENTREE)
-        inventree_settings['ENABLE'] = value
-        config_interface.save_inventree_user_settings(enable=inventree_settings['ENABLE'],
-                                                      server=inventree_settings.get('SERVER_ADDRESS', None),
-                                                      username=inventree_settings.get('USERNAME', None),
-                                                      password=inventree_settings.get('PASSWORD', None),
-                                                      user_config_path=CONFIG_INVENTREE)
-    return
 
 
 # Server settings
@@ -333,3 +300,24 @@ inventree_part_template = {
     'supplier_link': None,
     'parameters': {},
 }
+
+
+# Enable flags
+def set_enable_flags(values: list):
+    global CONFIG_GENERAL
+    global ENABLE_KICAD
+    global ENABLE_INVENTREE
+    global ENABLE_ALTERNATE
+
+    ENABLE_KICAD = values[0]
+    ENABLE_INVENTREE = values[1]
+    ENABLE_ALTERNATE = values[2]
+
+    # Save user settings
+    user_settings = CONFIG_GENERAL
+    user_settings['ENABLE_KICAD'] = ENABLE_KICAD
+    user_settings['ENABLE_INVENTREE'] = ENABLE_INVENTREE
+    user_settings['ENABLE_ALTERNATE'] = ENABLE_ALTERNATE
+    config_interface.dump_file(user_settings, os.path.join(CONFIG_USER_FILES, 'general.yaml'))
+
+    return

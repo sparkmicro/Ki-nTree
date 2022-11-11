@@ -63,10 +63,8 @@ def check_result(status: str, new_part: bool) -> bool:
 
 # Enable test mode
 settings.enable_test_mode()
-# Enable InvenTree
-settings.set_inventree_enable_flag(True, save=True)
-# Enable KiCad
-settings.set_kicad_enable_flag(True, save=True)
+# Enable InvenTree and KiCad
+settings.set_enable_flags([True, True, False])
 # Load user configuration files
 settings.load_user_config()
 # Set path to test libraries
@@ -234,52 +232,6 @@ if __name__ == '__main__':
             # 		cprint(f'\nInvenTree Results\n-----', silent=not(settings.ENABLE_TEST))
             # 		cprint(inventree_results, silent=not(settings.ENABLE_TEST))
 
-        if ENABLE_DELETE:
-            if kicad_results or inventree_results:
-                if not AUTO_DELETE:
-                    input('\nPress "Enter" to delete parts...')
-                else:
-                    cprint('')
-
-                # NOT YET SUPPORTED - REMOVE?
-                # if ENABLE_KICAD:
-                #     error = 0
-
-                #     pretty_test_print('[MAIN]\tDeleting KiCad test parts')
-                #     # Delete all KiCad test parts
-                #     for number, result in kicad_results.items():
-                #         try:
-                #             kicad_interface.delete_part(part_number=number,
-                #                                         library_path=test_library_path)
-                #         except:
-                #             error += 1
-                #             cprint(f'[KCAD]\tWarning: "{number}" could not be deleted')
-
-                #     if error > 0:
-                #         cprint('[ FAIL ]')
-                #         exit_code = -1
-                #     else:
-                #         cprint('[ PASS ]')
-
-                if ENABLE_INVENTREE:
-                    error = 0
-
-                    pretty_test_print('[MAIN]\tDeleting InvenTree test parts')
-                    # Delete all InvenTree test parts
-                    for number, result in inventree_results.items():
-                        if result[2]:
-                            try:
-                                if not inventree_api.delete_part(part_id=result[0]):
-                                    error += 1
-                            except:
-                                error += 1
-
-                    if error > 0:
-                        cprint('[ FAIL ]')
-                        exit_code = -1
-                    else:
-                        cprint('[ PASS ]')
-
         if ENABLE_TEST_METHODS:
             methods = [
                 'Fuzzy category matching',
@@ -289,9 +241,13 @@ if __name__ == '__main__':
                 'Add symbol library to user file',
                 'Add footprint library to user file',
                 'Add supplier category',
-                'Sync InvenTree and Supplier categories',
+                'Sync InvenTree and supplier categories',
                 'SnapEDA API methods',
                 'Download image method',
+                'Get category parameters',
+                'Add valid alternate supplier part using part ID',
+                'Add invalid alternate supplier part using part IPN',
+                'Save InvenTree settings',
             ]
             method_success = True
             # Line return
@@ -399,13 +355,90 @@ if __name__ == '__main__':
                     if inventree_api.get_category_parameters(1):
                         method_success = False
 
+                elif method_idx == 11:
+                    # Test manufacturer and supplier alternates using Part ID
+                    part_info = {
+                        "datasheet": "https://search.murata.co.jp/Ceramy/image/img/A01X/G101/ENG/GRM155R71C104KA88-01.pdf",
+                        "manufacturer_name": "Murata Electronics",
+                        "manufacturer_part_number": "GRM155R71C104KA88D",
+                        "supplier_link": "https://www.digikey.com/en/products/detail/murata-electronics/GRM155R71C104KA88D/675947",
+                        "supplier_name": "Digi-Key",
+                        "supplier_part_number": "490-3261-1-ND"
+                    }
+                    if not inventree_interface.inventree_create_alternate(part_info=part_info,
+                                                                          part_id='1',
+                                                                          show_progress=False, ):
+                        method_success = False
+
+                elif method_idx == 12:
+                    # Test manufacturer and supplier alternates using Part IPN
+                    if inventree_interface.inventree_create_alternate(part_info=part_info,
+                                                                      part_ipn='CAP-000001-00',
+                                                                      show_progress=False, ):
+                        method_success = False
+
+                elif method_idx == 13:
+                    # Save InvenTree settings
+                    if not config_interface.save_inventree_user_settings(enable=True,
+                                                                         server='http://127.0.0.1:8000',
+                                                                         username='admin',
+                                                                         password='admin',
+                                                                         user_config_path=settings.CONFIG_INVENTREE):
+                        method_success = False
+
                 if method_success:
                     cprint('[ PASS ]')
                 else:
                     cprint('[ FAIL ]')
                     exit_code = -1
                     break
-            
+        
+        if ENABLE_DELETE:
+            if kicad_results or inventree_results:
+                if not AUTO_DELETE:
+                    input('\nPress "Enter" to delete parts...')
+                else:
+                    cprint('')
+
+                # NOT YET SUPPORTED - REMOVE?
+                # if ENABLE_KICAD:
+                #     error = 0
+
+                #     pretty_test_print('[MAIN]\tDeleting KiCad test parts')
+                #     # Delete all KiCad test parts
+                #     for number, result in kicad_results.items():
+                #         try:
+                #             kicad_interface.delete_part(part_number=number,
+                #                                         library_path=test_library_path)
+                #         except:
+                #             error += 1
+                #             cprint(f'[KCAD]\tWarning: "{number}" could not be deleted')
+
+                #     if error > 0:
+                #         cprint('[ FAIL ]')
+                #         exit_code = -1
+                #     else:
+                #         cprint('[ PASS ]')
+
+                if ENABLE_INVENTREE:
+                    error = 0
+
+                    pretty_test_print('[MAIN]\tDeleting InvenTree test parts')
+                    # Delete all InvenTree test parts
+                    for number, result in inventree_results.items():
+                        if result[2]:
+                            try:
+                                if not inventree_api.delete_part(part_id=result[0]):
+                                    error += 1
+                            except:
+                                error += 1
+
+                    if error > 0:
+                        cprint('[ FAIL ]')
+                        exit_code = -1
+                    else:
+                        cprint('[ PASS ]')
+
             # Line return
             cprint('')
 
