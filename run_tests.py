@@ -383,7 +383,7 @@ if __name__ == '__main__':
                                                                          server='http://127.0.0.1:8000',
                                                                          username='admin',
                                                                          password='admin',
-                                                                         user_path=settings.CONFIG_INVENTREE):
+                                                                         user_config_path=settings.CONFIG_INVENTREE):
                         method_success = False
 
                 if method_success:
