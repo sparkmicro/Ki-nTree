@@ -1177,13 +1177,8 @@ def main():
                                                                                 part_ipn=original_part['part_ipn'],
                                                                                 show_progress=progressbar)
 
-                    # Alternate creation failed
-                    if not alt_result:
-                        progress.close_progress_bar_window()
-                        sg.popup_ok('Failed to create alternate part',
-                                    title='Alternate',
-                                    font=gui_global['font'],
-                                    location=gui_global['location'], )
+                    # Alternate creation complete
+                    actions_complete = True
 
             # Check that name and description are present in user form (else the form is empty)
             try:
@@ -1363,17 +1358,30 @@ def main():
             if actions_complete:
                 # Result pop-up window
                 if settings.ENABLE_INVENTREE:
-                    if not new_part and part_pk:
-                        result_message = 'Part already in InvenTree database'
-                    elif not new_part and not part_pk:
-                        result_message = 'Error while adding part to InvenTree (check output)'
-                        # Indicate if part categories are incorrect
-                        if not categories[0] or categories[1]:
-                            result_message += '\n\nPart categories were not set properly or do not exist on InvenTree'
-                    elif not part_data:
-                        result_message = 'Part data not found - Check part number'
+                    if CREATE_ALTERNATE:
+                        if alt_result:
+                            result_message = 'Alternate added to InvenTree database'
+
+                            # Update InvenTree URL
+                            if original_part['part_ipn']:
+                                part_ref = original_part['part_ipn']
+                            else:
+                                part_ref = original_part['part_id']
+                            part_data = {'inventree_url': f'{settings.PART_URL_ROOT}{part_ref}/'}
+                        else:
+                            result_message = 'Failed to create alternate part'
                     else:
-                        result_message = 'Part added to InvenTree database'
+                        if not new_part and part_pk:
+                            result_message = 'Part already in InvenTree database'
+                        elif not new_part and not part_pk:
+                            result_message = 'Error while adding part to InvenTree (check output)'
+                            # Indicate if part categories are incorrect
+                            if not categories[0] or categories[1]:
+                                result_message += '\n\nPart categories were not set properly or do not exist on InvenTree'
+                        elif not part_data:
+                            result_message = 'Part data not found - Check part number'
+                        else:
+                            result_message = 'Part added to InvenTree database'
 
                 if settings.ENABLE_INVENTREE and settings.ENABLE_KICAD:
                     result_message += '\n'
