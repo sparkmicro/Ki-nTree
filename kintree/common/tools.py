@@ -56,13 +56,9 @@ def create_library(library_path: str, symbol: str, template_lib: str):
 
     if not os.path.exists(library_path):
         os.mkdir(library_path)
-    new_lib_file = os.path.join(library_path, symbol + '.lib')
-    new_dcm_file = new_lib_file.replace('.lib', '.dcm')
-    template_dcm = template_lib.replace('.lib', '.dcm')
-    if not os.path.exists(new_lib_file):
-        copyfile(template_lib, new_lib_file)
-    if not os.path.exists(new_dcm_file):
-        copyfile(template_dcm, new_dcm_file)
+    new_kicad_sym_file = os.path.join(library_path, symbol + '.kicad_sym')
+    if not os.path.exists(new_kicad_sym_file):
+        copyfile(template_lib, new_kicad_sym_file)
 
 
 def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=False, silent=False):
