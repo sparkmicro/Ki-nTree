@@ -34,7 +34,7 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 
 ### Requirements
 
-* Ki-nTree is currently tested for Python 3.9 to 3.10 versions.
+* Ki-nTree is currently tested for Python 3.8 to 3.10 versions.
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
@@ -44,13 +44,13 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 1. Install using Pip
 
 ``` bash
-$ pip install -U kintree
+pip install -U kintree
 ```
 
 2. Run Ki-nTree
 
 ``` bash
-$ kintree
+kintree
 ```
 
 ### Run in virtual environment (contained)
@@ -82,14 +82,16 @@ Ki-nTree is [available on Arch Linux's AUR](https://aur.archlinux.org/packages/p
 
 ### Usage Instructions
 
+> :warning: Warning: **KiCad library writer is still in development**: Make sure to open KiCad libraries inside the symbol editor and save them after adding symbols.
+
 #### Before Starting
 
 If you intend to use Ki-nTree with InvenTree, this tool offers to setup the InvenTree category tree with a simple script that you can run as follow:
 
-> Warining: Before running it, make sure you have setup your category tree in your category settings file (`~/.config/kintree/user/categories.yaml`) according to your own preferences, else it will use the [default setup](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/inventree/categories.yaml).
+> :warning: Warning: Before running it, make sure you have setup your category tree in your category settings file (`~/.config/kintree/user/categories.yaml`) according to your own preferences, else it will use the [default setup](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/inventree/categories.yaml).
 
 ``` bash
-$ python3 -m kintree.setup_inventree
+python3 -m kintree.setup_inventree
 ```
 
 If the InvenTree category tree is not setup before starting to use Ki-nTree, you will not be able to add parts to InvenTree.
@@ -173,12 +175,12 @@ You can install poetry by following the instructions [on its official website](h
 ### Setup and run
 1. Clone this repository
 ``` bash
-$ git clone https://github.com/sparkmicro/Ki-nTree
+git clone https://github.com/sparkmicro/Ki-nTree
 ```
 
 2. Install the requirements into a `poetry`-managed virtual environment
 ``` bash
-$ poetry install
+poetry install
 Installing dependencies from lock file
 ...
 Installing the current project: kintree (0.4.99)
@@ -187,7 +189,7 @@ Installing the current project: kintree (0.4.99)
 
 3. Run Ki-nTree in the virtual environment
 ```bash
-$ poetry run python -m kintree_gui
+poetry run python -m kintree_gui
 ```
 or
 

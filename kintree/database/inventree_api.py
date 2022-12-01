@@ -140,7 +140,7 @@ def fetch_part(part_id='', part_ipn='') -> int:
             cprint('[TREE] Error: Part ID must be positive')
         except HTTPError:
             # Part ID does not exist
-            cprint('[TREE] Error: Part ID does not exist in database')
+            cprint(f'[TREE] Error: Part with ID={part_id} does not exist in database')
     elif part_ipn:
         part = get_part_from_ipn(part_ipn)
     else:

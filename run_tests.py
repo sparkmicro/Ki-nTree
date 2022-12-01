@@ -68,7 +68,7 @@ settings.set_enable_flags([True, True, False])
 # Load user configuration files
 settings.load_user_config()
 # Set path to test libraries
-test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.lib')
+test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.kicad_sym')
 symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
 footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
 # Disable Digi-Key API logging
