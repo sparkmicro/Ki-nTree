@@ -9,7 +9,7 @@ def fetch_snapeda_part_info(part_number: str) -> dict:
     ''' Fetch SnapEDA part data from API '''
 
     api_url = API_BASE_URL + part_number.replace(' ', '%20')
-    data = download(api_url, timeout=0.1)
+    data = download(api_url, timeout=10)
     return data if data else {}
 
 
