@@ -983,12 +983,13 @@ def main():
          ],
     ]
     # Main Window
+    default_supplier = settings.DEFAULT_SUPPLIER if settings.DEFAULT_SUPPLIER in settings.SUPPORTED_SUPPLIERS_API else settings.SUPPORTED_SUPPLIERS_API[0]
     layout = [
         [sg.Menu(menu_def,)],
         [
             sg.Text('Part Number '),
             sg.InputText(key='part_number', size=(38, 1)),
-            sg.Combo(settings.SUPPORTED_SUPPLIERS_API, key='supplier', default_value=settings.DEFAULT_SUPPLIER, enable_events=True),
+            sg.Combo(settings.SUPPORTED_SUPPLIERS_API, key='supplier', default_value=default_supplier, enable_events=True),
         ],
         [
             sg.Checkbox('KiCad', enable_events=True, default=settings.ENABLE_KICAD, key='enable_kicad'),
