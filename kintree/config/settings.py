@@ -121,16 +121,24 @@ except TypeError:
     pass
 
 # Supported suppliers APIs
-SUPPORTED_SUPPLIERS_API = ['Digi-Key', 'Mouser', 'LCSC']
+# Dec 22: Removed LCSC as their API was disabled
+SUPPORTED_SUPPLIERS_API = [
+    'Digi-Key',
+    'Mouser',
+    # 'LCSC',
+]
 
 # Digi-Key user configuration
-CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
-
-# LCSC user configuration
-CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
+if 'Digi-Key' in SUPPORTED_SUPPLIERS_API:
+    CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
 
 # Mouser user configuration
-CONFIG_MOUSER = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'mouser_config.yaml'))
+if 'Mouser' in SUPPORTED_SUPPLIERS_API:
+    CONFIG_MOUSER = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'mouser_config.yaml'))
+
+# LCSC user configuration
+if 'LCSC' in SUPPORTED_SUPPLIERS_API:
+    CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
 
 # Generic API user configuration
 CONFIG_SEARCH_API = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'search_api.yaml'))

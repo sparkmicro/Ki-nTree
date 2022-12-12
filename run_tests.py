@@ -75,29 +75,32 @@ footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'fil
 digikey_api.disable_api_logger()
 
 # Test Digi-Key API
-pretty_test_print('[MAIN]\tDigi-Key API Test')
-if not digikey_api.test_api_connect(check_content=True):
-    cprint('[ FAIL ]')
-    cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
-    sys.exit(-1)
-else:
-    cprint('[ PASS ]')
+if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
+    pretty_test_print('[MAIN]\tDigi-Key API Test')
+    if not digikey_api.test_api_connect(check_content=True):
+        cprint('[ FAIL ]')
+        cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+        sys.exit(-1)
+    else:
+        cprint('[ PASS ]')
 
 # Test Mouser API
-pretty_test_print('[MAIN]\tMouser API Test')
-if not mouser_api.test_api():
-    cprint('[ FAIL ]')
-    sys.exit(-1)
-else:
-    cprint('[ PASS ]')
+if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
+    pretty_test_print('[MAIN]\tMouser API Test')
+    if not mouser_api.test_api():
+        cprint('[ FAIL ]')
+        sys.exit(-1)
+    else:
+        cprint('[ PASS ]')
 
 # Test LCSC API
-pretty_test_print('[MAIN]\tLCSC API Test')
-if not lcsc_api.test_api():
-    cprint('[ FAIL ]')
-    sys.exit(-1)
-else:
-    cprint('[ PASS ]')
+if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
+    pretty_test_print('[MAIN]\tLCSC API Test')
+    if not lcsc_api.test_api():
+        cprint('[ FAIL ]')
+        sys.exit(-1)
+    else:
+        cprint('[ PASS ]')
 
 # Setup InvenTree
 cprint('\n-----')
