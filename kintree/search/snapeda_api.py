@@ -1,9 +1,5 @@
-import json
-from urllib.request import Request, urlopen
-from urllib.error import URLError
-
 from ..config import settings
-from ..common.tools import download_image
+from ..common.tools import download, download_image
 
 API_BASE_URL = 'https://snapeda.eeinte.ch/?'
 SNAPEDA_URL = 'https://www.snapeda.com'
@@ -12,18 +8,9 @@ SNAPEDA_URL = 'https://www.snapeda.com'
 def fetch_snapeda_part_info(part_number: str) -> dict:
     ''' Fetch SnapEDA part data from API '''
 
-    data = {}
     api_url = API_BASE_URL + part_number.replace(' ', '%20')
-    request = Request(api_url)  # headers={'User-Agent': 'Mozilla/5.0'})
-
-    try:
-        with urlopen(request, timeout=30) as response:
-            data = json.loads(response.read().decode('utf8'))
-    except (TimeoutError, URLError):
-        # Timeout kicked in
-        pass
-
-    return data
+    data = download(api_url, timeout=0.1)
+    return data if data else {}
 
 
 def parse_snapeda_response(response: dict) -> dict:
