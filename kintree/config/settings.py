@@ -125,7 +125,7 @@ except TypeError:
 SUPPORTED_SUPPLIERS_API = [
     'Digi-Key',
     'Mouser',
-    # 'LCSC',
+    'LCSC',
 ]
 
 # Digi-Key user configuration

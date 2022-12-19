@@ -45,9 +45,9 @@ def fetch_part_info(part_number: str) -> dict:
     part_info = {}
 
     def search_timeout(timeout=10):
-        url = 'https://wwwapi.lcsc.com/v1/products/detail?product_code=' + part_number
+        url = 'https://wmsc.lcsc.com/wmsc/product/detail?productCode=' + part_number
         response = download(url, timeout=timeout)
-        return response
+        return response['result']
 
     # Query part number
     try:
