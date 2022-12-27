@@ -15,6 +15,8 @@ import PySimpleGUI as sg
 from .search import digikey_api as digikey_api
 # Mouser API
 from .search import mouser_api as mouser_api
+# LCSC API
+from .search import lcsc_api as lcsc_api
 # SnapEDA API
 from .search import snapeda_api as snapeda_api
 # Progress
@@ -196,6 +198,58 @@ def mouser_api_settings_window():
                 result_message = 'Failed to connect to Mouser API'
             sg.popup_ok(result_message,
                         title='Mouser API Connect Test',
+                        font=gui_global['font'],
+                        location=gui_global['location'])
+        else:
+            save_settings(user_settings)
+            search_api_window.close()
+            return
+
+
+def lcsc_api_settings_window():
+    ''' LCSC API settings window '''
+
+    user_settings = config_interface.load_file(settings.CONFIG_LCSC_API)
+
+    search_api_layout = [
+        [
+            sg.Text('LCSC API URL', size=gui_global['label_size']),
+            sg.InputText(user_settings['LCSC_API_URL'], key='api_url'),
+        ],
+        [
+            sg.Button('Test', size=(15, 1)),
+            sg.Button('Save', size=(15, 1)),
+        ],
+    ]
+    search_api_window = sg.Window(
+        'LCSC API Settings',
+        search_api_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
+    )
+
+    while True:
+        api_event, api_values = search_api_window.read()
+
+        def save_settings(user_settings: dict):
+            new_settings = {
+                'LCSC_API_URL': api_values['api_url'],
+            }
+            user_settings = {**user_settings, **new_settings}
+            config_interface.dump_file(user_settings, settings.CONFIG_LCSC_API)
+
+        if api_event == sg.WIN_CLOSED:
+            search_api_window.close()
+            return
+        elif api_event == 'Test':
+            # Automatically save settings
+            save_settings(user_settings)
+            if lcsc_api.test_api():
+                result_message = 'Successfully connected to LCSC API'
+            else:
+                result_message = 'Failed to connect to LCSC API'
+            sg.popup_ok(result_message,
+                        title='LCSC API Connect Test',
                         font=gui_global['font'],
                         location=gui_global['location'])
         else:
@@ -967,19 +1021,19 @@ def main():
     # Main Menu
     menu_def = [
         ['Settings',
-         [
-             'User',
-             'Digi-Key',
-             'Mouser',
-             'KiCad',
-             'InvenTree',
-         ],
+            [
+                'User',
+                'Supplier',
+                [supplier for supplier in settings.SUPPORTED_SUPPLIERS_API],
+                'KiCad',
+                'InvenTree',
+            ],
          ],
         ['More',
-         [
-             # 'Synchronize',
-             'Custom Part',
-         ],
+            [
+                # 'Synchronize',
+                'Custom Part',
+            ],
          ],
     ]
     # Main Window
@@ -1024,6 +1078,8 @@ def main():
             digikey_api_settings_window()
         elif event == 'Mouser':
             mouser_api_settings_window()
+        elif event == 'LCSC':
+            lcsc_api_settings_window()
         elif event == 'InvenTree':
             inventree_settings_window()
         elif event == 'KiCad':
@@ -1114,14 +1170,16 @@ def main():
                                                                                                 part_info=part_supplier_info)
                         else:
                             error_message = 'Failed to fetch part information...\n\n' \
-                                            'Make sure:' \
-                                            '\n- Part number is valid'
+                                            'Make sure:'
                             if values['supplier'] == 'Digi-Key':
-                                error_message += '\n- Digi-Key API settings are correct ("Settings > Digi-Key")'
+                                error_message += '\n- Digi-Key API settings are correct ("Settings > Supplier > Digi-Key")' \
+                                                 '\n- Part number is a valid number on Digi-Key\'s website'
                             elif values['supplier'] == 'Mouser':
-                                error_message += '\n- Mouser API settings are correct ("Settings > Mouser")'
+                                error_message += '\n- Mouser API settings are correct ("Settings > Supplier > Mouser")' \
+                                                 '\n- Part number is a valid number on Mouser\'s website'
                             elif values['supplier'] == 'LCSC':
-                                error_message += '\n- Part number starts with "C" (LCSC code)'
+                                error_message += '\n- Mouser API settings are correct ("Settings > Supplier > LCSC")' \
+                                                 '\n- Part number is a valid LCSC number (eg. starts with "C")'
                             # Missing Part Information
                             sg.popup_ok(error_message,
                                         title='Supplier API Search',
