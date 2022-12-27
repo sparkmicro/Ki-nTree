@@ -42,10 +42,14 @@ def find_categories(part_details: str):
 def fetch_part_info(part_number: str) -> dict:
     ''' Fetch part data from API '''
 
+    # Load LCSC settings
+    from ..config import settings, config_interface
+    lcsc_api_settings = config_interface.load_file(settings.CONFIG_LCSC_API)
+
     part_info = {}
 
     def search_timeout(timeout=10):
-        url = 'https://wwwapi.lcsc.com/v1/products/detail?product_code=' + part_number
+        url = lcsc_api_settings.get('LCSC_API_URL', '') + part_number
         response = download(url, timeout=timeout)
         return response
 
@@ -54,6 +58,9 @@ def fetch_part_info(part_number: str) -> dict:
         part = search_timeout()
     except:
         part = None
+
+    # Extract result
+    part = part.get('result', None)
 
     if not part:
         return part_info
@@ -107,6 +114,8 @@ def test_api() -> bool:
     }
 
     test_part = fetch_part_info('C2181718')
+    if not test_part:
+        test_success = False
         
     # Check content of response
     if test_success:

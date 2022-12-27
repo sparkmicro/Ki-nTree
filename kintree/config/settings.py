@@ -76,17 +76,6 @@ if not load_user_config():
         cprint('\n[ERROR]\tSome Ki-nTree configuration files seem to be missing')
         exit(-1)
 
-# Common to search APIs
-CONFIG_SUPPLIER_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'supplier_parameters.yaml')
-
-# Digi-Key
-CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
-CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
-# CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
-
-# Mouser
-CONFIG_MOUSER_API = os.path.join(CONFIG_USER_FILES, 'mouser_api.yaml')
-
 # KiCad
 CONFIG_KICAD = os.path.join(CONFIG_USER_FILES, 'kicad.yaml')
 CONFIG_KICAD_CATEGORY_MAP = os.path.join(CONFIG_USER_FILES, 'kicad_map.yaml')
@@ -121,34 +110,39 @@ except TypeError:
     pass
 
 # Supported suppliers APIs
-# Dec 22: Removed LCSC as their API was disabled
 SUPPORTED_SUPPLIERS_API = [
     'Digi-Key',
     'Mouser',
-    # 'LCSC',
+    'LCSC',
 ]
+
+# Generic API user configuration
+CONFIG_SUPPLIER_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'supplier_parameters.yaml')
+CONFIG_SEARCH_API = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'search_api.yaml'))
 
 # Digi-Key user configuration
 if 'Digi-Key' in SUPPORTED_SUPPLIERS_API:
     CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
+    CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
+    CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
+    # CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
 
 # Mouser user configuration
 if 'Mouser' in SUPPORTED_SUPPLIERS_API:
     CONFIG_MOUSER = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'mouser_config.yaml'))
+    CONFIG_MOUSER_API = os.path.join(CONFIG_USER_FILES, 'mouser_api.yaml')
 
 # LCSC user configuration
 if 'LCSC' in SUPPORTED_SUPPLIERS_API:
     CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
-
-# Generic API user configuration
-CONFIG_SEARCH_API = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'search_api.yaml'))
+    CONFIG_LCSC_API = os.path.join(CONFIG_USER_FILES, 'lcsc_api.yaml')
 
 # Automatic category match confidence level (from 0 to 100)
-CATEGORY_MATCH_RATIO_LIMIT = CONFIG_DIGIKEY.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
+CATEGORY_MATCH_RATIO_LIMIT = CONFIG_SEARCH_API.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
 # Search results caching (stored in files)
-CACHE_ENABLED = CONFIG_DIGIKEY.get('CACHE_ENABLED', True)
+CACHE_ENABLED = CONFIG_SEARCH_API.get('CACHE_ENABLED', True)
 # Cache validity in days
-CACHE_VALID_DAYS = CONFIG_DIGIKEY.get('CACHE_VALID_DAYS', 7)
+CACHE_VALID_DAYS = CONFIG_SEARCH_API.get('CACHE_VALID_DAYS', 7)
 
 
 # Caching settings
