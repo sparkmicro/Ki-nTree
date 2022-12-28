@@ -113,6 +113,9 @@ except TypeError:
 SUPPORTED_SUPPLIERS_API = [
     'Digi-Key',
     'Mouser',
+    'Farnell',
+    'Newark',
+    'Element14',
     'LCSC',
 ]
 
@@ -131,6 +134,11 @@ if 'Digi-Key' in SUPPORTED_SUPPLIERS_API:
 if 'Mouser' in SUPPORTED_SUPPLIERS_API:
     CONFIG_MOUSER = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'mouser_config.yaml'))
     CONFIG_MOUSER_API = os.path.join(CONFIG_USER_FILES, 'mouser_api.yaml')
+
+# Element14 user configuration (includes Farnell, Newark and Element14)
+if 'Element14' in SUPPORTED_SUPPLIERS_API:
+    CONFIG_ELEMENT14 = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'element14_config.yaml'))
+    CONFIG_ELEMENT14_API = os.path.join(CONFIG_USER_FILES, 'element14_api.yaml')
 
 # LCSC user configuration
 if 'LCSC' in SUPPORTED_SUPPLIERS_API:

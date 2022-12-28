@@ -15,6 +15,8 @@ import PySimpleGUI as sg
 from .search import digikey_api as digikey_api
 # Mouser API
 from .search import mouser_api as mouser_api
+# Element14 API
+from .search import element14_api as element14_api
 # LCSC API
 from .search import lcsc_api as lcsc_api
 # SnapEDA API
@@ -198,6 +200,64 @@ def mouser_api_settings_window():
                 result_message = 'Failed to connect to Mouser API'
             sg.popup_ok(result_message,
                         title='Mouser API Connect Test',
+                        font=gui_global['font'],
+                        location=gui_global['location'])
+        else:
+            save_settings(user_settings)
+            search_api_window.close()
+            return
+
+
+def element14_api_settings_window(supplier=''):
+    ''' Element14 API settings window '''
+
+    user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
+    default_store = user_settings.get(f'{supplier.upper()}_STORE', '')
+
+    search_api_layout = [
+        [
+            sg.Text(f'{supplier} Store', size=gui_global['label_size']),
+            sg.Combo(sorted(element14_api.STORES[supplier]), default_value=default_store, key=f'{supplier.lower()}_store', enable_events=True),
+            sg.Text(f'URL: {element14_api.STORES[supplier][default_store]}', key='store_url'),
+        ],
+        [
+            sg.Button('Test', size=(15, 1)),
+            sg.Button('Save', size=(15, 1)),
+        ],
+    ]
+
+    search_api_window = sg.Window(
+        f'{supplier} API Settings',
+        search_api_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
+    )
+
+    while True:
+        api_event, api_values = search_api_window.read()
+
+        def save_settings(user_settings: dict):
+            new_settings = {
+                f'{supplier.upper()}_STORE': api_values[f'{supplier.lower()}_store'],
+            }
+            user_settings = {**user_settings, **new_settings}
+            config_interface.dump_file(user_settings, settings.CONFIG_ELEMENT14_API)
+
+        if api_event == sg.WIN_CLOSED:
+            search_api_window.close()
+            return
+        elif api_event == f'{supplier.lower()}_store':
+            new_default_store_url = element14_api.STORES[supplier][api_values[f'{supplier.lower()}_store']]
+            search_api_window['store_url'].update(value=f'URL: {new_default_store_url}')
+        elif api_event == 'Test':
+            # Automatically save settings
+            save_settings(user_settings)
+            if element14_api.test_api(supplier):
+                result_message = f'Successfully connected to {supplier} (Element14) API'
+            else:
+                result_message = f'Failed to connect to {supplier} (Element14) API'
+            sg.popup_ok(result_message,
+                        title=f'{supplier} (Element14) API Connect Test',
                         font=gui_global['font'],
                         location=gui_global['location'])
         else:
@@ -1078,6 +1138,8 @@ def main():
             digikey_api_settings_window()
         elif event == 'Mouser':
             mouser_api_settings_window()
+        elif event in ['Farnell', 'Newark', 'Element14']:
+            element14_api_settings_window(supplier=event)
         elif event == 'LCSC':
             lcsc_api_settings_window()
         elif event == 'InvenTree':
