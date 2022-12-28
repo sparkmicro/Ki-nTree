@@ -1,3 +1,5 @@
+from ..common.tools import cprint
+from ..config import settings, config_interface
 from ..common.tools import download
 
 ELEMENT14_API_URL = 'https://api.element14.com/catalog/products'
@@ -65,6 +67,50 @@ SEARCH_HEADERS = [
 PARAMETERS_MAP = [
     
 ]
+
+
+def build_api_url(part_number, supplier) -> str:
+    ''' Build API URL based on user settings '''
+
+    user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
+    api_key = user_settings.get('ELEMENT14_PRODUCT_SEARCH_API_KEY', '')
+    default_store = user_settings.get(f'{supplier.upper()}_STORE', '')
+    store_url = STORES[supplier][default_store]
+
+    # Set base URL
+    api_url = ELEMENT14_API_URL
+    # Set response format
+    api_url += '?callInfo.responseDataFormat=JSON'
+    # Set API key
+    api_url += f'&callInfo.apiKey={api_key}'
+    # Set store URL
+    api_url += f'&storeInfo.id={store_url}'
+    # Set part number
+    api_url += f'&term=manuPartNum:{part_number}'
+
+    return api_url
+
+
+def fetch_part_info(part_number: str, supplier: str) -> dict:
+    ''' Fetch part data from API '''
+
+    part_info = {}
+
+    def search_timeout(timeout=10):
+        url = build_api_url(part_number, supplier)
+        response = download(url, timeout=timeout)
+        return response
+
+    # Query part number
+    try:
+        part = search_timeout()
+    except:
+        part = None
+
+    # Print result
+    cprint(part)
+
+    return part
 
 
 def test_api(supplier='') -> bool:

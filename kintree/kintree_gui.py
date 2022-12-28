@@ -39,6 +39,7 @@ gui_global = {
     'font': ('Lato', 11),
     'location': (500, 500),
     'label_size': (20, 1),
+    'big_label_size': (25, 1),
     'button_size': (15, 1),
 }
 
@@ -216,7 +217,11 @@ def element14_api_settings_window(supplier=''):
 
     search_api_layout = [
         [
-            sg.Text(f'{supplier} Store', size=gui_global['label_size']),
+            sg.Text('Element14 Product Search API Key', size=gui_global['big_label_size']),
+            sg.InputText(user_settings['ELEMENT14_PRODUCT_SEARCH_API_KEY'], key='api_key', size=gui_global['big_label_size'],)
+        ],
+        [
+            sg.Text(f'{supplier} Store', size=gui_global['big_label_size']),
             sg.Combo(sorted(element14_api.STORES[supplier]), default_value=default_store, key=f'{supplier.lower()}_store', enable_events=True),
             sg.Text(f'URL: {element14_api.STORES[supplier][default_store]}', key='store_url'),
         ],
@@ -227,7 +232,7 @@ def element14_api_settings_window(supplier=''):
     ]
 
     search_api_window = sg.Window(
-        f'{supplier} API Settings',
+        f'{supplier} (Element14) API Settings',
         search_api_layout,
         font=gui_global['font'],
         location=gui_global['location'],
@@ -238,6 +243,7 @@ def element14_api_settings_window(supplier=''):
 
         def save_settings(user_settings: dict):
             new_settings = {
+                'ELEMENT14_PRODUCT_SEARCH_API_KEY': api_values['api_key'],
                 f'{supplier.upper()}_STORE': api_values[f'{supplier.lower()}_store'],
             }
             user_settings = {**user_settings, **new_settings}

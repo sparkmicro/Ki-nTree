@@ -7,7 +7,7 @@ from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
 from fuzzywuzzy import fuzz
-from ..search import search_api, digikey_api, mouser_api, lcsc_api
+from ..search import search_api, digikey_api, mouser_api, element14_api, lcsc_api
 
 
 def connect_to_server(timeout=5) -> bool:
@@ -320,7 +320,11 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
         return part_info
 
     # Load from file if cache is enabled
-    search_filename = settings.search_results['directory'] + supplier + '_' + part_number + settings.search_results['extension']
+    store = ''
+    if supplier in ['Farnell', 'Newark', 'Element14']:
+        element14_config = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
+        store = element14_config.get(f'{supplier.upper()}_STORE', '')
+    search_filename = settings.search_results['directory'] + supplier + store + '_' + part_number + settings.search_results['extension']
 
     # Get cached data
     part_info = search_api.load_from_file(search_filename, test_mode)
@@ -332,6 +336,8 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
             part_info = digikey_api.fetch_part_info(part_number)
         elif supplier == 'Mouser':
             part_info = mouser_api.fetch_part_info(part_number)
+        elif supplier in ['Farnell', 'Newark', 'Element14']:
+            part_info = element14_api.fetch_part_info(part_number, supplier)
         elif supplier == 'LCSC':
             part_info = lcsc_api.fetch_part_info(part_number)
 
