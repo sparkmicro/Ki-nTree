@@ -1,4 +1,3 @@
-from ..common.tools import cprint
 from ..config import settings, config_interface
 from ..common.tools import download
 
@@ -61,12 +60,31 @@ STORES = {
 }
 
 SEARCH_HEADERS = [
-    
+    'brandName',
+    'displayName',
+    'id',
+    'packSize',
+    'publishingModule',
+    'sku',
+    'translatedManufacturerPartNumber',
+    'translatedMinimumOrderQuality',
+    'unitOfMeasure',
 ]
 
-PARAMETERS_MAP = [
-    
-]
+
+def get_default_search_keys():
+    return [
+        'displayName',
+        'displayName',
+        'revision',
+        'keywords',
+        'sku',
+        'brandName',
+        'translatedManufacturerPartNumber',
+        '',
+        '',
+        '',
+    ]
 
 
 def build_api_url(part_number, supplier) -> str:
@@ -107,10 +125,19 @@ def fetch_part_info(part_number: str, supplier: str) -> dict:
     except:
         part = None
 
-    # Print result
-    cprint(part)
+    # Extract result
+    part = part['manufacturerPartNumberSearchReturn']['products'][0]
 
-    return part
+    if not part:
+        return part_info
+
+    headers = SEARCH_HEADERS
+
+    for key in part:
+        if key in headers:
+            part_info[key] = part[key]
+
+    return part_info
 
 
 def test_api(supplier='') -> bool:
