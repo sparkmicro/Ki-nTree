@@ -62,13 +62,17 @@ STORES = {
 SEARCH_HEADERS = [
     'brandName',
     'displayName',
-    'id',
-    'packSize',
-    'publishingModule',
     'sku',
     'translatedManufacturerPartNumber',
-    'translatedMinimumOrderQuality',
-    'unitOfMeasure',
+    'datasheets',
+    'image',
+    'attributes',
+]
+
+PARAMETERS_MAP = [
+    'attributes',
+    'attributeLabel',
+    'attributeValue',
 ]
 
 
@@ -82,23 +86,32 @@ def get_default_search_keys():
         'brandName',
         'translatedManufacturerPartNumber',
         '',
-        '',
-        '',
+        'datasheet_url',
+        'image_url',
     ]
 
 
-def build_api_url(part_number, supplier) -> str:
+def get_default_store_url(supplier: str) -> str:
+    ''' Get saved store/location for supplier '''
+
+    user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
+    default_store = user_settings.get(f'{supplier.upper()}_STORE', '')
+    return STORES[supplier][default_store]
+
+
+def build_api_url(part_number: str, supplier: str) -> str:
     ''' Build API URL based on user settings '''
 
     user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
     api_key = user_settings.get('ELEMENT14_PRODUCT_SEARCH_API_KEY', '')
-    default_store = user_settings.get(f'{supplier.upper()}_STORE', '')
-    store_url = STORES[supplier][default_store]
+    store_url = get_default_store_url(supplier)
 
     # Set base URL
     api_url = ELEMENT14_API_URL
     # Set response format
     api_url += '?callInfo.responseDataFormat=JSON'
+    # Set result settings: offset = 0; number of results = 1; size = large (eg. to get attributes)
+    api_url += '&resultsSettings.offset=0&resultsSettings.numberOfResults=1&resultsSettings.responseGroup=large'
     # Set API key
     api_url += f'&callInfo.apiKey={api_key}'
     # Set store URL
@@ -107,6 +120,23 @@ def build_api_url(part_number, supplier) -> str:
     api_url += f'&term=manuPartNum:{part_number}'
 
     return api_url
+
+
+def build_image_url(image_data: dict, supplier: str) -> str:
+    image_url = 'https://'
+    # Set store URL
+    image_url += get_default_store_url(supplier)
+    # Append static text
+    image_url += '/productimages/standard'
+    # Append locale
+    if 'farnell' in image_data['vrntPath']:
+        image_url += '/en_GB'
+    else:
+        image_url += '/en_US'
+    # Append image filename
+    image_url += image_data['baseName']
+
+    return image_url
 
 
 def fetch_part_info(part_number: str, supplier: str) -> dict:
@@ -126,7 +156,10 @@ def fetch_part_info(part_number: str, supplier: str) -> dict:
         part = None
 
     # Extract result
-    part = part['manufacturerPartNumberSearchReturn']['products'][0]
+    try:
+        part = part['manufacturerPartNumberSearchReturn'].get('products', [])[0]
+    except IndexError:
+        part = None
 
     if not part:
         return part_info
@@ -135,7 +168,38 @@ def fetch_part_info(part_number: str, supplier: str) -> dict:
 
     for key in part:
         if key in headers:
-            part_info[key] = part[key]
+            if key == 'displayName':
+                # String to remove
+                str_remove = part['brandName'] + ' - ' + part['translatedManufacturerPartNumber'] + ' - '
+                # Remove and limit to 100 chars
+                part_info['displayName'] = part['displayName'].replace(str_remove, '')[:100]
+            elif key == 'datasheets':
+                try:
+                    part_info['datasheet_url'] = part['datasheets'][0]['url'].replace('http', 'https')
+                except IndexError:
+                    pass
+            elif key == 'image':
+                part_info['image_url'] = build_image_url(part['image'], supplier)
+            else:
+                part_info[key] = part[key]
+
+    # Parameters
+    part_info['parameters'] = {}
+    [parameter_key, name_key, value_key] = PARAMETERS_MAP
+
+    try:
+        for parameter in range(len(part[parameter_key])):
+            parameter_name = part[parameter_key][parameter][name_key]
+            parameter_value = part[parameter_key][parameter][value_key]
+            # Append to parameters dictionary
+            part_info['parameters'][parameter_name] = parameter_value
+    except TypeError:
+        # Parameter list is empty
+        pass
+
+    # Append categories
+    part_info['category'] = ''
+    part_info['subcategory'] = ''
 
     return part_info
 

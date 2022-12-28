@@ -329,7 +329,7 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
     store = ''
     if supplier in ['Farnell', 'Newark', 'Element14']:
         element14_config = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
-        store = element14_config.get(f'{supplier.upper()}_STORE', '')
+        store = element14_config.get(f'{supplier.upper()}_STORE', '').replace(' ', '')
     search_filename = settings.search_results['directory'] + supplier + store + '_' + part_number + settings.search_results['extension']
 
     # Get cached data
