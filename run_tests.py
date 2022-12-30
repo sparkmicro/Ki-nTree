@@ -6,7 +6,7 @@ from kintree.common.tools import cprint, create_library, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search import digikey_api, mouser_api, lcsc_api
+from kintree.search import digikey_api, mouser_api, element14_api, lcsc_api
 from kintree.search.snapeda_api import test_snapeda_api
 from kintree.setup_inventree import setup_inventree
 
@@ -88,6 +88,15 @@ if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
 if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
     pretty_test_print('[MAIN]\tMouser API Test')
     if not mouser_api.test_api():
+        cprint('[ FAIL ]')
+        sys.exit(-1)
+    else:
+        cprint('[ PASS ]')
+
+# Test Element14 API
+if 'Element14' in settings.SUPPORTED_SUPPLIERS_API:
+    pretty_test_print('[MAIN]\tElement14 API Test')
+    if not element14_api.test_api():
         cprint('[ FAIL ]')
         sys.exit(-1)
     else:
