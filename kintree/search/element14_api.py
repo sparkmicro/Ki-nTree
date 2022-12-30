@@ -85,7 +85,7 @@ def get_default_search_keys():
         'sku',
         'brandName',
         'translatedManufacturerPartNumber',
-        '',
+        'store_url',
         'datasheet_url',
         'image_url',
     ]
@@ -196,6 +196,10 @@ def fetch_part_info(part_number: str, supplier: str) -> dict:
     except TypeError:
         # Parameter list is empty
         pass
+    
+    # Append Store URL
+    # Element14 support said "At this time our API is not structured to provide a URL to product pages in the selected storeInfo.id value."
+    part_info['store_url'] = 'https://' + get_default_store_url(supplier)
 
     # Append categories
     part_info['category'] = ''

@@ -1264,30 +1264,31 @@ def main():
                 # Do we have form data?
                 if part_supplier_form:
                     # Check if query matches manufacturer or supplier part numbers found with supplier search
-                    if not values['part_number'] in [part_supplier_form['manufacturer_part_number'], part_supplier_form['supplier_part_number']]:
+                    if values['part_number'] not in [part_supplier_form['manufacturer_part_number'], part_supplier_form['supplier_part_number']]:
                         # Search returned incorrect match
-                        cprint('[ERROR]\tSearch returned an incorrect match: try again with the supplier part number', silent=settings.SILENT)
-                        sg.popup_ok('Supplier search returned an incorrect match (eg. query and result part numbers are different) \
-                                     \n\nTry again with the supplier part number',
-                                    title='Wrong Search Result',
+                        match_warning_1 = 'Supplier search returned different manufacturer and supplier part numbers:'
+                        match_warning_2 = f'"{part_supplier_form["manufacturer_part_number"]}" and "{part_supplier_form["supplier_part_number"]}" instead of "{values["part_number"]}"'
+                        cprint(f'[Warning] {match_warning_1} {match_warning_2}', silent=settings.SILENT)
+                        sg.popup_ok(match_warning_1 + '\n\n' + match_warning_2,
+                                    title='Search Results != Query',
                                     font=gui_global['font'],
                                     location=gui_global['location'])
-                    else:
-                        # Open part form
-                        part_user_info = part_user_form(part_data=part_supplier_form,
-                                                        alternate=CREATE_ALTERNATE,
-                                                        custom=CREATE_CUSTOM)
-                        
-                        if not CREATE_ALTERNATE:
-                            # Stitch back categories and parameters
-                            try:
-                                part_user_info.update({
-                                    'category': part_supplier_info['category'],
-                                    'subcategory': part_supplier_info['subcategory'],
-                                    'parameters': part_supplier_info['parameters'],
-                                })
-                            except (KeyError, AttributeError):
-                                pass
+
+                    # Open part form
+                    part_user_info = part_user_form(part_data=part_supplier_form,
+                                                    alternate=CREATE_ALTERNATE,
+                                                    custom=CREATE_CUSTOM)
+                    
+                    if not CREATE_ALTERNATE:
+                        # Stitch back categories and parameters
+                        try:
+                            part_user_info.update({
+                                'category': part_supplier_info['category'],
+                                'subcategory': part_supplier_info['subcategory'],
+                                'parameters': part_supplier_info['parameters'],
+                            })
+                        except (KeyError, AttributeError):
+                            pass
 
             if CREATE_ALTERNATE and part_user_info:
                 # Alternate window
