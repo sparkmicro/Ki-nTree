@@ -104,6 +104,9 @@ def build_api_url(part_number: str, supplier: str, store_url=None) -> str:
 
     user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
     api_key = user_settings.get('ELEMENT14_PRODUCT_SEARCH_API_KEY', '')
+    if not api_key:
+        import os
+        api_key = os.environ.get('ELEMENT14_PART_API_KEY', None)
     if not store_url:
         store_url = get_default_store_url(supplier)
 
@@ -162,7 +165,7 @@ def fetch_part_info(part_number: str, supplier: str, store_url=None) -> dict:
     # Extract result
     try:
         part = part['manufacturerPartNumberSearchReturn'].get('products', [])[0]
-    except IndexError:
+    except (TypeError, IndexError):
         part = None
 
     if not part:
