@@ -99,12 +99,13 @@ def get_default_store_url(supplier: str) -> str:
     return STORES[supplier][default_store]
 
 
-def build_api_url(part_number: str, supplier: str) -> str:
+def build_api_url(part_number: str, supplier: str, store_url=None) -> str:
     ''' Build API URL based on user settings '''
 
     user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
     api_key = user_settings.get('ELEMENT14_PRODUCT_SEARCH_API_KEY', '')
-    store_url = get_default_store_url(supplier)
+    if not store_url:
+        store_url = get_default_store_url(supplier)
 
     # Set base URL
     api_url = ELEMENT14_API_URL
@@ -122,10 +123,13 @@ def build_api_url(part_number: str, supplier: str) -> str:
     return api_url
 
 
-def build_image_url(image_data: dict, supplier: str) -> str:
+def build_image_url(image_data: dict, supplier: str, store_url=None) -> str:
     image_url = 'https://'
     # Set store URL
-    image_url += get_default_store_url(supplier)
+    if store_url:
+        image_url += store_url
+    else:
+        image_url += get_default_store_url(supplier)
     # Append static text
     image_url += '/productimages/standard'
     # Append locale
@@ -139,13 +143,13 @@ def build_image_url(image_data: dict, supplier: str) -> str:
     return image_url
 
 
-def fetch_part_info(part_number: str, supplier: str) -> dict:
+def fetch_part_info(part_number: str, supplier: str, store_url=None) -> dict:
     ''' Fetch part data from API '''
 
     part_info = {}
 
     def search_timeout(timeout=10):
-        url = build_api_url(part_number, supplier)
+        url = build_api_url(part_number, supplier, store_url)
         response = download(url, timeout=timeout)
         return response
 
@@ -179,27 +183,32 @@ def fetch_part_info(part_number: str, supplier: str) -> dict:
                 except IndexError:
                     pass
             elif key == 'image':
-                part_info['image_url'] = build_image_url(part['image'], supplier)
+                part_info['image_url'] = build_image_url(part['image'], supplier, store_url)
+            elif key == 'attributes':
+                part_info['parameters'] = {}
             else:
                 part_info[key] = part[key]
 
     # Parameters
-    part_info['parameters'] = {}
-    [parameter_key, name_key, value_key] = PARAMETERS_MAP
+    if 'parameters' in part_info.keys():
+        [parameter_key, name_key, value_key] = PARAMETERS_MAP
 
-    try:
-        for parameter in range(len(part[parameter_key])):
-            parameter_name = part[parameter_key][parameter][name_key]
-            parameter_value = part[parameter_key][parameter][value_key]
-            # Append to parameters dictionary
-            part_info['parameters'][parameter_name] = parameter_value
-    except TypeError:
-        # Parameter list is empty
-        pass
+        try:
+            for parameter in range(len(part[parameter_key])):
+                parameter_name = part[parameter_key][parameter][name_key]
+                parameter_value = part[parameter_key][parameter][value_key]
+                # Append to parameters dictionary
+                part_info['parameters'][parameter_name] = parameter_value
+        except TypeError:
+            # Parameter list is empty
+            pass
     
     # Append Store URL
     # Element14 support said "At this time our API is not structured to provide a URL to product pages in the selected storeInfo.id value."
-    part_info['store_url'] = 'https://' + get_default_store_url(supplier)
+    if store_url:
+        part_info['store_url'] = 'https://' + store_url
+    else:
+        part_info['store_url'] = 'https://' + get_default_store_url(supplier)
 
     # Append categories
     part_info['category'] = ''
@@ -208,39 +217,56 @@ def fetch_part_info(part_number: str, supplier: str) -> dict:
     return part_info
 
 
-def test_api(supplier='') -> bool:
+def test_api() -> bool:
     ''' Test method for API '''
 
-    test_success = False
+    test_success = True
 
-    if supplier == 'Farnell':
-        pass
-    elif supplier == 'Newark':
-        pass
-    elif supplier == 'Element14':
-        pass
-    else:
-        return test_success
+    search_queries = [
+        {
+            'store_url': 'uk.farnell.com',
+            'part_number': '1N4148W-7-F',
+            'expected': {
+                'displayName': 'Small Signal Diode, Single, 100 V, 300 mA, 1.25 V, 4 ns, 2 A',
+                'brandName': 'DIODES INC.',
+                'translatedManufacturerPartNumber': '1N4148W-7-F',
+            }
+        },
+        {
+            'store_url': 'www.newark.com',
+            'part_number': 'BLM18AG601SN1D',
+            'expected': {
+                'displayName': 'Ferrite Bead, 0603 [1608 Metric], 600 ohm, 500 mA, BLM18A Series, 0.38 ohm, &#177; 25%',
+                'brandName': 'MURATA',
+                'translatedManufacturerPartNumber': 'BLM18AG601SN1D',
+            }
+        },
+        {
+            'store_url': 'au.element14.com',
+            'part_number': '2N7002-7-F',
+            'expected': {
+                'displayName': 'MOSFET, N CHANNEL, 60V, 1.2OHM, 115mA, SOT-23',
+                'brandName': 'MULTICOMP PRO',
+                'translatedManufacturerPartNumber': '2N7002-7-F',
+            }
+        },
+    ]
+    
+    for item in search_queries:
+        if not test_success:
+            break
 
-    return True
+        test_part = fetch_part_info(item['part_number'], '', item['store_url'])
 
-    # expected = {
-    #     'productIntroEn': '25V 100pF C0G ±5% 0201  Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS',
-    #     'productCode': 'C2181718',
-    #     'brandNameEn': 'TDK',
-    #     'productModel': 'C0603C0G1E101J030BA',
-    # }
+        if not test_part:
+            test_success = False
+            
+        # Check content of response
+        if test_success:
+            for key, value in item['expected'].items():
+                if test_part[key] != value:
+                    print(f'"{test_part[key]}" <> "{value}"')
+                    test_success = False
+                    break
 
-    # test_part = fetch_part_info('C2181718')
-    # if not test_part:
-    #     test_success = False
-        
-    # # Check content of response
-    # if test_success:
-    #     for key, value in expected.items():
-    #         if test_part[key] != value:
-    #             print(f'"{test_part[key]}" <> "{value}"')
-    #             test_success = False
-    #             break
-
-    # return test_success
+    return test_success
