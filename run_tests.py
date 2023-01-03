@@ -260,6 +260,7 @@ if __name__ == '__main__':
                 'Add valid alternate supplier part using part ID',
                 'Add invalid alternate supplier part using part IPN',
                 'Save InvenTree settings',
+                'Load configuration files with incorrect paths',
             ]
             method_success = True
             # Line return
@@ -358,8 +359,14 @@ if __name__ == '__main__':
                         method_success = False
 
                 elif method_idx == 9:
+                    test_image_urllib = 'https://media.digikey.com/Renders/Diodes%20Renders/31;%20SOD-123;%20;%202.jpg'
+                    test_image_requestslib = 'https://www.newark.com/productimages/standard/en_GB/GE2SOD12307-40.jpg'
                     # Test download image
-                    if download_image('', '', silent=True) or download_image('http', '', silent=True):
+                    if not download_image(test_image_urllib, '.', silent=True):
+                        method_success = False
+                    if not download_image(test_image_requestslib, '.', silent=True):
+                        method_success = False
+                    if download_image('http', '', silent=True):
                         method_success = False
 
                 elif method_idx == 10:
@@ -396,6 +403,11 @@ if __name__ == '__main__':
                                                                          username='admin',
                                                                          password='admin',
                                                                          user_config_path=settings.CONFIG_INVENTREE):
+                        method_success = False
+
+                elif method_idx == 14:
+                    # Load configuration files with incorrect paths
+                    if config_interface.load_user_config_files('', ''):
                         method_success = False
 
                 if method_success:
