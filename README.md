@@ -89,29 +89,32 @@ Ki-nTree is [available on Arch Linux's AUR](https://aur.archlinux.org/packages/p
 
 If you intend to use Ki-nTree with InvenTree, this tool offers to setup the InvenTree category tree with a simple script that you can run as follow:
 
-> :warning: Warning: Before running it, make sure you have setup your category tree in your category settings file (`~/.config/kintree/user/categories.yaml`) according to your own preferences, else it will use the [default setup](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/inventree/categories.yaml).
+> :warning: Warning: Before running it, make sure you have setup your category tree in your `categories.yaml` configuration file according to your own preferences, else it will use the [default setup](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/inventree/categories.yaml).
 
 ``` bash
 python3 -m kintree.setup_inventree
 ```
 
-If the InvenTree category tree is not setup before starting to use Ki-nTree, you will not be able to add parts to InvenTree.
+If the InvenTree category tree is **not setup** before starting to use Ki-nTree, you **won't be able to add parts** to InvenTree.
 
 #### Advanced Configuration
+
+Configuration files are stored in the folder pointed by the `Configuration Files Folder` path in the "User Settings" window:
+
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/settings_user_cache.png" width="600" height="auto">
+
+
 <details>
-<summary>Show section</summary>
+<summary><b>Click here to read about configuration files</b></summary>
 <p>
 
 Ki-nTree uses a number of YAML configuration files to function. New users shouldn't need to worry about them to try out Ki-nTree (except for `categories.yaml` as mentioned in the previous section), however they can be modified to customize behavior and workflow.
 
-By default, configuration files are stored in the folder pointed by the `Configuration Files Folder` path in the "User Settings" window:
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/settings_user_cache.png" width="600" height="auto">
-
 Below is a summary table of the different configuration files, their function and if they are updated by the GUI:
 | Filename | Function | GUI Update? |
 | --- | --- | --- |
-| `categories.yaml` | InvenTree categories hierarchy tree (see [Before Starting section](#before-starting)) | :x: |
-| `general.yaml` | General user settings | Partial |
+| `categories.yaml` | InvenTree categories hierarchy tree and category codes for IPN generation (see [Before Starting section](#before-starting)) | :x: |
+| `general.yaml` | General user settings | _Partial_ |
 | `internal_part_number.yaml` | Controls for IPN generation | :x: |
 | `inventree_<env>.yaml` | InvenTree login credentials, per environment (`<env>=['dev', 'prod']`) | :heavy_check_mark: |
 | `kicad.yaml` | KiCad symbol, footprint and library paths | :heavy_check_mark: |
@@ -172,7 +175,7 @@ Lastly, a new page will open with a "You may now close this window." message, pr
 
 #### Part Parameters
 
-Ki-nTree uses **supplier** parameters to populate **InvenTree** parameters. In order to match between supplier and InvenTree, users need to setup the config file `~/.config/kintree/user/supplier_parameters.yaml` with the following mapping for each category:
+Ki-nTree uses **supplier** parameters to populate **InvenTree** parameters. In order to match between supplier and InvenTree, users need to setup the configuration file `supplier_parameters.yaml` with the following mapping for each category:
 ``` yaml
 CATEGORY_NAME:
   INVENTREE_PARAMETER_NAME:
