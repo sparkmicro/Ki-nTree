@@ -17,7 +17,7 @@ Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
 * synchronize parts data between KiCad and InvenTree
 
 Ki-nTree works with:
-- [Digi-Key](https://developer.digikey.com/), [Mouser](https://www.mouser.com/api-hub/) and [LCSC](https://lcsc.com/) **enormous** part databases and free APIs
+- [Digi-Key](https://developer.digikey.com/), [Mouser](https://www.mouser.com/api-hub/), [Element14](https://partner.element14.com/docs) and [LCSC](https://lcsc.com/) **enormous** part databases and free APIs
 - the awesome open-source [Digi-Key API python library](https://github.com/peeter123/digikey-api) built and maintained by [@peeter123](https://github.com/peeter123)
 - the [Mouser Python API](https://github.com/sparkmicro/mouser-api/) built and maintained by [@eeintech](https://github.com/eeintech)
 - the awesome open-source [InvenTree Inventory Management System](https://github.com/inventree/inventree) built and maintained by [@SchrodingersGat](https://github.com/SchrodingersGat)
@@ -38,6 +38,7 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
+* Ki-nTree requires an Element14 Product Search API key to fetch part information for the following suppliers: Farnell (Europe), Newark (North America) and Element14 (Asia-Pacific). To request one, head over to https://partner.element14.com/ and click on "Register"
 
 ### Installation (system wide)
 
