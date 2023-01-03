@@ -258,10 +258,11 @@ def element14_api_settings_window(supplier=''):
         elif api_event == 'Test':
             # Automatically save settings
             save_settings(user_settings)
-            if element14_api.test_api(supplier):
-                result_message = f'Successfully connected to {supplier} (Element14) API'
+            store_url = search_api_window['store_url'].get().replace('URL: ', '')
+            if element14_api.test_api(store_url=store_url):
+                result_message = f'Successfully connected to {supplier} ({store_url})'
             else:
-                result_message = f'Failed to connect to {supplier} (Element14) API'
+                result_message = f'Failed to connect to {supplier} ({store_url})'
             sg.popup_ok(result_message,
                         title=f'{supplier} (Element14) API Connect Test',
                         font=gui_global['font'],

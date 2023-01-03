@@ -96,7 +96,7 @@ if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
 # Test Element14 API
 if 'Element14' in settings.SUPPORTED_SUPPLIERS_API:
     pretty_test_print('[MAIN]\tElement14 API Test')
-    if not element14_api.test_api():
+    if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
         cprint('[ FAIL ]')
         sys.exit(-1)
     else:

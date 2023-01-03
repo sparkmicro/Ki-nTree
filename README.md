@@ -112,19 +112,17 @@ Below is a summary table of the different configuration files, their function an
 | `categories.yaml` | InvenTree categories hierarchy tree (see [Before Starting section](#before-starting)) | :x: |
 | `general.yaml` | General user settings | Partial |
 | `internal_part_number.yaml` | Controls for IPN generation | :x: |
-| `inventree_<env>.yaml` | InvenTree login credentials | :heavy_check_mark: |
+| `inventree_<env>.yaml` | InvenTree login credentials, per environment (`<env>=['dev', 'prod']`) | :heavy_check_mark: |
 | `kicad.yaml` | KiCad symbol, footprint and library paths | :heavy_check_mark: |
 | `kicad_map.yaml` | Mapping between InvenTree parent categories and KiCad symbol/footprint libraries and templates | :x: |
 | `parameters.yaml` | List of InvenTree parameters templates (see [InvenTree Part Parameters documentation](https://docs.inventree.org/en/latest/part/parameter/)) | :x: |
 | `parameters_filters.yaml` | Mapping between InvenTree parent categories and InvenTree parameters templates | :x: |
 | `search_api.yaml` | Generic controls for Supplier search APIs like cache validity and category matching ratio | :x: |
 | `supplier_parameters.yaml` | Mapping between InvenTree parameters templates and suppliers parameters/attributes, sorted by InvenTree parent categories (see [Part Parameters section](#part-parameters)) | :x: |
-| `<supplier>_config.yaml` | Mapping for supplier search results field names, to overwrite defaults | :x: |
-| `<supplier>_api.yaml` | Required supplier API fields, custom to each supplier | :heavy_check_mark: |
+| `<supplier>_config.yaml` | Mapping for supplier search results field names, to overwrite defaults (`<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`) | :x: |
+| `<supplier>_api.yaml` | Required supplier API fields, custom to each supplier (`<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`) | :heavy_check_mark: |
 | `digikey_categories.yaml` | Mapping between InvenTree categories and Digi-Key categories | :heavy_check_mark: |
 | `digikey_parameters.yaml` | Mapping between InvenTree parameters and Digi-Key parameters/attributes | :x: |
-
-where `<env>=['dev', 'prod']` and `<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`.
 
 > In versions `0.6.x` and older, Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attibutes (help wanted!)
 
@@ -267,7 +265,7 @@ pip install dist/kintree-0.6.99-py3-none-any.whl
 - Revamp category selection based on hierarchical structure from InvenTree ([reference](https://github.com/sparkmicro/Ki-nTree/issues/87)) 
 - Allow user to decide the category code to use for IPN
 - Add "Synchronize" menu option to pull InvenTree parts data into KiCad
-- Enable option to download and save PDF files locally/to server storage
+- Enable option to download and save PDF files locally/to internal server storage
 
 ##### Improvements
 

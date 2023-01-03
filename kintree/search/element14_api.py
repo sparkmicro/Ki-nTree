@@ -220,7 +220,7 @@ def fetch_part_info(part_number: str, supplier: str, store_url=None) -> dict:
     return part_info
 
 
-def test_api() -> bool:
+def test_api(store_url=None) -> bool:
     ''' Test method for API '''
 
     test_success = True
@@ -254,22 +254,29 @@ def test_api() -> bool:
             }
         },
     ]
-    
-    for item in search_queries:
-        if not test_success:
-            break
 
-        test_part = fetch_part_info(item['part_number'], '', item['store_url'])
-
+    if store_url:
+        # If store URL is specified, only check data is returned (eg. avoid discrepancies between stores)
+        part_number = '1N4148'
+        test_part = fetch_part_info(part_number, '', store_url)
         if not test_part:
             test_success = False
-            
-        # Check content of response
-        if test_success:
-            for key, value in item['expected'].items():
-                if test_part[key] != value:
-                    print(f'"{test_part[key]}" <> "{value}"')
-                    test_success = False
-                    break
+    else:
+        for item in search_queries:
+            if not test_success:
+                break
+
+            test_part = fetch_part_info(item['part_number'], '', item['store_url'])
+
+            if not test_part:
+                test_success = False
+                
+            # Check content of response
+            if test_success:
+                for key, value in item['expected'].items():
+                    if test_part[key] != value:
+                        print(f'"{test_part[key]}" <> "{value}"')
+                        test_success = False
+                        break
 
     return test_success
