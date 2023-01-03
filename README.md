@@ -96,6 +96,41 @@ python3 -m kintree.setup_inventree
 
 If the InvenTree category tree is not setup before starting to use Ki-nTree, you will not be able to add parts to InvenTree.
 
+#### Advanced Configuration
+<details>
+<summary>Show section</summary>
+<p>
+
+Ki-nTree uses a number of YAML configuration files to function. New users shouldn't need to worry about them to try out Ki-nTree (except for `categories.yaml` as mentioned in the previous section), however they can be modified to customize behavior and workflow.
+
+By default, configuration files are stored in the folder pointed by the `Configuration Files Folder` path in the "User Settings" window:
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/settings_user_cache.png" width="600" height="auto">
+
+Below is a summary table of the different configuration files, their function and if they are updated by the GUI:
+| Filename | Function | GUI Update? |
+| --- | --- | --- |
+| `categories.yaml` | InvenTree categories hierarchy tree (see [Before Starting section](#before-starting)) | :x: |
+| `general.yaml` | General user settings | Partial |
+| `internal_part_number.yaml` | Controls for IPN generation | :x: |
+| `inventree_<env>.yaml` | InvenTree login credentials | :heavy_check_mark: |
+| `kicad.yaml` | KiCad symbol, footprint and library paths | :heavy_check_mark: |
+| `kicad_map.yaml` | Mapping between InvenTree parent categories and KiCad symbol/footprint libraries and templates | :x: |
+| `parameters.yaml` | List of InvenTree parameters templates (see [InvenTree Part Parameters documentation](https://docs.inventree.org/en/latest/part/parameter/)) | :x: |
+| `parameters_filters.yaml` | Mapping between InvenTree parent categories and InvenTree parameters templates | :x: |
+| `search_api.yaml` | Generic controls for Supplier search APIs like cache validity and category matching ratio | :x: |
+| `supplier_parameters.yaml` | Mapping between InvenTree parameters templates and suppliers parameters/attributes, sorted by InvenTree parent categories (see [Part Parameters section](#part-parameters)) | :x: |
+| `<supplier>_config.yaml` | Mapping for supplier search results field names, to overwrite defaults | :x: |
+| `<supplier>_api.yaml` | Required supplier API fields, custom to each supplier | :heavy_check_mark: |
+| `digikey_categories.yaml` | Mapping between InvenTree categories and Digi-Key categories | :heavy_check_mark: |
+| `digikey_parameters.yaml` | Mapping between InvenTree parameters and Digi-Key parameters/attributes | :x: |
+
+where `<env>=['dev', 'prod']` and `<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`.
+
+> In versions `0.6.x` and older, Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attibutes (help wanted!)
+
+</p>
+</details>
+
 #### InvenTree Permissions
 
 Each InvenTree user has a set of permissions associated to them.
