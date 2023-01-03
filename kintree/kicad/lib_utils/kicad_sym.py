@@ -1,6 +1,6 @@
 """ DISCLAIMER
 kicad_sym classes and methods were directly imported from: https://gitlab.com/kicad/libraries/kicad-library-utils
-Last import date: Dec 1st, 2022
+Last import date: Jan 3rd, 2023
 """
 
 """
@@ -1041,7 +1041,7 @@ class KicadLibrary(KicadSymbolBase):
         ]
         for sym in self.symbols:
             sx.append(sym.get_sexpr())
-        return sexpr.format_sexp(sexpr.build_sexp(sx), max_nesting=4)
+        return sexpr.build_sexp(sx)
 
     @classmethod
     def from_file(cls, filename: str) -> "KicadLibrary":
@@ -1053,19 +1053,15 @@ class KicadLibrary(KicadSymbolBase):
         library = KicadLibrary(filename)
 
         # read the s-expression data
-        f_name = open(filename)
-        lines = "".join(f_name.readlines())
-
-        # parse s-expr
-        try:
-            sexpr_data = sexpr.parse_sexp(lines)
-        except ValueError as exc:
-            raise KicadFileFormatError(
-                f"Problem while parsing the s-expr file: {exc}"
-            ) from None
-
+        with open(filename) as f:
+            # parse s-expr
+            try:
+                sexpr_data = sexpr.parse_sexp(f.read())
+            except ValueError as exc:
+                raise KicadFileFormatError(
+                    f"Problem while parsing the s-expr file: {exc}"
+                ) from None
         sym_list = _get_array(sexpr_data, "symbol", max_level=2)
-        f_name.close()
 
         # Because of the various file format changes in the development of kicad v6 and v7, we want
         # to ensure that this parser is only used with v6 files. Any other version will most likely
@@ -1189,6 +1185,5 @@ if __name__ == "__main__":
         a.generator = "kicad_symbol_editor"
         a.version = "20200908"
         print(a.get_sexpr())
-        a.write()
     else:
         print("pass a .kicad_sym file please")
