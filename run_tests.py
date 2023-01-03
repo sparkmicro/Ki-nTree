@@ -362,11 +362,13 @@ if __name__ == '__main__':
                     test_image_urllib = 'https://media.digikey.com/Renders/Diodes%20Renders/31;%20SOD-123;%20;%202.jpg'
                     test_image_requestslib = 'https://www.newark.com/productimages/standard/en_GB/GE2SOD12307-40.jpg'
                     # Test download image
-                    if not download_image(test_image_urllib, '.', silent=True):
+                    if not download_image(test_image_urllib, './image1.jpg', silent=True):
                         method_success = False
-                    if not download_image(test_image_requestslib, '.', silent=True):
+                    if not download_image(test_image_requestslib, './image2.jpg', silent=True):
                         method_success = False
                     if download_image('http', '', silent=True):
+                        method_success = False
+                    if download_image('', '', silent=True):
                         method_success = False
 
                 elif method_idx == 10:
