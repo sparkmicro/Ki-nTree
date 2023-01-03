@@ -17,7 +17,7 @@ Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
 * synchronize parts data between KiCad and InvenTree
 
 Ki-nTree works with:
-- [Digi-Key](https://developer.digikey.com/), [Mouser](https://www.mouser.com/api-hub/) and [LCSC](https://lcsc.com/) **enormous** part databases and free APIs
+- [Digi-Key](https://developer.digikey.com/), [Mouser](https://www.mouser.com/api-hub/), [Element14](https://partner.element14.com/docs) and [LCSC](https://lcsc.com/) **enormous** part databases and free APIs
 - the awesome open-source [Digi-Key API python library](https://github.com/peeter123/digikey-api) built and maintained by [@peeter123](https://github.com/peeter123)
 - the [Mouser Python API](https://github.com/sparkmicro/mouser-api/) built and maintained by [@eeintech](https://github.com/eeintech)
 - the awesome open-source [InvenTree Inventory Management System](https://github.com/inventree/inventree) built and maintained by [@SchrodingersGat](https://github.com/SchrodingersGat)
@@ -38,6 +38,7 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
+* Ki-nTree requires an Element14 Product Search API key to fetch part information for the following suppliers: Farnell (Europe), Newark (North America) and Element14 (Asia-Pacific). To request one, head over to https://partner.element14.com/ and click on "Register"
 
 ### Installation (system wide)
 
@@ -95,6 +96,39 @@ python3 -m kintree.setup_inventree
 ```
 
 If the InvenTree category tree is not setup before starting to use Ki-nTree, you will not be able to add parts to InvenTree.
+
+#### Advanced Configuration
+<details>
+<summary>Show section</summary>
+<p>
+
+Ki-nTree uses a number of YAML configuration files to function. New users shouldn't need to worry about them to try out Ki-nTree (except for `categories.yaml` as mentioned in the previous section), however they can be modified to customize behavior and workflow.
+
+By default, configuration files are stored in the folder pointed by the `Configuration Files Folder` path in the "User Settings" window:
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/settings_user_cache.png" width="600" height="auto">
+
+Below is a summary table of the different configuration files, their function and if they are updated by the GUI:
+| Filename | Function | GUI Update? |
+| --- | --- | --- |
+| `categories.yaml` | InvenTree categories hierarchy tree (see [Before Starting section](#before-starting)) | :x: |
+| `general.yaml` | General user settings | Partial |
+| `internal_part_number.yaml` | Controls for IPN generation | :x: |
+| `inventree_<env>.yaml` | InvenTree login credentials, per environment (`<env>=['dev', 'prod']`) | :heavy_check_mark: |
+| `kicad.yaml` | KiCad symbol, footprint and library paths | :heavy_check_mark: |
+| `kicad_map.yaml` | Mapping between InvenTree parent categories and KiCad symbol/footprint libraries and templates | :x: |
+| `parameters.yaml` | List of InvenTree parameters templates (see [InvenTree Part Parameters documentation](https://docs.inventree.org/en/latest/part/parameter/)) | :x: |
+| `parameters_filters.yaml` | Mapping between InvenTree parent categories and InvenTree parameters templates | :x: |
+| `search_api.yaml` | Generic controls for Supplier search APIs like cache validity and category matching ratio | :x: |
+| `supplier_parameters.yaml` | Mapping between InvenTree parameters templates and suppliers parameters/attributes, sorted by InvenTree parent categories (see [Part Parameters section](#part-parameters)) | :x: |
+| `<supplier>_config.yaml` | Mapping for supplier search results field names, to overwrite defaults (`<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`) | :x: |
+| `<supplier>_api.yaml` | Required supplier API fields, custom to each supplier (`<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`) | :heavy_check_mark: |
+| `digikey_categories.yaml` | Mapping between InvenTree categories and Digi-Key categories | :heavy_check_mark: |
+| `digikey_parameters.yaml` | Mapping between InvenTree parameters and Digi-Key parameters/attributes | :x: |
+
+> In versions `0.6.x` and older, Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attibutes (help wanted!)
+
+</p>
+</details>
 
 #### InvenTree Permissions
 
@@ -232,6 +266,7 @@ pip install dist/kintree-0.6.99-py3-none-any.whl
 - Revamp category selection based on hierarchical structure from InvenTree ([reference](https://github.com/sparkmicro/Ki-nTree/issues/87)) 
 - Allow user to decide the category code to use for IPN
 - Add "Synchronize" menu option to pull InvenTree parts data into KiCad
+- Enable option to download and save PDF files locally/to internal server storage
 
 ##### Improvements
 

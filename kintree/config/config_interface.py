@@ -54,7 +54,7 @@ def load_user_paths(home_dir='') -> dict:
 
 
 def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=True) -> bool:
-    ''' Load InvenTree user configuration '''
+    ''' Load user configuration files '''
     result = True
 
     def load_config(path):
@@ -97,6 +97,13 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=Tr
         load_config(config_files)
     except:
         cprint('[INFO]\tWarning: Failed to load Mouser configuration', silent=silent)
+        result = False
+    # Load Element14 configuration files
+    try:
+        config_files = os.path.join(path_to_root, 'element14', '')
+        load_config(config_files)
+    except:
+        cprint('[INFO]\tWarning: Failed to load Element14 configuration', silent=silent)
         result = False
     # Load LCSC configuration files
     try:

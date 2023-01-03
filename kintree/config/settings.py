@@ -61,8 +61,8 @@ def load_user_config():
     CONFIG_USER_FILES = os.path.join(USER_SETTINGS['USER_FILES'], '')
 
     # Create user files folder if it does not exists
-    if not os.path.exists(CONFIG_USER_FILES):
-        os.makedirs(CONFIG_USER_FILES)
+    # if not os.path.exists(CONFIG_USER_FILES):
+    #     os.makedirs(CONFIG_USER_FILES)
     # Create user files
     return config_interface.load_user_config_files(path_to_root=CONFIG_ROOT,
                                                    path_to_user_files=CONFIG_USER_FILES,
@@ -113,6 +113,9 @@ except TypeError:
 SUPPORTED_SUPPLIERS_API = [
     'Digi-Key',
     'Mouser',
+    'Farnell',
+    'Newark',
+    'Element14',
     'LCSC',
 ]
 
@@ -131,6 +134,11 @@ if 'Digi-Key' in SUPPORTED_SUPPLIERS_API:
 if 'Mouser' in SUPPORTED_SUPPLIERS_API:
     CONFIG_MOUSER = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'mouser_config.yaml'))
     CONFIG_MOUSER_API = os.path.join(CONFIG_USER_FILES, 'mouser_api.yaml')
+
+# Element14 user configuration (includes Farnell, Newark and Element14)
+if 'Element14' in SUPPORTED_SUPPLIERS_API:
+    CONFIG_ELEMENT14 = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'element14_config.yaml'))
+    CONFIG_ELEMENT14_API = os.path.join(CONFIG_USER_FILES, 'element14_api.yaml')
 
 # LCSC user configuration
 if 'LCSC' in SUPPORTED_SUPPLIERS_API:

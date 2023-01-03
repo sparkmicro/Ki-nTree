@@ -61,7 +61,7 @@ def create_library(library_path: str, symbol: str, template_lib: str):
         copyfile(template_lib, new_kicad_sym_file)
 
 
-def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=False, silent=False):
+def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=False, requests_lib=False, silent=False):
     ''' Standard method to download URL content, with option to save to local file (eg. images) '''
 
     import socket
@@ -75,7 +75,15 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
         urllib.request.install_opener(opener)
     try:
         if filetype == 'Image':
-            (image, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
+            # Enable use of requests library for downloading images (Element14 URLs do NOT work with urllib)
+            if requests_lib:
+                import requests
+                headers = {'User-agent': 'Mozilla/5.0'}
+                response = requests.get(url, headers=headers, timeout=timeout)
+                with open(fileoutput, 'wb') as image:
+                    image.write(response.content)
+            else:
+                (image, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
             return image
         else:
             url_data = urllib.request.urlopen(url)
@@ -104,6 +112,10 @@ def download_image(image_url: str, image_full_path: str, silent=False) -> str:
     if not image:
         # Try with headers
         image = download(image_url, filetype='Image', fileoutput=image_full_path, enable_headers=True, silent=silent)
+
+    if not image:
+        # Try with requests library
+        image = download(image_url, filetype='Image', fileoutput=image_full_path, enable_headers=True, requests_lib=True, silent=silent)
 
     # Still nothing
     if not image:

@@ -94,6 +94,7 @@ jobs:
           DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
           DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
           MOUSER_PART_API_KEY: ${{ secrets.MOUSER_PART_API_KEY }}
+          ELEMENT14_PART_API_KEY: ${{ secrets.ELEMENT14_PART_API_KEY }}
       - name: Coveralls
         run: |
           coveralls --version

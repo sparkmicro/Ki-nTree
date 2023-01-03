@@ -15,6 +15,8 @@ import PySimpleGUI as sg
 from .search import digikey_api as digikey_api
 # Mouser API
 from .search import mouser_api as mouser_api
+# Element14 API
+from .search import element14_api as element14_api
 # LCSC API
 from .search import lcsc_api as lcsc_api
 # SnapEDA API
@@ -37,6 +39,7 @@ gui_global = {
     'font': ('Lato', 11),
     'location': (500, 500),
     'label_size': (20, 1),
+    'big_label_size': (25, 1),
     'button_size': (15, 1),
 }
 
@@ -198,6 +201,70 @@ def mouser_api_settings_window():
                 result_message = 'Failed to connect to Mouser API'
             sg.popup_ok(result_message,
                         title='Mouser API Connect Test',
+                        font=gui_global['font'],
+                        location=gui_global['location'])
+        else:
+            save_settings(user_settings)
+            search_api_window.close()
+            return
+
+
+def element14_api_settings_window(supplier=''):
+    ''' Element14 API settings window '''
+
+    user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
+    default_store = user_settings.get(f'{supplier.upper()}_STORE', '')
+
+    search_api_layout = [
+        [
+            sg.Text('Element14 Product Search API Key', size=gui_global['big_label_size']),
+            sg.InputText(user_settings['ELEMENT14_PRODUCT_SEARCH_API_KEY'], key='api_key', size=gui_global['big_label_size'],)
+        ],
+        [
+            sg.Text(f'{supplier} Store', size=gui_global['big_label_size']),
+            sg.Combo(sorted(element14_api.STORES[supplier]), default_value=default_store, key=f'{supplier.lower()}_store', enable_events=True),
+            sg.Text(f'URL: {element14_api.STORES[supplier][default_store]}', key='store_url'),
+        ],
+        [
+            sg.Button('Test', size=(15, 1)),
+            sg.Button('Save', size=(15, 1)),
+        ],
+    ]
+
+    search_api_window = sg.Window(
+        f'{supplier} (Element14) API Settings',
+        search_api_layout,
+        font=gui_global['font'],
+        location=gui_global['location'],
+    )
+
+    while True:
+        api_event, api_values = search_api_window.read()
+
+        def save_settings(user_settings: dict):
+            new_settings = {
+                'ELEMENT14_PRODUCT_SEARCH_API_KEY': api_values['api_key'],
+                f'{supplier.upper()}_STORE': api_values[f'{supplier.lower()}_store'],
+            }
+            user_settings = {**user_settings, **new_settings}
+            config_interface.dump_file(user_settings, settings.CONFIG_ELEMENT14_API)
+
+        if api_event == sg.WIN_CLOSED:
+            search_api_window.close()
+            return
+        elif api_event == f'{supplier.lower()}_store':
+            new_default_store_url = element14_api.STORES[supplier][api_values[f'{supplier.lower()}_store']]
+            search_api_window['store_url'].update(value=f'URL: {new_default_store_url}')
+        elif api_event == 'Test':
+            # Automatically save settings
+            save_settings(user_settings)
+            store_url = search_api_window['store_url'].get().replace('URL: ', '')
+            if element14_api.test_api(store_url=store_url):
+                result_message = f'Successfully connected to {supplier} ({store_url})'
+            else:
+                result_message = f'Failed to connect to {supplier} ({store_url})'
+            sg.popup_ok(result_message,
+                        title=f'{supplier} (Element14) API Connect Test',
                         font=gui_global['font'],
                         location=gui_global['location'])
         else:
@@ -1078,6 +1145,8 @@ def main():
             digikey_api_settings_window()
         elif event == 'Mouser':
             mouser_api_settings_window()
+        elif event in ['Farnell', 'Newark', 'Element14']:
+            element14_api_settings_window(supplier=event)
         elif event == 'LCSC':
             lcsc_api_settings_window()
         elif event == 'InvenTree':
@@ -1196,30 +1265,31 @@ def main():
                 # Do we have form data?
                 if part_supplier_form:
                     # Check if query matches manufacturer or supplier part numbers found with supplier search
-                    if not values['part_number'] in [part_supplier_form['manufacturer_part_number'], part_supplier_form['supplier_part_number']]:
+                    if values['part_number'] not in [part_supplier_form['manufacturer_part_number'], part_supplier_form['supplier_part_number']]:
                         # Search returned incorrect match
-                        cprint('[ERROR]\tSearch returned an incorrect match: try again with the supplier part number', silent=settings.SILENT)
-                        sg.popup_ok('Supplier search returned an incorrect match (eg. query and result part numbers are different) \
-                                     \n\nTry again with the supplier part number',
-                                    title='Wrong Search Result',
+                        match_warning_1 = 'Supplier search returned different manufacturer and supplier part numbers:'
+                        match_warning_2 = f'"{part_supplier_form["manufacturer_part_number"]}" and "{part_supplier_form["supplier_part_number"]}" instead of "{values["part_number"]}"'
+                        cprint(f'[Warning] {match_warning_1} {match_warning_2}', silent=settings.SILENT)
+                        sg.popup_ok(match_warning_1 + '\n\n' + match_warning_2,
+                                    title='Search Results != Query',
                                     font=gui_global['font'],
                                     location=gui_global['location'])
-                    else:
-                        # Open part form
-                        part_user_info = part_user_form(part_data=part_supplier_form,
-                                                        alternate=CREATE_ALTERNATE,
-                                                        custom=CREATE_CUSTOM)
-                        
-                        if not CREATE_ALTERNATE:
-                            # Stitch back categories and parameters
-                            try:
-                                part_user_info.update({
-                                    'category': part_supplier_info['category'],
-                                    'subcategory': part_supplier_info['subcategory'],
-                                    'parameters': part_supplier_info['parameters'],
-                                })
-                            except (KeyError, AttributeError):
-                                pass
+
+                    # Open part form
+                    part_user_info = part_user_form(part_data=part_supplier_form,
+                                                    alternate=CREATE_ALTERNATE,
+                                                    custom=CREATE_CUSTOM)
+                    
+                    if not CREATE_ALTERNATE:
+                        # Stitch back categories and parameters
+                        try:
+                            part_user_info.update({
+                                'category': part_supplier_info['category'],
+                                'subcategory': part_supplier_info['subcategory'],
+                                'parameters': part_supplier_info['parameters'],
+                            })
+                        except (KeyError, AttributeError):
+                            pass
 
             if CREATE_ALTERNATE and part_user_info:
                 # Alternate window

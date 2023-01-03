@@ -6,7 +6,7 @@ from kintree.common.tools import cprint, create_library, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search import digikey_api, mouser_api, lcsc_api
+from kintree.search import digikey_api, mouser_api, element14_api, lcsc_api
 from kintree.search.snapeda_api import test_snapeda_api
 from kintree.setup_inventree import setup_inventree
 
@@ -88,6 +88,15 @@ if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
 if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
     pretty_test_print('[MAIN]\tMouser API Test')
     if not mouser_api.test_api():
+        cprint('[ FAIL ]')
+        sys.exit(-1)
+    else:
+        cprint('[ PASS ]')
+
+# Test Element14 API
+if 'Element14' in settings.SUPPORTED_SUPPLIERS_API:
+    pretty_test_print('[MAIN]\tElement14 API Test')
+    if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
         cprint('[ FAIL ]')
         sys.exit(-1)
     else:
@@ -251,6 +260,7 @@ if __name__ == '__main__':
                 'Add valid alternate supplier part using part ID',
                 'Add invalid alternate supplier part using part IPN',
                 'Save InvenTree settings',
+                'Load configuration files with incorrect paths',
             ]
             method_success = True
             # Line return
@@ -349,8 +359,16 @@ if __name__ == '__main__':
                         method_success = False
 
                 elif method_idx == 9:
+                    test_image_urllib = 'https://media.digikey.com/Renders/Diodes%20Renders/31;%20SOD-123;%20;%202.jpg'
+                    test_image_requestslib = 'https://www.newark.com/productimages/standard/en_GB/GE2SOD12307-40.jpg'
                     # Test download image
-                    if download_image('', '', silent=True) or download_image('http', '', silent=True):
+                    if not download_image(test_image_urllib, './image1.jpg', silent=True):
+                        method_success = False
+                    if not download_image(test_image_requestslib, './image2.jpg', silent=True):
+                        method_success = False
+                    if download_image('http', '', silent=True):
+                        method_success = False
+                    if download_image('', '', silent=True):
                         method_success = False
 
                 elif method_idx == 10:
@@ -387,6 +405,11 @@ if __name__ == '__main__':
                                                                          username='admin',
                                                                          password='admin',
                                                                          user_config_path=settings.CONFIG_INVENTREE):
+                        method_success = False
+
+                elif method_idx == 14:
+                    # Load configuration files with incorrect paths
+                    if config_interface.load_user_config_files('', ''):
                         method_success = False
 
                 if method_success:

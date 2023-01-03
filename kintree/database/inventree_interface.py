@@ -7,7 +7,7 @@ from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
 from fuzzywuzzy import fuzz
-from ..search import search_api, digikey_api, mouser_api, lcsc_api
+from ..search import search_api, digikey_api, mouser_api, element14_api, lcsc_api
 
 
 def connect_to_server(timeout=5) -> bool:
@@ -252,6 +252,8 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
             user_search_key = settings.CONFIG_DIGIKEY.get(user_key, None)
         elif supplier == 'Mouser':
             user_search_key = settings.CONFIG_MOUSER.get(user_key, None)
+        elif supplier in ['Farnell', 'Newark', 'Element14']:
+            user_search_key = settings.CONFIG_ELEMENT14.get(user_key, None)
         elif supplier == 'LCSC':
             user_search_key = settings.CONFIG_LCSC.get(user_key, None)
         else:
@@ -274,6 +276,8 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
             supplier_name = settings.CONFIG_DIGIKEY.get('SUPPLIER_INVENTREE_NAME', None)
         elif supplier == 'Mouser':
             supplier_name = settings.CONFIG_MOUSER.get('SUPPLIER_INVENTREE_NAME', None)
+        # elif supplier in ['Farnell', 'Newark', 'Element14']:
+        #     supplier_name = settings.CONFIG_ELEMENT14.get('SUPPLIER_INVENTREE_NAME', None)
         elif supplier == 'LCSC':
             supplier_name = settings.CONFIG_LCSC.get('SUPPLIER_INVENTREE_NAME', None)
         else:
@@ -289,6 +293,8 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
         default_search_keys = digikey_api.get_default_search_keys()
     elif supplier == 'Mouser':
         default_search_keys = mouser_api.get_default_search_keys()
+    elif supplier in ['Farnell', 'Newark', 'Element14']:
+        default_search_keys = element14_api.get_default_search_keys()
     elif supplier == 'LCSC':
         default_search_keys = lcsc_api.get_default_search_keys()
     else:
@@ -320,7 +326,11 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
         return part_info
 
     # Load from file if cache is enabled
-    search_filename = settings.search_results['directory'] + supplier + '_' + part_number + settings.search_results['extension']
+    store = ''
+    if supplier in ['Farnell', 'Newark', 'Element14']:
+        element14_config = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
+        store = element14_config.get(f'{supplier.upper()}_STORE', '').replace(' ', '')
+    search_filename = settings.search_results['directory'] + supplier + store + '_' + part_number + settings.search_results['extension']
 
     # Get cached data
     part_info = search_api.load_from_file(search_filename, test_mode)
@@ -332,6 +342,8 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
             part_info = digikey_api.fetch_part_info(part_number)
         elif supplier == 'Mouser':
             part_info = mouser_api.fetch_part_info(part_number)
+        elif supplier in ['Farnell', 'Newark', 'Element14']:
+            part_info = element14_api.fetch_part_info(part_number, supplier)
         elif supplier == 'LCSC':
             part_info = lcsc_api.fetch_part_info(part_number)
 
@@ -459,17 +471,20 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
             if show_progress and not progress.update_progress_bar_window():
                 return new_part, part_pk, inventree_part
 
-            # Generate Internal Part Number
-            cprint('\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
-            ipn = part_tools.generate_part_number(category_name, part_pk)
-            cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
-            # Update InvenTree part number
-            ipn_update = inventree_api.set_part_number(part_pk, ipn)
-            if not ipn_update:
-                cprint('\n[INFO]\tError updating IPN', silent=settings.SILENT)
-            inventree_part['IPN'] = ipn
-            # Update InvenTree URL
-            inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+            if settings.CONFIG_IPN.get('IPN_ENABLE_CREATE', True):
+                # Generate Internal Part Number
+                cprint('\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
+                ipn = part_tools.generate_part_number(category_name, part_pk)
+                cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
+                # Update InvenTree part number
+                ipn_update = inventree_api.set_part_number(part_pk, ipn)
+                if not ipn_update:
+                    cprint('\n[INFO]\tError updating IPN', silent=settings.SILENT)
+                inventree_part['IPN'] = ipn
+                # Update InvenTree URL
+                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+            else:
+                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
 
     # Progress Update
     if show_progress and not progress.update_progress_bar_window():

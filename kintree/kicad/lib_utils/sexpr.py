@@ -1,6 +1,6 @@
 """ DISCLAIMER
 Sexpr classes and methods were directly imported from: https://gitlab.com/kicad/libraries/kicad-library-utils
-Last import date: Dec 1st, 2022
+Last import date: Jan 3rd, 2023
 """
 
 """
@@ -14,11 +14,12 @@ dbg: bool = False
 
 term_regex = r"""(?mx)
     \s*(?:
-        (?P<brackl>\()|
-        (?P<brackr>\))|
-        (?P<num>[+-]?\d+\.\d+(?=[\ \)])|\-?\d+(?=[\ \)]))|
-        (?P<sq>"([^"]|(?<=\\)")*")|
-        (?P<s>[^(^)\s]+)
+        (\()|
+        (\))|
+        ([+-]?\d+\.\d+(?=[\ \)]))|
+        (\-?\d+(?=[\ \)]))|
+        "((?:[^"]|(?<=\\)")*)"|
+        ([^(^)\s]+)
        )"""
 
 
@@ -27,39 +28,42 @@ class SexprError(ValueError):
 
 
 def parse_sexp(sexp: str) -> Any:
-    stack = []
-    out = []
-    if dbg:
-        print("%-6s %-14s %-44s %-s" % tuple("term value out stack".split()))
-    for termtypes in re.finditer(term_regex, sexp):
-        term, value = [(t, v) for t, v in termtypes.groupdict().items() if v][0]
-        if dbg:
-            print("%-7s %-14s %-44r %-r" % (term, value, out, stack))
+    re_iter = re.finditer(term_regex, sexp)
+    rv = list(_parse_sexp_internal(re_iter))
 
-        if term == "brackl":
-            stack.append(out)
-            out = []
-        elif term == "brackr":
-            if not stack:
-                raise SexprError("Trouble with nesting of brackets")
-            tmpout, out = out, stack.pop(-1)
-            out.append(tmpout)
-        elif term == "num":
-            v = float(value)
-            if v.is_integer():
-                v = int(v)
-            out.append(v)
-        elif term == "sq":
-            out.append(value[1:-1].replace(r"\"", '"'))
-        elif term == "s":
-            out.append(value)
-        else:
-            raise NotImplementedError(
-                "The term '{}' with value '{}' is unknown.".format(term, value)
-            )
-    if stack:
-        raise SexprError("Trouble with nesting of brackets")
-    return out[0]
+    for leftover in re_iter:
+        lparen, rparen, *rest = leftover.groups()
+        if lparen or any(rest):
+            raise SexprError(f'Leftover garbage after end of expression at position {leftover.start()}')  # noqa: E501
+
+        elif rparen:
+            raise SexprError(f'Unbalanced closing parenthesis at position {leftover.start()}')
+
+    if len(rv) == 0:
+        raise SexprError('No or empty expression')
+
+    if len(rv) > 1:
+        raise SexprError('Missing initial opening parenthesis')
+
+    return rv[0]
+
+
+def _parse_sexp_internal(re_iter) -> Any:
+    for match in re_iter:
+        lparen, rparen, float_num, integer_num, quoted_str, bare_str = match.groups()
+
+        if lparen:
+            yield list(_parse_sexp_internal(re_iter))
+        elif rparen:
+            break
+        elif bare_str is not None:
+            yield bare_str
+        elif quoted_str is not None:
+            yield quoted_str.replace('\\"', '"')
+        elif float_num:
+            yield float(float_num)
+        elif integer_num:
+            yield int(integer_num)
 
 
 # Form a valid sexpr (single line)
@@ -167,68 +171,56 @@ class SexprBuilder:
             self.indent -= 1
 
 
-def build_sexp(exp, key=None) -> str:
-    out = ""
-
+def build_sexp(exp, indent='  ') -> str:
     # Special case for multi-values
     if isinstance(exp, list):
-        out += "(" + " ".join(build_sexp(x) for x in exp) + ")"
-        return out
-    # elif isinstance(exp, str) and re.search(r'[\s()]', exp):
-    #    out += '"%s"' % repr(exp)[1:-1].replace('"', r'\"')
-    #    print(exp, '"%s"' % repr(exp)[1:-1].replace('"', r'\"'))
-    elif isinstance(exp, float):
-        out += str(exp)
-    elif isinstance(exp, int):
-        out += str(exp)
-    elif isinstance(exp, str):
-        out += exp
-    else:
-        if exp == "":
-            out += '""'
-        else:
-            out += "%s" % exp
+        joined = '('
+        for i, elem in enumerate(exp):
+            if 1 <= i <= 5 and len(joined) < 120 and not isinstance(elem, list):
+                joined += ' '
+            elif i >= 1:
+                joined += '\n' + indent
+            joined += build_sexp(elem, indent=f'{indent}  ')
+        return joined + ')'
 
-    if key is not None:
-        out = "({key} {val})".format(key=key, val=out)
+    if exp == '':
+        return '""'
 
-    return out
+    return str(exp)
 
 
 def format_sexp(sexp: str, indentation_size: int = 2, max_nesting: int = 2) -> str:
-    out = ""
+    out = ''
     n = 0
-    for termtypes in re.finditer(term_regex, sexp):
+    for match in re.finditer(term_regex, sexp):
         indentation = ""
-        term, value = [(t, v) for t, v in termtypes.groupdict().items() if v][0]
-        if term == "brackl":
+        lparen, rparen, float_num, integer_num, quoted_str, bare_str = match.groups()
+        if lparen:
             if out:
                 if n <= max_nesting:
-                    if out[-1] == " ":
+                    if out[-1] == ' ':
                         out = out[:-1]
-                    indentation = "\n" + (" " * indentation_size * n)
+                    indentation = '\n' + (' ' * indentation_size * n)
                 else:
-                    if out[-1] == ")":
-                        out += " "
+                    if out[-1] == ')':
+                        out += ' '
             n += 1
-        elif term == "brackr":
-            if out and out[-1] == " ":
+            out += indentation + '('
+        elif rparen:
+            if out and out[-1] == ' ':
                 out = out[:-1]
             n -= 1
-        elif term == "num":
-            value += " "
-        elif term == "sq":
-            value += " "
-        elif term == "s":
-            value += " "
-        else:
-            raise NotImplementedError(
-                "The term '{}' with value '{}' is unknown.".format(term, value)
-            )
+            out += indentation + ')'
+        elif float_num:
+            out += indentation + float_num + ' '
+        elif integer_num:
+            out += indentation + integer_num + ' '
+        elif quoted_str is not None:
+            out += f'{indentation}"{quoted_str}" '
+        elif bare_str is not None:
+            out += indentation + bare_str + ' '
 
-        out += indentation + value
-
-    out += "\n"
+    out += '\n'
     return out
 
 
@@ -237,7 +229,8 @@ if __name__ == "__main__":
          (data "with \\"escaped quotes\\"")
          (data (123 (4.5) "(more" "data)")))"""
 
-    print("Input S-expression: %r" % (sexp,))
+    print("Input S-expression:")
+    print(sexp)
     parsed = parse_sexp(sexp)
     print("\nParsed to Python:", parsed)
 
