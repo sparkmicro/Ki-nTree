@@ -471,17 +471,20 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
             if show_progress and not progress.update_progress_bar_window():
                 return new_part, part_pk, inventree_part
 
-            # Generate Internal Part Number
-            cprint('\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
-            ipn = part_tools.generate_part_number(category_name, part_pk)
-            cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
-            # Update InvenTree part number
-            ipn_update = inventree_api.set_part_number(part_pk, ipn)
-            if not ipn_update:
-                cprint('\n[INFO]\tError updating IPN', silent=settings.SILENT)
-            inventree_part['IPN'] = ipn
-            # Update InvenTree URL
-            inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+            if settings.CONFIG_IPN.get('IPN_ENABLE_CREATE', True):
+                # Generate Internal Part Number
+                cprint('\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
+                ipn = part_tools.generate_part_number(category_name, part_pk)
+                cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
+                # Update InvenTree part number
+                ipn_update = inventree_api.set_part_number(part_pk, ipn)
+                if not ipn_update:
+                    cprint('\n[INFO]\tError updating IPN', silent=settings.SILENT)
+                inventree_part['IPN'] = ipn
+                # Update InvenTree URL
+                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+            else:
+                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
 
     # Progress Update
     if show_progress and not progress.update_progress_bar_window():

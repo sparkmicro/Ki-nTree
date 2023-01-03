@@ -392,7 +392,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "aa3d49431a54a265ac0bddbf5621492beae2e675cd2c0b5d7a83b2dfbf8f22c4"
+content-hash = "b326703afa515a51bfc26ff8d57c973957d0965e4221fa6a7208c0824322e42b"
 
 [metadata.files]
 certauth = [

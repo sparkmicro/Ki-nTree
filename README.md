@@ -232,6 +232,7 @@ pip install dist/kintree-0.6.99-py3-none-any.whl
 - Revamp category selection based on hierarchical structure from InvenTree ([reference](https://github.com/sparkmicro/Ki-nTree/issues/87)) 
 - Allow user to decide the category code to use for IPN
 - Add "Synchronize" menu option to pull InvenTree parts data into KiCad
+- Enable option to download and save PDF files locally/to server storage
 
 ##### Improvements
 
