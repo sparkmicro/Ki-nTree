@@ -123,7 +123,7 @@ Below is a summary table of the different configuration files, their function an
 | `parameters_filters.yaml` | Mapping between InvenTree parent categories and InvenTree parameters templates | :x: |
 | `search_api.yaml` | Generic controls for Supplier search APIs like cache validity and category matching ratio | :x: |
 | `supplier_parameters.yaml` | Mapping between InvenTree parameters templates and suppliers parameters/attributes, sorted by InvenTree parent categories (see [Part Parameters section](#part-parameters)) | :x: |
-| `<supplier>_config.yaml` | Mapping for supplier search results field names, to overwrite defaults (`<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`) | :x: |
+| `<supplier>_config.yaml` | Mapping for supplier name and search results fields, to overwrite defaults (`<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`) | :x: |
 | `<supplier>_api.yaml` | Required supplier API fields, custom to each supplier (`<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`) | :heavy_check_mark: |
 | `digikey_categories.yaml` | Mapping between InvenTree categories and Digi-Key categories | :heavy_check_mark: |
 | `digikey_parameters.yaml` | Mapping between InvenTree parameters and Digi-Key parameters/attributes | :x: |
@@ -147,10 +147,11 @@ If you wish to automatically add subcategories while creating InvenTree parts, y
 Note that each time you enable the "Add" permission to an object, InvenTree automatically enables the "Change" permission to that object too.
 
 #### Settings
-1. With Ki-nTree GUI open, click on "Settings > Digi-Key" and fill in both Digi-Key API Client ID and Secret keys (optional: click on "Test" to [get an API token](#get-digi-key-api-token))
-2. Click on "Settings > Mouser" and fill in the Mouser part search API key
-3. Click on "Settings > KiCad", browse to the location where KiCad symbol, template and footprint libraries are stored on your computer then click "Save"
-4. If you intend to use InvenTree with this tool, click on "Settings > InvenTree" and fill in your InvenTree server address and credentials then click "Save" (optional: click on "Test" to get an API token)
+1. With Ki-nTree GUI open, click on "Settings > Supplier > Digi-Key" and fill in both Digi-Key API Client ID and Secret keys (optional: click on "Test" to [get an API token](#get-digi-key-api-token))
+2. Click on "Settings > Supplier > Mouser" and fill in the Mouser part search API key
+3. Click on "Settings > Supplier > Element14" and fill in the Element14 product search API key (key is shared with Farnell and Newark)
+4. Click on "Settings > KiCad", browse to the location where KiCad symbol, template and footprint libraries are stored on your computer then click "Save"
+5. If you intend to use InvenTree with this tool, click on "Settings > InvenTree" and fill in your InvenTree server address and credentials then click "Save" (optional: click on "Test" to get an API token)
 
 #### Get Digi-Key API token
 <details>
@@ -188,7 +189,7 @@ Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/co
 
 #### Part Number Search
 
-Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser and LCSC.
+Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser, Element14 and LCSC.
 
 1. In the main window, enter the part number and select the supplier in drop-down list, then click "CREATE". It will start by fetching part data using the supplier's API
 2. In the case Digi-Key has been selected and the API token is not found or expired, a browser window will pop-up. To get a new token: [follow those steps](#get-digi-key-api-token)

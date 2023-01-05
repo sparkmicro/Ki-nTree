@@ -61,8 +61,8 @@ def load_user_config():
     CONFIG_USER_FILES = os.path.join(USER_SETTINGS['USER_FILES'], '')
 
     # Create user files folder if it does not exists
-    # if not os.path.exists(CONFIG_USER_FILES):
-    #     os.makedirs(CONFIG_USER_FILES)
+    if not os.path.exists(CONFIG_USER_FILES):
+        os.makedirs(CONFIG_USER_FILES)
     # Create user files
     return config_interface.load_user_config_files(path_to_root=CONFIG_ROOT,
                                                    path_to_user_files=CONFIG_USER_FILES,
