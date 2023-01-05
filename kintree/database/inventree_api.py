@@ -183,6 +183,14 @@ def is_new_part(category_id: int, part_info: dict) -> int:
     # cprint(filters)
 
     for part in part_list:
+        # Compare fields (InvenTree does not allow those to be identicals between two parts)
+        compare_fields = part_info['name'] == part.name and part_info['revision'] == part.revision
+        if compare_fields:
+            cprint(f'[TREE]\tWarning: Found part with same name and revision (pk = {part.pk})', silent=settings.SILENT)
+            return part.pk
+
+        # Compare parameters
+        compare_parameters = False
         # Get part parameters
         db_part_parameters = part.getParameters()
         part_parameters = {}
@@ -193,17 +201,12 @@ def is_new_part(category_id: int, part_info: dict) -> int:
 
         if new_part_parameters and part_parameters:
             # Compare database part with new part
-            compare = part_tools.compare(new_part_parameters=new_part_parameters,
-                                         db_part_parameters=part_parameters,
-                                         include_filters=filters)
-        else:
-            # Compare with name and description
-            compare = part_info['name'] == part.name and \
-                part_info['description'] == part.description and \
-                part_info['revision'] == part.revision
-            
-        if compare:
-            cprint(f'[TREE]\tWarning: Found part match in database (pk = {part.pk})', silent=settings.SILENT)
+            compare_parameters = part_tools.compare(new_part_parameters=new_part_parameters,
+                                                    db_part_parameters=part_parameters,
+                                                    include_filters=filters)
+                                                            
+        if compare_parameters:
+            cprint(f'[TREE]\tWarning: Found part with same parameters in database (pk = {part.pk})', silent=settings.SILENT)
             return part.pk
 
     # Check if manufacturer part exists in database
@@ -212,7 +215,7 @@ def is_new_part(category_id: int, part_info: dict) -> int:
     part_pk = is_new_manufacturer_part(manufacturer, mpn, create=False)
 
     if part_pk:
-        cprint(f'[TREE]\tWarning: Found part with same manufacturer part in database (pk = {part_pk})', silent=settings.SILENT)
+        cprint(f'[TREE]\tWarning: Found part with same manufacturer and MPN in database (pk = {part_pk})', silent=settings.SILENT)
         return part_pk
 
     cprint('\n[TREE]\tNo match found in database', silent=settings.HIDE_DEBUG)

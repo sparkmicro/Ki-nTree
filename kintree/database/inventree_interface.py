@@ -363,6 +363,8 @@ def inventree_fuzzy_company_match(name: str) -> str:
     inventree_companies = inventree_api.get_all_companies()
 
     for company_name in inventree_companies.keys():
+        cprint(f'{name.lower()} == {company_name.lower()} % {fuzz.partial_ratio(name.lower(), company_name.lower())}',
+               silent=settings.HIDE_DEBUG)
         if fuzz.partial_ratio(name.lower(), company_name.lower()) == 100:
             return company_name
     
@@ -448,10 +450,13 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
         if part_pk > 0:
             cprint('[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
             ipn = inventree_api.get_part_number(part_pk)
-            # Update InvenTree part number
-            inventree_part['IPN'] = ipn
-            # Update InvenTree URL
-            inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+            if ipn:
+                # Update InvenTree part number
+                inventree_part['IPN'] = ipn
+                # Update InvenTree URL
+                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+            else:
+                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
         # Part is new
         else:
             new_part = True
@@ -558,6 +563,8 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
         # Create manufacturer part(s)
         # TODO: Support multiple MPNs?
         for manufacturer_name, manufacturer_mpns in inventree_part['manufacturer'].items():
+            # Overwrite manufacturer name with matching one from database
+            manufacturer_name = inventree_fuzzy_company_match(manufacturer_name)
             # Get MPN
             manufacturer_mpn = manufacturer_mpns[0]
 
@@ -631,7 +638,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
         cprint('[INFO] Error: Original part was not found in database', silent=settings.SILENT)
         return result
 
-    # Overwrite manufacturer with matching one from database
+    # Overwrite manufacturer name with matching one from database
     manufacturer_name = inventree_fuzzy_company_match(part_info.get('manufacturer_name', ''))
     manufacturer_mpn = part_info.get('manufacturer_part_number', '')
     datasheet = part_info.get('datasheet', '')

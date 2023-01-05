@@ -223,7 +223,7 @@ def element14_api_settings_window(supplier=''):
         [
             sg.Text(f'{supplier} Store', size=gui_global['big_label_size']),
             sg.Combo(sorted(element14_api.STORES[supplier]), default_value=default_store, key=f'{supplier.lower()}_store', enable_events=True),
-            sg.Text(f'URL: {element14_api.STORES[supplier][default_store]}', key='store_url'),
+            sg.Text(f'URL: {element14_api.STORES[supplier].get(default_store, "")}', key='store_url'),
         ],
         [
             sg.Button('Test', size=(15, 1)),
@@ -1246,6 +1246,9 @@ def main():
                             elif values['supplier'] == 'Mouser':
                                 error_message += '\n- Mouser API settings are correct ("Settings > Supplier > Mouser")' \
                                                  '\n- Part number is a valid number on Mouser\'s website'
+                            elif values['supplier'] in ['Farnell', 'Newark', 'Element14']:
+                                error_message += f'\n- {values["supplier"]} API key is correct and a store is selected ("Settings > Supplier > {values["supplier"]}")' \
+                                                 f'\n- Part number is a valid number on {values["supplier"]}\'s website'
                             elif values['supplier'] == 'LCSC':
                                 error_message += '\n- Mouser API settings are correct ("Settings > Supplier > LCSC")' \
                                                  '\n- Part number is a valid LCSC number (eg. starts with "C")'
