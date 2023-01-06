@@ -1,4 +1,5 @@
-from kintree import kintree_gui
+from kintree.gui.main_gui import MainGUI
 
 if __name__ == '__main__':
-    kintree_gui.main()
+    main_gui = MainGUI()
+    main_gui.mainloop()
