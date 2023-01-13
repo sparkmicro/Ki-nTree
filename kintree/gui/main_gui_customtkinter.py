@@ -9,7 +9,7 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 def hello_world():
     tkinter.messagebox.showinfo(title='MessageBox', message='Hello World')
 
-class MainGUI(customtkinter.CTk):
+class MainGUI_CustomTkinter(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
