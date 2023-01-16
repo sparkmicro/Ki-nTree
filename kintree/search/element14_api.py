@@ -250,7 +250,7 @@ def test_api(store_url=None) -> bool:
             'store_url': 'au.element14.com',
             'part_number': '2N7002-7-F',
             'expected': {
-                'displayName': 'MOSFET, N CHANNEL, 60V, 1.2OHM, 115mA, SOT-23',
+                'displayName': 'Power MOSFET, N Channel, 60 V, 115 mA, 13.5 ohm, SOT-23, Surface Mount',
                 'brandName': 'MULTICOMP PRO',
                 'translatedManufacturerPartNumber': '2N7002-7-F',
             }
