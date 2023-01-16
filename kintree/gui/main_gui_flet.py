@@ -6,7 +6,7 @@ def MainGUI_Flet(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.window_height = 300
     page.window_width = 800
-    # page.window_resizable = True
+    page.window_resizable = False
     import time
     time.sleep(0.2)
     page.update()
