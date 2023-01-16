@@ -505,6 +505,11 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
                     cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
 
         if kicad:
+            # Update IPN if it does not exist
+            if not inventree_part['IPN']:
+                ipn = list(inventree_part['manufacturer'].values())[0][0]
+                inventree_part['IPN'] = ipn
+
             # Create mandatory parameters (symbol & footprint)
             if symbol and ipn:
                 kicad_symbol = symbol + ':' + ipn
