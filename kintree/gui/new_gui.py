@@ -1,6 +1,8 @@
 import flet as ft
 from flet import View, colors
 
+# from ..search.digikey_api import fetch_part_info
+
 # Navigation indexes
 NAV_BAR_INDEX = {
     0: '/search',
@@ -37,20 +39,30 @@ search_form_field = {}
 
 def init_gui(page: ft.Page):
     ''' Initialize window '''
+    # Alignments
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
+
+    # Theme
     page.theme_mode = "light"
     theme = ft.Theme()
+
     # Disable transitions
     theme.page_transitions.android = ft.PageTransitionTheme.NONE
     theme.page_transitions.ios = ft.PageTransitionTheme.NONE
     theme.page_transitions.linux = ft.PageTransitionTheme.NONE
     theme.page_transitions.macos = ft.PageTransitionTheme.NONE
     theme.page_transitions.windows = ft.PageTransitionTheme.NONE
+
     # Make it more compact
     theme.visual_density = ft.ThemeVisualDensity.COMPACT
     page.theme = theme
     page.scroll = ft.ScrollMode.ALWAYS
+
+    # Creating a progress bar that will be used to show the user that the app is busy doing something.
+    page.splash = ft.ProgressBar(visible=False)
+
+    # Update
     page.update()
 
 def main_app_bar(page: ft.Page, title='Ki-nTree | 0.7.0dev'):
@@ -116,22 +128,35 @@ def search_enable_fields(page):
     for form_field in search_form_field.values():
         form_field.disabled = False
     page.update()
+    return
 
-def search_column(page):
-    # Row 1
-    def append_supplier_options(approved_supplier: list) -> list:
+def run_search(page):
+    page.splash.visible = True
+    page.update()
+
+    if not part_number.value and not supplier.value:
+        search_enable_fields(page)
+    else:
+
+        print(f'{part_number.value=} | {supplier.value=}')
+
+    page.splash.visible = False
+    page.update()
+    return
+
+def append_supplier_options(approved_supplier: list) -> list:
         dropdown_options = []
         for supplier in approved_supplier:
             dropdown_options.append(ft.dropdown.Option(supplier))
         return dropdown_options
 
-    part_number = ft.TextField(label="Part Number", hint_text="Part Number", width=300, expand=True)
-    supplier = ft.Dropdown(
-        label="Supplier",
-        options=append_supplier_options(SUPPORTED_SUPPLIERS),
-    )
+part_number = ft.TextField(label="Part Number", hint_text="Part Number", width=300, expand=True)
+supplier = ft.Dropdown(
+    label="Supplier",
+    options=append_supplier_options(SUPPORTED_SUPPLIERS),
+)
 
-    # Row 2
+def search_column(page):
     # inventree_cb = ft.Container(
     #     content=ft.Checkbox(label="InvenTree", scale=1.3, value=False),
     #     alignment=ft.alignment.center,
@@ -161,7 +186,7 @@ def search_column(page):
                     supplier,
                     ft.FloatingActionButton(
                         icon=ft.icons.SEARCH,
-                        on_click=lambda e: search_enable_fields(page),
+                        on_click=lambda e: run_search(page),
                     ),
                 ],
             ),
