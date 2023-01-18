@@ -1,7 +1,7 @@
 import flet as ft
 from flet import View, colors
 
-# from ..search.digikey_api import fetch_part_info
+from ..search.digikey_api import fetch_part_info, get_default_search_keys
 
 # Navigation indexes
 NAV_BAR_INDEX = {
@@ -137,8 +137,17 @@ def run_search(page):
     if not part_number.value and not supplier.value:
         search_enable_fields(page)
     else:
-
         print(f'{part_number.value=} | {supplier.value=}')
+        part_info = fetch_part_info(part_number.value)
+        if part_info:
+            for field_idx, field_name in enumerate(search_form_field.keys()):
+                # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
+                try:
+                    search_form_field[field_name].value = part_info.get(get_default_search_keys()[field_idx], '')
+                except IndexError:
+                    pass
+                # Enable editing
+                search_form_field[field_name].disabled = False
 
     page.splash.visible = False
     page.update()
