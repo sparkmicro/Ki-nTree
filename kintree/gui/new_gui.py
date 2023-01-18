@@ -1,17 +1,56 @@
 import flet as ft
 from flet import View, colors
 
-
+# Navigation indexes
 NAV_BAR_INDEX = {
     0: '/search',
     1: '/kicad',
     2: '/inventree',
 }
 
+# TODO: replace with settings
+SUPPORTED_SUPPLIERS = [
+    'Digi-Key',
+    'Mouser',
+    'Farnell',
+    'Newark',
+    'Element14',
+    'LCSC',
+]
+
+# List of search fields
+search_fields_list = [
+    'part_name',
+    'part_description',
+    'part_revision',
+    'part_keywords',
+    'supplier_name',
+    'supplier_part_number',
+    'supplier_link',
+    'manufacturer_name',
+    'manufacturer_part_number',
+    'datasheet_link',
+    'image_link',
+]
+# Instantiate search form fields
+search_form_field = {}
+
 def init_gui(page: ft.Page):
     ''' Initialize window '''
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.theme_mode = "light"
+    theme = ft.Theme()
+    # Disable transitions
+    theme.page_transitions.android = ft.PageTransitionTheme.NONE
+    theme.page_transitions.ios = ft.PageTransitionTheme.NONE
+    theme.page_transitions.linux = ft.PageTransitionTheme.NONE
+    theme.page_transitions.macos = ft.PageTransitionTheme.NONE
+    theme.page_transitions.windows = ft.PageTransitionTheme.NONE
+    # Make it more compact
+    theme.visual_density = ft.ThemeVisualDensity.COMPACT
+    page.theme = theme
+    page.scroll = ft.ScrollMode.ALWAYS
     page.update()
 
 def main_app_bar(page: ft.Page, title='Ki-nTree | 0.7.0dev'):
@@ -73,7 +112,12 @@ def nav_rail(page: ft.Page, selected_index=0):
         expand=True,
     )
 
-def search_column():
+def search_enable_fields(page):
+    for form_field in search_form_field.values():
+        form_field.disabled = False
+    page.update()
+
+def search_column(page):
     # Row 1
     def append_supplier_options(approved_supplier: list) -> list:
         dropdown_options = []
@@ -84,14 +128,7 @@ def search_column():
     part_number = ft.TextField(label="Part Number", hint_text="Part Number", width=300, expand=True)
     supplier = ft.Dropdown(
         label="Supplier",
-        options=append_supplier_options([
-            'Digi-Key',
-            'Mouser',
-            'Farnell',
-            'Newark',
-            'Element14',
-            'LCSC',
-        ]),
+        options=append_supplier_options(SUPPORTED_SUPPLIERS),
     )
 
     # Row 2
@@ -122,26 +159,25 @@ def search_column():
                 controls=[
                     part_number,
                     supplier,
-                    ft.FloatingActionButton(icon=ft.icons.SEARCH, on_click=None),
+                    ft.FloatingActionButton(
+                        icon=ft.icons.SEARCH,
+                        on_click=lambda e: search_enable_fields(page),
+                    ),
                 ],
             ),
-            # ft.Row(
-            #     controls=[
-            #         kicad_cb,
-            #         inventree_cb,
-            #         alternate_cb,
-            #     ],
-            #     alignment=ft.MainAxisAlignment.SPACE_EVENLY,
-            # ),
-            # ft.Row(
-            #     controls=[
-            #         welcome_message
-            #     ],
-            # ),
+            ft.Divider(),
         ],
         alignment=ft.MainAxisAlignment.START,
-        expand=True,
+        scroll=ft.ScrollMode.HIDDEN,
+        expand=True,   
     )
+
+    # Create search form
+    for field in search_fields_list:
+        label = field.replace('_', ' ').title()
+        text_field = ft.TextField(label=label, hint_text=label, disabled=True, expand=True)
+        search_view.controls.append(ft.Row(controls=[text_field]))
+        search_form_field[field] = text_field
 
     return search_view
 
@@ -174,7 +210,7 @@ def MainGUI(page: ft.Page):
         
         if page.route in ['/', '/search']:
             page.views.clear()
-            page.views.append(build_main_view('/search', column=search_column()))
+            page.views.append(build_main_view('/search', column=search_column(page)))
         elif '/kicad' in page.route:
             kicad_column = ft.Column(
                 controls=[
