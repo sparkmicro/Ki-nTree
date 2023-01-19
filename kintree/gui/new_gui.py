@@ -1,7 +1,7 @@
 import flet as ft
-from flet import View, colors
 
-from ..search.digikey_api import fetch_part_info, get_default_search_keys
+from .views import SearchView, KicadView, InvenTreeView
+
 
 # Navigation indexes
 NAV_BAR_INDEX = {
@@ -19,23 +19,6 @@ SUPPORTED_SUPPLIERS = [
     'Element14',
     'LCSC',
 ]
-
-# List of search fields
-search_fields_list = [
-    'part_name',
-    'part_description',
-    'part_revision',
-    'part_keywords',
-    'supplier_name',
-    'supplier_part_number',
-    'supplier_link',
-    'manufacturer_name',
-    'manufacturer_part_number',
-    'datasheet_link',
-    'image_link',
-]
-# Instantiate search form fields
-search_form_field = {}
 
 def init_gui(page: ft.Page):
     ''' Initialize window '''
@@ -65,6 +48,7 @@ def init_gui(page: ft.Page):
     # Update
     page.update()
 
+
 def main_app_bar(page: ft.Page, title='Ki-nTree | 0.7.0dev'):
     ''' Top application bar '''    
     app_bar = ft.AppBar(
@@ -80,8 +64,10 @@ def main_app_bar(page: ft.Page, title='Ki-nTree | 0.7.0dev'):
 
     return app_bar
 
+
 def settings_app_bar(page: ft.Page, title='User Settings'):
-    return ft.AppBar(title=ft.Text(title), bgcolor=colors.SURFACE_VARIANT)
+    return ft.AppBar(title=ft.Text(title), bgcolor=ft.colors.SURFACE_VARIANT)
+
 
 def nav_rail(page: ft.Page, selected_index=0):
     ''' Navigation rail '''
@@ -89,7 +75,7 @@ def nav_rail(page: ft.Page, selected_index=0):
     rail = ft.NavigationRail(
         selected_index=selected_index,
         label_type=ft.NavigationRailLabelType.ALL,
-        # extended=True,
+        # expand=True,
         min_width=100,
         min_extended_width=400,
         group_alignment=-0.9,
@@ -115,126 +101,26 @@ def nav_rail(page: ft.Page, selected_index=0):
 
     return rail
 
-    return ft.Row(
-        [
-            rail,
-            ft.VerticalDivider(width=1),
-            # ft.Column([ ft.Text("Body!")], alignment=ft.MainAxisAlignment.START, expand=True),
-        ],
-        expand=True,
-    )
-
-def search_enable_fields(page):
-    for form_field in search_form_field.values():
-        form_field.disabled = False
-    page.update()
-    return
-
-def run_search(page):
-    page.splash.visible = True
-    page.update()
-
-    if not part_number.value and not supplier.value:
-        search_enable_fields(page)
-    else:
-        print(f'{part_number.value=} | {supplier.value=}')
-        part_info = fetch_part_info(part_number.value)
-        if part_info:
-            for field_idx, field_name in enumerate(search_form_field.keys()):
-                # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
-                try:
-                    search_form_field[field_name].value = part_info.get(get_default_search_keys()[field_idx], '')
-                except IndexError:
-                    pass
-                # Enable editing
-                search_form_field[field_name].disabled = False
-
-    page.splash.visible = False
-    page.update()
-    return
-
-def append_supplier_options(approved_supplier: list) -> list:
-        dropdown_options = []
-        for supplier in approved_supplier:
-            dropdown_options.append(ft.dropdown.Option(supplier))
-        return dropdown_options
-
-part_number = ft.TextField(label="Part Number", hint_text="Part Number", width=300, expand=True)
-supplier = ft.Dropdown(
-    label="Supplier",
-    options=append_supplier_options(SUPPORTED_SUPPLIERS),
-)
-
-def search_column(page):
-    # inventree_cb = ft.Container(
-    #     content=ft.Checkbox(label="InvenTree", scale=1.3, value=False),
-    #     alignment=ft.alignment.center,
-    # )
-    # kicad_cb = ft.Container(
-    #     content=ft.Checkbox(label="KiCad", scale=1.3, value=False),
-    #     alignment=ft.alignment.center,
-    # )
-    # alternate_cb = ft.Container(
-    #     content=ft.Checkbox(label="Alternate", scale=1.3, value=False),
-    #     alignment=ft.alignment.center,
-    # )
-
-    # Row 3
-    # welcome_message = ft.SnackBar(
-    #     content=ft.Text("1. Enter a Part Number and select a Supplier\n2. Click on search icon to start creating part"),
-    #     action="Close",
-    #     open=True,
-    # )
-    
-    search_view = ft.Column(
-        controls=[
-            ft.Row(),
-            ft.Row(
-                controls=[
-                    part_number,
-                    supplier,
-                    ft.FloatingActionButton(
-                        icon=ft.icons.SEARCH,
-                        on_click=lambda e: run_search(page),
-                    ),
-                ],
-            ),
-            ft.Divider(),
-        ],
-        alignment=ft.MainAxisAlignment.START,
-        scroll=ft.ScrollMode.HIDDEN,
-        expand=True,   
-    )
-
-    # Create search form
-    for field in search_fields_list:
-        label = field.replace('_', ' ').title()
-        text_field = ft.TextField(label=label, hint_text=label, disabled=True, expand=True)
-        search_view.controls.append(ft.Row(controls=[text_field]))
-        search_form_field[field] = text_field
-
-    return search_view
 
 def MainGUI(page: ft.Page):
-
-    def build_main_view(route, column: ft.Column, nav_index=0):
-        return ft.View(
-            route = route,
-            controls = [
-                main_app_bar(page),
-                ft.Row(
-                    controls = [
-                        nav_rail(page, selected_index=nav_index),
-                        ft.VerticalDivider(width=1),
-                        column,
-                    ],
-                    expand=True,
-                ),
-            ],
-        )
-
     # Init
     init_gui(page)
+
+    # Application bar
+    appbar = main_app_bar(page)
+
+    # Navigation rail
+    navrail = nav_rail(page)
+
+    # Views
+    search_view = SearchView(page, appbar, navrail)
+    search_view.build_controls()
+
+    kicad_view = KicadView(page, appbar, navrail)
+    kicad_view.build_controls()
+
+    inventree_view = InvenTreeView(page, appbar, navrail)
+    inventree_view.build_controls()
 
     # Routing
     print(f'Initial route {page.route}')
@@ -244,26 +130,13 @@ def MainGUI(page: ft.Page):
         
         if page.route in ['/', '/search']:
             page.views.clear()
-            page.views.append(build_main_view('/search', column=search_column(page)))
+            page.views.append(search_view)
         elif '/kicad' in page.route:
-            kicad_column = ft.Column(
-                controls=[
-                    ft.Text('KiCad', style="bodyMedium"),
-                ],
-                alignment=ft.MainAxisAlignment.START,
-                expand=True,
-            )
-            page.views.append(build_main_view('/kicad', column=kicad_column, nav_index=1))
+            page.views.clear()
+            page.views.append(kicad_view)
         elif '/inventree' in page.route:
             page.views.clear()
-            inventree_column = ft.Column(
-                controls=[
-                    ft.Text('InvenTree', style="bodyMedium"),
-                ],
-                alignment=ft.MainAxisAlignment.START,
-                expand=True,
-            )
-            page.views.append(build_main_view('/inventree', column=inventree_column, nav_index=2))
+            page.views.append(inventree_view)
         elif '/settings' in page.route:
             page.views.append(
                 ft.View(
