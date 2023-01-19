@@ -20,13 +20,51 @@ SUPPORTED_SUPPLIERS = [
     'LCSC',
 ]
 
-class SettingsView(View):
+appbar = ft.AppBar(
+    leading=ft.Icon(ft.icons.INVENTORY),
+    leading_width=40,
+    title=ft.Text('Ki-nTree | 0.7.0dev'),
+    center_title=False,
+    bgcolor=ft.colors.SURFACE_VARIANT,
+    actions=[],
+)
 
+navrail = ft.NavigationRail(
+    selected_index=0,
+    label_type=ft.NavigationRailLabelType.ALL,
+    min_width=100,
+    min_extended_width=400,
+    group_alignment=-0.9,
+    destinations=[
+        ft.NavigationRailDestination(
+            icon=ft.icons.SEARCH,
+            selected_icon=ft.icons.MANAGE_SEARCH,
+            label="Search"
+        ),
+        ft.NavigationRailDestination(
+            icon=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED,
+            selected_icon=ft.icons.SETTINGS_INPUT_COMPONENT,
+            label="KiCad",
+        ),
+        ft.NavigationRailDestination(
+            icon=ft.icons.INVENTORY_2_OUTLINED,
+            selected_icon_content=ft.Icon(ft.icons.INVENTORY),
+            label="InvenTree",
+        ),
+    ],
+    on_change=None,
+)
+
+
+class SettingsView(View):
+    '''Settings view'''
+
+    route = '/settings'
     __appbar = ft.AppBar(title=ft.Text('User Settings'), bgcolor=ft.colors.SURFACE_VARIANT)
 
-    def __init__(self):
-        super().__init__()
-        self.route = '/settings'
+    def __init__(self, page: ft.Page):
+        route = self.route
+        super().__init__(route=route)
         self.controls = [
             self.__appbar,
             ft.Text('Settings View', style="bodyMedium"),
@@ -37,70 +75,46 @@ class MainView(View):
     '''Common main view'''
 
     navidx = None
+    route = '/'
     page = None
     column = None
     fields = {}
 
     def __init__(self, page: ft.Page):
-        super().__init__()
+        # Store page pointer
         self.page = page
 
-        # Appbar
-        self.appbar = self.build_appbar()
+        # Set route
+        if self.navidx is not None:
+            self.route = NAV_BAR_INDEX[self.navidx]
 
-        # Navigation rail
-        self.__navigation_bar = self.build_navrail()
+        # Init view
+        super().__init__(route=self.route)
+
+        # Set appbar
+        if not appbar.actions:
+            appbar.actions.append(ft.IconButton(ft.icons.SETTINGS, on_click=lambda e: self.page.go('/settings')))
+        self.appbar = appbar
+
+        # Set navigation rail
+        if not navrail.on_change:
+            navrail.on_change = lambda e: self.page.go(NAV_BAR_INDEX[e.control.selected_index])
+        self.__navigation_bar = navrail
 
         # Build column
         self.column = self.build_column()
 
-    def build_appbar(self, title='Ki-nTree | 0.7.0dev'):
-        return ft.AppBar(
-                leading=ft.Icon(ft.icons.INVENTORY),
-                leading_width=40,
-                title=ft.Text(title),
-                center_title=False,
-                bgcolor=ft.colors.SURFACE_VARIANT,
-                actions = [
-                    ft.IconButton(ft.icons.SETTINGS, on_click=lambda e: self.page.go(f'/settings')),
-                ],
-            )
-
-    def build_navrail(self, selected_index=0):
-        return ft.NavigationRail(
-            selected_index=selected_index,
-            label_type=ft.NavigationRailLabelType.ALL,
-            min_width=100,
-            min_extended_width=400,
-            group_alignment=-0.9,
-            destinations=[
-                ft.NavigationRailDestination(
-                    icon=ft.icons.SEARCH,
-                    selected_icon=ft.icons.MANAGE_SEARCH,
-                    label="Search"
-                ),
-                ft.NavigationRailDestination(
-                    icon=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED,
-                    selected_icon=ft.icons.SETTINGS_INPUT_COMPONENT,
-                    label="KiCad",
-                ),
-                ft.NavigationRailDestination(
-                    icon=ft.icons.INVENTORY_2_OUTLINED,
-                    selected_icon_content=ft.Icon(ft.icons.INVENTORY),
-                    label_content=ft.Text("InvenTree"),
-                ),
-            ],
-            on_change=lambda e: self.page.go(NAV_BAR_INDEX[e.control.selected_index]),
-        )
+        # Build controls
+        self.controls = self.build_controls()
 
     def build_column():
-        # Empty column (set inside the children views)
+        # Empty column (to be set inside the children views)
         return ft.Column()
 
     def build_controls(self):
-        self.controls = [
+        return [
             ft.Row(
-                controls = [
+                controls=[
                     self.__navigation_bar,
                     ft.VerticalDivider(width=1),
                     self.column,
@@ -113,7 +127,6 @@ class MainView(View):
 class SearchView(MainView):
     '''Search view'''
 
-    # Search view index
     navidx = 0
 
     # List of search fields
@@ -136,6 +149,20 @@ class SearchView(MainView):
         'supplier': ft.Dropdown(label="Supplier"),
         'search_form': {},
     }
+
+    def __init__(self, page: ft.Page):
+        # Init view
+        super().__init__(page)
+
+        # Populate dropdown suppliers
+        self.fields['supplier'].options = [ft.dropdown.Option(supplier) for supplier in SUPPORTED_SUPPLIERS]
+
+        # Create search form
+        for field in self.search_fields_list:
+            label = field.replace('_', ' ').title()
+            text_field = ft.TextField(label=label, hint_text=label, disabled=True, expand=True)
+            self.column.controls.append(ft.Row(controls=[text_field]))
+            self.fields['search_form'][field] = text_field
 
     def search_enable_fields(self):
         for form_field in self.fields['search_form'].values():
@@ -184,26 +211,13 @@ class SearchView(MainView):
             ],
             alignment=ft.MainAxisAlignment.START,
             scroll=ft.ScrollMode.HIDDEN,
-            expand=True,   
+            expand=True,
         )
-        
-    def __init__(self, page: ft.Page):
-        # Init view
-        super().__init__(page)
-
-        # Populate dropdown suppliers
-        self.fields['supplier'].options = [ft.dropdown.Option(supplier) for supplier in SUPPORTED_SUPPLIERS]
-
-        # Create search form
-        for field in self.search_fields_list:
-            label = field.replace('_', ' ').title()
-            text_field = ft.TextField(label=label, hint_text=label, disabled=True, expand=True)
-            self.column.controls.append(ft.Row(controls=[text_field]))
-            self.fields['search_form'][field] = text_field
 
 
 class KicadView(MainView):
     '''KiCad view'''
+
     navidx = 1
 
     def build_column(self):
@@ -218,6 +232,7 @@ class KicadView(MainView):
 
 class InvenTreeView(MainView):
     '''InvenTree view'''
+
     navidx = 2
 
     def build_column(self):

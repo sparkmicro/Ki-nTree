@@ -1,6 +1,6 @@
 from kintree.gui.main_gui_customtkinter import MainGUI_CustomTkinter
 from kintree.gui.main_gui_flet import MainGUI_Flet
-from kintree.gui.new_gui import MainGUI
+from kintree.gui.gui import MainGUI
 
 if __name__ == '__main__':
     # CustomTkinter
