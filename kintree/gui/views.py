@@ -3,6 +3,35 @@ from flet import View
 
 from ..search.digikey_api import fetch_part_info, get_default_search_keys
 
+# Navigation indexes
+NAV_BAR_INDEX = {
+    0: '/search',
+    1: '/kicad',
+    2: '/inventree',
+}
+
+# TODO: replace with settings
+SUPPORTED_SUPPLIERS = [
+    'Digi-Key',
+    'Mouser',
+    'Farnell',
+    'Newark',
+    'Element14',
+    'LCSC',
+]
+
+class SettingsView(View):
+
+    __appbar = ft.AppBar(title=ft.Text('User Settings'), bgcolor=ft.colors.SURFACE_VARIANT)
+
+    def __init__(self):
+        super().__init__()
+        self.route = '/settings'
+        self.controls = [
+            self.__appbar,
+            ft.Text('Settings View', style="bodyMedium"),
+        ]
+
 
 class MainView(View):
     '''Common main view'''
@@ -12,14 +41,57 @@ class MainView(View):
     column = None
     fields = {}
 
-    def __init__(self, page: ft.Page, appbar: ft.AppBar, navrail: ft.NavigationRail):
+    def __init__(self, page: ft.Page):
         super().__init__()
         self.page = page
-        self.appbar = appbar
-        self.__navigation_bar = navrail
+
+        # Appbar
+        self.appbar = self.build_appbar()
+
+        # Navigation rail
+        self.__navigation_bar = self.build_navrail()
 
         # Build column
         self.column = self.build_column()
+
+    def build_appbar(self, title='Ki-nTree | 0.7.0dev'):
+        return ft.AppBar(
+                leading=ft.Icon(ft.icons.INVENTORY),
+                leading_width=40,
+                title=ft.Text(title),
+                center_title=False,
+                bgcolor=ft.colors.SURFACE_VARIANT,
+                actions = [
+                    ft.IconButton(ft.icons.SETTINGS, on_click=lambda e: self.page.go(f'/settings')),
+                ],
+            )
+
+    def build_navrail(self, selected_index=0):
+        return ft.NavigationRail(
+            selected_index=selected_index,
+            label_type=ft.NavigationRailLabelType.ALL,
+            min_width=100,
+            min_extended_width=400,
+            group_alignment=-0.9,
+            destinations=[
+                ft.NavigationRailDestination(
+                    icon=ft.icons.SEARCH,
+                    selected_icon=ft.icons.MANAGE_SEARCH,
+                    label="Search"
+                ),
+                ft.NavigationRailDestination(
+                    icon=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED,
+                    selected_icon=ft.icons.SETTINGS_INPUT_COMPONENT,
+                    label="KiCad",
+                ),
+                ft.NavigationRailDestination(
+                    icon=ft.icons.INVENTORY_2_OUTLINED,
+                    selected_icon_content=ft.Icon(ft.icons.INVENTORY),
+                    label_content=ft.Text("InvenTree"),
+                ),
+            ],
+            on_change=lambda e: self.page.go(NAV_BAR_INDEX[e.control.selected_index]),
+        )
 
     def build_column():
         # Empty column (set inside the children views)
@@ -36,6 +108,7 @@ class MainView(View):
                 expand=True,
             ),
         ]
+
 
 class SearchView(MainView):
     '''Search view'''
@@ -60,11 +133,7 @@ class SearchView(MainView):
 
     fields = {
         'part_number': ft.TextField(label="Part Number", hint_text="Part Number", width=300, expand=True),
-        'supplier': ft.Dropdown(
-            label="Supplier",
-            # options=append_supplier_options(SUPPORTED_SUPPLIERS),
-        ),
-        # Instantiate search form fields
+        'supplier': ft.Dropdown(label="Supplier"),
         'search_form': {},
     }
 
@@ -118,9 +187,12 @@ class SearchView(MainView):
             expand=True,   
         )
         
-    def __init__(self, page: ft.Page, appbar: ft.AppBar, navrail: ft.NavigationRail):
+    def __init__(self, page: ft.Page):
         # Init view
-        super().__init__(page, appbar, navrail)
+        super().__init__(page)
+
+        # Populate dropdown suppliers
+        self.fields['supplier'].options = [ft.dropdown.Option(supplier) for supplier in SUPPORTED_SUPPLIERS]
 
         # Create search form
         for field in self.search_fields_list:

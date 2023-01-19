@@ -1,24 +1,7 @@
 import flet as ft
 
-from .views import SearchView, KicadView, InvenTreeView
+from .views import SettingsView, SearchView, KicadView, InvenTreeView
 
-
-# Navigation indexes
-NAV_BAR_INDEX = {
-    0: '/search',
-    1: '/kicad',
-    2: '/inventree',
-}
-
-# TODO: replace with settings
-SUPPORTED_SUPPLIERS = [
-    'Digi-Key',
-    'Mouser',
-    'Farnell',
-    'Newark',
-    'Element14',
-    'LCSC',
-]
 
 def init_gui(page: ft.Page):
     ''' Initialize window '''
@@ -47,27 +30,6 @@ def init_gui(page: ft.Page):
 
     # Update
     page.update()
-
-
-def main_app_bar(page: ft.Page, title='Ki-nTree | 0.7.0dev'):
-    ''' Top application bar '''    
-    app_bar = ft.AppBar(
-        leading=ft.Icon(ft.icons.INVENTORY),
-        leading_width=40,
-        title=ft.Text(title),
-        center_title=False,
-        bgcolor=ft.colors.SURFACE_VARIANT,
-        actions = [
-            ft.IconButton(ft.icons.SETTINGS, on_click=lambda e: page.go(f'/settings')),
-        ],
-    )
-
-    return app_bar
-
-
-def settings_app_bar(page: ft.Page, title='User Settings'):
-    return ft.AppBar(title=ft.Text(title), bgcolor=ft.colors.SURFACE_VARIANT)
-
 
 def nav_rail(page: ft.Page, selected_index=0):
     ''' Navigation rail '''
@@ -106,20 +68,16 @@ def MainGUI(page: ft.Page):
     # Init
     init_gui(page)
 
-    # Application bar
-    appbar = main_app_bar(page)
-
-    # Navigation rail
-    navrail = nav_rail(page)
-
     # Views
-    search_view = SearchView(page, appbar, navrail)
+    settings_view = SettingsView()
+
+    search_view = SearchView(page)
     search_view.build_controls()
 
-    kicad_view = KicadView(page, appbar, navrail)
+    kicad_view = KicadView(page)
     kicad_view.build_controls()
 
-    inventree_view = InvenTreeView(page, appbar, navrail)
+    inventree_view = InvenTreeView(page)
     inventree_view.build_controls()
 
     # Routing
@@ -138,15 +96,7 @@ def MainGUI(page: ft.Page):
             page.views.clear()
             page.views.append(inventree_view)
         elif '/settings' in page.route:
-            page.views.append(
-                ft.View(
-                    '/settings',
-                    [
-                        settings_app_bar(page),
-                        ft.Text('Settings View', style="bodyMedium"),
-                    ],
-                )
-            )
+            page.views.append(settings_view)
 
         page.update()
 
