@@ -55,9 +55,9 @@ def MainGUI(page: ft.Page):
             if page.route == NAV_BAR_INDEX[0]:
                 page.views.append(search_view)
             elif page.route == NAV_BAR_INDEX[1]:
-                page.views.append(kicad_view)
-            elif page.route == NAV_BAR_INDEX[2]:
                 page.views.append(inventree_view)
+            elif page.route == NAV_BAR_INDEX[2]:
+                page.views.append(kicad_view)
 
         page.update()
 

@@ -9,8 +9,8 @@ from ..common.tools import cprint, create_library
 # Navigation indexes
 NAV_BAR_INDEX = {
     0: '/search',
-    1: '/kicad',
-    2: '/inventree',
+    1: '/inventree',
+    2: '/kicad',
 }
 
 # TODO: replace with settings
@@ -24,7 +24,7 @@ SUPPORTED_SUPPLIERS = [
 ]
 
 appbar = ft.AppBar(
-    leading=ft.Icon(ft.icons.INVENTORY),
+    leading=ft.Icon(ft.icons.DOUBLE_ARROW),
     leading_width=40,
     title=ft.Text('Ki-nTree | 0.7.0dev'),
     center_title=False,
@@ -40,37 +40,116 @@ navrail = ft.NavigationRail(
     group_alignment=-0.9,
     destinations=[
         ft.NavigationRailDestination(
-            icon=ft.icons.SEARCH,
-            selected_icon=ft.icons.MANAGE_SEARCH,
-            label="Search"
+            icon_content=ft.Icon(name=ft.icons.SEARCH, size=40),
+            selected_icon_content=ft.Icon(name=ft.icons.MANAGE_SEARCH, size=40),
+            label_content=ft.Text("Search", size=16),
+            padding=10,
         ),
         ft.NavigationRailDestination(
-            icon=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED,
-            selected_icon=ft.icons.SETTINGS_INPUT_COMPONENT,
-            label="KiCad",
+            icon_content=ft.Icon(name=ft.icons.INVENTORY_2_OUTLINED, size=40),
+            selected_icon_content=ft.Icon(name=ft.icons.INVENTORY, size=40),
+            label_content=ft.Text("InvenTree", size=16),
+            padding=10,
         ),
         ft.NavigationRailDestination(
-            icon=ft.icons.INVENTORY_2_OUTLINED,
-            selected_icon_content=ft.Icon(ft.icons.INVENTORY),
-            label="InvenTree",
+            icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=40),
+            selected_icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT, size=40),
+            label_content=ft.Text("KiCad", size=16),
+            padding=10,
         ),
     ],
     on_change=None,
 )
 
+def on_dialog_result(e: ft.FilePickerResultEvent):
+            print("event: ", dir(e))
+            print(e.name)
+            print(e.control)
+            print(e.target)
+            print(e.data)
+            print("Selected file or directory:", e.path)
 
 class SettingsView(View):
     '''Settings view'''
 
     route = '/settings'
     __appbar = ft.AppBar(title=ft.Text('User Settings'), bgcolor=ft.colors.SURFACE_VARIANT)
+    tab_size = 20
 
     def __init__(self, page: ft.Page):
         route = self.route
+
         super().__init__(route=route)
-        self.controls = [
+        
+        self.file_picker = ft.FilePicker(on_result=on_dialog_result)
+        page.overlay.append(self.file_picker)
+        page.update()
+
+        # Build tabs
+        self.tabs = self.build_tabs()
+        # page.add(self.tabs)
+
+        # Build controls
+        self.controls = self.build_controls()
+
+    def build_tabs(self):
+        return ft.Tabs(
+            selected_index=0,
+            animation_duration=0,
+            tabs=[
+                ft.Tab(
+                    tab_content=ft.Text("User", size=16),
+                    content=ft.Container(
+                        content=ft.Row(
+                            controls=[
+                                ft.Column(
+                                    controls=[
+                                        ft.Row(),
+                                        ft.Row(
+                                            controls=[
+                                                ft.TextField(label="Configuration Files Folder"),
+                                                ft.ElevatedButton("Browse", on_click=lambda _: self.file_picker.get_directory_path(dialog_title='Configuration Files Folder')),
+                                            ]
+                                        ),
+                                        ft.Row(
+                                            controls=[
+                                                ft.TextField(label="Cache Folder"),
+                                                ft.ElevatedButton("Browse", on_click=lambda _: self.file_picker.get_directory_path()),
+                                            ]
+                                        ),
+                                    ]
+                                )
+                            ],
+                        ),
+                        # alignment=ft.alignment.center,
+                    ),
+                ),
+                ft.Tab(
+                    tab_content=ft.Text("Supplier", size=16),
+                    content=ft.Container(
+                        content=ft.Text("Supplier Settings"),
+                    ),
+                ),
+                ft.Tab(
+                    tab_content=ft.Text("InvenTree", size=16),
+                    content=ft.Container(
+                        content=ft.Text("InvenTree Settings"),
+                    ),
+                ),
+                ft.Tab(
+                    tab_content=ft.Text("KiCad", size=16),
+                    content=ft.Container(
+                        content=ft.Text("KiCad Settings"),
+                    ),
+                ),
+            ],
+            expand=1,
+        )
+
+    def build_controls(self):
+        return [
             self.__appbar,
-            ft.Text('Settings View', style="bodyMedium"),
+            self.tabs,
         ]
 
 
@@ -148,8 +227,8 @@ class SearchView(MainView):
     ]
 
     fields = {
-        'part_number': ft.TextField(label="Part Number", hint_text="Part Number", width=300, expand=True),
-        'supplier': ft.Dropdown(label="Supplier"),
+        'part_number': ft.TextField(label="Part Number", dense=True, hint_text="Part Number", width=300, expand=True),
+        'supplier': ft.Dropdown(label="Supplier", dense=True),
         'search_form': {},
     }
 
@@ -163,7 +242,7 @@ class SearchView(MainView):
         # Create search form
         for field in self.search_fields_list:
             label = field.replace('_', ' ').title()
-            text_field = ft.TextField(label=label, hint_text=label, disabled=True, expand=True)
+            text_field = ft.TextField(label=label, dense=True, hint_text=label, disabled=True, expand=True)
             self.column.controls.append(ft.Row(controls=[text_field]))
             self.fields['search_form'][field] = text_field
 
@@ -212,6 +291,9 @@ class SearchView(MainView):
                         self.fields['supplier'],
                         ft.FloatingActionButton(
                             icon=ft.icons.SEARCH,
+                            shape=ft.RoundedRectangleBorder(radius=5),
+                            height=48,
+                            width=80,
                             on_click=lambda e: self.run_search(),
                         ),
                     ],
