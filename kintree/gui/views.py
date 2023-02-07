@@ -1,7 +1,10 @@
 import flet as ft
 from flet import View
 
-from ..search.digikey_api import fetch_part_info, get_default_search_keys
+# InvenTree
+from ..database import inventree_interface
+# Tools
+from ..common.tools import cprint, create_library
 
 # Navigation indexes
 NAV_BAR_INDEX = {
@@ -131,17 +134,17 @@ class SearchView(MainView):
 
     # List of search fields
     search_fields_list = [
-        'part_name',
-        'part_description',
-        'part_revision',
-        'part_keywords',
+        'name',
+        'description',
+        'revision',
+        'keywords',
         'supplier_name',
         'supplier_part_number',
         'supplier_link',
         'manufacturer_name',
         'manufacturer_part_number',
-        'datasheet_link',
-        'image_link',
+        'datasheet',
+        'image',
     ]
 
     fields = {
@@ -177,13 +180,19 @@ class SearchView(MainView):
         if not self.fields['part_number'].value and not self.fields['supplier'].value:
             self.search_enable_fields()
         else:
-            print(f"{self.fields['part_number'].value=} | {self.fields['supplier'].value=}")
-            part_info = fetch_part_info(self.fields['part_number'].value)
-            if part_info:
+            # Supplier search
+            part_supplier_info = inventree_interface.supplier_search(self.fields['supplier'].value, self.fields['part_number'].value)
+
+            if part_supplier_info:
+                # Translate to user form format
+                part_supplier_form = inventree_interface.translate_supplier_to_form(supplier=self.fields['supplier'].value,
+                                           part_info=part_supplier_info)
+
+            if part_supplier_info:
                 for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
                     # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
                     try:
-                        self.fields['search_form'][field_name].value = part_info.get(get_default_search_keys()[field_idx], '')
+                        self.fields['search_form'][field_name].value = part_supplier_form.get(field_name, '')
                     except IndexError:
                         pass
                     # Enable editing
