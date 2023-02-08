@@ -1,8 +1,6 @@
 import flet as ft
 
-from .views import NAV_BAR_INDEX
-from .views import SettingsView, SearchView, KicadView, InvenTreeView
-
+from .views import UserSettingsView, SupplierSettingsView, InvenTreeSettingsView, KiCadSettingsView, SearchView, KicadView, InvenTreeView
 
 def init_gui(page: ft.Page):
     ''' Initialize window '''
@@ -38,25 +36,41 @@ def MainGUI(page: ft.Page):
     init_gui(page)
     
     # Views
-    settings_view = SettingsView(page)
+    # Main
     search_view = SearchView(page)
     kicad_view = KicadView(page)
     inventree_view = InvenTreeView(page)
+    # Settings
+    user_settings_view = UserSettingsView(page)
+    supplier_settings_view = SupplierSettingsView(page)
+    inventree_settings_view = InvenTreeSettingsView(page)
+    kicad_settings_view = KiCadSettingsView(page)
 
     def route_change(route):
         print(f'Routing to {route.route}')
         
         if page.route == '/':
             page.views.append(search_view)
-        elif page.route == '/settings':
-            page.views.append(settings_view)
+        elif '/settings' in page.route:
+            if '/settings' in page.views[-1].route:
+                page.views.pop()
+            if page.route == user_settings_view.route:
+                page.views.append(user_settings_view)
+            elif page.route == supplier_settings_view.route:
+                page.views.append(supplier_settings_view)
+            elif page.route == inventree_settings_view.route:
+                page.views.append(inventree_settings_view)
+            elif page.route == kicad_settings_view.route:
+                page.views.append(kicad_settings_view)
+            else:
+                page.views.append(user_settings_view)
         else:
             page.views.clear()
-            if page.route == NAV_BAR_INDEX[0]:
+            if page.route == search_view.route:
                 page.views.append(search_view)
-            elif page.route == NAV_BAR_INDEX[1]:
+            elif page.route == inventree_view.route:
                 page.views.append(inventree_view)
-            elif page.route == NAV_BAR_INDEX[2]:
+            elif page.route == kicad_view.route:
                 page.views.append(kicad_view)
 
         page.update()
