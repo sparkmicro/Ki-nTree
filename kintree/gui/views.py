@@ -170,40 +170,69 @@ class UserSettingsView(SettingsView):
 
     route = '/settings/user'
 
+    fields = {
+        'Configuration Files Folder': ft.TextField(label='Configuration Files Folder', width=800),
+        'Cache Folder': ft.TextField(label='Cache Folder', width=800),
+    }
+
     def __init__(self, page: ft.Page):
         super().__init__(page)
 
-        self.file_picker = ft.FilePicker(on_result=self.on_dialog_result)
-        page.overlay.append(self.file_picker)
-        page.update()
-
     def on_dialog_result(self, e: ft.FilePickerResultEvent):
-            print("event: ", dir(e))
-            print(e.name)
-            print(e.control)
-            print(e.target)
-            print(e.data)
-            print("Selected file or directory:", e.path)
+        # print("Selected file or directory:", e.path)
+        if e.path:
+            self.fields[e.control.dialog_title].value = e.path
+            self.page.update()
+
+    def file_picker(self, title: str):
+        if self.page.overlay:
+            self.page.overlay.pop()
+        file_picker = ft.FilePicker(on_result=self.on_dialog_result)
+        self.page.overlay.append(file_picker)
+        self.page.update()
+        file_picker.get_directory_path(dialog_title=title)
 
     def build_column(self):
-        return ft.Column(
+        column = ft.Column(
             controls=[
                 ft.Text('User Settings', style="bodyMedium"),
                 ft.Row(),
-                ft.Row(
-                    controls=[
-                        ft.TextField(label="Configuration Files Folder"),
-                        ft.ElevatedButton("Browse", on_click=lambda _: self.file_picker.get_directory_path(dialog_title='Configuration Files Folder')),
-                    ]
-                ),
-                ft.Row(
-                    controls=[
-                        ft.TextField(label="Cache Folder"),
-                        ft.ElevatedButton("Browse", on_click=lambda _: self.file_picker.get_directory_path()),
-                    ]
-                ),
-            ]
+            ],
+            alignment=ft.MainAxisAlignment.START,
+            expand=True,
         )
+
+        # TODO: For some reason, for looping does not work... file_picker is set to last iteration
+        # for title, text_field in self.fields.items():
+        #     text_field.label = title
+        #     column.controls.append(
+        #         ft.Row(
+        #             controls=[
+        #                 text_field,
+        #                 ft.ElevatedButton(f'Browse', on_click=lambda _: self.file_picker(title=title)),
+        #             ]
+        #         ),
+        #     )
+
+        # Have to use manual method, meh
+        column.controls.append(
+            ft.Row(
+                controls=[
+                    self.fields['Configuration Files Folder'],
+                    ft.ElevatedButton('Browse', width=100, height=48, on_click=lambda _: self.file_picker(title='Configuration Files Folder')),
+                ]
+            ),
+        )
+        column.controls.append(
+            ft.Row(
+                controls=[
+                    self.fields['Cache Folder'],
+                    ft.ElevatedButton('Browse', width=100, height=48, on_click=lambda _: self.file_picker(title='Cache Folder')),
+                ]
+            ),
+        )
+
+        return column
 
 
 class SupplierSettingsView(SettingsView):
