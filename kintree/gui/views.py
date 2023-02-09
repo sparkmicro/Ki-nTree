@@ -2,23 +2,58 @@ import flet as ft
 from flet import View
 
 # Settings
-from ..config import settings
+from ..config import settings, config_interface
 # InvenTree
 from ..database import inventree_interface
 # Tools
 from ..common.tools import cprint, create_library
 
-# TODO: replace with settings
-SUPPORTED_SUPPLIERS = [
-    'Digi-Key',
-    'Mouser',
-    'Farnell',
-    'Newark',
-    'Element14',
-    'LCSC',
-]
-
+# Load InvenTree Settings
 settings.load_inventree_settings()
+# Load Supplier Settings
+supplier_settings = {}
+for supplier in settings.SUPPORTED_SUPPLIERS_API:
+    supplier_settings[supplier] = [
+        None,
+        ft.Text(),
+        False,
+    ]
+
+    # Add fields
+    if supplier == 'Digi-Key':
+        digikey_api_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
+        supplier_settings['Client ID'] = [
+            digikey_api_settings['DIGIKEY_CLIENT_ID'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings['Client Secret'] = [
+            digikey_api_settings['DIGIKEY_CLIENT_SECRET'],
+            ft.TextField(),
+            None,
+        ]
+    elif supplier == 'Mouser':
+        mouser_api_settings = config_interface.load_file(settings.CONFIG_MOUSER_API)
+        supplier_settings['Part API Key'] = [
+            mouser_api_settings['MOUSER_PART_API_KEY'],
+            ft.TextField(),
+            None,
+        ]
+    elif supplier == 'LCSC':
+        lcsc_api_settings = config_interface.load_file(settings.CONFIG_LCSC_API)
+        supplier_settings['API URL'] = [
+            lcsc_api_settings['LCSC_API_URL'],
+            ft.TextField(),
+            None,
+        ]
+    
+    # Test button
+    supplier_settings[f'Test {supplier} API'] = [
+        None,
+        ft.TextButton(),
+        False, # Browse disabled
+    ]
+
 SETTINGS = {
     'User Settings': {
         'Configuration Files Folder': [
@@ -32,6 +67,7 @@ SETTINGS = {
             True,  # Browse enabled
         ],
     },
+    'Supplier Settings': supplier_settings,
     'InvenTree Settings': {
         'Server Address': [
             settings.SERVER_ADDRESS,
@@ -50,7 +86,7 @@ SETTINGS = {
         ],
         'Test': [
             None,
-            ft.TextButton(),
+            ft.ElevatedButton,
             False, # Browse disabled
         ]
     },
@@ -229,6 +265,11 @@ class SettingsView(CommonView):
         if not self.navigation_rail.on_change:
             self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
     
+    def test_s(self, e: ft.ControlEvent, s: str):
+        '''Test supplier API'''
+        supplier = s.replace('Test', '').replace('API', '').replace(' ','')
+        print(f'Testing {supplier} API')
+
     def test(self):
         '''Test settings'''
         print(f'Testing {self.title}')
@@ -282,9 +323,23 @@ class SettingsView(CommonView):
                         ft.ElevatedButton('Browse', width=button_width, height=button_height, on_click=lambda e, t=field_name: self.path_picker(e, title=t))
                     )
                 column.controls.append(field_row)
+            elif type(field) == ft.Text:
+                field.value = field_name
+                field_row = ft.Row(
+                    controls=[
+                        field,
+                    ]
+                )
+                column.controls.append(field_row)
+                column.controls.append(ft.Divider())
+            elif type(field) == ft.TextButton:
+                column.controls.append(
+                    ft.ElevatedButton(field_name, width=button_width*2, height=button_height, icon=ft.icons.CHECK_OUTLINED, on_click=lambda e, s=field_name: self.test_s(e, s=s)),
+                )
+
         # Test and Save buttons
         test_save_buttons = ft.Row()
-        if 'Test' in self.fields.keys():
+        if list(self.fields.keys())[-1] == 'Test':
             test_save_buttons.controls.append(
                 ft.ElevatedButton('Test', width=button_width, height=button_height, icon=ft.icons.CHECK_OUTLINED, on_click=lambda _: self.test()),
             )
@@ -314,6 +369,13 @@ class SupplierSettingsView(SettingsView):
 
     def __init__(self, page: ft.Page):
         super().__init__(page)
+
+    def build_column(self):
+        self.column = super().build_column()
+
+        self.column.scroll=ft.ScrollMode.HIDDEN
+
+        return self.column
 
 
 class InvenTreeSettingsView(SettingsView):
@@ -391,7 +453,7 @@ class SearchView(MainView):
         super().__init__(page)
 
         # Populate dropdown suppliers
-        self.fields['supplier'].options = [ft.dropdown.Option(supplier) for supplier in SUPPORTED_SUPPLIERS]
+        self.fields['supplier'].options = [ft.dropdown.Option(supplier) for supplier in settings.SUPPORTED_SUPPLIERS_API]
 
         # Create search form
         for field in self.search_fields_list:
