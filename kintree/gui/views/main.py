@@ -5,7 +5,9 @@ from .common import CommonView
 from ...config import settings
 # InvenTree
 from ...database import inventree_interface
-
+# Category Tree
+from ..gallery.controls.collapsible import Collapsible
+from ..gallery.controls.menu_button import MenuButton
 
 # Main AppBar
 main_appbar = ft.AppBar(
@@ -182,12 +184,55 @@ class InvenTreeView(MainView):
         super().__init__(page)
 
     def build_column(self):
+        subcategories = []
+        for i in [1, 4, 7]:
+            subcategories.append(
+                ft.Column(
+                    [
+                        MenuButton(f'Subcategory {i}', radio=ft.Radio(value=f'Subcategory {i}', label=f'Subcategory {i}')),
+                        MenuButton(f'Subcategory {i+1}', radio=ft.Radio(value=f'Subcategory {i+1}', label=f'Subcategory {i+1}')),
+                        MenuButton(f'Subcategory {i+2}', radio=ft.Radio(value=f'Subcategory {i+2}', label=f'Subcategory {i+2}')),
+                    ],
+                    spacing=3,
+                )
+            )
+
+        scale = 1.1
         return ft.Column(
-            controls=[
-                ft.Text('InvenTree', style="bodyMedium"),
+            [
+                ft.Row(
+                    [
+                        ft.RadioGroup(
+                            content=ft.Column(
+                                [
+                                    Collapsible(
+                                        'Category 1',
+                                        radio=ft.Radio(value='Category 1', label='Category 1'),
+                                        content=subcategories[0],
+                                        scale=scale,
+                                    ),
+                                    Collapsible(
+                                        'Category 2',
+                                        radio=ft.Radio(value='Category 2', label='Category 2'),
+                                        content=subcategories[1],
+                                        scale=scale,
+                                    ),
+                                    Collapsible(
+                                        'Category 3',
+                                        radio=ft.Radio(value='Category 3', label='Category 3'),
+                                        content=subcategories[2],
+                                        scale=scale,
+                                    ),
+                                ],
+                                width=400,
+                            ),
+                            on_change=lambda e: print(f'Selected {e.data}'),
+                        ),
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                ),
             ],
-            alignment=ft.MainAxisAlignment.START,
-            expand=True,
+            width=450,
         )
 
 
