@@ -1,6 +1,8 @@
 import flet as ft
 
-from .views import UserSettingsView, SupplierSettingsView, InvenTreeSettingsView, KiCadSettingsView, SearchView, KicadView, InvenTreeView
+from .views.settings import UserSettingsView, SupplierSettingsView, InvenTreeSettingsView, KiCadSettingsView 
+from .views.main import SearchView, KicadView, InvenTreeView
+
 
 def init_gui(page: ft.Page):
     ''' Initialize window '''
