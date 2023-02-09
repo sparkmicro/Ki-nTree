@@ -40,15 +40,15 @@ for supplier in settings.SUPPORTED_SUPPLIERS_API:
         element14_api_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
         default_store = element14_api_settings.get(f'{supplier.upper()}_STORE', '')
 
-        supplier_settings[supplier]['Product Search API Key'] = [
+        supplier_settings[supplier]['Product Search API Key (Element14)'] = [
             element14_api_settings['ELEMENT14_PRODUCT_SEARCH_API_KEY'],
             ft.TextField(),
             None,
         ]
         
         dropdown_options = []
-        for store in STORES[supplier].keys():
-            dropdown_options.append(ft.dropdown.Option(store))
+        for store_name, store_url in STORES[supplier].items():
+            dropdown_options.append(ft.dropdown.Option(f'{store_name} ({store_url})'))
         supplier_settings[supplier][f'{supplier} Store'] = [
             default_store,
             ft.Dropdown(label='Store', width=800, options=dropdown_options),
