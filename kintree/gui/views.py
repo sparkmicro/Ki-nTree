@@ -1,6 +1,8 @@
 import flet as ft
 from flet import View
 
+# Settings
+from ..config import settings
 # InvenTree
 from ..database import inventree_interface
 # Tools
@@ -15,6 +17,61 @@ SUPPORTED_SUPPLIERS = [
     'Element14',
     'LCSC',
 ]
+
+settings.load_inventree_settings()
+SETTINGS = {
+    'User Settings': {
+        'Configuration Files Folder': [
+            settings.USER_SETTINGS['USER_FILES'],
+            ft.TextField(),
+            True,  # Browse enabled
+        ],
+        'Cache Folder': [
+            settings.USER_SETTINGS['USER_CACHE'],
+            ft.TextField(),
+            True,  # Browse enabled
+        ],
+    },
+    'InvenTree Settings': {
+        'Server Address': [
+            settings.SERVER_ADDRESS,
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'Username': [
+            settings.USERNAME,
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'Password': [
+            settings.PASSWORD,
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'Test': [
+            None,
+            ft.TextButton(),
+            False, # Browse disabled
+        ]
+    },
+    'KiCad Settings': {
+        'Symbol Libraries Folder': [
+            settings.KICAD_SYMBOLS_PATH,
+            ft.TextField(),
+            True,  # Browse enabled
+        ],
+        'Symbol Templates Folder': [
+            settings.KICAD_TEMPLATES_PATH,
+            ft.TextField(),
+            True,  # Browse enabled
+        ],
+        'Footprint Libraries Folder': [
+            settings.KICAD_FOOTPRINTS_PATH,
+            ft.TextField(),
+            True,  # Browse enabled
+        ],
+    },
+}
 
 # Main AppBar
 main_appbar = ft.AppBar(
@@ -83,14 +140,14 @@ settings_navrail = ft.NavigationRail(
             padding=10,
         ),
         ft.NavigationRailDestination(
-            icon_content=ft.Icon(name=ft.icons.INVENTORY_2_OUTLINED, size=40),
-            selected_icon_content=ft.Icon(name=ft.icons.INVENTORY, size=40),
+            icon_content=ft.Icon(name=ft.icons.INVENTORY, size=40),
+            selected_icon_content=ft.Icon(name=ft.icons.INVENTORY_2_OUTLINED, size=40),
             label_content=ft.Text("InvenTree", size=16),
             padding=10,
         ),
         ft.NavigationRailDestination(
-            icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=40),
-            selected_icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT, size=40),
+            icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT, size=40),
+            selected_icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=40),
             label_content=ft.Text("KiCad", size=16),
             padding=10,
         ),
@@ -146,6 +203,8 @@ class CommonView(View):
 
 class SettingsView(CommonView):
     '''Main settings view'''
+
+    title = 'Settings'
     route = '/settings'
 
     # Navigation indexes
@@ -157,30 +216,26 @@ class SettingsView(CommonView):
     }
 
     def __init__(self, page: ft.Page):
+        # Load setting fields
+        self.fields = {}
+        for field_name, field_data in SETTINGS.get(self.title, {}).items():
+            self.fields[field_name] = field_data[1]
+            self.fields[field_name].value = field_data[0]
+
         # Init view
         super().__init__(page=page, appbar=settings_appbar, navigation_rail=settings_navrail)
 
         # Update navigation rail
         if not self.navigation_rail.on_change:
             self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
-
-
-class UserSettingsView(SettingsView):
-    '''User settings view'''
-
-    route = '/settings/user'
-
-    fields = {
-        'Configuration Files Folder': ft.TextField(),
-        'Cache Folder': ft.TextField(),
-    }
-
-    def __init__(self, page: ft.Page):
-        super().__init__(page)
+    
+    def test(self):
+        '''Test settings'''
+        print(f'Testing {self.title}')
 
     def save(self):
-        '''Save user settings'''
-        print('Saving!')
+        '''Save settings'''
+        print(f'Saving {self.title}')
 
     def on_dialog_result(self, e: ft.FilePickerResultEvent):
         '''Populate field with user-selected system path'''
@@ -192,82 +247,93 @@ class UserSettingsView(SettingsView):
         '''Let user browse to a system path'''
         if self.page.overlay:
             self.page.overlay.pop()
-        file_picker = ft.FilePicker(on_result=self.on_dialog_result)
-        self.page.overlay.append(file_picker)
+        path_picker = ft.FilePicker(on_result=self.on_dialog_result)
+        self.page.overlay.append(path_picker)
         self.page.update()
-        file_picker.get_directory_path(dialog_title=title)
+        path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
 
     def build_column(self):
+        button_width = 100
+        button_height = 48
         # Title and separator
         column = ft.Column(
             controls=[
-                ft.Text('User Settings', style="bodyMedium"),
+                ft.Text(self.title, style="bodyMedium"),
                 ft.Row(),
             ],
             alignment=ft.MainAxisAlignment.START,
             expand=True,
         )
         # Fields
-        for title, text_field in self.fields.items():
-            text_field.label = title
-            text_field.width = 800
-            column.controls.append(
-                ft.Row(
+        for field_name, field in self.fields.items():
+            if type(field) == ft.TextField:
+                field.label = field_name
+                field.width = 800
+                if 'password' in field.label.lower():
+                    field.password = True
+                field_row = ft.Row(
                     controls=[
-                        text_field,
-                        ft.ElevatedButton('Browse', width=100, height=48, on_click=lambda e, title=title: self.path_picker(e, title=title)),
+                        field,
                     ]
                 )
+                # Add browse button
+                if SETTINGS[self.title][field_name][2]:
+                    field_row.controls.append(
+                        ft.ElevatedButton('Browse', width=button_width, height=button_height, on_click=lambda e, t=field_name: self.path_picker(e, title=t))
+                    )
+                column.controls.append(field_row)
+        # Test and Save buttons
+        test_save_buttons = ft.Row()
+        if 'Test' in self.fields.keys():
+            test_save_buttons.controls.append(
+                ft.ElevatedButton('Test', width=button_width, height=button_height, icon=ft.icons.CHECK_OUTLINED, on_click=lambda _: self.test()),
             )
-        # Save button
-        column.controls.append(
-            ft.Row(
-                controls=[
-                    ft.ElevatedButton('Save', width=100, height=48, icon=ft.icons.SAVE_OUTLINED, on_click=lambda _: self.save()),
-                ]
+        test_save_buttons.controls.append(
+                ft.ElevatedButton('Save', width=button_width, height=button_height, icon=ft.icons.SAVE_OUTLINED, on_click=lambda _: self.save()),
             )
-        )
+        column.controls.append(test_save_buttons)
 
         return column
+
+
+class UserSettingsView(SettingsView):
+    '''User settings view'''
+
+    title = 'User Settings'
+    route = '/settings/user'
+
+    def __init__(self, page: ft.Page):
+        super().__init__(page)
 
 
 class SupplierSettingsView(SettingsView):
     '''Supplier settings view'''
 
+    title = 'Supplier Settings'
     route = '/settings/supplier'
 
-    def build_column(self):
-        return ft.Column(
-            controls=[
-                ft.Text('Supplier Settings', style="bodyMedium"),
-            ]
-        )
+    def __init__(self, page: ft.Page):
+        super().__init__(page)
 
 
 class InvenTreeSettingsView(SettingsView):
-    '''Supplier settings view'''
+    '''InvenTree settings view'''
 
+    title = 'InvenTree Settings'
     route = '/settings/inventree'
 
-    def build_column(self):
-        return ft.Column(
-            controls=[
-                ft.Text('InvenTree Settings', style="bodyMedium"),
-            ]
-        )
+    def __init__(self, page: ft.Page):
+        super().__init__(page)
 
 
 class KiCadSettingsView(SettingsView):
-    '''Supplier settings view'''
+    '''KiCad settings view'''
 
+    title = 'KiCad Settings'
     route = '/settings/kicad'
 
-    def build_column(self):
-        return ft.Column(
-            controls=[
-                ft.Text('KiCad Settings', style="bodyMedium"),
-            ]
-        )
+    def __init__(self, page: ft.Page):
+        super().__init__(page)
 
 
 class MainView(CommonView):
