@@ -171,20 +171,25 @@ class UserSettingsView(SettingsView):
     route = '/settings/user'
 
     fields = {
-        'Configuration Files Folder': ft.TextField(label='Configuration Files Folder', width=800),
-        'Cache Folder': ft.TextField(label='Cache Folder', width=800),
+        'Configuration Files Folder': ft.TextField(),
+        'Cache Folder': ft.TextField(),
     }
 
     def __init__(self, page: ft.Page):
         super().__init__(page)
 
+    def save(self):
+        '''Save user settings'''
+        print('Saving!')
+
     def on_dialog_result(self, e: ft.FilePickerResultEvent):
-        # print("Selected file or directory:", e.path)
+        '''Populate field with user-selected system path'''
         if e.path:
             self.fields[e.control.dialog_title].value = e.path
             self.page.update()
 
-    def file_picker(self, title: str):
+    def path_picker(self, e: ft.ControlEvent, title: str):
+        '''Let user browse to a system path'''
         if self.page.overlay:
             self.page.overlay.pop()
         file_picker = ft.FilePicker(on_result=self.on_dialog_result)
@@ -193,6 +198,7 @@ class UserSettingsView(SettingsView):
         file_picker.get_directory_path(dialog_title=title)
 
     def build_column(self):
+        # Title and separator
         column = ft.Column(
             controls=[
                 ft.Text('User Settings', style="bodyMedium"),
@@ -201,35 +207,25 @@ class UserSettingsView(SettingsView):
             alignment=ft.MainAxisAlignment.START,
             expand=True,
         )
-
-        # TODO: For some reason, for looping does not work... file_picker is set to last iteration
-        # for title, text_field in self.fields.items():
-        #     text_field.label = title
-        #     column.controls.append(
-        #         ft.Row(
-        #             controls=[
-        #                 text_field,
-        #                 ft.ElevatedButton(f'Browse', on_click=lambda _: self.file_picker(title=title)),
-        #             ]
-        #         ),
-        #     )
-
-        # Have to use manual method, meh
+        # Fields
+        for title, text_field in self.fields.items():
+            text_field.label = title
+            text_field.width = 800
+            column.controls.append(
+                ft.Row(
+                    controls=[
+                        text_field,
+                        ft.ElevatedButton('Browse', width=100, height=48, on_click=lambda e, title=title: self.path_picker(e, title=title)),
+                    ]
+                )
+            )
+        # Save button
         column.controls.append(
             ft.Row(
                 controls=[
-                    self.fields['Configuration Files Folder'],
-                    ft.ElevatedButton('Browse', width=100, height=48, on_click=lambda _: self.file_picker(title='Configuration Files Folder')),
+                    ft.ElevatedButton('Save', width=100, height=48, icon=ft.icons.SAVE_OUTLINED, on_click=lambda _: self.save()),
                 ]
-            ),
-        )
-        column.controls.append(
-            ft.Row(
-                controls=[
-                    self.fields['Cache Folder'],
-                    ft.ElevatedButton('Browse', width=100, height=48, on_click=lambda _: self.file_picker(title='Cache Folder')),
-                ]
-            ),
+            )
         )
 
         return column
