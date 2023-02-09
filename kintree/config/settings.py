@@ -113,9 +113,9 @@ except TypeError:
 SUPPORTED_SUPPLIERS_API = [
     'Digi-Key',
     'Mouser',
-    # 'Farnell',
-    # 'Newark',
-    # 'Element14',
+    'Element14',
+    'Farnell',
+    'Newark',
     'LCSC',
 ]
 

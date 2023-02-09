@@ -13,46 +13,54 @@ settings.load_inventree_settings()
 # Load Supplier Settings
 supplier_settings = {}
 for supplier in settings.SUPPORTED_SUPPLIERS_API:
-    supplier_settings[supplier] = [
-        None,
-        ft.Text(),
-        False,
-    ]
+    supplier_settings[supplier] = {}
 
     # Add fields
     if supplier == 'Digi-Key':
         digikey_api_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
-        supplier_settings['Client ID'] = [
+        supplier_settings[supplier]['Client ID'] = [
             digikey_api_settings['DIGIKEY_CLIENT_ID'],
             ft.TextField(),
             None,
         ]
-        supplier_settings['Client Secret'] = [
+        supplier_settings[supplier]['Client Secret'] = [
             digikey_api_settings['DIGIKEY_CLIENT_SECRET'],
             ft.TextField(),
             None,
         ]
     elif supplier == 'Mouser':
         mouser_api_settings = config_interface.load_file(settings.CONFIG_MOUSER_API)
-        supplier_settings['Part API Key'] = [
+        supplier_settings[supplier]['Part API Key'] = [
             mouser_api_settings['MOUSER_PART_API_KEY'],
             ft.TextField(),
             None,
         ]
+    elif supplier == 'Element14' or supplier == 'Farnell' or supplier == 'Newark':
+        from ..search.element14_api import STORES
+        element14_api_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
+        default_store = element14_api_settings.get(f'{supplier.upper()}_STORE', '')
+
+        supplier_settings[supplier]['Product Search API Key'] = [
+            element14_api_settings['ELEMENT14_PRODUCT_SEARCH_API_KEY'],
+            ft.TextField(),
+            None,
+        ]
+        
+        dropdown_options = []
+        for store in STORES[supplier].keys():
+            dropdown_options.append(ft.dropdown.Option(store))
+        supplier_settings[supplier][f'{supplier} Store'] = [
+            default_store,
+            ft.Dropdown(label='Store', width=800, options=dropdown_options),
+            None,
+        ]
     elif supplier == 'LCSC':
         lcsc_api_settings = config_interface.load_file(settings.CONFIG_LCSC_API)
-        supplier_settings['API URL'] = [
+        supplier_settings[supplier]['API URL'] = [
             lcsc_api_settings['LCSC_API_URL'],
             ft.TextField(),
             None,
         ]
-    
-    # Test button
-    supplier_settings[f'Test {supplier} API'] = [
-        None,
-        ft.TextButton(),
-        False, # Browse disabled
-    ]
 
 SETTINGS = {
     'User Settings': {
@@ -255,8 +263,9 @@ class SettingsView(CommonView):
         # Load setting fields
         self.fields = {}
         for field_name, field_data in SETTINGS.get(self.title, {}).items():
-            self.fields[field_name] = field_data[1]
-            self.fields[field_name].value = field_data[0]
+            if type(field_data) == list:
+                self.fields[field_name] = field_data[1]
+                self.fields[field_name].value = field_data[0]
 
         # Init view
         super().__init__(page=page, appbar=settings_appbar, navigation_rail=settings_navrail)
@@ -267,8 +276,7 @@ class SettingsView(CommonView):
     
     def test_s(self, e: ft.ControlEvent, s: str):
         '''Test supplier API'''
-        supplier = s.replace('Test', '').replace('API', '').replace(' ','')
-        print(f'Testing {supplier} API')
+        print(s)
 
     def test(self):
         '''Test settings'''
@@ -336,6 +344,11 @@ class SettingsView(CommonView):
                 column.controls.append(
                     ft.ElevatedButton(field_name, width=button_width*2, height=button_height, icon=ft.icons.CHECK_OUTLINED, on_click=lambda e, s=field_name: self.test_s(e, s=s)),
                 )
+            elif type(field) == ft.Dropdown:
+                field.on_change = lambda _: self.save()
+                column.controls.append(
+                    field,
+                )
 
         # Test and Save buttons
         test_save_buttons = ft.Row()
@@ -370,12 +383,69 @@ class SupplierSettingsView(SettingsView):
     def __init__(self, page: ft.Page):
         super().__init__(page)
 
+    def test_s(self, e: ft.ControlEvent, s: str):
+        '''Test supplier API'''
+        supplier = s.replace('Test', '').replace('API', '').replace(' ','')
+        print(f'Testing {supplier} API')
+
     def build_column(self):
-        self.column = super().build_column()
+        button_width = 100
+        button_height = 48
+        # Title and separator
+        column = ft.Column(
+            controls=[
+                ft.Text(self.title, style="bodyMedium"),
+                ft.Row(),
+            ],
+            alignment=ft.MainAxisAlignment.START,
+            expand=True,
+        )
+        # Tabs
+        supplier_tabs = ft.Tabs(
+            selected_index=0,
+            animation_duration=10,
+            expand=1,
+            tabs=[],
+        )
+        for supplier, settings in SETTINGS[self.title].items():
+            supplier_tab_content = [
+                ft.Row(height=10),
+            ]
+            for setting_name, setting_data in settings.items():
+                setting_data[1].label = setting_name
+                setting_data[1].width = 800
+                setting_data[1].value = setting_data[0]
+                supplier_tab_content.append(
+                    ft.Row(
+                        controls=[
+                            setting_data[1]
+                        ]
+                    )
+                )
 
-        self.column.scroll=ft.ScrollMode.HIDDEN
+            # Test and Save buttons
+            supplier_tab_content.append(
+                ft.Row(
+                    controls=[
+                        ft.ElevatedButton('Test', width=button_width, height=button_height, icon=ft.icons.CHECK_OUTLINED, on_click=lambda e, s=supplier: self.test_s(e, s=s)),
+                        ft.ElevatedButton('Save', width=button_width, height=button_height, icon=ft.icons.SAVE_OUTLINED, on_click=lambda _: self.save()),
+                    ]
+                )
+            )
 
-        return self.column
+            supplier_tabs.tabs.append(
+                ft.Tab(
+                    tab_content=ft.Text(supplier, size=16),
+                    content=ft.Container(
+                        ft.Column(
+                            controls=supplier_tab_content,
+                        )
+                    )
+                )
+            )
+
+        column.controls.append(supplier_tabs)
+        return column
 
 
 class InvenTreeSettingsView(SettingsView):
