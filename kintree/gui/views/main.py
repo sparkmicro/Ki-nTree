@@ -1,14 +1,11 @@
 import flet as ft
 # Common view
-from .common import CommonView
+from .common import CommonView, Collapsible, MenuButton
 from ...common.tools import cprint
 # Settings
 from ...config import settings
 # InvenTree
 from ...database import inventree_interface
-# Category Tree
-from ..gallery.controls.collapsible import Collapsible
-from ..gallery.controls.menu_button import MenuButton
 
 # Main AppBar
 main_appbar = ft.AppBar(
@@ -259,7 +256,7 @@ class CategoryView(MainView):
     def build_column(self):
         print('Populate categories')
         subcategories = []
-        for i in [1, 4, 7]:
+        for i in [1, 4, 7, 10]:
             subcategories.append(
                 ft.Column(
                     [
@@ -274,44 +271,51 @@ class CategoryView(MainView):
         scale = 1.0
         return ft.Column(
             [
-                ft.Row(
-                    [
-                        ft.ElevatedButton('Next', icon=ft.icons.ARROW_RIGHT, width=100, height=48, on_click=lambda _: self.process_selected_category())
-                    ],
-                ),
-                ft.Row(
-                    [
-                        ft.RadioGroup(
-                            content=ft.Column(
-                                [
-                                    Collapsible(
-                                        'Category 1',
-                                        radio=ft.Radio(value='Category 1', label='Category 1'),
-                                        content=subcategories[0],
-                                        scale=scale,
+                ft.Container(
+                    content=ft.Column(
+                        controls=[
+                                ft.ElevatedButton('Next', icon=ft.icons.ARROW_RIGHT, width=100, height=48, on_click=lambda _: self.process_selected_category()),
+                                ft.RadioGroup(
+                                    content=ft.Column(
+                                        [
+                                            Collapsible(
+                                                'Category 1',
+                                                radio=ft.Radio(value='Category 1', label='Category 1'),
+                                                content=subcategories[0],
+                                                scale=scale,
+                                            ),
+                                            Collapsible(
+                                                'Category 2',
+                                                radio=ft.Radio(value='Category 2', label='Category 2'),
+                                                content=subcategories[1],
+                                                scale=scale,
+                                            ),
+                                            Collapsible(
+                                                'Category 3',
+                                                radio=ft.Radio(value='Category 3', label='Category 3'),
+                                                content=subcategories[2],
+                                                scale=scale,
+                                            ),
+                                            Collapsible(
+                                                'Category 4',
+                                                radio=ft.Radio(value='Category 4', label='Category 4'),
+                                                content=subcategories[3],
+                                                scale=scale,
+                                            ),
+                                        ],
+                                        width=450,
                                     ),
-                                    Collapsible(
-                                        'Category 2',
-                                        radio=ft.Radio(value='Category 2', label='Category 2'),
-                                        content=subcategories[1],
-                                        scale=scale,
-                                    ),
-                                    Collapsible(
-                                        'Category 3',
-                                        radio=ft.Radio(value='Category 3', label='Category 3'),
-                                        content=subcategories[2],
-                                        scale=scale,
-                                    ),
-                                ],
-                                width=400,
-                            ),
-                            on_change=lambda e: self.update_selected_category(e.data),
+                                    on_change=lambda e: self.update_selected_category(e.data),
+                                ),
+                            ],
+                            alignment=ft.MainAxisAlignment.START
                         ),
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER,
+                        expand=True,
                 ),
             ],
-            width=450,
+            width=500,
+            alignment=ft.MainAxisAlignment.START,
+            scroll=ft.ScrollMode.HIDDEN,
         )
 
 

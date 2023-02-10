@@ -39,10 +39,7 @@ def MainGUI(page: ft.Page):
     # Init
     init_gui(page)
     # Views
-    # Main
     search_view = SearchView(page)
-    # category_view = CategoryView(page)
-    # kicad_view = KicadView(page)
     # Settings
     user_settings_view = UserSettingsView(page)
     supplier_settings_view = SupplierSettingsView(page)
@@ -84,6 +81,8 @@ def MainGUI(page: ft.Page):
             if 'kicad' in page.route:
                 if kicad_view is None:
                     kicad_view = KicadView(page)
+                else:
+                    kicad_view.navigation_rail.selected_index = kicad_view.step
                 page.views.append(kicad_view)
 
         page.update()
