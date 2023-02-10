@@ -36,7 +36,6 @@ def init_gui(page: ft.Page):
 def MainGUI(page: ft.Page):
     # Init
     init_gui(page)
-    
     # Views
     # Main
     search_view = SearchView(page)

@@ -96,8 +96,13 @@ class SearchView(MainView):
 
     fields = {
         'part_number': ft.TextField(label="Part Number", dense=True, hint_text="Part Number", width=300, expand=True),
-        'supplier': ft.Dropdown(label="Supplier", dense=True),
+        'supplier': ft.Dropdown(label="Supplier", dense=True, width=200),
+        'search_button': ft.ElevatedButton('Find', icon=ft.icons.SEARCH),
         'search_form': {},
+        'enable_inventree': ft.Switch(label='InvenTree', value=False, disabled=True),
+        'enable_kicad': ft.Switch(label='KiCad', value=False, disabled=True),
+        # 'enable_alternate': ft.Switch(label='Alternate', value=False),
+        'add_button': ft.ElevatedButton('Add', icon=ft.icons.ADD, disabled=True),
     }
 
     def __init__(self, page: ft.Page):
@@ -114,7 +119,10 @@ class SearchView(MainView):
             self.column.controls.append(ft.Row(controls=[text_field]))
             self.fields['search_form'][field] = text_field
 
-    def search_enable_fields(self):
+    def enable_search_fields(self):
+        self.fields['enable_inventree'].disabled = False
+        self.fields['enable_kicad'].disabled = False
+        self.fields['add_button'].disabled = False
         for form_field in self.fields['search_form'].values():
             form_field.disabled = False
         self.page.update()
@@ -125,7 +133,7 @@ class SearchView(MainView):
         self.page.update()
 
         if not self.fields['part_number'].value and not self.fields['supplier'].value:
-            self.search_enable_fields()
+            self.enable_search_fields()
         else:
             # Supplier search
             part_supplier_info = inventree_interface.supplier_search(self.fields['supplier'].value, self.fields['part_number'].value)
@@ -149,7 +157,21 @@ class SearchView(MainView):
         self.page.update()
         return
 
+    def run_add(self):
+        enable_inventree = self.fields["enable_inventree"].value
+        enable_kicad = self.fields["enable_kicad"].value
+        print(f'Adding to: InvenTree={enable_inventree} | KiCad={enable_kicad}')
+
     def build_column(self):
+        for name, field in self.fields.items():
+            if type(field) == ft.ElevatedButton:
+                field.width = 100
+                field.height = 48
+            if name == 'search_button':
+                field.on_click = lambda e: self.run_search()
+            elif name == 'add_button':
+                field.on_click = lambda e: self.run_add()
+
         return ft.Column(
             controls=[
                 ft.Row(),
@@ -157,12 +179,31 @@ class SearchView(MainView):
                     controls=[
                         self.fields['part_number'],
                         self.fields['supplier'],
-                        ft.FloatingActionButton(
-                            icon=ft.icons.SEARCH,
-                            shape=ft.RoundedRectangleBorder(radius=5),
-                            height=48,
-                            width=80,
-                            on_click=lambda e: self.run_search(),
+                        self.fields['search_button'],
+                    ],
+                ),
+                ft.Row(
+                    controls=[
+                        ft.Column(
+                            [
+                                ft.Row(
+                                    [
+                                        self.fields['enable_inventree'],
+                                        self.fields['enable_kicad'],
+                                    ],
+                                    alignment=ft.MainAxisAlignment.START,
+                                ),
+                            ],
+                            horizontal_alignment=ft.CrossAxisAlignment.START,
+                            expand=True,
+                        ),
+                        ft.Column(
+                            [
+                                self.fields['add_button'],
+                            ],
+                            alignment=ft.MainAxisAlignment.END,
+                            horizontal_alignment=ft.CrossAxisAlignment.END,
+                            expand=True,
                         ),
                     ],
                 ),
