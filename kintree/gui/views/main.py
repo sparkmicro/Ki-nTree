@@ -324,6 +324,13 @@ class KicadView(MainView):
 
     route = '/add/kicad'
     step = 2
+    fields = {
+        'Pick Symbol Library': ft.Dropdown(),
+        'Pick Symbol Template': ft.Dropdown(),
+        'Pick Footprint Library': ft.Dropdown(),
+        'Pick Footprint': ft.Dropdown(),
+        'New Footprint Name': ft.TextField(),
+    }
 
     def __init__(self, page: ft.Page):
         # Init view
@@ -337,13 +344,20 @@ class KicadView(MainView):
             padding=10,
         )
 
+    def create_part(self):
+        print('Create Part')
+
     def build_column(self):
-        return ft.Column(
-            controls=[
-                ft.Text('KiCad', style="bodyMedium"),
-            ],
+        column = ft.Column(
+            [],
             alignment=ft.MainAxisAlignment.START,
             expand=True,
         )
-
-
+        kicad_inputs = []
+        for name, field in self.fields.items():
+            field.label = name
+            field.dense = True
+            kicad_inputs.append(field)
+        column.controls.extend(kicad_inputs)
+        column.controls.append(ft.ElevatedButton('Create', icon=ft.icons.ARROW_RIGHT, width=150, height=48, on_click=lambda _: self.create_part()))
+        return column
