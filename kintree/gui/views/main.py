@@ -3,7 +3,7 @@ import flet as ft
 from .common import CommonView, Collapsible, MenuButton
 from ...common.tools import cprint
 # Settings
-from ...config import settings
+from ...config import settings, config_interface
 # InvenTree
 from ...database import inventree_interface
 
@@ -344,6 +344,19 @@ class KicadView(MainView):
             padding=10,
         )
 
+    def build_library_options(self, type: str):
+        import os
+        found_libraries = []
+        if type == 'symbol':
+            found_libraries = [file.replace('.kicad_sym', '') for file in sorted(os.listdir(settings.KICAD_SYMBOLS_PATH))
+                                if file.endswith('.kicad_sym')]
+        elif type == 'footprint':
+            found_libraries = [folder.replace('.pretty', '') for folder in sorted(os.listdir(settings.KICAD_FOOTPRINTS_PATH))
+                                if os.path.isdir(os.path.join(settings.KICAD_FOOTPRINTS_PATH, folder))]
+        
+        options = [ft.dropdown.Option(lib_name) for lib_name in found_libraries]
+        return options
+
     def create_part(self):
         print('Create Part')
 
@@ -357,6 +370,10 @@ class KicadView(MainView):
         for name, field in self.fields.items():
             field.label = name
             field.dense = True
+            if name == 'Pick Symbol Library':
+                field.options = self.build_library_options(type='symbol')
+            elif name == 'Pick Footprint Library':
+                field.options = self.build_library_options(type='footprint')
             kicad_inputs.append(field)
         column.controls.extend(kicad_inputs)
         column.controls.append(ft.ElevatedButton('Create', icon=ft.icons.ARROW_RIGHT, width=150, height=48, on_click=lambda _: self.create_part()))
