@@ -1,6 +1,7 @@
 import flet as ft
 # Common view
 from .common import CommonView
+from ...common.tools import cprint
 # Settings
 from ...config import settings
 # InvenTree
@@ -26,26 +27,7 @@ main_navrail = ft.NavigationRail(
     min_width=100,
     min_extended_width=400,
     group_alignment=-0.9,
-    destinations=[
-        ft.NavigationRailDestination(
-            icon_content=ft.Icon(name=ft.icons.SEARCH, size=40),
-            selected_icon_content=ft.Icon(name=ft.icons.MANAGE_SEARCH, size=40),
-            label_content=ft.Text("Search", size=16),
-            padding=10,
-        ),
-        ft.NavigationRailDestination(
-            icon_content=ft.Icon(name=ft.icons.INVENTORY_2_OUTLINED, size=40),
-            selected_icon_content=ft.Icon(name=ft.icons.INVENTORY, size=40),
-            label_content=ft.Text("InvenTree", size=16),
-            padding=10,
-        ),
-        ft.NavigationRailDestination(
-            icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=40),
-            selected_icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT, size=40),
-            label_content=ft.Text("KiCad", size=16),
-            padding=10,
-        ),
-    ],
+    destinations=[],
     on_change=None,
 )
 
@@ -55,11 +37,12 @@ class MainView(CommonView):
 
     route = '/'
     # Navigation indexes
-    NAV_BAR_INDEX = {
+    STEP_INDEX = {
         0: '/search',
-        1: '/inventree',
-        2: '/kicad',
+        1: '/add/category',
+        2: '/add/kicad',
     }
+    step = None
 
     def __init__(self, page: ft.Page):
         # Init view
@@ -71,13 +54,28 @@ class MainView(CommonView):
 
         # Update navigation rail
         if not self.navigation_rail.on_change:
-            self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
+            self.navigation_rail.on_change = lambda e: self.page.go(self.STEP_INDEX[e.control.selected_index])
+
+        if len(self.navigation_rail.destinations) > self.step + 1:
+            self.navigation_rail.destinations.pop()
+
+        if len(self.navigation_rail.destinations) < self.step + 1:
+            self.navigation_rail.destinations.append(self.get_rail_destination())
+
+        self.navigation_rail.selected_index = self.step
+
+    def get_rail_destination(self):
+        return ft.NavigationRailDestination()
 
 
 class SearchView(MainView):
     '''Search view'''
 
     route = '/search'
+    step = 0
+    trigger = False
+    form_data = {}
+    add_to = {'inventree': False, 'kicad': False}
 
     # List of search fields
     search_fields_list = [
@@ -119,6 +117,14 @@ class SearchView(MainView):
             self.column.controls.append(ft.Row(controls=[text_field]))
             self.fields['search_form'][field] = text_field
 
+    def get_rail_destination(self):
+        return ft.NavigationRailDestination(
+            icon_content=ft.Icon(name=ft.icons.SEARCH, size=40),
+            selected_icon_content=ft.Icon(name=ft.icons.MANAGE_SEARCH, size=40),
+            label_content=ft.Text("Search", size=16),
+            padding=10,
+        )
+
     def enable_search_fields(self):
         self.fields['enable_inventree'].disabled = False
         self.fields['enable_kicad'].disabled = False
@@ -151,16 +157,25 @@ class SearchView(MainView):
                     except IndexError:
                         pass
                     # Enable editing
-                    self.fields['search_form'][field_name].disabled = False
+                    self.enable_search_fields()
 
         self.page.splash.visible = False
         self.page.update()
         return
 
     def run_add(self):
-        enable_inventree = self.fields["enable_inventree"].value
-        enable_kicad = self.fields["enable_kicad"].value
-        print(f'Adding to: InvenTree={enable_inventree} | KiCad={enable_kicad}')
+        self.add_to['inventree'] = self.fields["enable_inventree"].value
+        self.add_to['kicad'] = self.fields["enable_kicad"].value
+        print(f'{self.add_to=}')
+
+        for key, field in self.fields['search_form'].items():
+            self.form_data[key] = field.value
+        cprint(self.form_data)
+
+        # Reset views and navigation rail
+        self.trigger = True
+        self.navigation_rail.destinations = [self.get_rail_destination()]
+        self.page.go(CategoryView.route)
 
     def build_column(self):
         for name, field in self.fields.items():
@@ -215,16 +230,34 @@ class SearchView(MainView):
         )
 
 
-class InvenTreeView(MainView):
-    '''InvenTree view'''
+class CategoryView(MainView):
+    '''InvenTree categories view'''
 
-    route = '/inventree'
+    route = '/add/category'
+    step = 1
+    selected_category = None
 
     def __init__(self, page: ft.Page):
         # Init view
         super().__init__(page)
 
+    def get_rail_destination(self):
+        return ft.NavigationRailDestination(
+            icon_content=ft.Icon(name=ft.icons.CATEGORY_OUTLINED, size=40),
+            selected_icon_content=ft.Icon(name=ft.icons.CATEGORY, size=40),
+            label_content=ft.Text("Category", size=16),
+            padding=10,
+        )
+
+    def update_selected_category(self, selected_category: str):
+        self.selected_category = selected_category
+
+    def process_selected_category(self):
+        print(f'{self.selected_category=}')
+        self.page.go(KicadView.route)
+
     def build_column(self):
+        print('Populate categories')
         subcategories = []
         for i in [1, 4, 7]:
             subcategories.append(
@@ -238,9 +271,14 @@ class InvenTreeView(MainView):
                 )
             )
 
-        scale = 1.1
+        scale = 1.0
         return ft.Column(
             [
+                ft.Row(
+                    [
+                        ft.ElevatedButton('Next', icon=ft.icons.ARROW_RIGHT, width=100, height=48, on_click=lambda _: self.process_selected_category())
+                    ],
+                ),
                 ft.Row(
                     [
                         ft.RadioGroup(
@@ -267,7 +305,7 @@ class InvenTreeView(MainView):
                                 ],
                                 width=400,
                             ),
-                            on_change=lambda e: print(f'Selected {e.data}'),
+                            on_change=lambda e: self.update_selected_category(e.data),
                         ),
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
@@ -280,11 +318,20 @@ class InvenTreeView(MainView):
 class KicadView(MainView):
     '''KiCad view'''
 
-    route = '/kicad'
+    route = '/add/kicad'
+    step = 2
 
     def __init__(self, page: ft.Page):
         # Init view
         super().__init__(page)
+
+    def get_rail_destination(self):
+        return ft.NavigationRailDestination(
+            icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=40),
+            selected_icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT, size=40),
+            label_content=ft.Text("KiCad", size=16),
+            padding=10,
+        )
 
     def build_column(self):
         return ft.Column(

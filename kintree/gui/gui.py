@@ -1,7 +1,7 @@
 import flet as ft
 
 from .views.settings import UserSettingsView, SupplierSettingsView, InvenTreeSettingsView, KiCadSettingsView 
-from .views.main import SearchView, KicadView, InvenTreeView
+from .views.main import SearchView, CategoryView, KicadView
 
 
 def init_gui(page: ft.Page):
@@ -33,14 +33,16 @@ def init_gui(page: ft.Page):
     page.update()
 
 
+category_view = None
+kicad_view = None
 def MainGUI(page: ft.Page):
     # Init
     init_gui(page)
     # Views
     # Main
     search_view = SearchView(page)
-    kicad_view = KicadView(page)
-    inventree_view = InvenTreeView(page)
+    # category_view = CategoryView(page)
+    # kicad_view = KicadView(page)
     # Settings
     user_settings_view = UserSettingsView(page)
     supplier_settings_view = SupplierSettingsView(page)
@@ -48,9 +50,12 @@ def MainGUI(page: ft.Page):
     kicad_settings_view = KiCadSettingsView(page)
 
     def route_change(route):
-        print(f'Routing to {route.route}')
+        global category_view, kicad_view
+
+        print(f'\n--> Routing to {route.route}')
         
-        if page.route == '/':
+        if page.route == '/' or page.route == search_view.route:
+            page.views.clear()
             page.views.append(search_view)
         elif '/settings' in page.route:
             if '/settings' in page.views[-1].route:
@@ -65,13 +70,20 @@ def MainGUI(page: ft.Page):
                 page.views.append(kicad_settings_view)
             else:
                 page.views.append(user_settings_view)
-        else:
+        elif '/add' in page.route:
             page.views.clear()
-            if page.route == search_view.route:
-                page.views.append(search_view)
-            elif page.route == inventree_view.route:
-                page.views.append(inventree_view)
-            elif page.route == kicad_view.route:
+            # New search: new views
+            if search_view.trigger:
+                category_view = None
+                kicad_view = None
+                search_view.trigger = False
+            if 'category' in page.route:
+                if category_view is None:
+                    category_view = CategoryView(page)
+                page.views.append(category_view)
+            if 'kicad' in page.route:
+                if kicad_view is None:
+                    kicad_view = KicadView(page)
                 page.views.append(kicad_view)
 
         page.update()
