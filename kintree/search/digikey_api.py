@@ -152,7 +152,7 @@ def fetch_part_info(part_number: str) -> dict:
     return part_info
 
 
-def test_api_connect(check_content=False) -> bool:
+def test_api(check_content=False) -> bool:
     ''' Test method for API token '''
     setup_environment()
 

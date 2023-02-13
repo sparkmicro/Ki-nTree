@@ -185,7 +185,7 @@ class SettingsView(CommonView):
     route = '/settings'
     settings = None
     settings_file = None
-    banner = None
+    dialog = None
 
     # Navigation indexes
     NAV_BAR_INDEX = {
@@ -210,7 +210,29 @@ class SettingsView(CommonView):
         if not self.navigation_rail.on_change:
             self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
 
-    def set_dialog(self, open=True):
+    def build_snackbar(self, dialog_success: bool, dialog_text: str):
+        if dialog_success:
+            self.dialog = ft.SnackBar(
+                bgcolor=ft.colors.GREEN_100,
+                content=ft.Text(
+                    dialog_text,
+                    color=ft.colors.GREEN_700,
+                    size=GUI_PARAMS['nav_rail_text_size'],
+                    weight=ft.FontWeight.BOLD,
+                ),
+            )
+        else:
+            self.dialog = ft.SnackBar(
+                bgcolor=ft.colors.RED_ACCENT_100,
+                content=ft.Text(
+                    dialog_text,
+                    color=ft.colors.RED_ACCENT_700,
+                    size=GUI_PARAMS['nav_rail_text_size'],
+                    weight=ft.FontWeight.BOLD,
+                ),
+            )
+
+    def show_dialog(self, open=True):
         if type(self.dialog) == ft.Banner:
             self.page.banner = self.dialog
             self.page.banner.open = open
@@ -218,24 +240,9 @@ class SettingsView(CommonView):
             self.page.snack_bar = self.dialog
             self.page.snack_bar.open = True
         self.page.update()
-
-    def set_snackbar(self):
-        self.page.snackbar = self.banner
-        self.page.snackbar.open = open
-        self.page.update()
     
-    def test_s(self, e: ft.ControlEvent, s: str):
-        '''Test supplier API'''
-        print(s)
-
-    def test(self):
-        '''Test settings'''
-        print(f'Testing {self.title}')
-
     def save(self):
         '''Save settings'''
-        print(f'Saving {self.title}')
-        
         # Load file
         settings_from_file = config_interface.load_file(self.settings_file)
         # Update settings values
@@ -246,8 +253,12 @@ class SettingsView(CommonView):
         config_interface.dump_file(updated_settings, self.settings_file)
 
         # Alert user
-        if self.dialog:
-            self.set_dialog()
+        if not self.dialog:
+            self.build_snackbar(
+                dialog_success=True,
+                dialog_text=f'{self.title} successfully saved',
+            )
+        self.show_dialog()
 
     def on_dialog_result(self, e: ft.FilePickerResultEvent):
         '''Populate field with user-selected system path'''
@@ -366,9 +377,9 @@ class UserSettingsView(SettingsView):
         self.dialog = ft.Banner(
             bgcolor=ft.colors.AMBER_100,
             leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
-            content=ft.Text('Restart Ki-nTree for the new user paths to be loaded'),
+            content=ft.Text('Restart Ki-nTree to load the new user paths', weight=ft.FontWeight.BOLD),
             actions=[
-                ft.TextButton('Discard', on_click=lambda _: self.set_dialog(open=False)),
+                ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
             ],
         )
 
@@ -384,10 +395,34 @@ class SupplierSettingsView(SettingsView):
     def __init__(self, page: ft.Page):
         super().__init__(page)
 
-    def test_s(self, e: ft.ControlEvent, s: str):
+    def test_s(self, e: ft.ControlEvent, supplier: str):
         '''Test supplier API'''
-        supplier = s.replace('Test', '').replace('API', '').replace(' ','')
-        print(f'Testing {supplier} API')
+        result = False
+        if supplier == 'Digi-Key':
+            from ...search import digikey_api
+            digikey_api.setup_environment(force=True)
+            result = digikey_api.test_api()
+        elif supplier == 'Mouser':
+            from ...search import mouser_api
+            result = mouser_api.test_api()
+        elif supplier == 'Element14' or supplier == 'Farnell' or supplier == 'Newark':
+            from ...search import element14_api
+            result = element14_api.test_api()
+        elif supplier == 'LCSC':
+            from ...search import lcsc_api
+            result = lcsc_api.test_api()
+
+        if result:
+            self.build_snackbar(
+                dialog_success=result,
+                dialog_text=f'Successfully connected to {supplier} API'
+            )
+        else:
+            self.build_snackbar(
+                dialog_success=result,
+                dialog_text=f'ERROR: Failed to connect to {supplier} API. Verify the {supplier} credentials and re-try'
+            )
+        self.show_dialog()
 
     def build_column(self):
         # Title and separator
@@ -431,7 +466,7 @@ class SupplierSettingsView(SettingsView):
                             width=GUI_PARAMS['button_width'],
                             height=GUI_PARAMS['button_height'],
                             icon=ft.icons.CHECK_OUTLINED,
-                            on_click=lambda e, s=supplier: self.test_s(e, s=s)
+                            on_click=lambda e, s=supplier: self.test_s(e, supplier=s)
                         ),
                         ft.ElevatedButton(
                             'Save',
@@ -467,7 +502,7 @@ class InvenTreeSettingsView(SettingsView):
     # settings = None
     settings_file = global_settings.INVENTREE_CONFIG
 
-    def save(self):
+    def save(self, dialog=True):
         # Save to file
         config_interface.save_inventree_user_settings(enable=global_settings.ENABLE_INVENTREE,
                                                       server=SETTINGS[self.title]['Server Address'][1].value,
@@ -476,36 +511,33 @@ class InvenTreeSettingsView(SettingsView):
                                                       user_config_path=self.settings_file)
         # Reload InvenTree Settings
         global_settings.load_inventree_settings()
+        # Alert user
+        if dialog:
+            self.build_snackbar(
+                    dialog_success=True,
+                    dialog_text=f'{self.title} successfully saved',
+                )
+            self.show_dialog()
 
     def test(self):
         from ...database import inventree_interface
-        self.save()
+        self.save(dialog=False)
         connection = inventree_interface.connect_to_server()
         if connection:
-            self.dialog = ft.SnackBar(
-                bgcolor=ft.colors.GREEN_100,
-                content=ft.Text(
-                    'Sucessfully connected to InvenTree server',
-                    color=ft.colors.GREEN_700,
-                    size=GUI_PARAMS['nav_rail_text_size'],
-                    weight=ft.FontWeight.BOLD,
-                ),
+            self.build_snackbar(
+                dialog_success=connection,
+                dialog_text='Sucessfully connected to InvenTree server'
             )
         else:
-            self.dialog = ft.SnackBar(
-                bgcolor=ft.colors.RED_ACCENT_100,
-                content=ft.Text(
-                    'ERROR: Failed to connect to InvenTree server. Make sure the credentials are correct and server is running',
-                    color=ft.colors.RED_ACCENT_700,
-                    size=GUI_PARAMS['nav_rail_text_size'],
-                    weight=ft.FontWeight.BOLD,
-                ),
+            self.build_snackbar(
+                dialog_success=connection,
+                dialog_text='ERROR: Failed to connect to InvenTree server. Verify the InvenTree credentials are correct and server is running'
             )
-        self.set_dialog()
+        self.show_dialog()
 
     def __init__(self, page: ft.Page):
+        # Load InvenTree settings
         self.settings = config_interface.load_inventree_user_settings(self.settings_file)
-        print(self.settings)
         super().__init__(page)
 
 

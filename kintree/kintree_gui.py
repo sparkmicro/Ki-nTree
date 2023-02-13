@@ -142,7 +142,7 @@ def digikey_api_settings_window():
         elif api_event == 'Test':
             # Automatically save settings
             save_settings(user_settings)
-            if digikey_api.test_api_connect():
+            if digikey_api.test_api():
                 result_message = 'Successfully connected to Digi-Key API'
             else:
                 result_message = 'Failed to connect to Digi-Key API'
