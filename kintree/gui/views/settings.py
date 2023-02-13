@@ -24,8 +24,6 @@ GUI_PARAMS = {
     'icon_size': 40,
 }
 
-# Load InvenTree Settings
-global_settings.load_inventree_settings()
 # Load Supplier Settings
 supplier_settings = {}
 for supplier in global_settings.SUPPORTED_SUPPLIERS_API:
@@ -201,12 +199,9 @@ class SettingsView(CommonView):
         # Load setting fields
         self.fields = {}
         for field_name, field_data in SETTINGS.get(self.title, {}).items():
-            if type(field_data) == list:
+            if type(field_data) == list and field_data[0] is not None:
                 self.fields[field_name] = field_data[1]
-                try:
-                    self.fields[field_name].value = self.settings[field_data[0]]
-                except TypeError:
-                    pass
+                self.fields[field_name].value = self.settings[field_data[0]]
 
         # Init view
         super().__init__(page=page, appbar=settings_appbar, navigation_rail=settings_navrail)
@@ -215,9 +210,18 @@ class SettingsView(CommonView):
         if not self.navigation_rail.on_change:
             self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
 
-    def set_banner(self, open=True):
-        self.page.banner = self.banner
-        self.page.banner.open = open
+    def set_dialog(self, open=True):
+        if type(self.dialog) == ft.Banner:
+            self.page.banner = self.dialog
+            self.page.banner.open = open
+        elif type(self.dialog) == ft.SnackBar:
+            self.page.snack_bar = self.dialog
+            self.page.snack_bar.open = True
+        self.page.update()
+
+    def set_snackbar(self):
+        self.page.snackbar = self.banner
+        self.page.snackbar.open = open
         self.page.update()
     
     def test_s(self, e: ft.ControlEvent, s: str):
@@ -242,8 +246,8 @@ class SettingsView(CommonView):
         config_interface.dump_file(updated_settings, self.settings_file)
 
         # Alert user
-        if self.banner:
-            self.set_banner(open=True)
+        if self.dialog:
+            self.set_dialog()
 
     def on_dialog_result(self, e: ft.FilePickerResultEvent):
         '''Populate field with user-selected system path'''
@@ -326,7 +330,7 @@ class SettingsView(CommonView):
 
         # Test and Save buttons
         test_save_buttons = ft.Row()
-        if list(self.fields.keys())[-1] == 'Test':
+        if list(SETTINGS[self.title])[-1] == 'Test':
             test_save_buttons.controls.append(
                 ft.ElevatedButton(
                 'Test',
@@ -359,14 +363,12 @@ class UserSettingsView(SettingsView):
     settings_file = global_settings.USER_CONFIG_FILE
 
     def __init__(self, page: ft.Page):
-        self.banner = ft.Banner(
+        self.dialog = ft.Banner(
             bgcolor=ft.colors.AMBER_100,
             leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
-            content=ft.Text(
-                'Restart Ki-nTree for the new paths to be loaded',
-            ),
+            content=ft.Text('Restart Ki-nTree for the new user paths to be loaded'),
             actions=[
-                ft.TextButton('OK', on_click=lambda _: self.set_banner(open=False)),
+                ft.TextButton('Discard', on_click=lambda _: self.set_dialog(open=False)),
             ],
         )
 
@@ -462,20 +464,48 @@ class InvenTreeSettingsView(SettingsView):
 
     title = 'InvenTree Settings'
     route = '/settings/inventree'
-    settings = None
+    # settings = None
     settings_file = global_settings.INVENTREE_CONFIG
 
     def save(self):
+        # Save to file
         config_interface.save_inventree_user_settings(enable=global_settings.ENABLE_INVENTREE,
-                                                      server=SETTINGS[self.title][0][1].value,
-                                                      username=SETTINGS[self.title][1][1].value,
-                                                      password=SETTINGS[self.title][2][1].value,
+                                                      server=SETTINGS[self.title]['Server Address'][1].value,
+                                                      username=SETTINGS[self.title]['Username'][1].value,
+                                                      password=SETTINGS[self.title]['Password'][1].value,
                                                       user_config_path=self.settings_file)
+        # Reload InvenTree Settings
+        global_settings.load_inventree_settings()
 
     def test(self):
-        return self.save()
+        from ...database import inventree_interface
+        self.save()
+        connection = inventree_interface.connect_to_server()
+        if connection:
+            self.dialog = ft.SnackBar(
+                bgcolor=ft.colors.GREEN_100,
+                content=ft.Text(
+                    'Sucessfully connected to InvenTree server',
+                    color=ft.colors.GREEN_700,
+                    size=GUI_PARAMS['nav_rail_text_size'],
+                    weight=ft.FontWeight.BOLD,
+                ),
+            )
+        else:
+            self.dialog = ft.SnackBar(
+                bgcolor=ft.colors.RED_ACCENT_100,
+                content=ft.Text(
+                    'ERROR: Failed to connect to InvenTree server. Make sure the credentials are correct and server is running',
+                    color=ft.colors.RED_ACCENT_700,
+                    size=GUI_PARAMS['nav_rail_text_size'],
+                    weight=ft.FontWeight.BOLD,
+                ),
+            )
+        self.set_dialog()
 
     def __init__(self, page: ft.Page):
+        self.settings = config_interface.load_inventree_user_settings(self.settings_file)
+        print(self.settings)
         super().__init__(page)
 
 
