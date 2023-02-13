@@ -395,12 +395,67 @@ class SupplierSettingsView(SettingsView):
     def __init__(self, page: ft.Page):
         super().__init__(page)
 
+    def save_s(self, e: ft.ControlEvent, supplier: str, show_dialog=True):
+        '''Save supplier API settings'''
+        if supplier == 'Digi-Key':
+            from ...search import digikey_api
+            # Load settings from file
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_DIGIKEY_API)
+            # Update settings values
+            updated_settings = {
+                'DIGIKEY_CLIENT_ID': SETTINGS[self.title][supplier]['Client ID'][1].value,
+                'DIGIKEY_CLIENT_SECRET': SETTINGS[self.title][supplier]['Client Secret'][1].value,
+            }
+            digikey_settings = {**settings_from_file, **updated_settings}
+            config_interface.dump_file(digikey_settings, global_settings.CONFIG_DIGIKEY_API)
+            digikey_api.setup_environment(force=True)
+        elif supplier == 'Mouser':
+            from ...search import mouser_api
+            # Load settings from file
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_MOUSER_API)
+            # Update settings values
+            updated_settings = {
+                'MOUSER_PART_API_KEY': SETTINGS[self.title][supplier]['Part API Key'][1].value,
+            }
+            mouser_settings = {**settings_from_file, **updated_settings}
+            config_interface.dump_file(mouser_settings, global_settings.CONFIG_MOUSER_API)
+            mouser_api.setup_environment(force=True)
+        elif supplier == 'Element14' or supplier == 'Farnell' or supplier == 'Newark':
+            from ...search import element14_api
+            # Load settings from file
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_ELEMENT14_API)
+            # Update settings values
+            updated_settings = {
+                'ELEMENT14_PRODUCT_SEARCH_API_KEY': SETTINGS[self.title][supplier]['Product Search API Key (Element14)'][1].value,
+                f'{supplier.upper()}_STORE': SETTINGS[self.title][supplier][f'{supplier} Store'][1].value,
+            }
+            element14_settings = {**settings_from_file, **updated_settings}
+            config_interface.dump_file(element14_settings, global_settings.CONFIG_ELEMENT14_API)
+        elif supplier == 'LCSC':
+            from ...search import lcsc_api
+            # Load settings from file
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_LCSC_API)
+            # Update settings values
+            updated_settings = {
+                'LCSC_API_URL': SETTINGS[self.title][supplier]['API URL'][1].value,
+            }
+            lcsc_settings = {**settings_from_file, **updated_settings}
+            config_interface.dump_file(lcsc_settings, global_settings.CONFIG_LCSC_API)
+            
+        if show_dialog:
+            self.build_snackbar(
+                    dialog_success=True,
+                    dialog_text=f'{supplier} Settings successfully saved',
+                )
+            self.show_dialog()
+
     def test_s(self, e: ft.ControlEvent, supplier: str):
-        '''Test supplier API'''
+        '''Test supplier API settings'''
+        self.save_s(e, supplier, show_dialog=False)
+
         result = False
         if supplier == 'Digi-Key':
             from ...search import digikey_api
-            digikey_api.setup_environment(force=True)
             result = digikey_api.test_api()
         elif supplier == 'Mouser':
             from ...search import mouser_api
@@ -466,14 +521,14 @@ class SupplierSettingsView(SettingsView):
                             width=GUI_PARAMS['button_width'],
                             height=GUI_PARAMS['button_height'],
                             icon=ft.icons.CHECK_OUTLINED,
-                            on_click=lambda e, s=supplier: self.test_s(e, supplier=s)
+                            on_click=lambda e, s=supplier: self.test_s(e, supplier=s),
                         ),
                         ft.ElevatedButton(
                             'Save',
                             width=GUI_PARAMS['button_width'],
                             height=GUI_PARAMS['button_height'],
                             icon=ft.icons.SAVE_OUTLINED,
-                            on_click=lambda _: self.save()
+                            on_click=lambda e, s=supplier: self.save_s(e, supplier=s),
                         ),
                     ]
                 )
@@ -548,6 +603,3 @@ class KiCadSettingsView(SettingsView):
     route = '/settings/kicad'
     settings = global_settings.KICAD_SETTINGS
     settings_file = global_settings.KICAD_CONFIG_PATHS
-
-    def __init__(self, page: ft.Page):
-        super().__init__(page)
