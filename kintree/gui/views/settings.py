@@ -5,6 +5,22 @@ from .common import CommonView
 from ...config import settings, config_interface
 
 
+GUI_PARAMS = {
+    'nav_rail_min_width': 100,
+    'nav_rail_width': 400,
+    'nav_rail_alignment': -0.9,
+    'nav_rail_icon_size': 40,
+    'nav_rail_text_size': 16,
+    'nav_rail_padding': 10,
+    'textfield_width': 600,
+    'textfield_dense': False,
+    'textfield_space_after': 3,
+    'dropdown_width': 600,
+    'dropdown_dense': False,
+    'button_width': 100,
+    'button_height': 56,
+}
+
 # Load InvenTree Settings
 settings.load_inventree_settings()
 # Load Supplier Settings
@@ -48,7 +64,12 @@ for supplier in settings.SUPPORTED_SUPPLIERS_API:
             dropdown_options.append(ft.dropdown.Option(f'{store_name} ({store_url})'))
         supplier_settings[supplier][f'{supplier} Store'] = [
             default_store,
-            ft.Dropdown(label='Store', width=800, options=dropdown_options),
+            ft.Dropdown(
+                label='Store',
+                width=GUI_PARAMS['dropdown_width'],
+                dense=GUI_PARAMS['dropdown_dense'],
+                options=dropdown_options
+            ),
             None,
         ]
     elif supplier == 'LCSC':
@@ -124,33 +145,33 @@ settings_appbar = ft.AppBar(
 settings_navrail = ft.NavigationRail(
     selected_index=0,
     label_type=ft.NavigationRailLabelType.ALL,
-    min_width=100,
-    min_extended_width=400,
-    group_alignment=-0.9,
+    min_width=GUI_PARAMS['nav_rail_min_width'],
+    min_extended_width=GUI_PARAMS['nav_rail_width'],
+    group_alignment=GUI_PARAMS['nav_rail_alignment'],
     destinations=[
         ft.NavigationRailDestination(
-            icon_content=ft.Icon(name=ft.icons.SUPERVISED_USER_CIRCLE, size=40),
-            selected_icon_content=ft.Icon(name=ft.icons.SUPERVISED_USER_CIRCLE_OUTLINED, size=40),
-            label_content=ft.Text("User", size=16),
-            padding=10,
+            label_content=ft.Text("User", size=GUI_PARAMS['nav_rail_text_size']),
+            icon_content=ft.Icon(name=ft.icons.SUPERVISED_USER_CIRCLE, size=GUI_PARAMS['nav_rail_icon_size']),
+            selected_icon_content=ft.Icon(name=ft.icons.SUPERVISED_USER_CIRCLE_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
+            padding=GUI_PARAMS['nav_rail_padding'],
         ),
         ft.NavigationRailDestination(
-            icon_content=ft.Icon(name=ft.icons.LOCAL_SHIPPING, size=40),
-            selected_icon_content=ft.Icon(name=ft.icons.LOCAL_SHIPPING_OUTLINED, size=40),
-            label_content=ft.Text("Supplier", size=16),
-            padding=10,
+            label_content=ft.Text("Supplier", size=GUI_PARAMS['nav_rail_text_size']),
+            icon_content=ft.Icon(name=ft.icons.LOCAL_SHIPPING, size=GUI_PARAMS['nav_rail_icon_size']),
+            selected_icon_content=ft.Icon(name=ft.icons.LOCAL_SHIPPING_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
+            padding=GUI_PARAMS['nav_rail_padding'],
         ),
         ft.NavigationRailDestination(
-            icon_content=ft.Icon(name=ft.icons.INVENTORY, size=40),
-            selected_icon_content=ft.Icon(name=ft.icons.INVENTORY_2_OUTLINED, size=40),
-            label_content=ft.Text("InvenTree", size=16),
-            padding=10,
+            label_content=ft.Text("InvenTree", size=GUI_PARAMS['nav_rail_text_size']),
+            icon_content=ft.Icon(name=ft.icons.INVENTORY, size=GUI_PARAMS['nav_rail_icon_size']),
+            selected_icon_content=ft.Icon(name=ft.icons.INVENTORY_2_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
+            padding=GUI_PARAMS['nav_rail_padding'],
         ),
         ft.NavigationRailDestination(
-            icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT, size=40),
-            selected_icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=40),
-            label_content=ft.Text("KiCad", size=16),
-            padding=10,
+            label_content=ft.Text("KiCad", size=GUI_PARAMS['nav_rail_text_size']),
+            icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT, size=GUI_PARAMS['nav_rail_icon_size']),
+            selected_icon_content=ft.Icon(name=ft.icons.SETTINGS_INPUT_COMPONENT_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
+            padding=GUI_PARAMS['nav_rail_padding'],
         ),
     ],
     on_change=None,
@@ -213,8 +234,6 @@ class SettingsView(CommonView):
         path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
 
     def build_column(self):
-        button_width = 100
-        button_height = 48
         # Title and separator
         column = ft.Column(
             controls=[
@@ -228,7 +247,8 @@ class SettingsView(CommonView):
         for field_name, field in self.fields.items():
             if type(field) == ft.TextField:
                 field.label = field_name
-                field.width = 800
+                field.width = GUI_PARAMS['textfield_width']
+                field.dense = GUI_PARAMS['textfield_dense']
                 if 'password' in field.label.lower():
                     field.password = True
                 field_row = ft.Row(
@@ -239,9 +259,19 @@ class SettingsView(CommonView):
                 # Add browse button
                 if SETTINGS[self.title][field_name][2]:
                     field_row.controls.append(
-                        ft.ElevatedButton('Browse', width=button_width, height=button_height, on_click=lambda e, t=field_name: self.path_picker(e, title=t))
+                        ft.ElevatedButton(
+                            'Browse',
+                            width=GUI_PARAMS['button_width'],
+                            height=GUI_PARAMS['button_height'],
+                            on_click=lambda e, t=field_name: self.path_picker(e, title=t)
+                        ),
                     )
-                column.controls.append(field_row)
+                column.controls.extend(
+                    [
+                        field_row,
+                        ft.Row(height=GUI_PARAMS['textfield_space_after']),
+                    ]
+                )
             elif type(field) == ft.Text:
                 field.value = field_name
                 field_row = ft.Row(
@@ -253,7 +283,13 @@ class SettingsView(CommonView):
                 column.controls.append(ft.Divider())
             elif type(field) == ft.TextButton:
                 column.controls.append(
-                    ft.ElevatedButton(field_name, width=button_width*2, height=button_height, icon=ft.icons.CHECK_OUTLINED, on_click=lambda e, s=field_name: self.test_s(e, s=s)),
+                    ft.ElevatedButton(
+                        field_name,
+                        width=GUI_PARAMS['button_width'] * 2,
+                        height=GUI_PARAMS['button_height'],
+                        icon=ft.icons.CHECK_OUTLINED,
+                        on_click=lambda e, s=field_name: self.test_s(e, s=s)
+                    ),
                 )
             elif type(field) == ft.Dropdown:
                 field.on_change = lambda _: self.save()
@@ -265,10 +301,22 @@ class SettingsView(CommonView):
         test_save_buttons = ft.Row()
         if list(self.fields.keys())[-1] == 'Test':
             test_save_buttons.controls.append(
-                ft.ElevatedButton('Test', width=button_width, height=button_height, icon=ft.icons.CHECK_OUTLINED, on_click=lambda _: self.test()),
+                ft.ElevatedButton(
+                'Test',
+                width=GUI_PARAMS['button_width'],
+                height=GUI_PARAMS['button_height'],
+                icon=ft.icons.CHECK_OUTLINED,
+                on_click=lambda _: self.test()
+                ),
             )
         test_save_buttons.controls.append(
-                ft.ElevatedButton('Save', width=button_width, height=button_height, icon=ft.icons.SAVE_OUTLINED, on_click=lambda _: self.save()),
+                ft.ElevatedButton(
+                    'Save',
+                    width=GUI_PARAMS['button_width'],
+                    height=GUI_PARAMS['button_height'],
+                    icon=ft.icons.SAVE_OUTLINED,
+                    on_click=lambda _: self.save()
+                ),
             )
         column.controls.append(test_save_buttons)
 
@@ -280,6 +328,9 @@ class UserSettingsView(SettingsView):
 
     title = 'User Settings'
     route = '/settings/user'
+
+    def save(self):
+        return super().save()
 
     def __init__(self, page: ft.Page):
         super().__init__(page)
@@ -300,8 +351,6 @@ class SupplierSettingsView(SettingsView):
         print(f'Testing {supplier} API')
 
     def build_column(self):
-        button_width = 100
-        button_height = 48
         # Title and separator
         column = ft.Column(
             controls=[
@@ -324,22 +373,34 @@ class SupplierSettingsView(SettingsView):
             ]
             for setting_name, setting_data in settings.items():
                 setting_data[1].label = setting_name
-                setting_data[1].width = 800
+                setting_data[1].width = GUI_PARAMS['textfield_width']
+                setting_data[1].dense = GUI_PARAMS['textfield_dense']
                 setting_data[1].value = setting_data[0]
-                supplier_tab_content.append(
-                    ft.Row(
-                        controls=[
-                            setting_data[1]
-                        ]
-                    )
+                supplier_tab_content.extend(
+                    [
+                        ft.Row([setting_data[1]]),
+                        ft.Row(height=GUI_PARAMS['textfield_space_after']),
+                    ]
                 )
 
             # Test and Save buttons
             supplier_tab_content.append(
                 ft.Row(
                     controls=[
-                        ft.ElevatedButton('Test', width=button_width, height=button_height, icon=ft.icons.CHECK_OUTLINED, on_click=lambda e, s=supplier: self.test_s(e, s=s)),
-                        ft.ElevatedButton('Save', width=button_width, height=button_height, icon=ft.icons.SAVE_OUTLINED, on_click=lambda _: self.save()),
+                        ft.ElevatedButton(
+                            'Test',
+                            width=GUI_PARAMS['button_width'],
+                            height=GUI_PARAMS['button_height'],
+                            icon=ft.icons.CHECK_OUTLINED,
+                            on_click=lambda e, s=supplier: self.test_s(e, s=s)
+                        ),
+                        ft.ElevatedButton(
+                            'Save',
+                            width=GUI_PARAMS['button_width'],
+                            height=GUI_PARAMS['button_height'],
+                            icon=ft.icons.SAVE_OUTLINED,
+                            on_click=lambda _: self.save()
+                        ),
                     ]
                 )
             )
@@ -365,6 +426,13 @@ class InvenTreeSettingsView(SettingsView):
     title = 'InvenTree Settings'
     route = '/settings/inventree'
 
+    def test(self):
+        self.save()
+        return super().save()
+
+    def save(self):
+        return super().save()
+
     def __init__(self, page: ft.Page):
         super().__init__(page)
 
@@ -374,6 +442,9 @@ class KiCadSettingsView(SettingsView):
 
     title = 'KiCad Settings'
     route = '/settings/kicad'
+
+    def save(self):
+        return super().save()
 
     def __init__(self, page: ft.Page):
         super().__init__(page)
