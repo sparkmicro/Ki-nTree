@@ -1,8 +1,10 @@
+import os
 import flet as ft
 # Common view
 from .common import CommonView
 # Settings
-from ...config import settings, config_interface
+from ...config import settings as global_settings
+from ...config import config_interface
 
 
 GUI_PARAMS = {
@@ -19,18 +21,19 @@ GUI_PARAMS = {
     'dropdown_dense': False,
     'button_width': 100,
     'button_height': 56,
+    'icon_size': 40,
 }
 
 # Load InvenTree Settings
-settings.load_inventree_settings()
+global_settings.load_inventree_settings()
 # Load Supplier Settings
 supplier_settings = {}
-for supplier in settings.SUPPORTED_SUPPLIERS_API:
+for supplier in global_settings.SUPPORTED_SUPPLIERS_API:
     supplier_settings[supplier] = {}
 
     # Add fields
     if supplier == 'Digi-Key':
-        digikey_api_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
+        digikey_api_settings = config_interface.load_file(global_settings.CONFIG_DIGIKEY_API)
         supplier_settings[supplier]['Client ID'] = [
             digikey_api_settings['DIGIKEY_CLIENT_ID'],
             ft.TextField(),
@@ -42,7 +45,7 @@ for supplier in settings.SUPPORTED_SUPPLIERS_API:
             None,
         ]
     elif supplier == 'Mouser':
-        mouser_api_settings = config_interface.load_file(settings.CONFIG_MOUSER_API)
+        mouser_api_settings = config_interface.load_file(global_settings.CONFIG_MOUSER_API)
         supplier_settings[supplier]['Part API Key'] = [
             mouser_api_settings['MOUSER_PART_API_KEY'],
             ft.TextField(),
@@ -50,7 +53,7 @@ for supplier in settings.SUPPORTED_SUPPLIERS_API:
         ]
     elif supplier == 'Element14' or supplier == 'Farnell' or supplier == 'Newark':
         from ...search.element14_api import STORES
-        element14_api_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
+        element14_api_settings = config_interface.load_file(global_settings.CONFIG_ELEMENT14_API)
         default_store = element14_api_settings.get(f'{supplier.upper()}_STORE', '')
 
         supplier_settings[supplier]['Product Search API Key (Element14)'] = [
@@ -73,7 +76,7 @@ for supplier in settings.SUPPORTED_SUPPLIERS_API:
             None,
         ]
     elif supplier == 'LCSC':
-        lcsc_api_settings = config_interface.load_file(settings.CONFIG_LCSC_API)
+        lcsc_api_settings = config_interface.load_file(global_settings.CONFIG_LCSC_API)
         supplier_settings[supplier]['API URL'] = [
             lcsc_api_settings['LCSC_API_URL'],
             ft.TextField(),
@@ -83,12 +86,12 @@ for supplier in settings.SUPPORTED_SUPPLIERS_API:
 SETTINGS = {
     'User Settings': {
         'Configuration Files Folder': [
-            settings.USER_SETTINGS['USER_FILES'],
+            'USER_FILES',
             ft.TextField(),
             True,  # Browse enabled
         ],
         'Cache Folder': [
-            settings.USER_SETTINGS['USER_CACHE'],
+            'USER_CACHE',
             ft.TextField(),
             True,  # Browse enabled
         ],
@@ -96,17 +99,17 @@ SETTINGS = {
     'Supplier Settings': supplier_settings,
     'InvenTree Settings': {
         'Server Address': [
-            settings.SERVER_ADDRESS,
+            'SERVER_ADDRESS',
             ft.TextField(),
             False,  # Browse disabled
         ],
         'Username': [
-            settings.USERNAME,
+            'USERNAME',
             ft.TextField(),
             False,  # Browse disabled
         ],
         'Password': [
-            settings.PASSWORD,
+            'PASSWORD',
             ft.TextField(),
             False,  # Browse disabled
         ],
@@ -118,17 +121,17 @@ SETTINGS = {
     },
     'KiCad Settings': {
         'Symbol Libraries Folder': [
-            settings.KICAD_SYMBOLS_PATH,
+            'KICAD_SYMBOLS_PATH',
             ft.TextField(),
             True,  # Browse enabled
         ],
         'Symbol Templates Folder': [
-            settings.KICAD_TEMPLATES_PATH,
+            'KICAD_TEMPLATES_PATH',
             ft.TextField(),
             True,  # Browse enabled
         ],
         'Footprint Libraries Folder': [
-            settings.KICAD_FOOTPRINTS_PATH,
+            'KICAD_FOOTPRINTS_PATH',
             ft.TextField(),
             True,  # Browse enabled
         ],
@@ -182,6 +185,9 @@ class SettingsView(CommonView):
 
     title = 'Settings'
     route = '/settings'
+    settings = None
+    settings_file = None
+    banner = None
 
     # Navigation indexes
     NAV_BAR_INDEX = {
@@ -197,7 +203,10 @@ class SettingsView(CommonView):
         for field_name, field_data in SETTINGS.get(self.title, {}).items():
             if type(field_data) == list:
                 self.fields[field_name] = field_data[1]
-                self.fields[field_name].value = field_data[0]
+                try:
+                    self.fields[field_name].value = self.settings[field_data[0]]
+                except TypeError:
+                    pass
 
         # Init view
         super().__init__(page=page, appbar=settings_appbar, navigation_rail=settings_navrail)
@@ -205,6 +214,11 @@ class SettingsView(CommonView):
         # Update navigation rail
         if not self.navigation_rail.on_change:
             self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
+
+    def set_banner(self, open=True):
+        self.page.banner = self.banner
+        self.page.banner.open = open
+        self.page.update()
     
     def test_s(self, e: ft.ControlEvent, s: str):
         '''Test supplier API'''
@@ -217,6 +231,19 @@ class SettingsView(CommonView):
     def save(self):
         '''Save settings'''
         print(f'Saving {self.title}')
+        
+        # Load file
+        settings_from_file = config_interface.load_file(self.settings_file)
+        # Update settings values
+        for setting in SETTINGS[self.title].values():
+            self.settings[setting[0]] = setting[1].value
+        updated_settings = {**settings_from_file, **self.settings}
+        # Save
+        config_interface.dump_file(updated_settings, self.settings_file)
+
+        # Alert user
+        if self.banner:
+            self.set_banner(open=True)
 
     def on_dialog_result(self, e: ft.FilePickerResultEvent):
         '''Populate field with user-selected system path'''
@@ -328,11 +355,21 @@ class UserSettingsView(SettingsView):
 
     title = 'User Settings'
     route = '/settings/user'
-
-    def save(self):
-        return super().save()
+    settings = global_settings.USER_SETTINGS
+    settings_file = global_settings.USER_CONFIG_FILE
 
     def __init__(self, page: ft.Page):
+        self.banner = ft.Banner(
+            bgcolor=ft.colors.AMBER_100,
+            leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
+            content=ft.Text(
+                'Restart Ki-nTree for the new paths to be loaded',
+            ),
+            actions=[
+                ft.TextButton('OK', on_click=lambda _: self.set_banner(open=False)),
+            ],
+        )
+
         super().__init__(page)
 
 
@@ -425,13 +462,18 @@ class InvenTreeSettingsView(SettingsView):
 
     title = 'InvenTree Settings'
     route = '/settings/inventree'
-
-    def test(self):
-        self.save()
-        return super().save()
+    settings = None
+    settings_file = global_settings.INVENTREE_CONFIG
 
     def save(self):
-        return super().save()
+        config_interface.save_inventree_user_settings(enable=global_settings.ENABLE_INVENTREE,
+                                                      server=SETTINGS[self.title][0][1].value,
+                                                      username=SETTINGS[self.title][1][1].value,
+                                                      password=SETTINGS[self.title][2][1].value,
+                                                      user_config_path=self.settings_file)
+
+    def test(self):
+        return self.save()
 
     def __init__(self, page: ft.Page):
         super().__init__(page)
@@ -442,9 +484,8 @@ class KiCadSettingsView(SettingsView):
 
     title = 'KiCad Settings'
     route = '/settings/kicad'
-
-    def save(self):
-        return super().save()
+    settings = global_settings.KICAD_SETTINGS
+    settings_file = global_settings.KICAD_CONFIG_PATHS
 
     def __init__(self, page: ft.Page):
         super().__init__(page)

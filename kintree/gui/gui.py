@@ -42,7 +42,7 @@ def MainGUI(page: ft.Page):
     search_view = SearchView(page)
     # Settings
     user_settings_view = UserSettingsView(page)
-    supplier_settings_view = SupplierSettingsView(page)
+    # supplier_settings_view = SupplierSettingsView(page)
     inventree_settings_view = InvenTreeSettingsView(page)
     kicad_settings_view = KiCadSettingsView(page)
 
@@ -59,8 +59,8 @@ def MainGUI(page: ft.Page):
                 page.views.pop()
             if page.route == user_settings_view.route:
                 page.views.append(user_settings_view)
-            elif page.route == supplier_settings_view.route:
-                page.views.append(supplier_settings_view)
+            # elif page.route == supplier_settings_view.route:
+            #     page.views.append(supplier_settings_view)
             elif page.route == inventree_settings_view.route:
                 page.views.append(inventree_settings_view)
             elif page.route == kicad_settings_view.route:
