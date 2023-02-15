@@ -1,6 +1,7 @@
 import flet as ft
 
 from .views.settings import UserSettingsView, SupplierSettingsView, InvenTreeSettingsView, KiCadSettingsView 
+from .views.settings import settings_navrail
 from .views.main import PartSearchView, InventreeView, KicadView, CreateView
 
 
@@ -72,6 +73,12 @@ def MainGUI(page: ft.Page):
             elif page.route == kicad_settings_view.route:
                 page.views.append(kicad_settings_view)
             else:
+                # TODO: Find more elegant way to reset index
+                try:
+                    settings_navrail.selected_index = 0
+                    settings_navrail.update()
+                except AssertionError:
+                    pass
                 page.views.append(user_settings_view)
         else:
             page.views.append(part_view)

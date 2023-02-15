@@ -1,3 +1,4 @@
+import os
 import flet as ft
 # Common view
 from .common import data_from_views, CommonView, DropdownWithSearch, Collapsible, MenuButton
@@ -113,10 +114,14 @@ class MainView(CommonView):
             if name != 'enable':
                 field.disabled = disable
                 field.update()
+        self.push_data(e)
 
     def push_data(self, e=None):
         for key, field in self.fields.items():
-            self.data[key] = field.value
+            try:
+                self.data[key] = field.value
+            except AttributeError:
+                pass
         data_from_views[self.title] = self.data
 
 
@@ -184,12 +189,17 @@ class PartSearchView(MainView):
                 self.enable_search_fields()
             else:
                 # Supplier search
-                part_supplier_info = inventree_interface.supplier_search(self.fields['supplier'].value, self.fields['part_number'].value)
+                part_supplier_info = inventree_interface.supplier_search(
+                    self.fields['supplier'].value,
+                    self.fields['part_number'].value
+                )
 
                 if part_supplier_info:
                     # Translate to user form format
-                    part_supplier_form = inventree_interface.translate_supplier_to_form(supplier=self.fields['supplier'].value,
-                                            part_info=part_supplier_info)
+                    part_supplier_form = inventree_interface.translate_supplier_to_form(
+                                            supplier=self.fields['supplier'].value,
+                                            part_info=part_supplier_info,
+                                        )
 
                 if part_supplier_info:
                     for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
@@ -245,7 +255,7 @@ class InventreeView(MainView):
     fields = {
         'enable': ft.Switch(label='InvenTree', value=settings.ENABLE_INVENTREE, on_change=None),
         # 'alternate': ft.Switch(label='Alternate', value=False, disabled=True),
-        'load_categories': ft.ElevatedButton('Reload InvenTree Categories', height=48, icon=ft.icons.SWAP_VERT_CIRCLE_OUTLINED),
+        'load_categories': ft.ElevatedButton('Reload InvenTree Categories', height=48, icon=ft.icons.REPLAY),
         'Category': DropdownWithSearch(label='Category', dr_width=400, sr_width=400, dense=True, options=[]),
     }
 
@@ -309,15 +319,58 @@ class KicadView(MainView):
         # Init view
         super().__init__(page)
 
+    def get_footprint_libraries(self) -> dict:
+        footprint_libraries = {}
+        for folder in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'])):
+            if os.path.isdir(os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)):
+                footprint_libraries[folder.replace('.pretty', '')] = os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)
+        return footprint_libraries
+
+    def update_footprint_options(self, library: str):
+        footprint_options = []
+        # Load paths
+        footprint_paths = self.get_footprint_libraries()
+        # Get path matching selected footprint library
+        footprint_lib_path = footprint_paths[library]
+        # Load footprints
+        footprints = [
+            item.replace('.kicad_mod', '')
+            for item in sorted(os.listdir(footprint_lib_path))
+            if os.path.isfile(os.path.join(footprint_lib_path, item))
+        ]
+        # Find folder matching value
+        for footprint in footprints:
+            footprint_options.append(ft.dropdown.Option(footprint))
+
+        return footprint_options
+
+    def push_data(self, e=None, label=None, value=None):
+        super().push_data(e)
+        if label or e:
+            if 'Footprint Library' in [label, e.control.label]:
+                if value:
+                    selected_footprint_library = value
+                else:
+                    selected_footprint_library = e.data
+                self.fields['Footprint'].options = self.update_footprint_options(selected_footprint_library)
+                self.fields['Footprint'].update()
+
     def build_library_options(self, type: str):
         import os
         found_libraries = []
         if type == 'symbol':
             found_libraries = [file.replace('.kicad_sym', '') for file in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH']))
                                 if file.endswith('.kicad_sym')]
+        elif type == 'template':
+            templates = config_interface.load_templates_paths(
+                user_config_path=settings.KICAD_CONFIG_CATEGORY_MAP,
+                template_path=settings.KICAD_SETTINGS['KICAD_TEMPLATES_PATH']
+            )
+            for key in templates:
+                for template in templates[key]:
+                    found_libraries.append(f'{key}/{template}')
         elif type == 'footprint':
-            found_libraries = [folder.replace('.pretty', '') for folder in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH']))
-                                if os.path.isdir(os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder))]
+            found_libraries = list(self.get_footprint_libraries().keys())
         
         options = [ft.dropdown.Option(lib_name) for lib_name in found_libraries]
         return options
@@ -330,11 +383,13 @@ class KicadView(MainView):
         )
         kicad_inputs = []
         for name, field in self.fields.items():
+            field.on_change = self.push_data
             if type(field) == DropdownWithSearch:
                 field.label = name
-                field.on_change = self.push_data
                 if name == 'Symbol Library':
                     field.options = self.build_library_options(type='symbol')
+                elif name == 'Symbol Template':
+                    field.options = self.build_library_options(type='template')
                 elif name == 'Footprint Library':
                     field.options = self.build_library_options(type='footprint')
 

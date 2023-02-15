@@ -224,8 +224,9 @@ class DropdownWithSearch(UserControl):
     def on_search(self, e):
         if self.search_field.value.replace(" ", ""):
             self.dropdown.options = self.update_option_list(self.search_field.value)
-            if len(self.options) == 1:
+            if len(self.dropdown.options) == 1:
                 self.value = self.dropdown.options[0].key
+                self.on_change(e, self.label, self.value)
             else:
                 self.value = None
         else:

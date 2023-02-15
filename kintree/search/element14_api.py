@@ -93,9 +93,12 @@ def get_default_search_keys():
 
 def get_default_store_url(supplier: str) -> str:
     ''' Get saved store/location for supplier '''
-
+    import re
     user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
     default_store = user_settings.get(f'{supplier.upper()}_STORE', '')
+    url_match = re.match(r'^(.+?) \((.+?)\)$', default_store)
+    if url_match:
+        return url_match.group(2)
     return STORES[supplier][default_store]
 
 
@@ -248,8 +251,8 @@ def test_api(store_url=None) -> bool:
             'store_url': 'au.element14.com',
             'part_number': '2N7002-7-F',
             'expected': {
-                'displayName': 'MOSFET, N CHANNEL, 60V, 1.2OHM, 115mA, SOT-23',
-                'brandName': 'MULTICOMP PRO',
+                'displayName': 'Power MOSFET, N Channel, 60 V, 115 mA, 13.5 ohm, SOT-23, Surface Mount',
+                'brandName': 'DIODES INC.',
                 'translatedManufacturerPartNumber': '2N7002-7-F',
             }
         },
