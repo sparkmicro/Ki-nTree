@@ -8,6 +8,7 @@ from flet_core.animation import Animation
 from flet_core.control import Control
 from flet_core.types import ScaleValue
 
+data_from_views = {}
 
 class CommonView(View):
     '''Common view to all GUI views'''
@@ -53,6 +54,105 @@ class CommonView(View):
                 expand=True,
             ),
         ]
+
+
+class DropdownWithSearch():
+    '''Implements a dropdown with search box'''
+    container = None
+    dropdown = None
+    dropdown_width = None
+    search_button = None
+    search_field = None
+    search_field_width = None
+    search_box = None
+
+    def __init__(self,
+                 label: str,
+                 dr_width: int,
+                 sr_width: int,
+                 dense: bool,
+                 sr_animate=200,
+                 options=None,
+    ):
+        self.dropdown_width = width
+        self.search_field_width = width
+        self.options = options
+        self.dropdown = Dropdown(
+            label=label,
+            width=dr_width,
+            dense=dense,
+            options=options,
+        )
+        self.search_button = IconButton('search', on_click=self.search_now)
+        self.search_field = TextField(
+            border="none",
+            width=sr_width,
+            dense=dense,
+            on_change=self.on_search,
+        )
+        self.search_box = Container(
+            content=self.search_field,
+            width=0,
+            animate=Animation(sr_animate),
+        )
+        self._build()
+
+    @property
+    def value(self):
+        return self.dropdown.value
+    
+    def update_option_list(self, input: str):
+        new_list_options = []
+        for option in self.options:
+            if input.lower() in option.key.lower():
+                new_list_options.append(option)
+        return new_list_options
+
+    def on_search(self, e):
+        if self.search_field.value.replace(" ", ""):
+            self.dropdown.options = self.update_option_list(self.search_field.value)
+            if len(self.dropdown.options) == 1:
+                self.dropdown.value = self.dropdown.options[0].key
+            else:
+                self.dropdown.value = None
+        else:
+            self.dropdown.options = self.options
+        self.dropdown.update()
+
+    def search_now(self, e):
+        self.search_box.width = self.search_field_width
+        self.search_box.update()
+        self.search_button.icon = 'highlight_remove'
+        self.search_button.on_click = self.done_search
+        self.search_button.update()
+        self.search_field.border = "outline"
+        self.search_field.update()
+        self.search_field.focus()
+        if self.search_field.value:
+            self.on_search(e)
+    
+    def done_search(self, e):
+        self.search_box.width = 0
+        self.search_box.update()
+        self.search_button.icon = 'search'
+        self.search_button.on_click = self.search_now
+        self.search_button.update()
+        self.search_field.border = "none"
+        self.search_field.update()
+        self.dropdown.options = self.options
+        self.dropdown.update()
+
+    def _build(self):
+        self.container = Container(
+            content=Row(
+                controls=[
+                    self.dropdown,
+                    self.search_box,
+                    self.search_button,
+                ],
+                alignment="center",
+            ),
+        )
 
 
 class Collapsible(Column):
@@ -113,103 +213,6 @@ class Collapsible(Column):
                 ),
                 self.content,
             ]
-
-
-class DropdownWithSearch():
-    '''Implements a dropdown with search box'''
-    container = None
-    dropdown = None
-    dropdown_width = None
-    search_button = None
-    search_field = None
-    search_field_width = None
-    search_box = None
-
-    def __init__(self,
-                 label: str,
-                 width: int,
-                 dense: bool,
-                 options=None,
-    ):
-        self.dropdown_width = width
-        self.search_field_width = width
-        self.options = options
-        self.dropdown = Dropdown(
-            label=label,
-            width=self.dropdown_width,
-            dense=dense,
-            options=options
-        )
-        self.search_button = IconButton('search', on_click=self.search_now)
-        self.search_field = TextField(
-            border="none",
-            width=self.search_field_width,
-            dense=dense,
-            on_change=self.on_search,
-        )
-        self.search_box = Container(
-            content=self.search_field,
-            width=0,
-            animate=Animation(200),
-        )
-        self._build()
-
-    @property
-    def value(self):
-        return self.dropdown.value
-    
-    def update_option_list(self, input: str):
-        new_list_options = []
-        for option in self.options:
-            if input.lower() in option.key.lower():
-                new_list_options.append(option)
-        return new_list_options
-
-    def on_search(self, e):
-        if self.search_field.value.replace(" ", ""):
-            self.dropdown.options = self.update_option_list(self.search_field.value)
-            if len(self.dropdown.options) == 1:
-                self.dropdown.value = self.dropdown.options[0].key
-            else:
-                self.dropdown.value = None
-        else:
-            self.dropdown.options = self.options
-        self.dropdown.update()
-
-    def search_now(self, e):
-        self.search_box.width = self.search_field_width
-        self.search_box.update()
-        self.search_button.icon = 'highlight_remove'
-        self.search_button.on_click = self.done_search
-        self.search_button.update()
-        self.search_field.border = "outline"
-        self.search_field.update()
-        self.search_field.focus()
-        if self.search_field.value:
-            self.on_search(e)
-    
-    def done_search(self, e):
-        self.search_box.width = 0
-        self.search_box.update()
-        self.search_button.icon = 'search'
-        self.search_button.on_click = self.search_now
-        self.search_button.update()
-        self.search_field.border = "none"
-        self.search_field.update()
-        self.dropdown.options = self.options
-        self.dropdown.update()
-
-    def _build(self):
-        self.container = Container(
-            content=Row(
-                controls=[
-                    self.dropdown,
-                    self.search_box,
-                    self.search_button,
-                ],
-                alignment="center",
-            ),
-        )
 
         
 class MenuButton(Container):

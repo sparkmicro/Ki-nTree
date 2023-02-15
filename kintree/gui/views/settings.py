@@ -164,7 +164,7 @@ settings_navrail = ft.NavigationRail(
         ),
         ft.NavigationRailDestination(
             label_content=ft.Text("InvenTree", size=GUI_PARAMS['nav_rail_text_size']),
-            icon_content=ft.Icon(name=ft.icons.INVENTORY, size=GUI_PARAMS['nav_rail_icon_size']),
+            icon_content=ft.Icon(name=ft.icons.INVENTORY_2, size=GUI_PARAMS['nav_rail_icon_size']),
             selected_icon_content=ft.Icon(name=ft.icons.INVENTORY_2_OUTLINED, size=GUI_PARAMS['nav_rail_icon_size']),
             padding=GUI_PARAMS['nav_rail_padding'],
         ),
