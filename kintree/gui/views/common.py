@@ -130,6 +130,7 @@ class DropdownWithSearch(UserControl):
         dr_width: Optional[int]=None,
         sr_width: Optional[int]=None,
         dense: Optional[bool]=None,
+        disabled=False,
         sr_animate=100,
         options=None,
         on_change=None,
@@ -144,7 +145,10 @@ class DropdownWithSearch(UserControl):
             options=options,
             on_change=on_change,
         )
-        self.search_button = IconButton('search', on_click=self.search_now)
+        self.search_button = IconButton(
+            'search',
+            on_click=self.search_now
+        )
         self.search_field = TextField(
             border="none",
             width=sr_width,
@@ -156,6 +160,7 @@ class DropdownWithSearch(UserControl):
             width=0,
             animate=Animation(sr_animate),
         )
+        self.disabled = disabled
         self.search_width = sr_width
 
     @property
@@ -173,6 +178,24 @@ class DropdownWithSearch(UserControl):
     @value.setter
     def value(self, value):
         self.dropdown.value = value
+
+    @property
+    def disabled(self):
+        return self.dropdown.disabled
+    
+    @disabled.setter
+    def disabled(self, disabled):
+        try:
+            self.dropdown.disabled = disabled
+            self.dropdown.update()
+            self.search_button.disabled = disabled
+            self.search_button.update()
+            self.search_field.disabled = disabled
+            self.search_field.update()
+            self.search_box.disabled = disabled
+            self.done_search()
+        except (AttributeError, AssertionError):
+            pass
     
     @property
     def options(self):
@@ -222,7 +245,7 @@ class DropdownWithSearch(UserControl):
         if self.search_field.value:
             self.on_search(e)
     
-    def done_search(self, e):
+    def done_search(self, e=None):
         self.search_box.width = 0
         self.search_box.update()
         self.search_button.icon = 'search'

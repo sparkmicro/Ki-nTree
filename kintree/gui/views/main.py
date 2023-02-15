@@ -101,20 +101,18 @@ class MainView(CommonView):
         # Init data
         self.data = {}
 
-        # if len(self.navigation_rail.destinations) > self.step + 1:
-        #     self.navigation_rail.destinations.pop()
+        # Process enable switch
+        if 'enable' in self.fields:
+            self.fields['enable'].on_change = self.process_enable
 
-        # if len(self.navigation_rail.destinations) < self.step + 1:
-        #     self.navigation_rail.destinations.append(self.get_rail_destination())
-        #     try:
-        #         self.navigation_rail.update()
-        #     except AssertionError:
-        #         pass
-
-        # self.navigation_rail.selected_index = self.step
-
-    # def get_rail_destination(self):
-    #     return ft.NavigationRailDestination()
+    def process_enable(self, e):
+        disable = True
+        if e.data.lower() == 'true':
+            disable = False
+        for name, field in self.fields.items():
+            if name != 'enable':
+                field.disabled = disable
+                field.update()
 
     def push_data(self, e=None):
         for key, field in self.fields.items():
@@ -148,10 +146,6 @@ class PartSearchView(MainView):
         'supplier': ft.Dropdown(label="Supplier", dense=True, width=200),
         'search_button': ft.ElevatedButton('Find', icon=ft.icons.SEARCH),
         'search_form': {},
-        # 'enable_inventree': ft.Switch(label='InvenTree', value=False, disabled=True),
-        # 'enable_kicad': ft.Switch(label='KiCad', value=False, disabled=True),
-        # 'enable_alternate': ft.Switch(label='Alternate', value=False),
-        # 'add_button': ft.ElevatedButton('Add', icon=ft.icons.ADD, disabled=True),
     }
 
     def __init__(self, page: ft.Page):
@@ -169,9 +163,6 @@ class PartSearchView(MainView):
             self.fields['search_form'][field] = text_field
 
     def enable_search_fields(self):
-        # self.fields['enable_inventree'].disabled = False
-        # self.fields['enable_kicad'].disabled = False
-        # self.fields['add_button'].disabled = False
         for form_field in self.fields['search_form'].values():
             form_field.disabled = False
         self.page.update()
@@ -217,9 +208,6 @@ class PartSearchView(MainView):
         return
 
     def push_data(self, e=None):
-        # self.add_to['inventree'] = self.fields["enable_inventree"].value
-        # self.add_to['kicad'] = self.fields["enable_kicad"].value
-        # print(f'{self.add_to=}')
         for key, field in self.fields['search_form'].items():
             self.data[key] = field.value
         data_from_views[self.title] = self.data
@@ -242,31 +230,6 @@ class PartSearchView(MainView):
                         self.fields['search_button'],
                     ],
                 ),
-                # ft.Row(
-                #     controls=[
-                #         ft.Column(
-                #             [
-                #                 ft.Row(
-                #                     [
-                #                         self.fields['enable_inventree'],
-                #                         self.fields['enable_kicad'],
-                #                     ],
-                #                     alignment=ft.MainAxisAlignment.START,
-                #                 ),
-                #             ],
-                #             horizontal_alignment=ft.CrossAxisAlignment.START,
-                #             expand=True,
-                #         ),
-                #         ft.Column(
-                #             [
-                #                 self.fields['add_button'],
-                #             ],
-                #             alignment=ft.MainAxisAlignment.END,
-                #             horizontal_alignment=ft.CrossAxisAlignment.END,
-                #             expand=True,
-                #         ),
-                #     ],
-                # ),
                 ft.Divider(),
             ],
             alignment=ft.MainAxisAlignment.START,
@@ -280,12 +243,18 @@ class InventreeView(MainView):
 
     title = 'InvenTree'
     fields = {
+        'enable': ft.Switch(label='InvenTree', value=settings.ENABLE_INVENTREE, on_change=None),
+        # 'alternate': ft.Switch(label='Alternate', value=False, disabled=True),
+        'load_categories': ft.ElevatedButton('Reload InvenTree Categories', height=48, icon=ft.icons.SWAP_VERT_CIRCLE_OUTLINED),
         'Category': DropdownWithSearch(label='Category', dr_width=400, sr_width=400, dense=True, options=[]),
     }
 
     def __init__(self, page: ft.Page):
         # Init view
         super().__init__(page)
+
+    def load_categories(self, e):
+        print('Loading categories from InvenTree...')
 
     def build_column(self):
         inventree_categories = [
@@ -302,9 +271,23 @@ class InventreeView(MainView):
         self.fields['Category'].options = category_options
         self.fields['Category'].on_change = self.push_data
 
+        self.fields['load_categories'].on_click = self.load_categories
+
         return ft.Column(
             controls=[
+                ft.Row(),
+                ft.Row(
+                    [
+                        self.fields['enable'],
+                        # self.fields['alternate'],
+                    ]
+                ),
                 self.fields['Category'],
+                ft.Row(
+                    [
+                        self.fields['load_categories'],
+                    ]
+                ),
             ],
         )
 
@@ -314,11 +297,12 @@ class KicadView(MainView):
 
     title = 'KiCad'
     fields = {
+        'enable': ft.Switch(label='KiCad', value=settings.ENABLE_KICAD, on_change=None),
         'Symbol Library': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
         'Symbol Template': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
         'Footprint Library': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
         'Footprint': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
-        'New Footprint Name': ft.TextField(width=400, dense=True),
+        'New Footprint Name': ft.TextField(label='New Footprint Name', width=400, dense=True),
     }
 
     def __init__(self, page: ft.Page):
@@ -346,12 +330,13 @@ class KicadView(MainView):
         )
         kicad_inputs = []
         for name, field in self.fields.items():
-            field.label = name
-            field.on_change = self.push_data
-            if name == 'Symbol Library':
-                field.options = self.build_library_options(type='symbol')
-            elif name == 'Footprint Library':
-                field.options = self.build_library_options(type='footprint')
+            if type(field) == DropdownWithSearch:
+                field.label = name
+                field.on_change = self.push_data
+                if name == 'Symbol Library':
+                    field.options = self.build_library_options(type='symbol')
+                elif name == 'Footprint Library':
+                    field.options = self.build_library_options(type='footprint')
 
             kicad_inputs.append(field)
         
@@ -375,6 +360,7 @@ class CreateView(MainView):
     def build_column(self):
         return ft.Column(
             controls=[
+                ft.Row(),
                 ft.ElevatedButton('Load', on_click=self.load_data)
             ]
         )
