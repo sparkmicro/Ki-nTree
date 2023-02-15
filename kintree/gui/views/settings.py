@@ -2,27 +2,11 @@ import os
 import flet as ft
 # Common view
 from .common import CommonView
+from .common import GUI_PARAMS
 # Settings
 from ...config import settings as global_settings
 from ...config import config_interface
 
-
-GUI_PARAMS = {
-    'nav_rail_min_width': 100,
-    'nav_rail_width': 400,
-    'nav_rail_alignment': -0.9,
-    'nav_rail_icon_size': 40,
-    'nav_rail_text_size': 16,
-    'nav_rail_padding': 10,
-    'textfield_width': 600,
-    'textfield_dense': False,
-    'textfield_space_after': 3,
-    'dropdown_width': 600,
-    'dropdown_dense': False,
-    'button_width': 100,
-    'button_height': 56,
-    'icon_size': 40,
-}
 
 # Load Supplier Settings
 supplier_settings = {}
@@ -209,37 +193,6 @@ class SettingsView(CommonView):
         # Update navigation rail
         if not self.navigation_rail.on_change:
             self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
-
-    def build_snackbar(self, dialog_success: bool, dialog_text: str):
-        if dialog_success:
-            self.dialog = ft.SnackBar(
-                bgcolor=ft.colors.GREEN_100,
-                content=ft.Text(
-                    dialog_text,
-                    color=ft.colors.GREEN_700,
-                    size=GUI_PARAMS['nav_rail_text_size'],
-                    weight=ft.FontWeight.BOLD,
-                ),
-            )
-        else:
-            self.dialog = ft.SnackBar(
-                bgcolor=ft.colors.RED_ACCENT_100,
-                content=ft.Text(
-                    dialog_text,
-                    color=ft.colors.RED_ACCENT_700,
-                    size=GUI_PARAMS['nav_rail_text_size'],
-                    weight=ft.FontWeight.BOLD,
-                ),
-            )
-
-    def show_dialog(self, open=True):
-        if type(self.dialog) == ft.Banner:
-            self.page.banner = self.dialog
-            self.page.banner.open = open
-        elif type(self.dialog) == ft.SnackBar:
-            self.page.snack_bar = self.dialog
-            self.page.snack_bar.open = True
-        self.page.update()
     
     def save(self):
         '''Save settings'''

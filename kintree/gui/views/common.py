@@ -1,12 +1,30 @@
 from math import pi
 from typing import Optional
 
-from flet import Page, View, AppBar, NavigationRail, VerticalDivider
+from flet import Page, View, AppBar, NavigationRail, SnackBar, Banner, VerticalDivider
 from flet import Column, Container, Icon, Row, Text, Radio, icons, padding
-from flet import IconButton, TextField, Dropdown
-from flet_core.animation import Animation
+from flet import IconButton, TextField, Dropdown, UserControl
 from flet_core.control import Control
-from flet_core.types import ScaleValue
+from flet_core.animation import Animation
+from flet_core.types import ScaleValue, FontWeight
+import flet_core.colors as colors
+
+GUI_PARAMS = {
+    'nav_rail_min_width': 100,
+    'nav_rail_width': 400,
+    'nav_rail_alignment': -0.9,
+    'nav_rail_icon_size': 40,
+    'nav_rail_text_size': 16,
+    'nav_rail_padding': 10,
+    'textfield_width': 600,
+    'textfield_dense': False,
+    'textfield_space_after': 3,
+    'dropdown_width': 600,
+    'dropdown_dense': False,
+    'button_width': 100,
+    'button_height': 56,
+    'icon_size': 40,
+}
 
 data_from_views = {}
 
@@ -15,10 +33,10 @@ class CommonView(View):
 
     page = None
     navigation_rail = None
-    navidx = None
-    NAV_BAR_INDEX = {}
+    NAV_BAR_INDEX = None
     column = None
-    fields = {}
+    fields = None
+    data = None
     
     def __init__(self, page: Page, appbar: AppBar, navigation_rail: NavigationRail):
         # Store page pointer
@@ -54,34 +72,77 @@ class CommonView(View):
                 expand=True,
             ),
         ]
+    
+    def build_snackbar(self, dialog_success: bool, dialog_text: str):
+        if dialog_success:
+            self.dialog = SnackBar(
+                bgcolor=colors.GREEN_100,
+                content=Text(
+                    dialog_text,
+                    color=colors.GREEN_700,
+                    size=GUI_PARAMS['nav_rail_text_size'],
+                    weight=FontWeight.BOLD,
+                ),
+            )
+        else:
+            self.dialog = SnackBar(
+                bgcolor=colors.RED_ACCENT_100,
+                content=Text(
+                    dialog_text,
+                    color=colors.RED_ACCENT_700,
+                    size=GUI_PARAMS['nav_rail_text_size'],
+                    weight=FontWeight.BOLD,
+                ),
+            )
+
+    def show_dialog(self, open=True):
+        if type(self.dialog) == Banner:
+            self.page.banner = self.dialog
+            self.page.banner.open = open
+        elif type(self.dialog) == SnackBar:
+            self.page.snack_bar = self.dialog
+            self.page.snack_bar.open = True
+        self.page.update()
 
 
-class DropdownWithSearch():
+class DropdownWithSearch(UserControl):
     '''Implements a dropdown with search box'''
-    container = None
+
     dropdown = None
-    dropdown_width = None
     search_button = None
     search_field = None
-    search_field_width = None
     search_box = None
+    search_width = None
+    
+    def build(self):
+        return Row([
+            self.dropdown,
+            self.search_box,
+            self.search_button,
+        ])
+    
+    def __str__(self):
+        return f'dropdown_with_search {{dropdown: {self.dropdown}, search_field: {self.search_field}}}'
 
-    def __init__(self,
-                 label: str,
-                 dr_width: int,
-                 sr_width: int,
-                 dense: bool,
-                 sr_animate=200,
-                 options=None,
-    ):
-        self.dropdown_width = width
-        self.search_field_width = width
-        self.options = options
+    def __init__(
+        self,
+        label: Optional[str]=None,
+        dr_width: Optional[int]=None,
+        sr_width: Optional[int]=None,
+        dense: Optional[bool]=None,
+        sr_animate=100,
+        options=None,
+        on_change=None,
+        **kwargs,
+    ):  
+        super().__init__(**kwargs)
+        self._options = options
         self.dropdown = Dropdown(
             label=label,
             width=dr_width,
             dense=dense,
             options=options,
+            on_change=on_change,
         )
         self.search_button = IconButton('search', on_click=self.search_now)
         self.search_field = TextField(
@@ -95,15 +156,44 @@ class DropdownWithSearch():
             width=0,
             animate=Animation(sr_animate),
         )
-        self._build()
+        self.search_width = sr_width
 
+    @property
+    def label(self):
+        return self.dropdown.label
+    
+    @label.setter
+    def label(self, label):
+        self.dropdown.label = label
+        
     @property
     def value(self):
         return self.dropdown.value
     
+    @value.setter
+    def value(self, value):
+        self.dropdown.value = value
+    
+    @property
+    def options(self):
+        return self.dropdown.options
+    
+    @options.setter
+    def options(self, options):
+        self._options = options
+        self.dropdown.options = self._options
+
+    @property
+    def on_change(self):
+        return self.dropdown.on_change
+    
+    @on_change.setter
+    def on_change(self, on_change):
+        self.dropdown.on_change = on_change
+    
     def update_option_list(self, input: str):
         new_list_options = []
-        for option in self.options:
+        for option in self._options:
             if input.lower() in option.key.lower():
                 new_list_options.append(option)
         return new_list_options
@@ -111,16 +201,17 @@ class DropdownWithSearch():
     def on_search(self, e):
         if self.search_field.value.replace(" ", ""):
             self.dropdown.options = self.update_option_list(self.search_field.value)
-            if len(self.dropdown.options) == 1:
-                self.dropdown.value = self.dropdown.options[0].key
+            if len(self.options) == 1:
+                self.value = self.dropdown.options[0].key
             else:
-                self.dropdown.value = None
+                self.value = None
         else:
-            self.dropdown.options = self.options
+            self.dropdown.options = self._options
         self.dropdown.update()
+        self.on_change()
 
     def search_now(self, e):
-        self.search_box.width = self.search_field_width
+        self.search_box.width = self.search_width
         self.search_box.update()
         self.search_button.icon = 'highlight_remove'
         self.search_button.on_click = self.done_search
@@ -139,20 +230,8 @@ class DropdownWithSearch():
         self.search_button.update()
         self.search_field.border = "none"
         self.search_field.update()
-        self.dropdown.options = self.options
+        self.options = self._options
         self.dropdown.update()
-
-    def _build(self):
-        self.container = Container(
-            content=Row(
-                controls=[
-                    self.dropdown,
-                    self.search_box,
-                    self.search_button,
-                ],
-                alignment="center",
-            ),
-        )
 
 
 class Collapsible(Column):

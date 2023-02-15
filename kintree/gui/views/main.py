@@ -1,6 +1,6 @@
 import flet as ft
 # Common view
-from .common import data_from_views, CommonView, Collapsible, MenuButton
+from .common import data_from_views, CommonView, DropdownWithSearch, Collapsible, MenuButton
 from ...common.tools import cprint
 # Settings
 from ...config import settings, config_interface
@@ -36,9 +36,9 @@ MAIN_NAVIGATION = {
         'route': '/main/create'
     },
 }
-NAV_INDEX = {}
+NAV_BAR_INDEX = {}
 for view in MAIN_NAVIGATION.values():
-    NAV_INDEX[view['nav_index']] = view['route']
+    NAV_BAR_INDEX[view['nav_index']] = view['route']
 
 # Main NavRail
 main_navrail = ft.NavigationRail(
@@ -96,7 +96,7 @@ class MainView(CommonView):
 
         # Update navigation rail
         if not self.navigation_rail.on_change:
-            self.navigation_rail.on_change = lambda e: self.page.go(NAV_INDEX[e.control.selected_index])
+            self.navigation_rail.on_change = lambda e: self.page.go(NAV_BAR_INDEX[e.control.selected_index])
 
         # Init data
         self.data = {}
@@ -178,35 +178,42 @@ class PartSearchView(MainView):
         return
 
     def run_search(self):
-        self.page.splash.visible = True
-        self.page.update()
-
-        if not self.fields['part_number'].value and not self.fields['supplier'].value:
-            self.enable_search_fields()
+        # Validate form
+        if bool(self.fields['part_number'].value) !=  bool(self.fields['supplier'].value):
+            if not self.fields['part_number'].value:
+                self.build_snackbar(dialog_success=False, dialog_text='Missing Part Number')
+            else:
+                self.build_snackbar(dialog_success=False, dialog_text='Missing Supplier')
+            self.show_dialog()
         else:
-            # Supplier search
-            part_supplier_info = inventree_interface.supplier_search(self.fields['supplier'].value, self.fields['part_number'].value)
+            self.page.splash.visible = True
+            self.page.update()
 
-            if part_supplier_info:
-                # Translate to user form format
-                part_supplier_form = inventree_interface.translate_supplier_to_form(supplier=self.fields['supplier'].value,
-                                           part_info=part_supplier_info)
+            if not self.fields['part_number'].value and not self.fields['supplier'].value:
+                self.enable_search_fields()
+            else:
+                # Supplier search
+                part_supplier_info = inventree_interface.supplier_search(self.fields['supplier'].value, self.fields['part_number'].value)
 
-            if part_supplier_info:
-                for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
-                    # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
-                    try:
-                        self.fields['search_form'][field_name].value = part_supplier_form.get(field_name, '')
-                    except IndexError:
-                        pass
-                    # Enable editing
-                    self.enable_search_fields()
+                if part_supplier_info:
+                    # Translate to user form format
+                    part_supplier_form = inventree_interface.translate_supplier_to_form(supplier=self.fields['supplier'].value,
+                                            part_info=part_supplier_info)
 
-                # Add to data buffer
-                self.push_data()
+                if part_supplier_info:
+                    for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
+                        # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
+                        try:
+                            self.fields['search_form'][field_name].value = part_supplier_form.get(field_name, '')
+                        except IndexError:
+                            pass
+                        # Enable editing
+                        self.enable_search_fields()
 
-        self.page.splash.visible = False
-        self.page.update()
+            # Add to data buffer
+            self.push_data()
+            self.page.splash.visible = False
+            self.page.update()
         return
 
     def push_data(self, e=None):
@@ -272,28 +279,33 @@ class InventreeView(MainView):
     '''InvenTree categories view'''
 
     title = 'InvenTree'
-    data = {
-        'selected_category': None,
+    fields = {
+        'Category': DropdownWithSearch(label='Category', dr_width=400, sr_width=400, dense=True, options=[]),
     }
 
     def __init__(self, page: ft.Page):
         # Init view
         super().__init__(page)
 
-    def update_selected_category(self, selected_category: str):
-        self.data["selected_category"] = selected_category
-
-    def process_selected_category(self):
-        print(f'{self.data["selected_category"]=}')
-
     def build_column(self):
+        inventree_categories = [
+            'Capacitors',
+            '- Capacitors/Ceramic',
+            '-- Capacitors/Ceramic/0603',
+            '-- Capacitors/Ceramic/0402',
+            '- Capacitors/Aluminum',
+            'Connectors',
+        ]
+
+        category_options = [ft.dropdown.Option(category) for category in inventree_categories]
+        # Update dropdown
+        self.fields['Category'].options = category_options
+        self.fields['Category'].on_change = self.push_data
+
         return ft.Column(
             controls=[
-                ft.Text('InvenTree'),
+                self.fields['Category'],
             ],
-            width=500,
-            alignment=ft.MainAxisAlignment.START,
-            scroll=ft.ScrollMode.HIDDEN,
         )
 
 
@@ -302,11 +314,11 @@ class KicadView(MainView):
 
     title = 'KiCad'
     fields = {
-        'Pick Symbol Library': ft.Dropdown(),
-        'Pick Symbol Template': ft.Dropdown(),
-        'Pick Footprint Library': ft.Dropdown(),
-        'Pick Footprint': ft.Dropdown(),
-        'New Footprint Name': ft.TextField(),
+        'Symbol Library': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
+        'Symbol Template': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
+        'Footprint Library': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
+        'Footprint': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
+        'New Footprint Name': ft.TextField(width=400, dense=True),
     }
 
     def __init__(self, page: ft.Page):
@@ -326,27 +338,24 @@ class KicadView(MainView):
         options = [ft.dropdown.Option(lib_name) for lib_name in found_libraries]
         return options
 
-    def create_part(self):
-        print('Create Part')
-
     def build_column(self):
         column = ft.Column(
-            [],
+            controls=[ft.Row()],
             alignment=ft.MainAxisAlignment.START,
             expand=True,
         )
         kicad_inputs = []
         for name, field in self.fields.items():
             field.label = name
-            field.dense = True
             field.on_change = self.push_data
-            if name == 'Pick Symbol Library':
+            if name == 'Symbol Library':
                 field.options = self.build_library_options(type='symbol')
-            elif name == 'Pick Footprint Library':
+            elif name == 'Footprint Library':
                 field.options = self.build_library_options(type='footprint')
+
             kicad_inputs.append(field)
+        
         column.controls.extend(kicad_inputs)
-        column.controls.append(ft.ElevatedButton('Create', icon=ft.icons.ARROW_RIGHT, width=150, height=48, on_click=lambda _: self.create_part()))
         return column
 
 
@@ -359,3 +368,13 @@ class CreateView(MainView):
     def __init__(self, page: ft.Page):
         # Init view
         super().__init__(page)
+
+    def load_data(self, e=None):
+        cprint(data_from_views)
+
+    def build_column(self):
+        return ft.Column(
+            controls=[
+                ft.ElevatedButton('Load', on_click=self.load_data)
+            ]
+        )
