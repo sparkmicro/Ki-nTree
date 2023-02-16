@@ -1,12 +1,21 @@
 import flet as ft
 
-from .views.settings import UserSettingsView, SupplierSettingsView, InvenTreeSettingsView, KiCadSettingsView 
-from .views.settings import settings_navrail
-from .views.main import PartSearchView, InventreeView, KicadView, CreateView
+from .views.main import (
+    PartSearchView,
+    InventreeView,
+    KicadView,
+    CreateView,
+)
+from .views.settings import (
+    UserSettingsView,
+    SupplierSettingsView,
+    InvenTreeSettingsView,
+    KiCadSettingsView,
+)
 
 
 def init_gui(page: ft.Page):
-    ''' Initialize window '''
+    '''Initialize page'''
     # Alignments
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
@@ -34,7 +43,8 @@ def init_gui(page: ft.Page):
     page.update()
 
 
-def MainGUI(page: ft.Page):
+def kintree_gui(page: ft.Page):
+    '''Ki-nTree GUI'''
     # Init
     init_gui(page)
     # Views
@@ -73,8 +83,9 @@ def MainGUI(page: ft.Page):
             elif page.route == kicad_settings_view.route:
                 page.views.append(kicad_settings_view)
             else:
-                # TODO: Find more elegant way to reset index
                 try:
+                    # TODO: Find more elegant way to reset navigation index
+                    from .views.settings import settings_navrail
                     settings_navrail.selected_index = 0
                     settings_navrail.update()
                 except AssertionError:
@@ -86,7 +97,7 @@ def MainGUI(page: ft.Page):
         page.update()
 
     def view_pop(e):
-        # print("View pop:", e.view)
+        '''Pop setting view'''
         page.views.pop()
         top_view = page.views[-1]
         page.go(top_view.route)

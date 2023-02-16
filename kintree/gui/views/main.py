@@ -4,8 +4,8 @@ import flet as ft
 # Version
 from ... import __version__
 # Common view
-from .common import GUI_PARAMS
-from .common import data_from_views, CommonView, DropdownWithSearch, Collapsible, MenuButton
+from .common import GUI_PARAMS, data_from_views
+from .common import CommonView, DropdownWithSearch
 from ...common.tools import cprint
 # Settings
 from ...config import settings, config_interface
@@ -110,6 +110,7 @@ class MainView(CommonView):
         if 'enable' in self.fields:
             self.fields['enable'].on_change = self.process_enable
 
+        # Add floating button to reset view
         self.floating_action_button = ft.FloatingActionButton(
             icon=ft.icons.REPLAY, on_click=self.reset_view,
         )
@@ -293,10 +294,6 @@ class InventreeView(MainView):
         'Category': DropdownWithSearch(label='Category', dr_width=400, sr_width=400, dense=True, options=[]),
     }
 
-    def __init__(self, page: ft.Page):
-        # Init view
-        super().__init__(page)
-
     def process_enable(self, e, ignore=['enable', 'alternate', 'load_categories']):
         return super().process_enable(e, ignore)
 
@@ -361,10 +358,6 @@ class KicadView(MainView):
         'Footprint': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
         'New Footprint Name': ft.TextField(label='New Footprint Name', width=400, dense=True),
     }
-
-    def __init__(self, page: ft.Page):
-        # Init view
-        super().__init__(page)
 
     def get_footprint_libraries(self) -> dict:
         footprint_libraries = {}
@@ -454,10 +447,6 @@ class CreateView(MainView):
         'inventree_progress': ft.ProgressBar(height=32, width=400, value=0),
         'kicad_progress': ft.ProgressBar(height=32, width=400, value=0),
     }
-
-    def __init__(self, page: ft.Page):
-        # Init view
-        super().__init__(page)
 
     def load_data(self, e=None):
         import time

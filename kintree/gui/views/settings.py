@@ -1,5 +1,6 @@
 import os
 import flet as ft
+
 # Common view
 from .common import CommonView
 from .common import GUI_PARAMS
