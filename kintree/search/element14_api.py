@@ -251,7 +251,7 @@ def test_api(store_url=None) -> bool:
             'part_number': '2N7002-7-F',
             'expected': {
                 'displayName': 'Power MOSFET, N Channel, 60 V, 115 mA, 13.5 ohm, SOT-23, Surface Mount',
-                'brandName': 'MULTICOMP PRO',
+                'brandName': 'DIODES INC.',
                 'translatedManufacturerPartNumber': '2N7002-7-F',
             }
         },
