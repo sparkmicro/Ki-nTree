@@ -267,14 +267,49 @@ class InventreeView(MainView):
         print('Loading categories from InvenTree...')
 
     def build_column(self):
-        inventree_categories = [
-            'Capacitors',
-            '- Capacitors/Ceramic',
-            '-- Capacitors/Ceramic/0603',
-            '-- Capacitors/Ceramic/0402',
-            '- Capacitors/Aluminum',
-            'Connectors',
-        ]
+        def build_next_level(key, value, tree, level):
+            # Append new level
+            try:
+                tree.append(f'{"-" * level} {tree[-1]}/{key}')
+            except IndexError:
+                # First iteration
+                tree.append(f'{key}')
+            current_tree = tree[-1]
+            if type(value) == list:
+                # We're at the last level so finish it off
+                for category in value:
+                    tree.append(f'{"-" * (level + 1)} {current_tree}/{category}')
+                return tree
+            elif type(value) == dict:
+                for next_key in value.keys():
+                    tree.append(f'{"-" * (level + 1)} {current_tree}/{next_key}')
+                return tree
+            # elif type(value) == dict:
+            #     # print(value)
+            #     for next_key, next_value in value.items():
+            #         try:
+            #             tree.extend(build_next_level(next_key, next_value, tree, level + 1))
+            #         except TypeError:
+            #             # next_value is None so append next_key to tree
+            #             tree.append(f'{"-" * (level + 1)} {current_tree}/{next_key}')
+            # else:
+            #     # value is None so append key to tree
+            #     tree.append(f'{"-" * (level + 1)} {current_tree}/{key}')
+            #     # return tree
+            #     print(key, value, tree, level)
+            
+        categories = config_interface.load_file(settings.CONFIG_CATEGORIES).get('CATEGORIES', {})
+
+        inventree_categories = []
+        for category_name, subcategories in categories.items():
+            tree = []
+            tree = build_next_level(category_name, subcategories, tree, 0)
+            # if category_name == 'Capacitors':
+            #     cprint(tree)
+            if tree:
+                inventree_categories.extend(tree)
+            else:
+                inventree_categories.append(category_name)
 
         category_options = [ft.dropdown.Option(category) for category in inventree_categories]
         # Update dropdown
