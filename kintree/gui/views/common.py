@@ -24,6 +24,7 @@ GUI_PARAMS = {
     'button_width': 100,
     'button_height': 56,
     'icon_size': 40,
+    'text_size': 16,
 }
 
 data_from_views = {}

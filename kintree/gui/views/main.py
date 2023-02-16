@@ -1,6 +1,7 @@
 import os
 import flet as ft
 # Common view
+from .common import GUI_PARAMS
 from .common import data_from_views, CommonView, DropdownWithSearch, Collapsible, MenuButton
 from ...common.tools import cprint
 # Settings
@@ -267,49 +268,27 @@ class InventreeView(MainView):
         print('Loading categories from InvenTree...')
 
     def build_column(self):
-        def build_next_level(key, value, tree, level):
-            # Append new level
+        def build_tree(tree, left_to_go, level):
             try:
-                tree.append(f'{"-" * level} {tree[-1]}/{key}')
+                last_entry = f' {tree[-1].replace("-", "").replace(" ","")}/'
             except IndexError:
-                # First iteration
-                tree.append(f'{key}')
-            current_tree = tree[-1]
-            if type(value) == list:
-                # We're at the last level so finish it off
-                for category in value:
-                    tree.append(f'{"-" * (level + 1)} {current_tree}/{category}')
-                return tree
-            elif type(value) == dict:
-                for next_key in value.keys():
-                    tree.append(f'{"-" * (level + 1)} {current_tree}/{next_key}')
-                return tree
-            # elif type(value) == dict:
-            #     # print(value)
-            #     for next_key, next_value in value.items():
-            #         try:
-            #             tree.extend(build_next_level(next_key, next_value, tree, level + 1))
-            #         except TypeError:
-            #             # next_value is None so append next_key to tree
-            #             tree.append(f'{"-" * (level + 1)} {current_tree}/{next_key}')
-            # else:
-            #     # value is None so append key to tree
-            #     tree.append(f'{"-" * (level + 1)} {current_tree}/{key}')
-            #     # return tree
-            #     print(key, value, tree, level)
+                last_entry = f''
+            if type(left_to_go) == dict:
+                for key, value in left_to_go.items():
+                    tree.append(f'{"-" * level}{last_entry}{key}')
+                    build_tree(tree, value, level + 1)
+            elif type(left_to_go) == list:
+                for item in left_to_go:
+                    tree.append(f'{"-" * level}{last_entry}{item}')
+            elif left_to_go is None:
+                pass
+            return
             
         categories = config_interface.load_file(settings.CONFIG_CATEGORIES).get('CATEGORIES', {})
 
         inventree_categories = []
-        for category_name, subcategories in categories.items():
-            tree = []
-            tree = build_next_level(category_name, subcategories, tree, 0)
-            # if category_name == 'Capacitors':
-            #     cprint(tree)
-            if tree:
-                inventree_categories.extend(tree)
-            else:
-                inventree_categories.append(category_name)
+        # Build category tree
+        build_tree(inventree_categories, categories, 0)
 
         category_options = [ft.dropdown.Option(category) for category in inventree_categories]
         # Update dropdown
@@ -438,19 +417,49 @@ class CreateView(MainView):
     '''Create view'''
 
     title = 'Create'
-    fields = {}
+    fields = {
+        'inventree_progress': ft.ProgressBar(height=(GUI_PARAMS['button_height'] / 2), width=400, value=0),
+        'kicad_progress': ft.ProgressBar(height=(GUI_PARAMS['button_height'] / 2), width=400, value=0),
+    }
 
     def __init__(self, page: ft.Page):
         # Init view
         super().__init__(page)
 
     def load_data(self, e=None):
+        import time
         cprint(data_from_views)
+
+        for i in range(0, 21):
+            progress_value = i * 0.05
+            self.fields['inventree_progress'].value = progress_value
+            self.fields['kicad_progress'].value = progress_value
+            time.sleep(0.1)
+            self.page.update()
 
     def build_column(self):
         return ft.Column(
             controls=[
                 ft.Row(),
-                ft.ElevatedButton('Load', on_click=self.load_data)
-            ]
+                ft.ElevatedButton(
+                    'Create Part',
+                    height=GUI_PARAMS['button_height'],
+                    width=GUI_PARAMS['button_width'] * 2,
+                    on_click=self.load_data,
+                ),
+                ft.Row(
+                    controls=[
+                        ft.Icon(ft.icons.INVENTORY_2, size=(GUI_PARAMS['icon_size'] / 2)),
+                        ft.Text('InvenTree', size=GUI_PARAMS['text_size'], weight=ft.FontWeight.BOLD, width=100),
+                        self.fields['inventree_progress'],
+                    ],
+                ),
+                ft.Row(
+                    controls=[
+                        ft.Icon(ft.icons.SETTINGS_INPUT_COMPONENT, size=(GUI_PARAMS['icon_size'] / 2)),
+                        ft.Text('KiCad', size=GUI_PARAMS['text_size'], weight=ft.FontWeight.BOLD, width=100),
+                        self.fields['kicad_progress'],
+                    ],
+                ),
+            ],
         )
