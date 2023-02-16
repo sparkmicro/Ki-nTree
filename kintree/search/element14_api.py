@@ -209,9 +209,11 @@ def fetch_part_info(part_number: str, supplier: str, store_url=None) -> dict:
     # Append Store URL
     # Element14 support said "At this time our API is not structured to provide a URL to product pages in the selected storeInfo.id value."
     if store_url:
-        part_info['store_url'] = 'https://' + store_url
+        part_info['store_url'] = f'https://{store_url}'
     else:
-        part_info['store_url'] = 'https://' + get_default_store_url(supplier)
+        part_info['store_url'] = f'https://{get_default_store_url(supplier)}'
+    # Append search to URL
+    part_info['store_url'] += f'/w/search?st={part["translatedManufacturerPartNumber"]}'
 
     # Append categories
     part_info['category'] = ''
@@ -248,8 +250,8 @@ def test_api(store_url=None) -> bool:
             'store_url': 'au.element14.com',
             'part_number': '2N7002-7-F',
             'expected': {
-                'displayName': 'MOSFET, N CHANNEL, 60V, 1.2OHM, 115mA, SOT-23',
-                'brandName': 'MULTICOMP PRO',
+                'displayName': 'Power MOSFET, N Channel, 60 V, 115 mA, 13.5 ohm, SOT-23, Surface Mount',
+                'brandName': 'DIODES INC.',
                 'translatedManufacturerPartNumber': '2N7002-7-F',
             }
         },
