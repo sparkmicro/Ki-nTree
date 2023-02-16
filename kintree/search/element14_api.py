@@ -212,9 +212,11 @@ def fetch_part_info(part_number: str, supplier: str, store_url=None) -> dict:
     # Append Store URL
     # Element14 support said "At this time our API is not structured to provide a URL to product pages in the selected storeInfo.id value."
     if store_url:
-        part_info['store_url'] = 'https://' + store_url
+        part_info['store_url'] = f'https://{store_url}'
     else:
-        part_info['store_url'] = 'https://' + get_default_store_url(supplier)
+        part_info['store_url'] = f'https://{get_default_store_url(supplier)}'
+    # Append search to URL
+    part_info['store_url'] += f'/w/search?st={part["translatedManufacturerPartNumber"]}'
 
     # Append categories
     part_info['category'] = ''
