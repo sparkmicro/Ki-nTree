@@ -1,4 +1,4 @@
-import os
+import os, copy
 import flet as ft
 
 # Version
@@ -138,6 +138,11 @@ class MainView(CommonView):
         disable = True
         if e.data.lower() == 'true':
             disable = False
+
+        # print(e.control.label, not(disable))
+        key = e.control.label.lower()
+        settings.set_enable_flag(key, not(disable))
+
         for name, field in self.fields.items():
             if name not in ignore:
                 field.disabled = disable
@@ -448,16 +453,88 @@ class CreateView(MainView):
         'kicad_progress': ft.ProgressBar(height=32, width=400, value=0),
     }
 
-    def load_data(self, e=None):
-        import time
+    def create_part(self, e=None):
+        # import time
+        # for i in range(0, 21):
+        #     progress_value = i * 0.05
+        #     self.fields['inventree_progress'].value = progress_value
+        #     self.fields['kicad_progress'].value = progress_value
+        #     time.sleep(0.1)
+        #     self.page.update()
+
         cprint(data_from_views)
 
-        for i in range(0, 21):
-            progress_value = i * 0.05
-            self.fields['inventree_progress'].value = progress_value
-            self.fields['kicad_progress'].value = progress_value
-            time.sleep(0.1)
-            self.page.update()
+        # Check data is present
+        if not data_from_views.get('Part Search', None):
+            self.build_snackbar(False, 'Missing Part Data')
+            self.show_dialog()
+            return
+        
+        # Part number check
+        part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
+        if not part_number:
+            self.build_snackbar(False, 'Missing Part Number')
+            self.show_dialog()
+            return
+        
+        # Custom part check
+        part_info = copy.deepcopy(data_from_views['Part Search'])
+        custom = part_info.pop('custom_part')
+
+        # KiCad data processing
+        symbol = None
+        template = None
+        footprint = None
+        if settings.ENABLE_KICAD:
+            # Check data is present
+            if not data_from_views.get('KiCad', None):
+                self.build_snackbar(False, 'Missing KiCad Data')
+                self.show_dialog()
+                return
+            
+            # Process symbol
+            symbol_lib = data_from_views['KiCad'].get('Symbol Library', None)
+            if symbol_lib:
+                symbol = f"{symbol_lib}:{part_number}"
+
+            # Process template
+            template = data_from_views['KiCad'].get('Symbol Template', None)
+
+            # Process footprint
+            footprint_lib = data_from_views['KiCad'].get('Footprint Library', None)
+            if footprint_lib:
+                if data_from_views['KiCad'].get('New Footprint Name', None):
+                    footprint = f"{footprint_lib}:{data_from_views['KiCad']['New Footprint Name']}"
+                elif data_from_views['KiCad'].get('Footprint', None):
+                    footprint = f"{footprint_lib}:{data_from_views['KiCad']['Footprint']}"
+                else:
+                    pass
+            
+            if not symbol and not template and not footprint:
+                self.build_snackbar(False, 'Missing KiCad Data')
+                self.show_dialog()
+                return
+            # print(symbol, template, footprint)
+        
+        # InvenTree data processing
+        category = None
+        if settings.ENABLE_INVENTREE:
+            # Check data is present
+            if not data_from_views.get('InvenTree', None):
+                self.build_snackbar(False, 'Missing InvenTree Data')
+                self.show_dialog()
+                return
+            # Get relevant data
+            category = data_from_views['InvenTree'].get('Category', None)
+
+            new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
+                                                                                category=category,
+                                                                                kicad=settings.ENABLE_KICAD,
+                                                                                symbol=symbol,
+                                                                                footprint=footprint,
+                                                                                show_progress=self.fields['inventree_progress'],
+                                                                                is_custom=custom)
+            print(new_part, part_pk, part_data)
 
     def build_column(self):
         return ft.Column(
@@ -482,7 +559,7 @@ class CreateView(MainView):
                     'Create Part',
                     height=GUI_PARAMS['button_height'],
                     width=GUI_PARAMS['button_width'] * 2,
-                    on_click=self.load_data,
+                    on_click=self.create_part,
                 ),
             ],
         )

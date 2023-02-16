@@ -103,12 +103,22 @@ AUTOMATIC_SUBCATEGORY_CREATE = CONFIG_GENERAL.get('AUTOMATIC_SUBCATEGORY_CREATE'
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 DEFAULT_SUPPLIER = CONFIG_GENERAL.get('DEFAULT_SUPPLIER', 'Digi-Key')
 # Load enable flags
-try:
-    ENABLE_KICAD = CONFIG_GENERAL.get('ENABLE_KICAD', False)
-    ENABLE_INVENTREE = CONFIG_GENERAL.get('ENABLE_INVENTREE', False)
-    ENABLE_ALTERNATE = CONFIG_GENERAL.get('ENABLE_ALTERNATE', False)
-except TypeError:
-    pass
+def reload_enable_flags():
+    global ENABLE_KICAD
+    global ENABLE_INVENTREE
+    global ENABLE_ALTERNATE
+
+    try:
+        ENABLE_KICAD = CONFIG_GENERAL.get('ENABLE_KICAD', False)
+        ENABLE_INVENTREE = CONFIG_GENERAL.get('ENABLE_INVENTREE', False)
+        ENABLE_ALTERNATE = CONFIG_GENERAL.get('ENABLE_ALTERNATE', False)
+        return True
+    except TypeError:
+        pass
+
+    return False
+
+reload_enable_flags()
 
 # Supported suppliers APIs
 SUPPORTED_SUPPLIERS_API = [
@@ -309,21 +319,18 @@ inventree_part_template = {
 
 
 # Enable flags
-def set_enable_flags(values: list):
+def set_enable_flag(key: str, value: bool):
     global CONFIG_GENERAL
-    global ENABLE_KICAD
-    global ENABLE_INVENTREE
-    global ENABLE_ALTERNATE
 
-    ENABLE_KICAD = values[0]
-    ENABLE_INVENTREE = values[1]
-    ENABLE_ALTERNATE = values[2]
-
-    # Save user settings
     user_settings = CONFIG_GENERAL
-    user_settings['ENABLE_KICAD'] = ENABLE_KICAD
-    user_settings['ENABLE_INVENTREE'] = ENABLE_INVENTREE
-    user_settings['ENABLE_ALTERNATE'] = ENABLE_ALTERNATE
+    if key == 'kicad':
+        user_settings['ENABLE_KICAD'] = value
+    elif key == 'inventree':
+        user_settings['ENABLE_INVENTREE'] = value
+    elif key == 'alternate':
+        user_settings['ENABLE_ALTERNATE'] = value
+
+    # Save
     config_interface.dump_file(user_settings, os.path.join(CONFIG_USER_FILES, 'general.yaml'))
 
-    return
+    return reload_enable_flags()
