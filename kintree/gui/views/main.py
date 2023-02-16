@@ -110,12 +110,35 @@ class MainView(CommonView):
         if 'enable' in self.fields:
             self.fields['enable'].on_change = self.process_enable
 
-    def process_enable(self, e):
+        self.floating_action_button = ft.FloatingActionButton(
+            icon=ft.icons.REPLAY, on_click=self.reset_view,
+        )
+
+    def reset_view(self, e, ignore=['enable']):
+        def reset_field(field):
+            if type(field) is ft.ProgressBar:
+                field.value = 0
+            else:
+                field.value = None
+            field.update()
+
+        for name, field in self.fields.items():
+            if type(field) == dict:
+                for key, value in field.items():
+                    value.disabled = True
+                    reset_field(value)
+            else:
+                if name not in ignore:
+                    reset_field(field)
+        # Clear data
+        self.push_data()
+
+    def process_enable(self, e, ignore=['enable']):
         disable = True
         if e.data.lower() == 'true':
             disable = False
         for name, field in self.fields.items():
-            if name != 'enable':
+            if name not in ignore:
                 field.disabled = disable
                 field.update()
         self.push_data(e)
@@ -133,7 +156,6 @@ class PartSearchView(MainView):
     '''Part search view'''
 
     title = 'Part Search'
-    add_to = {'inventree': False, 'kicad': False}
 
     # List of search fields
     search_fields_list = [
@@ -153,7 +175,12 @@ class PartSearchView(MainView):
     fields = {
         'part_number': ft.TextField(label="Part Number", dense=True, hint_text="Part Number", width=300, expand=True),
         'supplier': ft.Dropdown(label="Supplier", dense=True, width=200),
-        'search_button': ft.ElevatedButton('Find', icon=ft.icons.SEARCH),
+        'search_button': ft.IconButton(
+            icon=ft.icons.SEND,
+            icon_color="blue900",
+            icon_size=32,
+            tooltip="Submit",
+        ),
         'search_form': {},
     }
 
@@ -190,8 +217,11 @@ class PartSearchView(MainView):
             self.page.update()
 
             if not self.fields['part_number'].value and not self.fields['supplier'].value:
+                self.data['custom_part'] = True
                 self.enable_search_fields()
             else:
+                self.data['custom_part'] = False
+
                 # Supplier search
                 part_supplier_info = inventree_interface.supplier_search(
                     self.fields['supplier'].value,
@@ -258,8 +288,8 @@ class InventreeView(MainView):
     title = 'InvenTree'
     fields = {
         'enable': ft.Switch(label='InvenTree', value=settings.ENABLE_INVENTREE, on_change=None),
-        # 'alternate': ft.Switch(label='Alternate', value=False, disabled=True),
-        'load_categories': ft.ElevatedButton('Reload InvenTree Categories', height=48, icon=ft.icons.REPLAY),
+        'alternate': ft.Switch(label='Alternate', value=False, disabled=True),
+        'load_categories': ft.ElevatedButton('Reload InvenTree Categories', height=36, icon=ft.icons.REPLAY, disabled=True),
         'Category': DropdownWithSearch(label='Category', dr_width=400, sr_width=400, dense=True, options=[]),
     }
 
@@ -267,7 +297,11 @@ class InventreeView(MainView):
         # Init view
         super().__init__(page)
 
+    def process_enable(self, e, ignore=['enable', 'alternate', 'load_categories']):
+        return super().process_enable(e, ignore)
+
     def load_categories(self, e):
+        # TODO: Implement pulling categories from InvenTree
         print('Loading categories from InvenTree...')
 
     def build_column(self):
@@ -306,15 +340,11 @@ class InventreeView(MainView):
                 ft.Row(
                     [
                         self.fields['enable'],
-                        # self.fields['alternate'],
-                    ]
-                ),
-                self.fields['Category'],
-                ft.Row(
-                    [
+                        self.fields['alternate'],
                         self.fields['load_categories'],
                     ]
                 ),
+                self.fields['Category'],
             ],
         )
 
@@ -421,8 +451,8 @@ class CreateView(MainView):
 
     title = 'Create'
     fields = {
-        'inventree_progress': ft.ProgressBar(height=(GUI_PARAMS['button_height'] / 2), width=400, value=0),
-        'kicad_progress': ft.ProgressBar(height=(GUI_PARAMS['button_height'] / 2), width=400, value=0),
+        'inventree_progress': ft.ProgressBar(height=32, width=400, value=0),
+        'kicad_progress': ft.ProgressBar(height=32, width=400, value=0),
     }
 
     def __init__(self, page: ft.Page):
@@ -444,25 +474,26 @@ class CreateView(MainView):
         return ft.Column(
             controls=[
                 ft.Row(),
-                ft.ElevatedButton(
-                    'Create Part',
-                    height=GUI_PARAMS['button_height'],
-                    width=GUI_PARAMS['button_width'] * 2,
-                    on_click=self.load_data,
-                ),
+                ft.Text('Progress', style=ft.TextThemeStyle.HEADLINE_SMALL),
                 ft.Row(
                     controls=[
-                        ft.Icon(ft.icons.INVENTORY_2, size=(GUI_PARAMS['icon_size'] / 2)),
-                        ft.Text('InvenTree', size=GUI_PARAMS['text_size'], weight=ft.FontWeight.BOLD, width=100),
+                        ft.Icon(ft.icons.INVENTORY_2, size=32),
+                        ft.Text('InvenTree', size=20, weight=ft.FontWeight.BOLD, width=120),
                         self.fields['inventree_progress'],
                     ],
                 ),
                 ft.Row(
                     controls=[
-                        ft.Icon(ft.icons.SETTINGS_INPUT_COMPONENT, size=(GUI_PARAMS['icon_size'] / 2)),
-                        ft.Text('KiCad', size=GUI_PARAMS['text_size'], weight=ft.FontWeight.BOLD, width=100),
+                        ft.Icon(ft.icons.SETTINGS_INPUT_COMPONENT, size=32),
+                        ft.Text('KiCad', size=20, weight=ft.FontWeight.BOLD, width=120),
                         self.fields['kicad_progress'],
                     ],
+                ),
+                ft.ElevatedButton(
+                    'Create Part',
+                    height=GUI_PARAMS['button_height'],
+                    width=GUI_PARAMS['button_width'] * 2,
+                    on_click=self.load_data,
                 ),
             ],
         )
