@@ -1,5 +1,8 @@
 import os
 import flet as ft
+
+# Version
+from ... import __version__
 # Common view
 from .common import GUI_PARAMS
 from .common import data_from_views, CommonView, DropdownWithSearch, Collapsible, MenuButton
@@ -13,7 +16,7 @@ from ...database import inventree_interface
 main_appbar = ft.AppBar(
     leading=ft.Icon(ft.icons.DOUBLE_ARROW),
     leading_width=40,
-    title=ft.Text('Ki-nTree | 0.7.0dev'),
+    title=ft.Text(f'Ki-nTree | {__version__}'),
     center_title=False,
     bgcolor=ft.colors.SURFACE_VARIANT,
     actions=[],
