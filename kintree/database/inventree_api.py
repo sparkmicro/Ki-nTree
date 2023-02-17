@@ -217,8 +217,8 @@ def is_new_part(category_id: int, part_info: dict) -> int:
             return part.pk
 
     # Check if manufacturer part exists in database
-    manufacturer = list(part_info['manufacturer'].keys())[0]
-    mpn = list(part_info['manufacturer'].values())[0][0]
+    manufacturer = part_info['manufacturer_name']
+    mpn = part_info['manufacturer_part_number']
     part_pk = is_new_manufacturer_part(manufacturer, mpn, create=False)
 
     if part_pk:

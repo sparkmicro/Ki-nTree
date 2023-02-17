@@ -302,7 +302,6 @@ INVENTREE_DEFAULT_REV = inventree_settings.get('INVENTREE_DEFAULT_REV', 'A')
 
 # InvenTree part dictionary template
 inventree_part_template = {
-    'category': [None, None],
     'name': None,
     'description': None,
     'IPN': None,
@@ -310,9 +309,11 @@ inventree_part_template = {
     'keywords': None,
     'image': None,
     'inventree_url': None,
-    'manufacturer': {},
+    'manufacturer_name': None,
+    'manufacturer_part_number': None,
     'datasheet': None,
-    'supplier': {},
+    'supplier_name': None,
+    'supplier_part_number': None,
     'supplier_link': None,
     'parameters': {},
 }

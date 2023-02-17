@@ -5,7 +5,7 @@ import PySimpleGUI as sg
 
 CREATE_PART_PROGRESS: float
 MAX_PROGRESS = 1.0
-DEFAULT_PROGRESS = 0.05
+DEFAULT_PROGRESS = 0.1
 
 
 def reset_progress_bar(progress_bar) -> bool:
@@ -44,20 +44,12 @@ def update_progress_bar(progress_bar, increment=0) -> bool:
         # Default
         inc = DEFAULT_PROGRESS
 
-    progress_bar.value = progress_increment(inc)
-    progress_bar.update()
-
-    # if event in ['Cancel', sg.WIN_CLOSED]:
-    #     on_going_progress = False
-    #     close_progress_bar_window()
-    # else:
-    #     # Smooth effect
-    #     for i in range(inc):
-    #         progress_increment()
-    #         progress_bar.update(CREATE_PART_PROGRESS, MAX_PROGRESS)
-    #         if inc < MAX_PROGRESS:
-    #             time.sleep(0.02)
-    #         else:
-    #             time.sleep(0.005)
+    current_value = progress_bar.value * 100
+    new_value = progress_increment(inc) * 100
+    # Smooth progress
+    for i in range(int(new_value - current_value)):
+        progress_bar.value += i / 100
+        progress_bar.update()
+        time.sleep(0.05)
 
     return True

@@ -150,12 +150,18 @@ class MainView(CommonView):
                 field.update()
         self.push_data(e)
 
+    def sanitize_data(self):
+        return
+
     def push_data(self, e=None):
         for key, field in self.fields.items():
             try:
                 self.data[key] = field.value
             except AttributeError:
                 pass
+        # Sanitize data before pushing
+        self.sanitize_data()
+        # Push
         data_from_views[self.title] = self.data
 
 
@@ -299,6 +305,22 @@ class InventreeView(MainView):
         'load_categories': ft.ElevatedButton('Reload InvenTree Categories', height=36, icon=ft.icons.REPLAY, disabled=True),
         'Category': DropdownWithSearch(label='Category', dr_width=400, sr_width=400, dense=True, options=[]),
     }
+    category_separator = '/'
+
+    def clean_category_tree(self, category_tree: str) -> str:
+        import re
+        find_prefix = re.match(r'^-+ (.+?)$', category_tree)
+        if find_prefix:
+            return find_prefix.group(1)
+        return category_tree
+
+    def clean_split_category_tree(self, category_tree: str) -> list:
+        return self.clean_category_tree(category_tree).split(self.category_separator)
+    
+    def sanitize_data(self):
+        category_tree = self.data.get('Category', None)
+        if category_tree:
+            self.data['Category'] = self.clean_split_category_tree(category_tree)
 
     def process_enable(self, e, ignore=['enable', 'alternate', 'load_categories']):
         return super().process_enable(e, ignore)
@@ -310,7 +332,7 @@ class InventreeView(MainView):
     def build_column(self):
         def build_tree(tree, left_to_go, level):
             try:
-                last_entry = f' {tree[-1].replace("- ", "").replace("-","")}/'
+                last_entry = f' {self.clean_category_tree(tree[-1])}{self.category_separator}'
             except IndexError:
                 last_entry = f''
             if type(left_to_go) == dict:
@@ -474,16 +496,17 @@ class CreateView(MainView):
             self.show_dialog()
             return
         
-        # Part number check
-        part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
-        if not part_number:
-            self.build_snackbar(False, 'Missing Part Number')
-            self.show_dialog()
-            return
-        
         # Custom part check
         part_info = copy.deepcopy(data_from_views['Part Search'])
         custom = part_info.pop('custom_part')
+        
+        if not custom:
+            # Part number check
+            part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
+            if not part_number:
+                self.build_snackbar(False, 'Missing Part Number')
+                self.show_dialog()
+                return
 
         # KiCad data processing
         symbol = None
@@ -546,16 +569,13 @@ class CreateView(MainView):
                 self.show_dialog()
                 return
             # Get relevant data
-            category_str = data_from_views['InvenTree'].get('Category', None)
-            if not category_str:
+            category_tree = data_from_views['InvenTree'].get('Category', None)
+            if not category_tree:
                 # Check category is present
                 self.build_snackbar(False, 'Missing InvenTree Category')
                 self.show_dialog()
                 return
             
-            category_str = category_str.replace('- ', '').replace('-', '')
-            category_tree = category_str.split('/')
-
             new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
                                                                                 category_tree=category_tree,
                                                                                 kicad=settings.ENABLE_KICAD,
@@ -565,6 +585,22 @@ class CreateView(MainView):
                                                                                 is_custom=custom)
             print(new_part, part_pk)
             cprint(part_data)
+
+            # Complete add operation
+            self.fields['inventree_progress'].value = progress.MAX_PROGRESS
+            self.fields['inventree_progress'].update()
+
+            if part_data.get('inventree_url', None):
+                if settings.AUTOMATIC_BROWSER_OPEN:
+                    # Auto-Open Browser Window
+                    cprint(f'\n[MAIN]\tOpening URL {part_data["inventree_url"]} in browser',
+                           silent=settings.SILENT)
+                    try:
+                        self.page.launch_url(part_data['inventree_url'])
+                    except TypeError:
+                        cprint('[INFO]\tError: Failed to open URL', silent=settings.SILENT)
+                else:
+                    cprint(f'\n[MAIN]\tPart page URL: {part_data["inventree_url"]}', silent=settings.SILENT)
 
     def build_column(self):
         return ft.Column(
