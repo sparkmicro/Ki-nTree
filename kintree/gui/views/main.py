@@ -8,6 +8,7 @@ from .common import GUI_PARAMS, data_from_views
 from .common import CommonView, DropdownWithSearch
 from ...common.tools import cprint
 # Settings
+from ...common import progress
 from ...config import settings, config_interface
 # InvenTree
 from ...database import inventree_interface
@@ -180,7 +181,7 @@ class PartSearchView(MainView):
 
     fields = {
         'part_number': ft.TextField(label="Part Number", dense=True, hint_text="Part Number", width=300, expand=True),
-        'supplier': ft.Dropdown(label="Supplier", dense=True, width=200),
+        'supplier': ft.Dropdown(label="Supplier", dense=True, width=250),
         'search_button': ft.IconButton(
             icon=ft.icons.SEND,
             icon_color="blue900",
@@ -302,14 +303,14 @@ class InventreeView(MainView):
     def process_enable(self, e, ignore=['enable', 'alternate', 'load_categories']):
         return super().process_enable(e, ignore)
 
-    def load_categories(self, e):
+    def reload_categories(self, e):
         # TODO: Implement pulling categories from InvenTree
         print('Loading categories from InvenTree...')
 
     def build_column(self):
         def build_tree(tree, left_to_go, level):
             try:
-                last_entry = f' {tree[-1].replace("-", "").replace(" ","")}/'
+                last_entry = f' {tree[-1].replace("- ", "").replace("-","")}/'
             except IndexError:
                 last_entry = f''
             if type(left_to_go) == dict:
@@ -334,7 +335,7 @@ class InventreeView(MainView):
         self.fields['Category'].options = category_options
         self.fields['Category'].on_change = self.push_data
 
-        self.fields['load_categories'].on_click = self.load_categories
+        self.fields['load_categories'].on_click = self.reload_categories
 
         return ft.Column(
             controls=[
@@ -463,6 +464,9 @@ class CreateView(MainView):
         #     self.page.update()
 
         cprint(data_from_views)
+        # Reset progress bars
+        progress.reset_progress_bar(self.fields['inventree_progress'])
+        progress.reset_progress_bar(self.fields['kicad_progress'])
 
         # Check data is present
         if not data_from_views.get('Part Search', None):
@@ -525,10 +529,18 @@ class CreateView(MainView):
                 self.show_dialog()
                 return
             # Get relevant data
-            category = data_from_views['InvenTree'].get('Category', None)
+            category_str = data_from_views['InvenTree'].get('Category', None)
+            if not category_str:
+                # Check category is present
+                self.build_snackbar(False, 'Missing InvenTree Category')
+                self.show_dialog()
+                return
+            
+            category_str = category_str.replace('- ', '').replace('-', '')
+            category_tree = category_str.split('/')
 
             new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
-                                                                                category=category,
+                                                                                category_tree=category_tree,
                                                                                 kicad=settings.ENABLE_KICAD,
                                                                                 symbol=symbol,
                                                                                 footprint=footprint,

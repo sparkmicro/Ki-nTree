@@ -38,26 +38,33 @@ def connect(server: str, username: str, password: str, connect_timeout=5, silent
     return False
 
 
-def get_inventree_category_id(category_name: str, parent_category_id=None) -> int:
+def get_inventree_category_id(category_tree: list) -> int:
     ''' Get InvenTree category ID from name, specificy parent if subcategory '''
     global inventree_api
 
     # Fetch all categories
-    part_categories = PartCategory.list(inventree_api)
-
-    for item in part_categories:
-        if category_name == item.name:
-            # Check parent id match (if passed as argument)
-            match = True
+    part_categories = PartCategory.list(inventree_api, name=category_tree[-1])
+    if len(part_categories) == 1:
+        return part_categories[0].pk
+    else:
+        if len(category_tree) > 1:
+            # Match the parent category
+            parent_category_id = get_inventree_category_id(category_tree[:-1])
             if parent_category_id:
-                cprint(f'[TREE]\t{item.getParentCategory().pk} ?= {parent_category_id}', silent=settings.HIDE_DEBUG)
-                if item.getParentCategory().pk != parent_category_id:
-                    match = False
-            if match:
-                cprint(f'[TREE]\t{item.name} ?= {category_name} => True', silent=settings.HIDE_DEBUG)
-                return item.pk
-        else:
-            cprint(f'[TREE]\t{item.name} ?= {category_name} => False', silent=settings.HIDE_DEBUG)
+                for category in part_categories:
+                    if parent_category_id == category.getParentCategory().pk:
+                        return category.pk
+                    #     # Check parent id match (if passed as argument)
+                    #     match = True
+                    #     if parent_category_id:
+                    #         cprint(f'[TREE]\t{item.getParentCategory().pk} ?= {parent_category_id}', silent=settings.HIDE_DEBUG)
+                    #         if item.getParentCategory().pk != parent_category_id:
+                    #             match = False
+                    #     if match:
+                    #         cprint(f'[TREE]\t{item.name} ?= {category_name} => True', silent=settings.HIDE_DEBUG)
+                    #         return item.pk
+                    # else:
+                    #     cprint(f'[TREE]\t{item.name} ?= {category_name} => False', silent=settings.HIDE_DEBUG)
 
     return -1
 

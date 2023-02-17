@@ -180,15 +180,14 @@ def get_categories(part_info: dict, supplier_only=False) -> list:
     return categories
 
 
-def translate_form_to_inventree(part_info: dict, categories: list, is_custom=False) -> dict:
+def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=False) -> dict:
     ''' Using supplier part data and categories, fill-in InvenTree part dictionary '''
 
     # Copy template
     inventree_part = copy.deepcopy(settings.inventree_part_template)
 
     # Translate form data to inventree part
-    inventree_part['category'][0] = categories[0]
-    inventree_part['category'][1] = categories[1]
+    inventree_part['category_tree'] = category_tree
     inventree_part['name'] = part_info['name']
     inventree_part['description'] = part_info['description']
     inventree_part['revision'] = part_info['revision']
@@ -210,7 +209,7 @@ def translate_form_to_inventree(part_info: dict, categories: list, is_custom=Fal
     inventree_part['image'] = part_info['image'].replace(' ', '%20')
 
     # Load parameters map
-    parameter_map = config_interface.load_category_parameters(category=inventree_part["category"][0],
+    parameter_map = config_interface.load_category_parameters(category=category_tree[0],
                                                               supplier_config_path=settings.CONFIG_SUPPLIER_PARAMETERS, )
 
     if not is_custom:
@@ -221,7 +220,7 @@ def translate_form_to_inventree(part_info: dict, categories: list, is_custom=Fal
                 if inventree_param not in inventree_part['parameters'].keys():
                     if supplier_param != 'Manufacturer Part Number':
                         try:
-                            parameter_value = part_tools.clean_parameter_value(category=categories[0],
+                            parameter_value = part_tools.clean_parameter_value(category=category_tree[0],
                                                                                name=supplier_param,
                                                                                value=part_info['parameters'][supplier_param])
                             inventree_part['parameters'][inventree_param] = parameter_value
@@ -235,7 +234,7 @@ def translate_form_to_inventree(part_info: dict, categories: list, is_custom=Fal
                 if inventree_param not in inventree_part['parameters'].keys():
                     inventree_part['parameters'][inventree_param] = '-'
         else:
-            cprint(f'[INFO]\tWarning: Parameter map for "{categories[0]}" does not exist or is empty', silent=settings.SILENT)
+            cprint(f'[INFO]\tWarning: Parameter map for "{category_tree[0]}" does not exist or is empty', silent=settings.SILENT)
 
     return inventree_part
 
@@ -399,7 +398,7 @@ def inventree_create_supplier_part(part) -> bool:
     return
 
 
-def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
+def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
     ''' Create InvenTree part from supplier part data and categories '''
 
     part_pk = 0
@@ -407,45 +406,45 @@ def inventree_create(part_info: dict, categories: list, kicad=False, symbol=None
 
     # Translate to InvenTree part format
     inventree_part = translate_form_to_inventree(part_info=part_info,
-                                                 categories=categories,
+                                                 category_tree=category_tree,
                                                  is_custom=is_custom)
 
     if not inventree_part:
         cprint('\n[MAIN]\tError: Failed to process form data', silent=settings.SILENT)
 
     # Fetch category info from InvenTree part
-    category_name = inventree_part['category'][0]
-    subcategory_name = inventree_part['category'][1]
-    category_pk = inventree_api.get_inventree_category_id(category_name)
-    category_select = category_pk
+    # category_name = inventree_part['category'][0]
+    # subcategory_name = inventree_part['category'][1]
 
-    # Check if subcategory exists
-    if subcategory_name:
-        # Fetch subcategory id
-        subcategory_pk = inventree_api.get_inventree_category_id(category_name=subcategory_name,
-                                                                 parent_category_id=category_pk)
+    # # Check if subcategory exists
+    # if subcategory_name:
+    #     # Fetch subcategory id
+    #     subcategory_pk = inventree_api.get_inventree_category_id(category_name=subcategory_name,
+    #                                                              parent_category_id=category_pk)
         
-        if subcategory_pk <= 0:
-            cprint(f'\n[TREE]\tWarning: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
+    #     if subcategory_pk <= 0:
+    #         cprint(f'\n[TREE]\tWarning: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
             
-            # Check if user enabled option to automatically create the subcategory in general settings
-            if settings.AUTOMATIC_SUBCATEGORY_CREATE:
-                subcategory_pk, is_subcategory_new = inventree_api.create_category(parent=category_name, name=subcategory_name)
-                if subcategory_pk > 0:
-                    cprint(f'[TREE]\tSuccess: Subcategory "{category_name}/{subcategory_name}" was automatically added to InvenTree')
+    #         # Check if user enabled option to automatically create the subcategory in general settings
+    #         if settings.AUTOMATIC_SUBCATEGORY_CREATE:
+    #             subcategory_pk, is_subcategory_new = inventree_api.create_category(parent=category_name, name=subcategory_name)
+    #             if subcategory_pk > 0:
+    #                 cprint(f'[TREE]\tSuccess: Subcategory "{category_name}/{subcategory_name}" was automatically added to InvenTree')
 
-        if subcategory_pk > 0:
-            category_select = subcategory_pk
+    #     if subcategory_pk > 0:
+    #         category_select = subcategory_pk
 
     # Progress Update
-    if show_progress and not progress.update_progress_bar_window():
+    if show_progress and not progress.update_progress_bar(show_progress):
         return new_part, part_pk, inventree_part
 
-    if category_select <= 0:
-        cprint(f'[ERROR]\tCategories ({category_name} - {subcategory_name}) does not exist in InvenTree', silent=settings.SILENT)
+    category_pk = inventree_api.get_inventree_category_id(category_tree)
+    print(category_pk)
+    if category_pk <= 0:
+        cprint(f'[ERROR]\tCategory ({category_tree}) does not exist in InvenTree', silent=settings.SILENT)
     else:
         # Check if part already exists
-        part_pk = inventree_api.is_new_part(category_select, inventree_part)
+        part_pk = inventree_api.is_new_part(category_pk, inventree_part)
         # Part exists
         if part_pk > 0:
             cprint('[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
