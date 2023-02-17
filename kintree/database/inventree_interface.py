@@ -461,7 +461,7 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
             new_part = True
             # Create a new Part
             # Use the pk (primary-key) of the category
-            part_pk = inventree_api.create_part(category_id=category_select,
+            part_pk = inventree_api.create_part(category_id=category_pk,
                                                 name=inventree_part['name'],
                                                 description=inventree_part['description'],
                                                 revision=inventree_part['revision'],
@@ -472,13 +472,13 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
             if not part_pk:
                 return new_part, part_pk, inventree_part
             # Progress Update
-            if show_progress and not progress.update_progress_bar_window():
+            if show_progress and not progress.update_progress_bar(show_progress):
                 return new_part, part_pk, inventree_part
 
             if settings.CONFIG_IPN.get('IPN_ENABLE_CREATE', True):
                 # Generate Internal Part Number
                 cprint('\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
-                ipn = part_tools.generate_part_number(category_name, part_pk)
+                ipn = part_tools.generate_part_number(category_tree[0], part_pk)
                 cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
                 # Update InvenTree part number
                 ipn_update = inventree_api.set_part_number(part_pk, ipn)
@@ -491,7 +491,7 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
                 inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
 
     # Progress Update
-    if show_progress and not progress.update_progress_bar_window():
+    if show_progress and not progress.update_progress_bar(show_progress):
         return new_part, part_pk, inventree_part
 
     if part_pk > 0:
@@ -531,7 +531,7 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
             inventree_part['parameters']['Footprint'] = kicad_footprint
 
         if not inventree_part['parameters']:
-            category_parameters = inventree_api.get_category_parameters(category_select)
+            category_parameters = inventree_api.get_category_parameters(category_pk)
 
             # Add category-defined parameters
             for parameter in category_parameters:
@@ -547,7 +547,7 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
             for name, value in inventree_part['parameters'].items():
                 parameter, is_new_parameter = inventree_api.create_parameter(part_id=part_pk, template_name=name, value=value)
                 # Progress Update
-                if show_progress and not progress.update_progress_bar_window(3):
+                if show_progress and not progress.update_progress_bar(show_progress, increment=0.03):
                     return new_part, part_pk, inventree_part
 
                 if is_new_parameter:
@@ -617,13 +617,13 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
                         cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
 
     # Progress Update
-    if show_progress and not progress.update_progress_bar_window(3):
+    if show_progress and not progress.update_progress_bar(show_progress, increment=0.03):
         pass
 
     return new_part, part_pk, inventree_part
 
 
-def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_progress=True) -> bool:
+def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_progress=None) -> bool:
     ''' Create alternate manufacturer and supplier entries for an existing InvenTree part '''
 
     result = False
@@ -631,7 +631,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     part = inventree_api.fetch_part(part_id, part_ipn)
 
     # Progress Update
-    if show_progress and not progress.update_progress_bar_window(3):
+    if show_progress and not progress.update_progress_bar(show_progress, increment=0.03):
         return
 
     if part:
@@ -656,7 +656,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
                                            description=part_description)
 
     # Progress Update
-    if show_progress and not progress.update_progress_bar_window(3):
+    if show_progress and not progress.update_progress_bar(show_progress, increment=0.03):
         return
 
     supplier_name = part_info.get('supplier_name', '')

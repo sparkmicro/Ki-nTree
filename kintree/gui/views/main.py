@@ -528,6 +528,23 @@ class CreateView(MainView):
                 self.build_snackbar(False, 'Missing InvenTree Data')
                 self.show_dialog()
                 return
+            # Check connection
+            if not inventree_interface.connect_to_server():
+                self.build_snackbar(
+                    dialog_success=False,
+                    dialog_text='ERROR: Failed to connect to InvenTree server'
+                )
+                self.show_dialog()
+                return
+            # Check mandatory data
+            if not data_from_views['Part Search'].get('name', None):
+                self.build_snackbar(False, 'Missing Part Name')
+                self.show_dialog()
+                return
+            if not data_from_views['Part Search'].get('description', None):
+                self.build_snackbar(False, 'Missing Part Description')
+                self.show_dialog()
+                return
             # Get relevant data
             category_str = data_from_views['InvenTree'].get('Category', None)
             if not category_str:
@@ -546,7 +563,8 @@ class CreateView(MainView):
                                                                                 footprint=footprint,
                                                                                 show_progress=self.fields['inventree_progress'],
                                                                                 is_custom=custom)
-            print(new_part, part_pk, part_data)
+            print(new_part, part_pk)
+            cprint(part_data)
 
     def build_column(self):
         return ft.Column(
