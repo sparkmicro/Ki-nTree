@@ -135,6 +135,10 @@ class MainView(CommonView):
         # Clear data
         self.push_data()
 
+    def show_error_dialog(self, message):
+        self.build_snackbar(False, message)
+        self.show_dialog()
+
     def process_enable(self, e, ignore=['enable']):
         disable = True
         if e.data.lower() == 'true':
@@ -472,28 +476,36 @@ class CreateView(MainView):
 
     title = 'Create'
     fields = {
-        'inventree_progress': ft.ProgressBar(height=32, width=400, value=0),
-        'kicad_progress': ft.ProgressBar(height=32, width=400, value=0),
+        'inventree_progress': ft.ProgressBar(height=32, width=420, value=0),
+        'kicad_progress': ft.ProgressBar(height=32, width=420, value=0),
     }
+    inventree_progress_row = None
+    kicad_progress_row = None
 
     def create_part(self, e=None):
-        # import time
-        # for i in range(0, 21):
-        #     progress_value = i * 0.05
-        #     self.fields['inventree_progress'].value = progress_value
-        #     self.fields['kicad_progress'].value = progress_value
-        #     time.sleep(0.1)
-        #     self.page.update()
+        if not settings.ENABLE_INVENTREE:
+            self.inventree_progress_row.current.visible = False
+        else:
+            self.inventree_progress_row.current.visible = True
+        self.inventree_progress_row.current.update()
 
-        cprint(data_from_views)
+        if not settings.ENABLE_KICAD:
+            self.kicad_progress_row.current.visible = False
+        else:
+            self.kicad_progress_row.current.visible = True
+        self.kicad_progress_row.current.update()
+
+        if not settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD:
+            self.show_error_dialog('Both InvenTree and KiCad are disabled (nothing to create)')
+
+        print('data_from_views='); cprint(data_from_views)
         # Reset progress bars
         progress.reset_progress_bar(self.fields['inventree_progress'])
         progress.reset_progress_bar(self.fields['kicad_progress'])
 
         # Check data is present
         if not data_from_views.get('Part Search', None):
-            self.build_snackbar(False, 'Missing Part Data')
-            self.show_dialog()
+            self.show_error_dialog('Missing Part Data (nothing to create)')
             return
         
         # Custom part check
@@ -504,8 +516,7 @@ class CreateView(MainView):
             # Part number check
             part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
             if not part_number:
-                self.build_snackbar(False, 'Missing Part Number')
-                self.show_dialog()
+                self.show_error_dialog('Missing Part Number')
                 return
 
         # KiCad data processing
@@ -515,8 +526,7 @@ class CreateView(MainView):
         if settings.ENABLE_KICAD:
             # Check data is present
             if not data_from_views.get('KiCad', None):
-                self.build_snackbar(False, 'Missing KiCad Data')
-                self.show_dialog()
+                self.show_error_dialog('Missing KiCad Data')
                 return
             
             # Process symbol
@@ -538,8 +548,7 @@ class CreateView(MainView):
                     pass
             
             if not symbol and not template and not footprint:
-                self.build_snackbar(False, 'Missing KiCad Data')
-                self.show_dialog()
+                self.show_error_dialog('Missing KiCad Data')
                 return
             # print(symbol, template, footprint)
         
@@ -548,32 +557,24 @@ class CreateView(MainView):
         if settings.ENABLE_INVENTREE:
             # Check data is present
             if not data_from_views.get('InvenTree', None):
-                self.build_snackbar(False, 'Missing InvenTree Data')
-                self.show_dialog()
+                self.show_error_dialog('Missing InvenTree Data')
                 return
             # Check connection
             if not inventree_interface.connect_to_server():
-                self.build_snackbar(
-                    dialog_success=False,
-                    dialog_text='ERROR: Failed to connect to InvenTree server'
-                )
-                self.show_dialog()
+                self.show_error_dialog('ERROR: Failed to connect to InvenTree server')
                 return
             # Check mandatory data
             if not data_from_views['Part Search'].get('name', None):
-                self.build_snackbar(False, 'Missing Part Name')
-                self.show_dialog()
+                self.show_error_dialog('Missing Part Name')
                 return
             if not data_from_views['Part Search'].get('description', None):
-                self.build_snackbar(False, 'Missing Part Description')
-                self.show_dialog()
+                self.show_error_dialog('Missing Part Description')
                 return
             # Get relevant data
             category_tree = data_from_views['InvenTree'].get('Category', None)
             if not category_tree:
                 # Check category is present
-                self.build_snackbar(False, 'Missing InvenTree Category')
-                self.show_dialog()
+                self.show_error_dialog('Missing InvenTree Category')
                 return
             
             new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
@@ -603,29 +604,44 @@ class CreateView(MainView):
                     cprint(f'\n[MAIN]\tPart page URL: {part_data["inventree_url"]}', silent=settings.SILENT)
 
     def build_column(self):
+        self.inventree_progress_row = ft.Ref[ft.Row]()
+        self.kicad_progress_row = ft.Ref[ft.Row]()
+
         return ft.Column(
             controls=[
                 ft.Row(),
                 ft.Text('Progress', style=ft.TextThemeStyle.HEADLINE_SMALL),
                 ft.Row(
+                    ref=self.inventree_progress_row,
                     controls=[
                         ft.Icon(ft.icons.INVENTORY_2, size=32),
                         ft.Text('InvenTree', size=20, weight=ft.FontWeight.BOLD, width=120),
                         self.fields['inventree_progress'],
                     ],
+                    width=600,
+                    visible=settings.ENABLE_INVENTREE,
                 ),
                 ft.Row(
+                    ref=self.kicad_progress_row,
                     controls=[
                         ft.Icon(ft.icons.SETTINGS_INPUT_COMPONENT, size=32),
                         ft.Text('KiCad', size=20, weight=ft.FontWeight.BOLD, width=120),
                         self.fields['kicad_progress'],
                     ],
+                    width=600,
+                    visible=settings.ENABLE_KICAD,
                 ),
-                ft.ElevatedButton(
-                    'Create Part',
-                    height=GUI_PARAMS['button_height'],
-                    width=GUI_PARAMS['button_width'] * 2,
-                    on_click=self.create_part,
+                ft.Row(
+                    controls=[
+                        ft.ElevatedButton(
+                            'Create Part',
+                            height=GUI_PARAMS['button_height'],
+                            width=GUI_PARAMS['button_width'] * 2,
+                            on_click=self.create_part,
+                            expand=True,
+                        ),
+                    ],
+                    width=600,
                 ),
             ],
         )

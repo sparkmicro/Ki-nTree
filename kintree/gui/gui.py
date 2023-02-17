@@ -59,8 +59,7 @@ def kintree_gui(page: ft.Page):
     kicad_settings_view = KiCadSettingsView(page)
 
     def route_change(route):
-        print(f'\n--> Routing to {route.route}')
-        
+        # print(f'\n--> Routing to {route.route}')
         if '/main' in page.route:
             page.views.clear()
             if 'part' in page.route:
