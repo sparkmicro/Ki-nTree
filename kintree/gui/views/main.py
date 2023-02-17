@@ -12,6 +12,8 @@ from ...common import progress
 from ...config import settings, config_interface
 # InvenTree
 from ...database import inventree_interface
+# KiCad
+from ...kicad import kicad_interface
 
 # Main AppBar
 main_appbar = ft.AppBar(
@@ -134,6 +136,30 @@ class MainView(CommonView):
                     reset_field(field)
         # Clear data
         self.push_data()
+
+    def get_footprint_libraries(self) -> dict:
+        footprint_libraries = {}
+        for folder in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'])):
+            if os.path.isdir(os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)):
+                footprint_libraries[folder.replace('.pretty', '')] = os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)
+        return footprint_libraries
+    
+    def find_libraries(self, type:str):
+        found_libraries = []
+        if type == 'symbol':
+            found_libraries = [file.replace('.kicad_sym', '') for file in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH']))
+                                if file.endswith('.kicad_sym')]
+        elif type == 'template':
+            templates = config_interface.load_templates_paths(
+                user_config_path=settings.KICAD_CONFIG_CATEGORY_MAP,
+                template_path=settings.KICAD_SETTINGS['KICAD_TEMPLATES_PATH']
+            )
+            for key in templates:
+                for template in templates[key]:
+                    found_libraries.append(f'{key}/{template}')
+        elif type == 'footprint':
+            found_libraries = list(self.get_footprint_libraries().keys())
+        return found_libraries
 
     def show_error_dialog(self, message):
         self.build_snackbar(False, message)
@@ -391,13 +417,6 @@ class KicadView(MainView):
         'New Footprint Name': ft.TextField(label='New Footprint Name', width=400, dense=True),
     }
 
-    def get_footprint_libraries(self) -> dict:
-        footprint_libraries = {}
-        for folder in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'])):
-            if os.path.isdir(os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)):
-                footprint_libraries[folder.replace('.pretty', '')] = os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)
-        return footprint_libraries
-
     def update_footprint_options(self, library: str):
         footprint_options = []
         # Load paths
@@ -428,22 +447,7 @@ class KicadView(MainView):
                 self.fields['Footprint'].update()
 
     def build_library_options(self, type: str):
-        import os
-        found_libraries = []
-        if type == 'symbol':
-            found_libraries = [file.replace('.kicad_sym', '') for file in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH']))
-                                if file.endswith('.kicad_sym')]
-        elif type == 'template':
-            templates = config_interface.load_templates_paths(
-                user_config_path=settings.KICAD_CONFIG_CATEGORY_MAP,
-                template_path=settings.KICAD_SETTINGS['KICAD_TEMPLATES_PATH']
-            )
-            for key in templates:
-                for template in templates[key]:
-                    found_libraries.append(f'{key}/{template}')
-        elif type == 'footprint':
-            found_libraries = list(self.get_footprint_libraries().keys())
-        
+        found_libraries = self.find_libraries(type)
         options = [ft.dropdown.Option(lib_name) for lib_name in found_libraries]
         return options
 
@@ -483,25 +487,27 @@ class CreateView(MainView):
     kicad_progress_row = None
 
     def create_part(self, e=None):
+        # Setup progress bars
         if not settings.ENABLE_INVENTREE:
             self.inventree_progress_row.current.visible = False
         else:
             self.inventree_progress_row.current.visible = True
+            # Reset progress bar
+            progress.reset_progress_bar(self.fields['inventree_progress'])
         self.inventree_progress_row.current.update()
 
         if not settings.ENABLE_KICAD:
             self.kicad_progress_row.current.visible = False
         else:
             self.kicad_progress_row.current.visible = True
+            # Reset progress bar
+            progress.reset_progress_bar(self.fields['kicad_progress'])
         self.kicad_progress_row.current.update()
 
         if not settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD:
             self.show_error_dialog('Both InvenTree and KiCad are disabled (nothing to create)')
 
-        print('data_from_views='); cprint(data_from_views)
-        # Reset progress bars
-        progress.reset_progress_bar(self.fields['inventree_progress'])
-        progress.reset_progress_bar(self.fields['kicad_progress'])
+        # print('data_from_views='); cprint(data_from_views)
 
         # Check data is present
         if not data_from_views.get('Part Search', None):
@@ -519,7 +525,7 @@ class CreateView(MainView):
                 self.show_error_dialog('Missing Part Number')
                 return
 
-        # KiCad data processing
+        # KiCad data gathering
         symbol = None
         template = None
         footprint = None
@@ -547,10 +553,10 @@ class CreateView(MainView):
                 else:
                     pass
             
-            if not symbol and not template and not footprint:
+            # print(symbol, template, footprint)
+            if not symbol or not template or not footprint:
                 self.show_error_dialog('Missing KiCad Data')
                 return
-            # print(symbol, template, footprint)
         
         # InvenTree data processing
         category = None
@@ -577,31 +583,76 @@ class CreateView(MainView):
                 self.show_error_dialog('Missing InvenTree Category')
                 return
             
-            new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
+            # Create part
+            new_part, part_pk, part_info = inventree_interface.inventree_create(part_info=part_info,
                                                                                 category_tree=category_tree,
                                                                                 kicad=settings.ENABLE_KICAD,
                                                                                 symbol=symbol,
                                                                                 footprint=footprint,
                                                                                 show_progress=self.fields['inventree_progress'],
                                                                                 is_custom=custom)
-            print(new_part, part_pk)
-            cprint(part_data)
+            # print(new_part, part_pk)
+            # cprint(part_info)
+
+            if part_pk:
+                # Update symbol
+                if symbol:
+                    symbol = f'{symbol.split(":")[0]}:{part_info["IPN"]}'
+
+                if not new_part:
+                    self.fields['inventree_progress'].color = "amber"
+                    self.fields['inventree_progress'].update()
+                # Complete add operation
+                self.fields['inventree_progress'].value = progress.MAX_PROGRESS
+                self.fields['inventree_progress'].update()
+            else:
+                self.fields['inventree_progress'].color = "red"
+                self.fields['inventree_progress'].update()
+
+        # KiCad data processing
+        if settings.ENABLE_KICAD:
+            part_info['Symbol'] = symbol
+            part_info['Template'] = template.split('/')
+            part_info['Footprint'] = footprint
+
+            symbol_library_path = os.path.join(
+                settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH'],
+                f'{symbol.split(":")[0]}.kicad_sym',
+            )
+
+            # Reset progress
+            progress.CREATE_PART_PROGRESS = 0
+            # Create part
+            kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_info,
+                                                                               library_path=symbol_library_path,
+                                                                               show_progress=self.fields['kicad_progress'])
+            # print(kicad_success, kicad_new_part)
 
             # Complete add operation
-            self.fields['inventree_progress'].value = progress.MAX_PROGRESS
-            self.fields['inventree_progress'].update()
-
-            if part_data.get('inventree_url', None):
+            if kicad_success:
+                if not kicad_new_part:
+                    self.fields['kicad_progress'].color = "amber"
+                    self.fields['kicad_progress'].update()
+                self.fields['kicad_progress'].value = progress.MAX_PROGRESS
+                self.fields['kicad_progress'].update()
+            else:
+                self.fields['kicad_progress'].color = "red"
+                self.fields['kicad_progress'].update()
+        
+        # Final operations
+        if settings.ENABLE_INVENTREE:
+            if part_info.get('inventree_url', None):
                 if settings.AUTOMATIC_BROWSER_OPEN:
                     # Auto-Open Browser Window
-                    cprint(f'\n[MAIN]\tOpening URL {part_data["inventree_url"]} in browser',
-                           silent=settings.SILENT)
+                    cprint(f'\n[MAIN]\tOpening URL {part_info["inventree_url"]} in browser',
+                        silent=settings.SILENT)
                     try:
-                        self.page.launch_url(part_data['inventree_url'])
+                        self.page.launch_url(part_info['inventree_url'])
                     except TypeError:
                         cprint('[INFO]\tError: Failed to open URL', silent=settings.SILENT)
                 else:
-                    cprint(f'\n[MAIN]\tPart page URL: {part_data["inventree_url"]}', silent=settings.SILENT)
+                    cprint(f'\n[MAIN]\tPart page URL: {part_info["inventree_url"]}', silent=settings.SILENT)
+
 
     def build_column(self):
         self.inventree_progress_row = ft.Ref[ft.Row]()

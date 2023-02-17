@@ -14,8 +14,10 @@ def reset_progress_bar(progress_bar) -> bool:
 
     # Reset progress
     CREATE_PART_PROGRESS = 0
+    progress_bar.color = None
     progress_bar.value = 0
     progress_bar.update()
+    time.sleep(0.1)
 
     return True
 
