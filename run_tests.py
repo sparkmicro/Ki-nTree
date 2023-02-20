@@ -166,7 +166,6 @@ if __name__ == '__main__':
                     })
                     # Update categories
                     part_info['category_tree'] = inventree_interface.get_categories_from_supplier_data(part_info)
-                    print(part_info['category_tree'])
                     # Display part to be tested
                     pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 

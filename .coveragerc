@@ -4,14 +4,12 @@ omit =
     env-kintree/*
     .venv/*
     # Skip KiCad library tool
-    kintree/kicad/lib_utils/*
+    kintree/kicad/kiutils/*
     # Skip UI coverage
     kintree/kintree_gui.py
     kintree/common/progress.py
     kintree/gui/*
     # Skip wrapt_timeout_decorator
     kintree/wrapt_timeout_decorator/*
-    # Skip LCSC supplier search
-    kintree/search/lcsc_api.py
     # Skip test script
     run_tests.py

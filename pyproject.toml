@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kintree"
-version = "0.6.99" # placeholder
+version = "1.0.99" # placeholder
 description = "Fast part creation in KiCad and InvenTree"
 authors = ["eeintech <eeintech@eeinte.ch>"]
 maintainers = ["eeintech <eeintech@eeinte.ch>"]
@@ -17,7 +17,7 @@ fuzzywuzzy = "^0.18.0"
 inventree = "^0.9.2"
 mouser = "^0.1.2"
 multiprocess = "^0.70.14"
-PySimpleGUI = "^4.60.4"
+Flet = "^0.4.0"
 PyYAML = "^5.4.1"
 validators = "^0.19.0"
 wrapt = "^1.14.1"
