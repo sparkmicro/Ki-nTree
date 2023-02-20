@@ -168,14 +168,15 @@ def get_categories_from_supplier_data(part_info: dict, supplier_only=False) -> l
 
     # Final checks
     if not categories[0]:
-        cprint(f'[INFO]\tWarning: "{part_info["category"]}" did not match any supplier category ', silent=settings.SILENT)
+        cprint(f'[INFO]\tWarning: "{part_info["category_tree"][0]}" did not match any supplier category ', silent=settings.SILENT)
     else:
         cprint(f'[INFO]\tCategory: "{categories[0]}"', silent=settings.SILENT)
     if not categories[1]:
-        cprint(f'[INFO]\tWarning: "{part_info["subcategory"]}" did not match any supplier subcategory ', silent=settings.SILENT)
+        cprint(f'[INFO]\tWarning: "{part_info["category_tree"][1]}" did not match any supplier subcategory ', silent=settings.SILENT)
     else:
         cprint(f'[INFO]\tSubcategory: "{categories[1]}"', silent=settings.SILENT)
-
+    
+    # print(f'{supplier_category=} | {supplier_subcategory=} | {categories[0]=} | {categories[1]=}')
     return categories
 
 
@@ -391,11 +392,16 @@ def inventree_create_supplier_part(part) -> bool:
     return
 
 
-def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
+def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
     ''' Create InvenTree part from supplier part data and categories '''
 
     part_pk = 0
     new_part = False
+
+    category_tree = part_info['category_tree']
+    if not category_tree:
+        cprint(f'[INFO]\tError: Category tree is empty {category_tree=}', silent=settings.SILENT)
+        return new_part, part_pk, {}
 
     # Translate to InvenTree part format
     inventree_part = translate_form_to_inventree(
@@ -406,28 +412,6 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
 
     if not inventree_part:
         cprint('\n[MAIN]\tError: Failed to process form data', silent=settings.SILENT)
-
-    # Fetch category info from InvenTree part
-    # category_name = inventree_part['category'][0]
-    # subcategory_name = inventree_part['category'][1]
-
-    # # Check if subcategory exists
-    # if subcategory_name:
-    #     # Fetch subcategory id
-    #     subcategory_pk = inventree_api.get_inventree_category_id(category_name=subcategory_name,
-    #                                                              parent_category_id=category_pk)
-        
-    #     if subcategory_pk <= 0:
-    #         cprint(f'\n[TREE]\tWarning: Subcategory "{subcategory_name}" does not exist', silent=settings.SILENT)
-            
-    #         # Check if user enabled option to automatically create the subcategory in general settings
-    #         if settings.AUTOMATIC_SUBCATEGORY_CREATE:
-    #             subcategory_pk, is_subcategory_new = inventree_api.create_category(parent=category_name, name=subcategory_name)
-    #             if subcategory_pk > 0:
-    #                 cprint(f'[TREE]\tSuccess: Subcategory "{category_name}/{subcategory_name}" was automatically added to InvenTree')
-
-    #     if subcategory_pk > 0:
-    #         category_select = subcategory_pk
 
     # Progress Update
     if not progress.update_progress_bar(show_progress):

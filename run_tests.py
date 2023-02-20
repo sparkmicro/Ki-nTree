@@ -155,17 +155,17 @@ if __name__ == '__main__':
                     kicad_result = False
                     inventree_result = False
                     # Fetch supplier data
-                    part_info = inventree_interface.supplier_search(supplier='Digi-Key', part_number=number, test_mode=True)
+                    supplier_info = inventree_interface.supplier_search(supplier='Digi-Key', part_number=number, test_mode=True)
                     # Translate to form
-                    part_form = inventree_interface.translate_supplier_to_form(supplier='Digi-Key', part_info=part_info)
+                    part_info = inventree_interface.translate_supplier_to_form(supplier='Digi-Key', part_info=supplier_info)
                     # Stitch categories and parameters
-                    part_form.update({
-                        'category_tree': [part_info['category'], part_info['subcategory']],
-                        'parameters': part_info['parameters'],
+                    part_info.update({
+                        'category_tree': [supplier_info['category'], supplier_info['subcategory']],
+                        'parameters': supplier_info['parameters'],
+                        'Symbol': f'{category}:{number}',
                     })
-                    # Reset part info
-                    part_info = part_form
-                    part_info['Symbol'] = f'{category}:{number}'
+                    # Update categories
+                    part_info['category_tree'] = inventree_interface.get_categories_from_supplier_data(part_info)
                     # Display part to be tested
                     pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 
@@ -176,19 +176,13 @@ if __name__ == '__main__':
                         part_pk = 0
                         part_data = {}
 
-                        # Get categories
-                        if part_info:
-                            categories = inventree_interface.get_categories_from_supplier_data(part_info)
-
                         # Create part in InvenTree
-                        if categories[0] and categories[1]:
-                            new_part, part_pk, part_data = inventree_interface.inventree_create(
-                                part_info=part_info,
-                                category_tree=categories,
-                                kicad=last_category,
-                                symbol=part_info['Symbol'],
-                                show_progress=False,
-                            )
+                        new_part, part_pk, part_data = inventree_interface.inventree_create(
+                            part_info=part_info,
+                            kicad=last_category,
+                            symbol=part_info['Symbol'],
+                            show_progress=False,
+                        )
 
                         inventree_result = check_result(status, new_part)
                         pk_list = [data[0] for data in inventree_results.values()]

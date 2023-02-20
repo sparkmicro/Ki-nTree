@@ -475,7 +475,8 @@ class KicadView(MainView):
         )
         kicad_inputs = []
         for name, field in self.fields.items():
-            field.on_change = self.push_data
+            if name != 'enable':
+                field.on_change = self.push_data
             if type(field) == DropdownWithSearch:
                 field.label = name
                 if name == 'Symbol Library':
@@ -596,11 +597,12 @@ class CreateView(MainView):
                 # Check category is present
                 self.show_error_dialog('Missing InvenTree Category')
                 return
+            else:
+                part_info['category_tree'] = category_tree
             
             # Create part
             new_part, part_pk, part_info = inventree_interface.inventree_create(
                 part_info=part_info,
-                category_tree=category_tree,
                 kicad=settings.ENABLE_KICAD,
                 symbol=symbol,
                 footprint=footprint,

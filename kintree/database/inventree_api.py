@@ -52,8 +52,11 @@ def get_inventree_category_id(category_tree: list) -> int:
             parent_category_id = get_inventree_category_id(category_tree[:-1])
             if parent_category_id:
                 for category in part_categories:
-                    if parent_category_id == category.getParentCategory().pk:
-                        return category.pk
+                    try:
+                        if parent_category_id == category.getParentCategory().pk:
+                            return category.pk
+                    except AttributeError:
+                        pass
                     #     # Check parent id match (if passed as argument)
                     #     match = True
                     #     if parent_category_id:
@@ -190,11 +193,12 @@ def is_new_part(category_id: int, part_info: dict) -> int:
     # cprint(filters)
 
     for part in part_list:
+        # TODO: This statement below seems erroneous...
         # Compare fields (InvenTree does not allow those to be identicals between two parts)
-        compare_fields = part_info['name'] == part.name and part_info['revision'] == part.revision
-        if compare_fields:
-            cprint(f'[TREE]\tWarning: Found part with same name and revision (pk = {part.pk})', silent=settings.SILENT)
-            return part.pk
+        # compare_fields = part_info['name'] == part.name and part_info['revision'] == part.revision
+        # if compare_fields:
+        #     cprint(f'[TREE]\tWarning: Found part with same name and revision (pk = {part.pk})', silent=settings.SILENT)
+        #     return part.pk
 
         # Compare parameters
         compare_parameters = False
