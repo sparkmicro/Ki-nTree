@@ -1,8 +1,5 @@
 import time
 
-# PySimpleGUI
-import PySimpleGUI as sg
-
 CREATE_PART_PROGRESS: float
 MAX_PROGRESS = 1.0
 DEFAULT_PROGRESS = 0.1
@@ -20,6 +17,7 @@ def reset_progress_bar(progress_bar) -> bool:
     time.sleep(0.1)
 
     return True
+
 
 def progress_increment(inc):
     ''' Increment progress '''

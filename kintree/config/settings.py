@@ -102,6 +102,8 @@ CONFIG_GENERAL = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'gen
 AUTOMATIC_SUBCATEGORY_CREATE = CONFIG_GENERAL.get('AUTOMATIC_SUBCATEGORY_CREATE', False)
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 DEFAULT_SUPPLIER = CONFIG_GENERAL.get('DEFAULT_SUPPLIER', 'Digi-Key')
+
+
 # Load enable flags
 def reload_enable_flags():
     global ENABLE_KICAD
@@ -117,6 +119,7 @@ def reload_enable_flags():
         pass
 
     return False
+
 
 reload_enable_flags()
 
@@ -198,6 +201,7 @@ load_cache_settings()
 # KICAD
 # User Settings
 KICAD_SETTINGS = {}
+
 
 def load_kicad_settings():
     global KICAD_CONFIG_PATHS

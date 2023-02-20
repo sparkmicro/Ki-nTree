@@ -1,4 +1,5 @@
-import os, copy
+import os
+import copy
 import flet as ft
 
 # Version
@@ -146,11 +147,14 @@ class MainView(CommonView):
                 footprint_libraries[folder.replace('.pretty', '')] = os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)
         return footprint_libraries
     
-    def find_libraries(self, type:str):
+    def find_libraries(self, type: str) -> list:
         found_libraries = []
         if type == 'symbol':
-            found_libraries = [file.replace('.kicad_sym', '') for file in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH']))
-                                if file.endswith('.kicad_sym')]
+            found_libraries = [
+                file.replace('.kicad_sym', '')
+                for file in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH']))
+                if file.endswith('.kicad_sym')
+            ]
         elif type == 'template':
             templates = config_interface.load_templates_paths(
                 user_config_path=settings.KICAD_CONFIG_CATEGORY_MAP,
@@ -174,7 +178,7 @@ class MainView(CommonView):
 
         # print(e.control.label, not(disable))
         key = e.control.label.lower()
-        settings.set_enable_flag(key, not(disable))
+        settings.set_enable_flag(key, not disable)
 
         for name, field in self.fields.items():
             if name not in ignore:
@@ -249,7 +253,7 @@ class PartSearchView(MainView):
 
     def run_search(self, e):
         # Validate form
-        if bool(self.fields['part_number'].value) !=  bool(self.fields['supplier'].value):
+        if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
             if not self.fields['part_number'].value:
                 self.build_snackbar(dialog_success=False, dialog_text='Missing Part Number')
             else:
@@ -274,9 +278,9 @@ class PartSearchView(MainView):
                 if part_supplier_info:
                     # Translate to user form format
                     part_supplier_form = inventree_interface.translate_supplier_to_form(
-                                            supplier=self.fields['supplier'].value,
-                                            part_info=part_supplier_info,
-                                        )
+                        supplier=self.fields['supplier'].value,
+                        part_info=part_supplier_info,
+                    )
 
                 if part_supplier_info:
                     for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
@@ -376,7 +380,7 @@ class InventreeView(MainView):
             try:
                 last_entry = f' {self.clean_category_tree(tree[-1])}{self.category_separator}'
             except IndexError:
-                last_entry = f''
+                last_entry = ''
             if type(left_to_go) == dict:
                 for key, value in left_to_go.items():
                     tree.append(f'{"-" * level}{last_entry}{key}')
@@ -485,6 +489,7 @@ class KicadView(MainView):
         
         self.column.controls.extend(kicad_inputs)
 
+
 class CreateView(MainView):
     '''Create view'''
 
@@ -569,7 +574,6 @@ class CreateView(MainView):
                 return
         
         # InvenTree data processing
-        category = None
         if settings.ENABLE_INVENTREE:
             # Check data is present
             if not data_from_views.get('InvenTree', None):
@@ -654,15 +658,16 @@ class CreateView(MainView):
             if part_info.get('inventree_url', None):
                 if settings.AUTOMATIC_BROWSER_OPEN:
                     # Auto-Open Browser Window
-                    cprint(f'\n[MAIN]\tOpening URL {part_info["inventree_url"]} in browser',
-                        silent=settings.SILENT)
+                    cprint(
+                        f'\n[MAIN]\tOpening URL {part_info["inventree_url"]} in browser',
+                        silent=settings.SILENT
+                    )
                     try:
                         self.page.launch_url(part_info['inventree_url'])
                     except TypeError:
                         cprint('[INFO]\tError: Failed to open URL', silent=settings.SILENT)
                 else:
                     cprint(f'\n[MAIN]\tPart page URL: {part_info["inventree_url"]}', silent=settings.SILENT)
-
 
     def build_column(self):
         self.inventree_progress_row = ft.Ref[ft.Row]()

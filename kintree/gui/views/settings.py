@@ -1,4 +1,3 @@
-import os
 import flet as ft
 
 # Common view
@@ -99,8 +98,8 @@ SETTINGS = {
         'Test': [
             None,
             ft.ElevatedButton,
-            False, # Browse disabled
-        ]
+            False,  # Browse disabled
+        ],
     },
     'KiCad Settings': {
         'Symbol Libraries Folder': [
@@ -162,6 +161,7 @@ settings_navrail = ft.NavigationRail(
     ],
     on_change=None,
 )
+
 
 class SettingsView(CommonView):
     '''Main settings view'''
@@ -298,22 +298,22 @@ class SettingsView(CommonView):
         if list(SETTINGS[self.title])[-1] == 'Test':
             test_save_buttons.controls.append(
                 ft.ElevatedButton(
-                'Test',
-                width=GUI_PARAMS['button_width'],
-                height=GUI_PARAMS['button_height'],
-                icon=ft.icons.CHECK_OUTLINED,
-                on_click=lambda _: self.test()
+                    'Test',
+                    width=GUI_PARAMS['button_width'],
+                    height=GUI_PARAMS['button_height'],
+                    icon=ft.icons.CHECK_OUTLINED,
+                    on_click=lambda _: self.test(),
                 ),
             )
         test_save_buttons.controls.append(
-                ft.ElevatedButton(
-                    'Save',
-                    width=GUI_PARAMS['button_width'],
-                    height=GUI_PARAMS['button_height'],
-                    icon=ft.icons.SAVE_OUTLINED,
-                    on_click=lambda _: self.save()
-                ),
-            )
+            ft.ElevatedButton(
+                'Save',
+                width=GUI_PARAMS['button_width'],
+                height=GUI_PARAMS['button_height'],
+                icon=ft.icons.SAVE_OUTLINED,
+                on_click=lambda _: self.save()
+            ),
+        )
         self.column.controls.append(test_save_buttons)
 
 
@@ -373,7 +373,6 @@ class SupplierSettingsView(SettingsView):
             config_interface.dump_file(mouser_settings, global_settings.CONFIG_MOUSER_API)
             mouser_api.setup_environment(force=True)
         elif supplier == 'Element14' or supplier == 'Farnell' or supplier == 'Newark':
-            from ...search import element14_api
             # Load settings from file
             settings_from_file = config_interface.load_file(global_settings.CONFIG_ELEMENT14_API)
             # Update settings values
@@ -384,7 +383,6 @@ class SupplierSettingsView(SettingsView):
             element14_settings = {**settings_from_file, **updated_settings}
             config_interface.dump_file(element14_settings, global_settings.CONFIG_ELEMENT14_API)
         elif supplier == 'LCSC':
-            from ...search import lcsc_api
             # Load settings from file
             settings_from_file = config_interface.load_file(global_settings.CONFIG_LCSC_API)
             # Update settings values
@@ -396,9 +394,9 @@ class SupplierSettingsView(SettingsView):
             
         if show_dialog:
             self.build_snackbar(
-                    dialog_success=True,
-                    dialog_text=f'{supplier} Settings successfully saved',
-                )
+                dialog_success=True,
+                dialog_text=f'{supplier} Settings successfully saved',
+            )
             self.show_dialog()
 
     def test_s(self, e: ft.ControlEvent, supplier: str):
@@ -520,9 +518,9 @@ class InvenTreeSettingsView(SettingsView):
         # Alert user
         if dialog:
             self.build_snackbar(
-                    dialog_success=True,
-                    dialog_text=f'{self.title} successfully saved',
-                )
+                dialog_success=True,
+                dialog_text=f'{self.title} successfully saved',
+            )
             self.show_dialog()
 
     def test(self):

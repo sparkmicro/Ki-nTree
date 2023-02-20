@@ -26,8 +26,9 @@ GUI_PARAMS = {
     'icon_size': 40,
     'text_size': 16,
 }
-
+# Contains data from all views
 data_from_views = {}
+
 
 class CommonView(View):
     '''Common view to all GUI views'''
@@ -123,16 +124,16 @@ class DropdownWithSearch(UserControl):
 
     def __init__(
         self,
-        label: Optional[str]=None,
-        dr_width: Optional[int]=None,
-        sr_width: Optional[int]=None,
-        dense: Optional[bool]=None,
+        label: Optional[str] = None,
+        dr_width: Optional[int] = None,
+        sr_width: Optional[int] = None,
+        dense: Optional[bool] = None,
         disabled=False,
         sr_animate=100,
         options=None,
         on_change=None,
         **kwargs,
-    ):  
+    ):
         super().__init__(**kwargs)
         self._options = options
         self.dropdown = Dropdown(
@@ -291,28 +292,28 @@ class Collapsible(Column):
     def header_click(self, e):
         self.content.height = None if self.content.height == 0 else 0
         self.content.opacity = 0 if self.content.height == 0 else 1
-        self.shevron.rotate = pi/2 if self.shevron.rotate == 0 else 0
+        self.shevron.rotate = pi / 2 if self.shevron.rotate == 0 else 0
         self.update()
 
     def _build(self):
         title_row = Row()
-        if self.icon != None:
+        if self.icon is not None:
             title_row.controls.append(self.icon)
         if self.radio:
             title_row.controls.append(self.radio)
         else:
             title_row.controls.append(Text(self.title))
         self.controls = [
-                Container(
-                    Row([title_row, self.shevron], alignment="spaceBetween"),
-                    padding=padding.only(left=8, right=8),
-                    height=38,
-                    border_radius=4,
-                    ink=True,
-                    on_click=self.header_click,
-                ),
-                self.content,
-            ]
+            Container(
+                Row([title_row, self.shevron], alignment="spaceBetween"),
+                padding=padding.only(left=8, right=8),
+                height=38,
+                border_radius=4,
+                ink=True,
+                on_click=self.header_click,
+            ),
+            self.content,
+        ]
 
         
 class MenuButton(Container):
@@ -339,7 +340,7 @@ class MenuButton(Container):
 
     def _build(self):
         row = Row()
-        if self.icon != None:
+        if self.icon is not None:
             row.controls.append(self.icon)
         if self.radio:
             row.controls.append(self.radio)

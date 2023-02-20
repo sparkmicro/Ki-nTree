@@ -1,5 +1,4 @@
 import copy
-import os
 
 from ..config import settings
 from ..common import part_tools, progress
@@ -502,22 +501,11 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
                 ipn = list(inventree_part['manufacturer'].values())[0][0]
                 inventree_part['IPN'] = ipn
 
-            # Create mandatory parameters (symbol & footprint)
+            # Create symbol & footprint parameters
             if symbol and ipn:
                 kicad_symbol = symbol + ':' + ipn
-            else:
-                try:
-                    kicad_symbol = settings.symbol_libraries_paths[category_name].split(os.sep)[-1].split('.')[0] + ':' + ipn
-                except:
-                    kicad_symbol = category_name.replace(' ', '_') + ':TBD'
             if footprint:
                 kicad_footprint = footprint
-            else:
-                try:
-                    supplier_package = inventree_part['parameters']['Package Type']
-                    kicad_footprint = settings.footprint_lookup_table[category_name][supplier_package]
-                except:
-                    kicad_footprint = category_name.replace(' ', '_') + ':TBD'
 
             # Add symbol & footprint to InvenTree part
             inventree_part['parameters']['Symbol'] = kicad_symbol
@@ -565,18 +553,22 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
             manufacturer_mpn = inventree_part['manufacturer_part_number']
 
             cprint('\n[MAIN]\tCreating manufacturer part', silent=settings.SILENT)
-            manufacturer_part = inventree_api.is_new_manufacturer_part(manufacturer_name=manufacturer_name,
-                                                                        manufacturer_mpn=manufacturer_mpn)
+            manufacturer_part = inventree_api.is_new_manufacturer_part(
+                manufacturer_name=manufacturer_name,
+                manufacturer_mpn=manufacturer_mpn,
+            )
 
             if manufacturer_part:
                 cprint('[INFO]\tManufacturer part already exists, skipping.', silent=settings.SILENT)
             else:
                 # Create a new manufacturer part
-                is_manufacturer_part_created = inventree_api.create_manufacturer_part(part_id=part_pk,
-                                                                                        manufacturer_name=manufacturer_name,
-                                                                                        manufacturer_mpn=manufacturer_mpn,
-                                                                                        datasheet=inventree_part['datasheet'],
-                                                                                        description=inventree_part['description'])
+                is_manufacturer_part_created = inventree_api.create_manufacturer_part(
+                    part_id=part_pk,
+                    manufacturer_name=manufacturer_name,
+                    manufacturer_mpn=manufacturer_mpn,
+                    datasheet=inventree_part['datasheet'],
+                    description=inventree_part['description'],
+                )
 
                 if is_manufacturer_part_created:
                     cprint('[INFO]\tSuccess: Added new manufacturer part', silent=settings.SILENT)
@@ -596,13 +588,15 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
                 cprint('[INFO]\tSupplier part already exists, skipping.', silent=settings.SILENT)
             else:
                 # Create a new supplier part
-                is_supplier_part_created = inventree_api.create_supplier_part(part_id=part_pk,
-                                                                                manufacturer_name=manufacturer_name,
-                                                                                manufacturer_mpn=manufacturer_mpn,
-                                                                                supplier_name=supplier_name,
-                                                                                supplier_sku=supplier_sku,
-                                                                                description=inventree_part['description'],
-                                                                                link=inventree_part['supplier_link'])
+                is_supplier_part_created = inventree_api.create_supplier_part(
+                    part_id=part_pk,
+                    manufacturer_name=manufacturer_name,
+                    manufacturer_mpn=manufacturer_mpn,
+                    supplier_name=supplier_name,
+                    supplier_sku=supplier_sku,
+                    description=inventree_part['description'],
+                    link=inventree_part['supplier_link'],
+                )
 
                 if is_supplier_part_created:
                     cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
