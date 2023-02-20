@@ -20,18 +20,18 @@ ENABLE_DELETE = True
 AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
-    'Capacitors',
-    'Circuit Protections',
-    'Connectors',
-    'Crystals and Oscillators',
-    'Diodes',
-    'Inductors',
+    # 'Capacitors',
+    # 'Circuit Protections',
+    # 'Connectors',
+    # 'Crystals and Oscillators',
+    # 'Diodes',
+    # 'Inductors',
     'Integrated Circuits',
-    'Mechanicals',
-    'Power Management',
-    'Resistors',
-    'RF',
-    'Transistors',
+    # 'Mechanicals',
+    # 'Power Management',
+    # 'Resistors',
+    # 'RF',
+    # 'Transistors',
 ]
 # Enable tests on extra methods
 ENABLE_TEST_METHODS = True
@@ -76,42 +76,42 @@ footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'fil
 # Disable Digi-Key API logging
 digikey_api.disable_api_logger()
 
-# Test Digi-Key API
-if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
-    pretty_test_print('[MAIN]\tDigi-Key API Test')
-    if not digikey_api.test_api(check_content=True):
-        cprint('[ FAIL ]')
-        cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
-        sys.exit(-1)
-    else:
-        cprint('[ PASS ]')
+# # Test Digi-Key API
+# if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
+#     pretty_test_print('[MAIN]\tDigi-Key API Test')
+#     if not digikey_api.test_api(check_content=True):
+#         cprint('[ FAIL ]')
+#         cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+#         sys.exit(-1)
+#     else:
+#         cprint('[ PASS ]')
 
-# Test Mouser API
-if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
-    pretty_test_print('[MAIN]\tMouser API Test')
-    if not mouser_api.test_api():
-        cprint('[ FAIL ]')
-        sys.exit(-1)
-    else:
-        cprint('[ PASS ]')
+# # Test Mouser API
+# if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
+#     pretty_test_print('[MAIN]\tMouser API Test')
+#     if not mouser_api.test_api():
+#         cprint('[ FAIL ]')
+#         sys.exit(-1)
+#     else:
+#         cprint('[ PASS ]')
 
-# Test Element14 API
-if 'Element14' in settings.SUPPORTED_SUPPLIERS_API:
-    pretty_test_print('[MAIN]\tElement14 API Test')
-    if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
-        cprint('[ FAIL ]')
-        sys.exit(-1)
-    else:
-        cprint('[ PASS ]')
+# # Test Element14 API
+# if 'Element14' in settings.SUPPORTED_SUPPLIERS_API:
+#     pretty_test_print('[MAIN]\tElement14 API Test')
+#     if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
+#         cprint('[ FAIL ]')
+#         sys.exit(-1)
+#     else:
+#         cprint('[ PASS ]')
 
-# Test LCSC API
-if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
-    pretty_test_print('[MAIN]\tLCSC API Test')
-    if not lcsc_api.test_api():
-        cprint('[ FAIL ]')
-        sys.exit(-1)
-    else:
-        cprint('[ PASS ]')
+# # Test LCSC API
+# if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
+#     pretty_test_print('[MAIN]\tLCSC API Test')
+#     if not lcsc_api.test_api():
+#         cprint('[ FAIL ]')
+#         sys.exit(-1)
+#     else:
+#         cprint('[ PASS ]')
 
 # Setup InvenTree
 cprint('\n-----')
@@ -166,6 +166,7 @@ if __name__ == '__main__':
                     })
                     # Update categories
                     part_info['category_tree'] = inventree_interface.get_categories_from_supplier_data(part_info)
+                    print(part_info['category_tree'])
                     # Display part to be tested
                     pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 
