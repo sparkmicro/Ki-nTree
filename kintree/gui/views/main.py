@@ -598,13 +598,15 @@ class CreateView(MainView):
                 return
             
             # Create part
-            new_part, part_pk, part_info = inventree_interface.inventree_create(part_info=part_info,
-                                                                                category_tree=category_tree,
-                                                                                kicad=settings.ENABLE_KICAD,
-                                                                                symbol=symbol,
-                                                                                footprint=footprint,
-                                                                                show_progress=self.fields['inventree_progress'],
-                                                                                is_custom=custom)
+            new_part, part_pk, part_info = inventree_interface.inventree_create(
+                part_info=part_info,
+                category_tree=category_tree,
+                kicad=settings.ENABLE_KICAD,
+                symbol=symbol,
+                footprint=footprint,
+                show_progress=self.fields['inventree_progress'],
+                is_custom=custom
+            )
             # print(new_part, part_pk)
             # cprint(part_info)
 
@@ -637,9 +639,11 @@ class CreateView(MainView):
             # Reset progress
             progress.CREATE_PART_PROGRESS = 0
             # Create part
-            kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_info,
-                                                                               library_path=symbol_library_path,
-                                                                               show_progress=self.fields['kicad_progress'])
+            kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(
+                part_data=part_info,
+                library_path=symbol_library_path,
+                show_progress=self.fields['kicad_progress'],
+            )
             # print(kicad_success, kicad_new_part)
 
             # Complete add operation

@@ -398,9 +398,11 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
     new_part = False
 
     # Translate to InvenTree part format
-    inventree_part = translate_form_to_inventree(part_info=part_info,
-                                                 category_tree=category_tree,
-                                                 is_custom=is_custom)
+    inventree_part = translate_form_to_inventree(
+        part_info=part_info,
+        category_tree=category_tree,
+        is_custom=is_custom,
+    )
 
     if not inventree_part:
         cprint('\n[MAIN]\tError: Failed to process form data', silent=settings.SILENT)

@@ -36,11 +36,16 @@ class ComponentLibManager(object):
         ''' Create symbol in KiCad library '''
         part_in_lib = False
         new_part = False
-        category = symbol_data['Template'][0]
-        subcategory = symbol_data['Template'][1]
-        symbol_id = symbol_data['Symbol'].split(':')[1]
+        
+        try:
+            symbol_id = symbol_data['Symbol'].split(':')[1]
+        except KeyError:
+            cprint('[KCAD] Error: Adding a new symbol to a KiCad library requires the \'Symbol\' key with the following format: {lib}:{symbol_id}')
 
         if not template_path:
+            category = symbol_data['category_tree'][0]
+            subcategory = symbol_data['category_tree'][1]
+
             # Fetch template path
             try:
                 template_path = settings.symbol_templates_paths[category][subcategory]
