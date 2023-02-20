@@ -50,20 +50,16 @@ class CommonView(View):
         if not self.navigation_rail:
             self.navigation_rail = navigation_rail
 
-        # Build column
-        if not self.column:
-            self.column = self.build_column()
-
-        # Build controls
-        if not self.controls:
-            self.controls = self.build_controls()
-
     def build_column(self):
         # Empty column (to be set inside the children views)
-        return Column()
+        self.column = Column()
 
-    def build_controls(self):
-        return [
+    def _build(self):
+        # Build column
+        if not self.column:
+            self.build_column()
+        # Set view controls
+        self.controls = [
             Row(
                 controls=[
                     self.navigation_rail,

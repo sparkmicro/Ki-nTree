@@ -231,7 +231,7 @@ class SettingsView(CommonView):
 
     def build_column(self):
         # Title and separator
-        column = ft.Column(
+        self.column = ft.Column(
             controls=[
                 ft.Text(self.title, style="bodyMedium"),
                 ft.Row(),
@@ -262,7 +262,7 @@ class SettingsView(CommonView):
                             on_click=lambda e, t=field_name: self.path_picker(e, title=t)
                         ),
                     )
-                column.controls.extend(
+                self.column.controls.extend(
                     [
                         field_row,
                         ft.Row(height=GUI_PARAMS['textfield_space_after']),
@@ -275,10 +275,10 @@ class SettingsView(CommonView):
                         field,
                     ]
                 )
-                column.controls.append(field_row)
-                column.controls.append(ft.Divider())
+                self.column.controls.append(field_row)
+                self.column.controls.append(ft.Divider())
             elif type(field) == ft.TextButton:
-                column.controls.append(
+                self.column.controls.append(
                     ft.ElevatedButton(
                         field_name,
                         width=GUI_PARAMS['button_width'] * 2,
@@ -289,7 +289,7 @@ class SettingsView(CommonView):
                 )
             elif type(field) == ft.Dropdown:
                 field.on_change = lambda _: self.save()
-                column.controls.append(
+                self.column.controls.append(
                     field,
                 )
 
@@ -314,9 +314,7 @@ class SettingsView(CommonView):
                     on_click=lambda _: self.save()
                 ),
             )
-        column.controls.append(test_save_buttons)
-
-        return column
+        self.column.controls.append(test_save_buttons)
 
 
 class UserSettingsView(SettingsView):
@@ -435,7 +433,7 @@ class SupplierSettingsView(SettingsView):
 
     def build_column(self):
         # Title and separator
-        column = ft.Column(
+        self.column = ft.Column(
             controls=[
                 ft.Text(self.title, style="bodyMedium"),
                 ft.Row(),
@@ -499,8 +497,7 @@ class SupplierSettingsView(SettingsView):
                 )
             )
 
-        column.controls.append(supplier_tabs)
-        return column
+        self.column.controls.append(supplier_tabs)
 
 
 class InvenTreeSettingsView(SettingsView):

@@ -44,9 +44,6 @@ MAIN_NAVIGATION = {
         'route': '/main/create'
     },
 }
-NAV_BAR_INDEX = {}
-for view in MAIN_NAVIGATION.values():
-    NAV_BAR_INDEX[view['nav_index']] = view['route']
 
 # Main NavRail
 main_navrail = ft.NavigationRail(
@@ -102,9 +99,14 @@ class MainView(CommonView):
         if not self.appbar.actions:
             self.appbar.actions.append(ft.IconButton(ft.icons.SETTINGS, on_click=lambda e: self.page.go('/settings')))
 
+        # Load navigation indexes
+        self.NAV_BAR_INDEX = {}
+        for view in MAIN_NAVIGATION.values():
+            self.NAV_BAR_INDEX[view['nav_index']] = view['route']
+
         # Update navigation rail
         if not self.navigation_rail.on_change:
-            self.navigation_rail.on_change = lambda e: self.page.go(NAV_BAR_INDEX[e.control.selected_index])
+            self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
 
         # Init data
         self.data = {}
@@ -216,30 +218,28 @@ class PartSearchView(MainView):
     ]
 
     fields = {
-        'part_number': ft.TextField(label="Part Number", dense=True, hint_text="Part Number", width=300, expand=True),
-        'supplier': ft.Dropdown(label="Supplier", dense=True, width=250),
+        'part_number': ft.TextField(
+            label="Part Number",
+            dense=True,
+            hint_text="Part Number",
+            width=300,
+            expand=True
+        ),
+        'supplier': ft.Dropdown(
+            label="Supplier",
+            dense=True,
+            width=250
+        ),
         'search_button': ft.IconButton(
             icon=ft.icons.SEND,
             icon_color="blue900",
             icon_size=32,
+            height=48,
+            width=48,
             tooltip="Submit",
         ),
         'search_form': {},
     }
-
-    def __init__(self, page: ft.Page):
-        # Init view
-        super().__init__(page)
-
-        # Populate dropdown suppliers
-        self.fields['supplier'].options = [ft.dropdown.Option(supplier) for supplier in settings.SUPPORTED_SUPPLIERS_API]
-
-        # Create search form
-        for field in self.search_fields_list:
-            label = field.replace('_', ' ').title()
-            text_field = ft.TextField(label=label, dense=True, hint_text=label, disabled=True, expand=True, on_change=self.push_data)
-            self.column.controls.append(ft.Row(controls=[text_field]))
-            self.fields['search_form'][field] = text_field
 
     def enable_search_fields(self):
         for form_field in self.fields['search_form'].values():
@@ -247,7 +247,7 @@ class PartSearchView(MainView):
         self.page.update()
         return
 
-    def run_search(self):
+    def run_search(self, e):
         # Validate form
         if bool(self.fields['part_number'].value) !=  bool(self.fields['supplier'].value):
             if not self.fields['part_number'].value:
@@ -300,14 +300,12 @@ class PartSearchView(MainView):
         data_from_views[self.title] = self.data
 
     def build_column(self):
-        for name, field in self.fields.items():
-            if type(field) == ft.ElevatedButton:
-                field.width = 100
-                field.height = 48
-            if name == 'search_button':
-                field.on_click = lambda e: self.run_search()
+        # Populate dropdown suppliers
+        self.fields['supplier'].options = [ft.dropdown.Option(supplier) for supplier in settings.SUPPORTED_SUPPLIERS_API]
+        # Enable search method
+        self.fields['search_button'].on_click = self.run_search
 
-        return ft.Column(
+        self.column = ft.Column(
             controls=[
                 ft.Row(),
                 ft.Row(
@@ -323,6 +321,20 @@ class PartSearchView(MainView):
             scroll=ft.ScrollMode.HIDDEN,
             expand=True,
         )
+
+        # Create search form
+        for field in self.search_fields_list:
+            label = field.replace('_', ' ').title()
+            text_field = ft.TextField(
+                label=label,
+                dense=True,
+                hint_text=label,
+                disabled=True,
+                expand=True,
+                on_change=self.push_data,
+            )
+            self.column.controls.append(ft.Row([text_field]))
+            self.fields['search_form'][field] = text_field
 
 
 class InventreeView(MainView):
@@ -389,7 +401,7 @@ class InventreeView(MainView):
 
         self.fields['load_categories'].on_click = self.reload_categories
 
-        return ft.Column(
+        self.column = ft.Column(
             controls=[
                 ft.Row(),
                 ft.Row(
@@ -452,7 +464,7 @@ class KicadView(MainView):
         return options
 
     def build_column(self):
-        column = ft.Column(
+        self.column = ft.Column(
             controls=[ft.Row()],
             alignment=ft.MainAxisAlignment.START,
             expand=True,
@@ -471,9 +483,7 @@ class KicadView(MainView):
 
             kicad_inputs.append(field)
         
-        column.controls.extend(kicad_inputs)
-        return column
-
+        self.column.controls.extend(kicad_inputs)
 
 class CreateView(MainView):
     '''Create view'''
@@ -658,7 +668,7 @@ class CreateView(MainView):
         self.inventree_progress_row = ft.Ref[ft.Row]()
         self.kicad_progress_row = ft.Ref[ft.Row]()
 
-        return ft.Column(
+        self.column = ft.Column(
             controls=[
                 ft.Row(),
                 ft.Text('Progress', style=ft.TextThemeStyle.HEADLINE_SMALL),
