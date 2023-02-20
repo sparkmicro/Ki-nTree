@@ -8,6 +8,7 @@ omit =
     # Skip UI coverage
     kintree/kintree_gui.py
     kintree/common/progress.py
+    kintree/gui/*
     # Skip wrapt_timeout_decorator
     kintree/wrapt_timeout_decorator/*
     # Skip LCSC supplier search
