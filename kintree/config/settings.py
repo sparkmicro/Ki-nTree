@@ -231,23 +231,33 @@ def set_default_supplier(value: str, save=False):
 # Library Paths
 if not ENABLE_TEST:
     symbol_libraries_paths = config_interface.load_libraries_paths(
-        KICAD_CONFIG_CATEGORY_MAP, KICAD_SETTINGS['KICAD_SYMBOLS_PATH'])
+        KICAD_CONFIG_CATEGORY_MAP,
+        KICAD_SETTINGS['KICAD_SYMBOLS_PATH'],
+    )
 # cprint(symbol_libraries_paths)
 
 # Template Paths
 symbol_templates_paths = config_interface.load_templates_paths(
-    KICAD_CONFIG_CATEGORY_MAP, KICAD_SETTINGS['KICAD_TEMPLATES_PATH'])
+    KICAD_CONFIG_CATEGORY_MAP,
+    KICAD_SETTINGS['KICAD_TEMPLATES_PATH'],
+)
 # cprint(symbol_templates_paths)
 
 # Footprint Libraries
 footprint_libraries_paths = config_interface.load_footprint_paths(
-    KICAD_CONFIG_CATEGORY_MAP, KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'])
+    KICAD_CONFIG_CATEGORY_MAP,
+    KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'],
+)
 # cprint(footprint_libraries_paths)
 footprint_name_default = 'TBD'
 
 AUTO_GENERATE_LIB = True
 symbol_template_lib = os.path.join(
-    PROJECT_DIR, 'kicad', 'templates', 'library_template.kicad_sym')
+    PROJECT_DIR,
+    'kicad',
+    'templates',
+    'library_template.kicad_sym'
+)
 
 
 # INVENTREE

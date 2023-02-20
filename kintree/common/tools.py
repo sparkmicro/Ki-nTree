@@ -53,10 +53,9 @@ def cprint(*args, **kwargs):
 
 def create_library(library_path: str, symbol: str, template_lib: str):
     ''' Create library files if they don\'t exist '''
-
     if not os.path.exists(library_path):
         os.mkdir(library_path)
-    new_kicad_sym_file = os.path.join(library_path, symbol + '.kicad_sym')
+    new_kicad_sym_file = os.path.join(library_path, f'{symbol}.kicad_sym')
     if not os.path.exists(new_kicad_sym_file):
         copyfile(template_lib, new_kicad_sym_file)
 

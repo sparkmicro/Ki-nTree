@@ -41,13 +41,13 @@ def connect_to_server(timeout=5) -> bool:
     return connect
 
 
-def get_categories(part_info: dict, supplier_only=False) -> list:
+def get_categories_from_supplier_data(part_info: dict, supplier_only=False) -> list:
     ''' Find categories from part supplier data, use "somewhat automatic" matching '''
     categories = [None, None]
 
     try:
-        supplier_category = str(part_info['category'])
-        supplier_subcategory = str(part_info['subcategory'])
+        supplier_category = str(part_info['category_tree'][0])
+        supplier_subcategory = str(part_info['category_tree'][1])
     except KeyError:
         return categories
 
@@ -504,14 +504,11 @@ def inventree_create(part_info: dict, category_tree: list, kicad=False, symbol=N
                 inventree_part['IPN'] = ipn
 
             # Create symbol & footprint parameters
-            if symbol and ipn:
-                kicad_symbol = symbol + ':' + ipn
+            if symbol:
+                symbol = f'{symbol.split(":")[0]}:{ipn}'
+                inventree_part['parameters']['Symbol'] = symbol
             if footprint:
-                kicad_footprint = footprint
-
-            # Add symbol & footprint to InvenTree part
-            inventree_part['parameters']['Symbol'] = kicad_symbol
-            inventree_part['parameters']['Footprint'] = kicad_footprint
+                inventree_part['parameters']['Footprint'] = footprint
 
         if not inventree_part['parameters']:
             category_parameters = inventree_api.get_category_parameters(category_pk)

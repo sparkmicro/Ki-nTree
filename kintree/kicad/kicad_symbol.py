@@ -41,6 +41,7 @@ class ComponentLibManager(object):
             symbol_id = symbol_data['Symbol'].split(':')[1]
         except KeyError:
             cprint('[KCAD] Error: Adding a new symbol to a KiCad library requires the \'Symbol\' key with the following format: {lib}:{symbol_id}')
+            return part_in_lib, new_part
 
         if not template_path:
             category = symbol_data['category_tree'][0]

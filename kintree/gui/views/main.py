@@ -605,7 +605,7 @@ class CreateView(MainView):
                 symbol=symbol,
                 footprint=footprint,
                 show_progress=self.fields['inventree_progress'],
-                is_custom=custom
+                is_custom=custom,
             )
             # print(new_part, part_pk)
             # cprint(part_info)

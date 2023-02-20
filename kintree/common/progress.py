@@ -36,7 +36,7 @@ def update_progress_bar(progress_bar, increment=0) -> bool:
     global DEFAULT_PROGRESS
 
     if not progress_bar:
-        return False
+        return True
 
     if increment:
         inc = increment
