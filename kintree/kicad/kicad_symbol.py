@@ -25,8 +25,8 @@ class ComponentLibManager(object):
     def is_symbol_in_library(self, symbol_id):
         ''' Check if symbol already exists in library '''
         for symbol in self.kicad_lib.symbols:
-            cprint(f'[DBUG]\t{symbol.id} ?= {symbol_id}', silent=settings.HIDE_DEBUG)
-            if symbol.id == symbol_id:
+            cprint(f'[DBUG]\t{symbol.libId} ?= {symbol_id}', silent=settings.HIDE_DEBUG)
+            if symbol.libId == symbol_id:
                 cprint(f'[KCAD]\tWarning: Component {symbol_id} already in library', silent=settings.SILENT)
                 return True
 
@@ -84,7 +84,7 @@ class ComponentLibManager(object):
             return part_in_lib, new_part
 
         # Update name/ID
-        new_symbol.id = symbol_id
+        new_symbol.libId = symbol_id
 
         # Update properties
         for property in new_symbol.properties:

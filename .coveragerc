@@ -3,8 +3,6 @@ omit =
     # Do not run coverage on virtual environment files
     env-kintree/*
     .venv/*
-    # Skip KiCad library tool
-    kintree/kicad/kiutils/*
     # Skip UI coverage
     kintree/kintree_gui.py
     kintree/common/progress.py

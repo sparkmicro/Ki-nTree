@@ -208,7 +208,7 @@ class MainView(CommonView):
     def sanitize_data(self):
         return
 
-    def push_data(self, e=None):
+    def push_data(self, e=None, label=None, value=None):
         for key, field in self.fields.items():
             try:
                 self.data[key] = field.value
@@ -304,8 +304,11 @@ class PartSearchView(MainView):
                         supplier=self.fields['supplier'].value,
                         part_info=part_supplier_info,
                     )
+                    # Stitch parameters
+                    if part_supplier_info.get('parameters', None):
+                        self.data['parameters'] = part_supplier_info['parameters']
 
-                if part_supplier_info:
+                if part_supplier_form:
                     for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
                         # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
                         try:
@@ -477,13 +480,17 @@ class KicadView(MainView):
     def push_data(self, e=None, label=None, value=None):
         super().push_data(e)
         if label or e:
-            if 'Footprint Library' in [label, e.control.label]:
-                if value:
-                    selected_footprint_library = value
-                else:
-                    selected_footprint_library = e.data
-                self.fields['Footprint'].options = self.update_footprint_options(selected_footprint_library)
-                self.fields['Footprint'].update()
+            try:
+                if 'Footprint Library' in [label, e.control.label]:
+                    if value:
+                        selected_footprint_library = value
+                    else:
+                        selected_footprint_library = e.data
+                    self.fields['Footprint'].options = self.update_footprint_options(selected_footprint_library)
+                    self.fields['Footprint'].update()
+            except AttributeError:
+                # Handles condition where search field tries to reset dropdown
+                pass
 
     def build_library_options(self, type: str):
         found_libraries = self.find_libraries(type)
