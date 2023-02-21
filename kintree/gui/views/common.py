@@ -214,6 +214,9 @@ class DropdownWithSearch(ft.UserControl):
     @value.setter
     def value(self, value):
         self.dropdown.value = value
+        if value is None:
+            self.search_field.value = None
+            self.done_search()
 
     @property
     def disabled(self):
@@ -249,7 +252,7 @@ class DropdownWithSearch(ft.UserControl):
     @on_change.setter
     def on_change(self, on_change):
         self.dropdown.on_change = on_change
-    
+
     def update_option_list(self, input: str):
         new_list_options = []
         for option in self._options:
@@ -258,13 +261,13 @@ class DropdownWithSearch(ft.UserControl):
         return new_list_options
 
     def on_search(self, e):
-        if self.search_field.value.replace(" ", ""):
+        if self.search_field.value.replace(' ', ''):
             self.dropdown.options = self.update_option_list(self.search_field.value)
             if len(self.dropdown.options) == 1:
-                self.value = self.dropdown.options[0].key
+                self.dropdown.value = self.dropdown.options[0].key
                 self.on_change(e)
             else:
-                self.value = None
+                self.dropdown.value = None
         else:
             self.dropdown.options = self._options
         self.dropdown.update()

@@ -317,7 +317,7 @@ class SettingsView(CommonView):
         self.column.controls.append(test_save_buttons)
 
     def did_mount(self):
-        handle_transition(self.page, transition=False, timeout=0.1)
+        handle_transition(self.page, transition=False, timeout=0.05)
         return super().did_mount()
 
 
