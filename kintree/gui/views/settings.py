@@ -1,7 +1,7 @@
 import flet as ft
 
 # Common view
-from .common import CommonView
+from .common import handle_transition, CommonView
 from .common import GUI_PARAMS
 # Settings
 from ...config import settings as global_settings
@@ -316,6 +316,10 @@ class SettingsView(CommonView):
         )
         self.column.controls.append(test_save_buttons)
 
+    def did_mount(self):
+        handle_transition(self.page, transition=False, timeout=0.1)
+        return super().did_mount()
+
 
 class UserSettingsView(SettingsView):
     '''User settings view'''
@@ -336,6 +340,13 @@ class UserSettingsView(SettingsView):
         )
 
         super().__init__(page)
+
+    def did_mount(self):
+        # Reset Index
+        settings_navrail.selected_index = 0
+        settings_navrail.update()
+
+        return super().did_mount()
 
 
 class SupplierSettingsView(SettingsView):

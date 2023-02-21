@@ -1,13 +1,7 @@
 from math import pi
 from typing import Optional
 
-from flet import Page, View, AppBar, NavigationRail, SnackBar, Banner, VerticalDivider
-from flet import Column, Container, Icon, Row, Text, Radio, icons, padding
-from flet import IconButton, TextField, Dropdown, UserControl
-from flet_core.control import Control
-from flet_core.animation import Animation
-from flet_core.types import ScaleValue, FontWeight
-import flet_core.colors as colors
+import flet as ft
 
 GUI_PARAMS = {
     'nav_rail_min_width': 100,
@@ -30,7 +24,51 @@ GUI_PARAMS = {
 data_from_views = {}
 
 
-class CommonView(View):
+def handle_transition(page: ft.Page, transition: bool, update_page=False, timeout=0):
+    # print(f'{transition=} | {update_page=} | {timeout=}')
+    if transition:
+        transition = ft.PageTransitionTheme.CUPERTINO
+        page.theme.page_transitions.android = transition
+        page.theme.page_transitions.ios = transition
+        page.theme.page_transitions.linux = transition
+        page.theme.page_transitions.macos = transition
+        page.theme.page_transitions.windows = transition
+    else:
+        page.theme.page_transitions.android = ft.PageTransitionTheme.NONE
+        page.theme.page_transitions.ios = ft.PageTransitionTheme.NONE
+        page.theme.page_transitions.linux = ft.PageTransitionTheme.NONE
+        page.theme.page_transitions.macos = ft.PageTransitionTheme.NONE
+        page.theme.page_transitions.windows = ft.PageTransitionTheme.NONE
+
+    # Wait
+    if timeout:
+        import time
+        time.sleep(timeout)
+
+    # Update
+    if update_page:
+        page.update()
+    
+
+def update_theme(page: ft.Page, mode='light', transition=False, compact=True):
+    # Color theme
+    page.theme_mode = mode
+
+    # UI theme
+    theme = ft.Theme()
+    page.theme = theme
+
+    # Make it more compact
+    if compact:
+        page.theme.visual_density = ft.ThemeVisualDensity.COMPACT
+    else:
+        page.theme.visual_density = ft.ThemeVisualDensity.STANDARD
+
+    # Disable transitions by default
+    handle_transition(page, transition=False)
+
+
+class CommonView(ft.View):
     '''Common view to all GUI views'''
 
     page = None
@@ -40,7 +78,7 @@ class CommonView(View):
     fields = None
     data = None
     
-    def __init__(self, page: Page, appbar: AppBar, navigation_rail: NavigationRail):
+    def __init__(self, page: ft.Page, appbar: ft.AppBar, navigation_rail: ft.NavigationRail):
         # Store page pointer
         self.page = page
 
@@ -53,7 +91,7 @@ class CommonView(View):
 
     def build_column(self):
         # Empty column (to be set inside the children views)
-        self.column = Column()
+        self.column = ft.Column()
 
     def _build(self):
         # Build column
@@ -61,10 +99,10 @@ class CommonView(View):
             self.build_column()
         # Set view controls
         self.controls = [
-            Row(
+            ft.Row(
                 controls=[
                     self.navigation_rail,
-                    VerticalDivider(width=1),
+                    ft.VerticalDivider(width=1),
                     self.column,
                 ],
                 expand=True,
@@ -73,37 +111,37 @@ class CommonView(View):
     
     def build_snackbar(self, dialog_success: bool, dialog_text: str):
         if dialog_success:
-            self.dialog = SnackBar(
-                bgcolor=colors.GREEN_100,
-                content=Text(
+            self.dialog = ft.SnackBar(
+                bgcolor=ft.colors.GREEN_100,
+                content=ft.Text(
                     dialog_text,
-                    color=colors.GREEN_700,
+                    color=ft.colors.GREEN_700,
                     size=GUI_PARAMS['nav_rail_text_size'],
-                    weight=FontWeight.BOLD,
+                    weight=ft.FontWeight.BOLD,
                 ),
             )
         else:
-            self.dialog = SnackBar(
-                bgcolor=colors.RED_ACCENT_100,
-                content=Text(
+            self.dialog = ft.SnackBar(
+                bgcolor=ft.colors.RED_ACCENT_100,
+                content=ft.Text(
                     dialog_text,
-                    color=colors.RED_ACCENT_700,
+                    color=ft.colors.RED_ACCENT_700,
                     size=GUI_PARAMS['nav_rail_text_size'],
-                    weight=FontWeight.BOLD,
+                    weight=ft.FontWeight.BOLD,
                 ),
             )
 
     def show_dialog(self, open=True):
-        if type(self.dialog) == Banner:
+        if type(self.dialog) == ft.Banner:
             self.page.banner = self.dialog
             self.page.banner.open = open
-        elif type(self.dialog) == SnackBar:
+        elif type(self.dialog) == ft.SnackBar:
             self.page.snack_bar = self.dialog
             self.page.snack_bar.open = True
         self.page.update()
 
 
-class DropdownWithSearch(UserControl):
+class DropdownWithSearch(ft.UserControl):
     '''Implements a dropdown with search box'''
 
     dropdown = None
@@ -113,7 +151,7 @@ class DropdownWithSearch(UserControl):
     search_width = None
     
     def build(self):
-        return Row([
+        return ft.Row([
             self.dropdown,
             self.search_box,
             self.search_button,
@@ -136,27 +174,27 @@ class DropdownWithSearch(UserControl):
     ):
         super().__init__(**kwargs)
         self._options = options
-        self.dropdown = Dropdown(
+        self.dropdown = ft.Dropdown(
             label=label,
             width=dr_width,
             dense=dense,
             options=options,
             on_change=on_change,
         )
-        self.search_button = IconButton(
+        self.search_button = ft.IconButton(
             'search',
             on_click=self.search_now
         )
-        self.search_field = TextField(
+        self.search_field = ft.TextField(
             border="none",
             width=sr_width,
             dense=dense,
             on_change=self.on_search,
         )
-        self.search_box = Container(
+        self.search_box = ft.Container(
             content=self.search_field,
             width=0,
-            animate=Animation(sr_animate),
+            animate=ft.Animation(sr_animate),
         )
         self.disabled = disabled
         self.search_width = sr_width
@@ -256,28 +294,28 @@ class DropdownWithSearch(UserControl):
         self.dropdown.update()
 
 
-class Collapsible(Column):
+class Collapsible(ft.Column):
     def __init__(
         self,
         title: str,
-        content: Control,
-        icon: Optional[Control] = None,
+        content: ft.Control,
+        icon: Optional[ft.Control] = None,
         spacing: float = 3,
-        radio: Optional[Radio] = None,
-        scale: ScaleValue = 1,
+        radio: Optional[ft.Radio] = None,
+        scale: ft.types.ScaleValue = 1,
     ):
         super().__init__()
         self.icon = icon
         self.title = title
         self.scale = scale
-        self.shevron = Icon(
-            icons.KEYBOARD_ARROW_RIGHT_ROUNDED,
+        self.shevron = ft.Icon(
+            ft.icons.KEYBOARD_ARROW_RIGHT_ROUNDED,
             animate_rotation=100,
             rotate=0,
             scale=self.scale,
         )
-        self.content = Column(
-            [Container(height=spacing), content],
+        self.content = ft.Column(
+            [ft.Container(height=spacing), content],
             height=0,
             spacing=0,
             animate_size=100,
@@ -296,17 +334,17 @@ class Collapsible(Column):
         self.update()
 
     def _build(self):
-        title_row = Row()
+        title_row = ft.Row()
         if self.icon is not None:
             title_row.controls.append(self.icon)
         if self.radio:
             title_row.controls.append(self.radio)
         else:
-            title_row.controls.append(Text(self.title))
+            title_row.controls.append(ft.Text(self.title))
         self.controls = [
-            Container(
-                Row([title_row, self.shevron], alignment="spaceBetween"),
-                padding=padding.only(left=8, right=8),
+            ft.Container(
+                ft.Row([title_row, self.shevron], alignment="spaceBetween"),
+                padding=ft.padding.only(left=8, right=8),
                 height=38,
                 border_radius=4,
                 ink=True,
@@ -316,19 +354,19 @@ class Collapsible(Column):
         ]
 
         
-class MenuButton(Container):
+class MenuButton(ft.Container):
     def __init__(
         self,
         title: str,
-        icon: Optional[Control] = None,
+        icon: Optional[ft.Control] = None,
         selected: bool = False,
-        radio: Optional[Radio] = None,
+        radio: Optional[ft.Radio] = None,
     ):
         super().__init__()
         self.icon = icon
         self.title = title
         self._selected = selected
-        self.padding = padding.only(left=43)
+        self.padding = ft.padding.only(left=43)
         self.height = 38
         self.border_radius = 4
         self.ink = True
@@ -339,13 +377,13 @@ class MenuButton(Container):
         pass
 
     def _build(self):
-        row = Row()
+        row = ft.Row()
         if self.icon is not None:
             row.controls.append(self.icon)
         if self.radio:
             row.controls.append(self.radio)
         else:
-            row.controls.append(Text(self.title))
+            row.controls.append(ft.Text(self.title))
         self.content = row
 
     def _before_build_command(self):

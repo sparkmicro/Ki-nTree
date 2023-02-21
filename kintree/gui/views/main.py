@@ -6,7 +6,7 @@ import flet as ft
 from ... import __version__
 # Common view
 from .common import GUI_PARAMS, data_from_views
-from .common import CommonView, DropdownWithSearch
+from .common import handle_transition, CommonView, DropdownWithSearch
 from ...common.tools import cprint
 # Settings
 from ...common import progress
@@ -98,7 +98,12 @@ class MainView(CommonView):
 
         # Update application bar
         if not self.appbar.actions:
-            self.appbar.actions.append(ft.IconButton(ft.icons.SETTINGS, on_click=lambda e: self.page.go('/settings')))
+            self.appbar.actions.append(
+                ft.IconButton(
+                    ft.icons.SETTINGS,
+                    on_click=self.call_settings,
+                )
+            )
 
         # Load navigation indexes
         self.NAV_BAR_INDEX = {}
@@ -120,6 +125,10 @@ class MainView(CommonView):
         self.floating_action_button = ft.FloatingActionButton(
             icon=ft.icons.REPLAY, on_click=self.reset_view,
         )
+
+    def call_settings(self, e):
+        handle_transition(self.page, transition=True)
+        self.page.go('/settings')
 
     def reset_view(self, e, ignore=['enable']):
         def reset_field(field):
@@ -170,6 +179,8 @@ class MainView(CommonView):
     def show_error_dialog(self, message):
         self.build_snackbar(False, message)
         self.show_dialog()
+        if 'cancel' in self.fields:
+            self.enable_cancel(False)
 
     def process_enable(self, e, ignore=['enable']):
         disable = True
@@ -199,6 +210,10 @@ class MainView(CommonView):
         self.sanitize_data()
         # Push
         data_from_views[self.title] = self.data
+
+    def did_mount(self):
+        handle_transition(self.page, transition=False, update_page=True)
+        return super().did_mount()
 
 
 class PartSearchView(MainView):
@@ -498,28 +513,50 @@ class CreateView(MainView):
     fields = {
         'inventree_progress': ft.ProgressBar(height=32, width=420, value=0),
         'kicad_progress': ft.ProgressBar(height=32, width=420, value=0),
+        'create': ft.ElevatedButton(
+            content=ft.Row(
+                [
+                    ft.Icon('build_circle'),
+                    ft.Text('Create Part', size=20),
+                    ft.Icon('build_circle'),
+                ]
+            ),
+            height=GUI_PARAMS['button_height'],
+            width=GUI_PARAMS['button_width'] * 2,
+        ),
+        'cancel': ft.ElevatedButton(
+            content=ft.Row(
+                [
+                    ft.Icon('highlight_remove'),
+                    ft.Text('Cancel', size=20),
+                    ft.Icon('highlight_remove'),
+                ]
+            ),
+            height=GUI_PARAMS['button_height'],
+            width=GUI_PARAMS['button_width'] * 1.6,
+            bgcolor=ft.colors.RED_50,
+            disabled=True,
+        ),
     }
     inventree_progress_row = None
     kicad_progress_row = None
 
+    def enable_cancel(self, enable=True):
+        if enable:
+            for item in self.fields['cancel'].content.controls:
+                item.color = ft.colors.RED_ACCENT_700
+        else:
+            for item in self.fields['cancel'].content.controls:
+                item.color = None
+
+        self.fields['cancel'].disabled = not enable
+        self.fields['cancel'].update()
+
+    def cancel(self, e=None):
+        cprint('[INFO] Cancel function is not supported yet!')
+        self.enable_cancel(False)
+
     def create_part(self, e=None):
-        # Setup progress bars
-        if not settings.ENABLE_INVENTREE:
-            self.inventree_progress_row.current.visible = False
-        else:
-            self.inventree_progress_row.current.visible = True
-            # Reset progress bar
-            progress.reset_progress_bar(self.fields['inventree_progress'])
-        self.inventree_progress_row.current.update()
-
-        if not settings.ENABLE_KICAD:
-            self.kicad_progress_row.current.visible = False
-        else:
-            self.kicad_progress_row.current.visible = True
-            # Reset progress bar
-            progress.reset_progress_bar(self.fields['kicad_progress'])
-        self.kicad_progress_row.current.update()
-
         if not settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD:
             self.show_error_dialog('Both InvenTree and KiCad are disabled (nothing to create)')
 
@@ -540,6 +577,9 @@ class CreateView(MainView):
             if not part_number:
                 self.show_error_dialog('Missing Part Number')
                 return
+
+        # Cancel button update
+        self.enable_cancel(True)
 
         # KiCad data gathering
         symbol = None
@@ -675,13 +715,28 @@ class CreateView(MainView):
                 else:
                     cprint(f'\n[MAIN]\tPart page URL: {part_info["inventree_url"]}', silent=settings.SILENT)
 
+        # Disable cancel
+        self.enable_cancel(False)
+
     def build_column(self):
         self.inventree_progress_row = ft.Ref[ft.Row]()
         self.kicad_progress_row = ft.Ref[ft.Row]()
 
+        # Update callbacks
+        self.fields['create'].on_click = self.create_part
+        self.fields['cancel'].on_click = self.cancel
+
         self.column = ft.Column(
             controls=[
                 ft.Row(),
+                ft.Row(
+                    controls=[
+                        self.fields['create'],
+                        self.fields['cancel'],
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    width=600,
+                ),
                 ft.Text('Progress', style=ft.TextThemeStyle.HEADLINE_SMALL),
                 ft.Row(
                     ref=self.inventree_progress_row,
@@ -703,17 +758,25 @@ class CreateView(MainView):
                     width=600,
                     visible=settings.ENABLE_KICAD,
                 ),
-                ft.Row(
-                    controls=[
-                        ft.ElevatedButton(
-                            'Create Part',
-                            height=GUI_PARAMS['button_height'],
-                            width=GUI_PARAMS['button_width'] * 2,
-                            on_click=self.create_part,
-                            expand=True,
-                        ),
-                    ],
-                    width=600,
-                ),
             ],
         )
+
+    def did_mount(self):
+        # Setup progress bars
+        if not settings.ENABLE_INVENTREE:
+            self.inventree_progress_row.current.visible = False
+        else:
+            self.inventree_progress_row.current.visible = True
+            # Reset progress bar
+            progress.reset_progress_bar(self.fields['inventree_progress'])
+        self.inventree_progress_row.current.update()
+
+        if not settings.ENABLE_KICAD:
+            self.kicad_progress_row.current.visible = False
+        else:
+            self.kicad_progress_row.current.visible = True
+            # Reset progress bar
+            progress.reset_progress_bar(self.fields['kicad_progress'])
+        self.kicad_progress_row.current.update()
+
+        return super().did_mount()

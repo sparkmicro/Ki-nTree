@@ -1,5 +1,6 @@
 import flet as ft
 
+from .views.common import update_theme, handle_transition
 from .views.main import (
     PartSearchView,
     InventreeView,
@@ -19,22 +20,10 @@ def init_gui(page: ft.Page):
     # Alignments
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.scroll = ft.ScrollMode.ALWAYS
 
     # Theme
-    page.theme_mode = "light"
-    theme = ft.Theme()
-
-    # Disable transitions
-    theme.page_transitions.android = ft.PageTransitionTheme.NONE
-    theme.page_transitions.ios = ft.PageTransitionTheme.NONE
-    theme.page_transitions.linux = ft.PageTransitionTheme.NONE
-    theme.page_transitions.macos = ft.PageTransitionTheme.NONE
-    theme.page_transitions.windows = ft.PageTransitionTheme.NONE
-
-    # Make it more compact
-    theme.visual_density = ft.ThemeVisualDensity.COMPACT
-    page.theme = theme
-    page.scroll = ft.ScrollMode.ALWAYS
+    update_theme(page)
 
     # Creating a progress bar that will be used to show the user that the app is busy doing something.
     page.splash = ft.ProgressBar(visible=False)
@@ -82,13 +71,6 @@ def kintree_gui(page: ft.Page):
             elif page.route == kicad_settings_view.route:
                 page.views.append(kicad_settings_view)
             else:
-                try:
-                    # TODO: Find more elegant way to reset navigation index
-                    from .views.settings import settings_navrail
-                    settings_navrail.selected_index = 0
-                    settings_navrail.update()
-                except AssertionError:
-                    pass
                 page.views.append(user_settings_view)
         else:
             page.views.append(part_view)
@@ -99,7 +81,12 @@ def kintree_gui(page: ft.Page):
         '''Pop setting view'''
         page.views.pop()
         top_view = page.views[-1]
+        if 'main' in top_view.route:
+            handle_transition(page, transition=True)
+        # Route and render
         page.go(top_view.route)
+        if 'main' in top_view.route:
+            handle_transition(page, transition=False, update_page=True, timeout=0.3)
 
     page.on_route_change = route_change
     page.on_view_pop = view_pop
