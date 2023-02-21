@@ -64,7 +64,9 @@ def check_result(status: str, new_part: bool) -> bool:
 # Enable test mode
 settings.enable_test_mode()
 # Enable InvenTree and KiCad
-settings.set_enable_flags([True, True, False])
+settings.set_enable_flag('inventree', True)
+settings.set_enable_flag('alternate', False)
+settings.set_enable_flag('kicad', True)
 # Load user configuration files
 settings.load_user_config()
 # Set path to test libraries
@@ -77,7 +79,7 @@ digikey_api.disable_api_logger()
 # Test Digi-Key API
 if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
     pretty_test_print('[MAIN]\tDigi-Key API Test')
-    if not digikey_api.test_api_connect(check_content=True):
+    if not digikey_api.test_api(check_content=True):
         cprint('[ FAIL ]')
         cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
         sys.exit(-1)
@@ -153,38 +155,19 @@ if __name__ == '__main__':
                     kicad_result = False
                     inventree_result = False
                     # Fetch supplier data
-                    part_info = inventree_interface.supplier_search(supplier='Digi-Key', part_number=number, test_mode=True)
+                    supplier_info = inventree_interface.supplier_search(supplier='Digi-Key', part_number=number, test_mode=True)
                     # Translate to form
-                    part_form = inventree_interface.translate_supplier_to_form(supplier='Digi-Key', part_info=part_info)
+                    part_info = inventree_interface.translate_supplier_to_form(supplier='Digi-Key', part_info=supplier_info)
                     # Stitch categories and parameters
-                    part_form.update({
-                        'category': part_info['category'],
-                        'subcategory': part_info['subcategory'],
-                        'parameters': part_info['parameters'],
+                    part_info.update({
+                        'category_tree': [supplier_info['category'], supplier_info['subcategory']],
+                        'parameters': supplier_info['parameters'],
+                        'Symbol': f'{category}:{number}',
                     })
-                    # Reset part info
-                    part_info = part_form
+                    # Update categories
+                    part_info['category_tree'] = inventree_interface.get_categories_from_supplier_data(part_info)
                     # Display part to be tested
                     pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
-
-                    if ENABLE_KICAD:
-                        # Translate supplier data to inventree/kicad data
-                        part_data = inventree_interface.translate_form_to_inventree(part_info, [category, None])
-
-                        if part_data:
-                            part_data['IPN'] = number
-                            part_data['inventree_url'] = part_data['datasheet']
-
-                            if settings.AUTO_GENERATE_LIB:
-                                create_library(os.path.dirname(test_library_path), 'TEST', settings.symbol_template_lib)
-
-                            kicad_result, kicad_new_part = kicad_interface.inventree_to_kicad(part_data=part_data,
-                                                                                              library_path=test_library_path,
-                                                                                              show_progress=False)
-
-                            # Log result
-                            if number not in kicad_results.keys():
-                                kicad_results.update({number: kicad_result})
 
                     if ENABLE_INVENTREE:
                         # Adding part information to InvenTree
@@ -193,16 +176,13 @@ if __name__ == '__main__':
                         part_pk = 0
                         part_data = {}
 
-                        # Get categories
-                        if part_info:
-                            categories = inventree_interface.get_categories(part_info)
-
                         # Create part in InvenTree
-                        if categories[0] and categories[1]:
-                            new_part, part_pk, part_data = inventree_interface.inventree_create(part_info=part_info,
-                                                                                                categories=categories,
-                                                                                                kicad=last_category,
-                                                                                                show_progress=False)
+                        new_part, part_pk, part_data = inventree_interface.inventree_create(
+                            part_info=part_info,
+                            kicad=last_category,
+                            symbol=part_info['Symbol'],
+                            show_progress=False,
+                        )
 
                         inventree_result = check_result(status, new_part)
                         pk_list = [data[0] for data in inventree_results.values()]
@@ -214,6 +194,24 @@ if __name__ == '__main__':
 
                         # Log results
                         inventree_results.update({number: [part_pk, inventree_result, delete]})
+
+                    if ENABLE_KICAD:
+                        if settings.AUTO_GENERATE_LIB:
+                            create_library(
+                                os.path.dirname(test_library_path),
+                                'TEST',
+                                settings.symbol_template_lib,
+                            )
+
+                        kicad_result, kicad_new_part = kicad_interface.inventree_to_kicad(
+                            part_data=part_info,
+                            library_path=test_library_path,
+                            show_progress=False,
+                        )
+
+                        # Log result
+                        if number not in kicad_results.keys():
+                            kicad_results.update({number: kicad_result})
 
                     # Combine KiCad and InvenTree for less verbose
                     result = False
@@ -273,10 +271,9 @@ if __name__ == '__main__':
                 if method_idx == 0:
                     # Fuzzy category matching
                     part_info = {
-                        'category': 'Capacitors',
-                        'subcategory': 'Super'
+                        'category_tree': ['Capacitors', 'Super',],
                     }
-                    categories = tuple(inventree_interface.get_categories(part_info))
+                    categories = tuple(inventree_interface.get_categories_from_supplier_data(part_info))
                     if not (categories[0] and categories[1]):
                         method_success = False
 
@@ -313,15 +310,15 @@ if __name__ == '__main__':
 
                 elif method_idx == 3:
                     # Load KiCad library paths
-                    config_interface.load_library_path(settings.CONFIG_KICAD, silent=True)
-                    symbol_libraries_paths = config_interface.load_libraries_paths(settings.CONFIG_KICAD_CATEGORY_MAP, symbol_libraries_test_path)
-                    footprint_libraries_paths = config_interface.load_footprint_paths(settings.CONFIG_KICAD_CATEGORY_MAP, footprint_libraries_test_path)
+                    config_interface.load_library_path(settings.KICAD_CONFIG_PATHS, silent=True)
+                    symbol_libraries_paths = config_interface.load_libraries_paths(settings.KICAD_CONFIG_CATEGORY_MAP, symbol_libraries_test_path)
+                    footprint_libraries_paths = config_interface.load_footprint_paths(settings.KICAD_CONFIG_CATEGORY_MAP, footprint_libraries_test_path)
                     if not (symbol_libraries_paths and footprint_libraries_paths):
                         method_success = False
 
                 elif method_idx == 4:
                     # Add symbol library to user file
-                    add_symbol_lib = config_interface.add_library_path(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+                    add_symbol_lib = config_interface.add_library_path(user_config_path=settings.KICAD_CONFIG_CATEGORY_MAP,
                                                                        category='category_test',
                                                                        symbol_library='symbol_library_test')
                     if not add_symbol_lib:
@@ -329,7 +326,7 @@ if __name__ == '__main__':
 
                 elif method_idx == 5:
                     # Add footprint library to user file
-                    add_footprint_lib = config_interface.add_footprint_library(user_config_path=settings.CONFIG_KICAD_CATEGORY_MAP,
+                    add_footprint_lib = config_interface.add_footprint_library(user_config_path=settings.KICAD_CONFIG_CATEGORY_MAP,
                                                                                category='category_test',
                                                                                library_folder='footprint_folder_test')
                     if not add_footprint_lib:
@@ -404,7 +401,7 @@ if __name__ == '__main__':
                                                                          server='http://127.0.0.1:8000',
                                                                          username='admin',
                                                                          password='admin',
-                                                                         user_config_path=settings.CONFIG_INVENTREE):
+                                                                         user_config_path=settings.INVENTREE_CONFIG):
                         method_success = False
 
                 elif method_idx == 14:

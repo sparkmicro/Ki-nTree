@@ -22,11 +22,25 @@ CATEGORIES:
   - Printed-Circuit Board Assembly
   - Product
   Capacitors:
-  - Ceramic
-  - Aluminium
-  - Tantalum
-  - Polymer
-  - Super Capacitors
+    Ceramic:
+      '0603':
+        10V:
+        - X5R
+        - X7R
+        16V:
+        - X5R
+        - X7R
+      '0402':
+        10V:
+        - X5R
+        - X7R
+        16V:
+        - X5R
+        - X7R
+    Aluminium:
+    Tantalum:
+    Polymer:
+    Super Capacitors:
   Circuit Protections:
   - TVS
   - Fuses

@@ -38,26 +38,36 @@ def connect(server: str, username: str, password: str, connect_timeout=5, silent
     return False
 
 
-def get_inventree_category_id(category_name: str, parent_category_id=None) -> int:
+def get_inventree_category_id(category_tree: list) -> int:
     ''' Get InvenTree category ID from name, specificy parent if subcategory '''
     global inventree_api
 
     # Fetch all categories
-    part_categories = PartCategory.list(inventree_api)
-
-    for item in part_categories:
-        if category_name == item.name:
-            # Check parent id match (if passed as argument)
-            match = True
+    part_categories = PartCategory.list(inventree_api, name=category_tree[-1])
+    if len(part_categories) == 1:
+        return part_categories[0].pk
+    else:
+        if len(category_tree) > 1:
+            # Match the parent category
+            parent_category_id = get_inventree_category_id(category_tree[:-1])
             if parent_category_id:
-                cprint(f'[TREE]\t{item.getParentCategory().pk} ?= {parent_category_id}', silent=settings.HIDE_DEBUG)
-                if item.getParentCategory().pk != parent_category_id:
-                    match = False
-            if match:
-                cprint(f'[TREE]\t{item.name} ?= {category_name} => True', silent=settings.HIDE_DEBUG)
-                return item.pk
-        else:
-            cprint(f'[TREE]\t{item.name} ?= {category_name} => False', silent=settings.HIDE_DEBUG)
+                for category in part_categories:
+                    try:
+                        if parent_category_id == category.getParentCategory().pk:
+                            return category.pk
+                    except AttributeError:
+                        pass
+                    #     # Check parent id match (if passed as argument)
+                    #     match = True
+                    #     if parent_category_id:
+                    #         cprint(f'[TREE]\t{item.getParentCategory().pk} ?= {parent_category_id}', silent=settings.HIDE_DEBUG)
+                    #         if item.getParentCategory().pk != parent_category_id:
+                    #             match = False
+                    #     if match:
+                    #         cprint(f'[TREE]\t{item.name} ?= {category_name} => True', silent=settings.HIDE_DEBUG)
+                    #         return item.pk
+                    # else:
+                    #     cprint(f'[TREE]\t{item.name} ?= {category_name} => False', silent=settings.HIDE_DEBUG)
 
     return -1
 
@@ -183,11 +193,12 @@ def is_new_part(category_id: int, part_info: dict) -> int:
     # cprint(filters)
 
     for part in part_list:
+        # TODO: This statement below seems erroneous...
         # Compare fields (InvenTree does not allow those to be identicals between two parts)
-        compare_fields = part_info['name'] == part.name and part_info['revision'] == part.revision
-        if compare_fields:
-            cprint(f'[TREE]\tWarning: Found part with same name and revision (pk = {part.pk})', silent=settings.SILENT)
-            return part.pk
+        # compare_fields = part_info['name'] == part.name and part_info['revision'] == part.revision
+        # if compare_fields:
+        #     cprint(f'[TREE]\tWarning: Found part with same name and revision (pk = {part.pk})', silent=settings.SILENT)
+        #     return part.pk
 
         # Compare parameters
         compare_parameters = False
@@ -210,8 +221,8 @@ def is_new_part(category_id: int, part_info: dict) -> int:
             return part.pk
 
     # Check if manufacturer part exists in database
-    manufacturer = list(part_info['manufacturer'].keys())[0]
-    mpn = list(part_info['manufacturer'].values())[0][0]
+    manufacturer = part_info['manufacturer_name']
+    mpn = part_info['manufacturer_part_number']
     part_pk = is_new_manufacturer_part(manufacturer, mpn, create=False)
 
     if part_pk:

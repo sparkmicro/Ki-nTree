@@ -93,9 +93,12 @@ def get_default_search_keys():
 
 def get_default_store_url(supplier: str) -> str:
     ''' Get saved store/location for supplier '''
-
+    import re
     user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
     default_store = user_settings.get(f'{supplier.upper()}_STORE', '')
+    url_match = re.match(r'^(.+?) \((.+?)\)$', default_store)
+    if url_match:
+        return url_match.group(2)
     return STORES[supplier][default_store]
 
 

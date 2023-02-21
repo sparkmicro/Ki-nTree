@@ -3,7 +3,7 @@ import os
 from ..config import settings
 from ..common import progress
 from ..common.tools import cprint
-from lib_utils import kicad_sym
+from kiutils.symbol import SymbolLib
 
 
 # KiCad Component Library Manager
@@ -18,16 +18,16 @@ class ComponentLibManager(object):
             return None
 
         # Load library
-        self.kicad_lib = kicad_sym.KicadLibrary.from_file(library_path)
+        self.kicad_lib = SymbolLib.from_file(library_path)
         self.library_name = library_path.split(os.sep)[-1]
         cprint('[KCAD]\tNumber of parts in library ' + self.library_name + ': ' + str(len(self.kicad_lib.symbols)), silent=settings.SILENT)
 
-    def is_symbol_in_library(self, symbol_part_number):
+    def is_symbol_in_library(self, symbol_id):
         ''' Check if symbol already exists in library '''
         for symbol in self.kicad_lib.symbols:
-            cprint(f'[DBUG]\t{symbol.name} ?= {symbol_part_number}', silent=settings.HIDE_DEBUG)
-            if symbol.name == symbol_part_number:
-                cprint(f'[KCAD]\tWarning: Component {symbol_part_number} already in library', silent=settings.SILENT)
+            cprint(f'[DBUG]\t{symbol.libId} ?= {symbol_id}', silent=settings.HIDE_DEBUG)
+            if symbol.libId == symbol_id:
+                cprint(f'[KCAD]\tWarning: Component {symbol_id} already in library', silent=settings.SILENT)
                 return True
 
         return False
@@ -36,10 +36,17 @@ class ComponentLibManager(object):
         ''' Create symbol in KiCad library '''
         part_in_lib = False
         new_part = False
-        category = symbol_data['category'][0]
-        subcategory = symbol_data['category'][1]
+        
+        try:
+            symbol_id = symbol_data['Symbol'].split(':')[1]
+        except KeyError:
+            cprint('[KCAD] Error: Adding a new symbol to a KiCad library requires the \'Symbol\' key with the following format: {lib}:{symbol_id}')
+            return part_in_lib, new_part
 
         if not template_path:
+            category = symbol_data['category_tree'][0]
+            subcategory = symbol_data['category_tree'][1]
+
             # Fetch template path
             try:
                 template_path = settings.symbol_templates_paths[category][subcategory]
@@ -55,7 +62,7 @@ class ComponentLibManager(object):
 
         # Check if part already in library
         try:
-            is_symbol_in_library = self.is_symbol_in_library(symbol_data['IPN'])
+            is_symbol_in_library = self.is_symbol_in_library(symbol_id)
             part_in_lib = True
         except:
             is_symbol_in_library = False
@@ -63,11 +70,11 @@ class ComponentLibManager(object):
             return part_in_lib, new_part
 
         # Progress Update
-        if show_progress and not progress.update_progress_bar_window():
+        if not progress.update_progress_bar(show_progress):
             return part_in_lib, new_part
 
         # Load template
-        templatelib = kicad_sym.KicadLibrary.from_file(template_path)
+        templatelib = SymbolLib.from_file(template_path)
         # Load new symbol
         if len(templatelib.symbols) == 1:
             for symbol in templatelib.symbols:
@@ -76,8 +83,8 @@ class ComponentLibManager(object):
             cprint('[KCAD]\tError: Found more than 1 symbol template in template file, aborting', silent=settings.SILENT)
             return part_in_lib, new_part
 
-        # Update name
-        new_symbol.name = symbol_data['IPN']
+        # Update name/ID
+        new_symbol.libId = symbol_id
 
         # Update properties
         for property in new_symbol.properties:
@@ -87,33 +94,32 @@ class ComponentLibManager(object):
                 continue
 
             # Parameters
-            if property.value in symbol_data['parameters'].keys():
-                property.value = symbol_data['parameters'][property.value]
-                continue
+            if symbol_data.get('parameters', None):
+                if property.value in symbol_data['parameters'].keys():
+                    property.value = symbol_data['parameters'][property.value]
+                    continue
 
             # Special properties
-            if property.name in ['Value', 'Manufacturer', 'Manufacturer Part Number']:
-                if property.name == 'Value':
-                    property.value = symbol_data['IPN']
-                elif property.name == 'Manufacturer':
-                    property.value = list(symbol_data['manufacturer'].keys())[0]
-                elif property.name == 'Manufacturer Part Number':
-                    property.value = list(symbol_data['manufacturer'].values())[0][0]
+            if property.key in ['Value', 'Manufacturer', 'Manufacturer Part Number']:
+                if property.key == 'Value':
+                    property.value = symbol_id
+                elif property.key == 'Manufacturer':
+                    property.value = symbol_data['manufacturer_name']
+                elif property.key == 'Manufacturer Part Number':
+                    property.value = symbol_data['manufacturer_part_number']
                 continue
 
         # Add symbol to library
         self.kicad_lib.symbols.append(new_symbol)
-        # Update generator version
-        self.kicad_lib.version = '20211014'
         # Write library
-        self.kicad_lib.write()
+        self.kicad_lib.to_file()
 
         cprint(f'[KCAD]\tSuccess: Component added to library {self.library_name}', silent=settings.SILENT)
         part_in_lib = True
         new_part = True
 
         # Progress Update
-        if show_progress and not progress.update_progress_bar_window():
+        if not progress.update_progress_bar(show_progress):
             pass
 
         return part_in_lib, new_part

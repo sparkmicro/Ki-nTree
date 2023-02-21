@@ -3,14 +3,11 @@ omit =
     # Do not run coverage on virtual environment files
     env-kintree/*
     .venv/*
-    # Skip KiCad library tool
-    kintree/kicad/lib_utils/*
     # Skip UI coverage
     kintree/kintree_gui.py
     kintree/common/progress.py
+    kintree/gui/*
     # Skip wrapt_timeout_decorator
     kintree/wrapt_timeout_decorator/*
-    # Skip LCSC supplier search
-    kintree/search/lcsc_api.py
     # Skip test script
     run_tests.py

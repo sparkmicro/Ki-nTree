@@ -1,71 +1,42 @@
 import time
 
-# PySimpleGUI
-import PySimpleGUI as sg
-
-CREATE_PART_PROGRESS: int
-MAX_PROGRESS = 100
-DEFAULT_PROGRESS = 5
+CREATE_PART_PROGRESS: float
+MAX_PROGRESS = 1.0
+DEFAULT_PROGRESS = 0.1
 
 
-def create_progress_bar_window(font=None, location=None) -> bool:
-    ''' Create window for part creation progress '''
-    global CREATE_PART_PROGRESS, MAX_PROGRESS
-    global progress_window
-
-    progress_layout = [
-        [sg.Text('Creating part...')],
-        [sg.ProgressBar(MAX_PROGRESS, orientation='h', size=(20, 30), key='progressbar')],
-        [sg.Cancel()]
-    ]
-    progress_window = sg.Window('Part Creation Progress', progress_layout, font=font, location=location)
-    # progress_bar = progress_window['progressbar']
-
-    event, values = progress_window.read(timeout=10)
+def reset_progress_bar(progress_bar) -> bool:
+    ''' Reset progress bar '''
+    global CREATE_PART_PROGRESS
 
     # Reset progress
     CREATE_PART_PROGRESS = 0
-    update_progress_bar_window()
+    progress_bar.color = None
+    progress_bar.value = 0
+    progress_bar.update()
+    time.sleep(0.1)
 
-    if progress_window:
-        return True
-
-    return False
-
-
-def close_progress_bar_window():
-    ''' Close progress bar window after part creation '''
-    global progress_window
-
-    try:
-        if progress_window:
-            progress_window.close()
-    except NameError:
-        return
+    return True
 
 
-def progress_increment():
+def progress_increment(inc):
     ''' Increment progress '''
     global CREATE_PART_PROGRESS, MAX_PROGRESS
 
-    if CREATE_PART_PROGRESS + 1 < MAX_PROGRESS:
-        CREATE_PART_PROGRESS += 1
+    if CREATE_PART_PROGRESS + inc < MAX_PROGRESS:
+        CREATE_PART_PROGRESS += inc
     else:
         CREATE_PART_PROGRESS = MAX_PROGRESS
 
+    return CREATE_PART_PROGRESS
 
-def update_progress_bar_window(increment=0) -> bool:
+
+def update_progress_bar(progress_bar, increment=0) -> bool:
     ''' Update progress bar during part creation '''
-    global CREATE_PART_PROGRESS, MAX_PROGRESS, DEFAULT_PROGRESS
-    global progress_window
+    global DEFAULT_PROGRESS
 
-    on_going_progress = True
-
-    try:
-        if not progress_window:
-            return False
-    except NameError:
-        return False
+    if not progress_bar:
+        return True
 
     if increment:
         inc = increment
@@ -73,21 +44,12 @@ def update_progress_bar_window(increment=0) -> bool:
         # Default
         inc = DEFAULT_PROGRESS
 
-    progress_bar = progress_window['progressbar']
+    current_value = progress_bar.value * 100
+    new_value = progress_increment(inc) * 100
+    # Smooth progress
+    for i in range(int(new_value - current_value)):
+        progress_bar.value += i / 100
+        progress_bar.update()
+        time.sleep(0.05)
 
-    event, values = progress_window.read(timeout=10)
-
-    if event in ['Cancel', sg.WIN_CLOSED]:
-        on_going_progress = False
-        close_progress_bar_window()
-    else:
-        # Smooth effect
-        for i in range(inc):
-            progress_increment()
-            progress_bar.update(CREATE_PART_PROGRESS, MAX_PROGRESS)
-            if inc < MAX_PROGRESS:
-                time.sleep(0.02)
-            else:
-                time.sleep(0.005)
-
-    return on_going_progress
+    return True
