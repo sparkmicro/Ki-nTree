@@ -44,8 +44,8 @@ class ComponentLibManager(object):
             return part_in_lib, new_part
 
         if not template_path:
-            category = symbol_data['category_tree'][0]
-            subcategory = symbol_data['category_tree'][1]
+            category = symbol_data['Template'][0]
+            subcategory = symbol_data['Template'][1]
 
             # Fetch template path
             try:
