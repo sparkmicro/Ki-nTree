@@ -163,10 +163,11 @@ if __name__ == '__main__':
                         'category_tree': [supplier_info['category'], supplier_info['subcategory']],
                         'parameters': supplier_info['parameters'],
                         'Symbol': f'{category}:{number}',
-                        'Template': [supplier_info['category'], supplier_info['subcategory']],
                     })
                     # Update categories
                     part_info['category_tree'] = inventree_interface.get_categories_from_supplier_data(part_info)
+                    # Needed for tests
+                    part_info['Template'] = part_info['category_tree']
                     # Display part to be tested
                     pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 

@@ -521,13 +521,57 @@ class KicadView(MainView):
 
     title = 'KiCad'
     fields = {
-        'enable': ft.Switch(label='KiCad', value=settings.ENABLE_KICAD, on_change=None),
-        'Symbol Library': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
-        'Symbol Template': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
-        'Footprint Library': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
-        'Footprint': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
-        'New Footprint Name': ft.TextField(label='New Footprint Name', width=400, dense=True),
+        'enable': ft.Switch(
+            label='KiCad',
+            value=settings.ENABLE_KICAD,
+        ),
+        'Symbol Library': DropdownWithSearch(
+            label='',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['textfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            options=[],
+        ),
+        'Symbol Template': DropdownWithSearch(
+            label='',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['textfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            options=[],
+        ),
+        'Footprint Library': DropdownWithSearch(
+            label='',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['textfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            options=[],
+        ),
+        'Footprint': DropdownWithSearch(
+            label='',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['textfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            options=[],
+        ),
+        'New Footprint Name': ft.TextField(
+            label='New Footprint Name',
+            width=GUI_PARAMS['textfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+        ),
+        'Check SnapEDA': ft.ElevatedButton(
+            content=ft.Row(
+                [
+                    ft.Icon('search'),
+                    ft.Text('Check SnapEDA', size=16),
+                ]
+            ),
+            height=GUI_PARAMS['button_height'],
+            width=GUI_PARAMS['button_width'] * 2,
+        ),
     }
+
+    def check_snapeda(self, e):
+        print('Checking SnapEDA...')
 
     def update_footprint_options(self, library: str):
         footprint_options = []
@@ -575,8 +619,13 @@ class KicadView(MainView):
         )
         kicad_inputs = []
         for name, field in self.fields.items():
-            if name != 'enable':
-                field.on_change = self.push_data
+            # Update callbacks
+            if type(field) == ft.ElevatedButton:
+                field.on_click = self.check_snapeda
+            else:
+                if name != 'enable':
+                    field.on_change = self.push_data
+            # Update options
             if type(field) == DropdownWithSearch:
                 field.label = name
                 if name == 'Symbol Library':
