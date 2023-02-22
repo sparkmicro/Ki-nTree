@@ -1,3 +1,4 @@
+from enum import Enum
 from math import pi
 from typing import Optional
 
@@ -10,11 +11,12 @@ GUI_PARAMS = {
     'nav_rail_icon_size': 40,
     'nav_rail_text_size': 16,
     'nav_rail_padding': 10,
-    'textfield_width': 400,
+    'textfield_width': 600,
     'textfield_dense': True,
     'textfield_space_after': 3,
     'dropdown_width': 600,
     'dropdown_dense': False,
+    'searchfield_width': 300,
     'button_width': 100,
     'button_height': 56,
     'icon_size': 40,
@@ -22,6 +24,12 @@ GUI_PARAMS = {
 }
 # Contains data from all views
 data_from_views = {}
+
+
+class DialogType(Enum):
+    VALID = 'valid'
+    WARNING = 'warning'
+    ERROR = 'error'
 
 
 def handle_transition(page: ft.Page, transition: bool, update_page=False, timeout=0):
@@ -108,30 +116,50 @@ class CommonView(ft.View):
                 expand=True,
             ),
         ]
+
+    def build_dialog(self):
+        return None
     
-    def build_snackbar(self, dialog_success: bool, dialog_text: str):
-        if dialog_success:
-            self.dialog = ft.SnackBar(
+    def build_snackbar(self, d_type: DialogType, message: str):
+        if d_type == DialogType.VALID:
+            return ft.SnackBar(
                 bgcolor=ft.colors.GREEN_100,
                 content=ft.Text(
-                    dialog_text,
+                    message,
                     color=ft.colors.GREEN_700,
                     size=GUI_PARAMS['nav_rail_text_size'],
                     weight=ft.FontWeight.BOLD,
                 ),
             )
-        else:
-            self.dialog = ft.SnackBar(
-                bgcolor=ft.colors.RED_ACCENT_100,
+        elif d_type == DialogType.WARNING:
+            return ft.SnackBar(
+                bgcolor=ft.colors.AMBER_100,
                 content=ft.Text(
-                    dialog_text,
-                    color=ft.colors.RED_ACCENT_700,
+                    message,
+                    color=ft.colors.AMBER_800,
+                    size=GUI_PARAMS['nav_rail_text_size'],
+                    weight=ft.FontWeight.BOLD,
+                ),
+            )
+        elif d_type == DialogType.ERROR:
+            return ft.SnackBar(
+                bgcolor=ft.colors.RED_100,
+                content=ft.Text(
+                    message,
+                    color=ft.colors.RED_700,
                     size=GUI_PARAMS['nav_rail_text_size'],
                     weight=ft.FontWeight.BOLD,
                 ),
             )
 
-    def show_dialog(self, open=True):
+    def show_dialog(
+            self,
+            d_type: Optional[DialogType] = None,
+            message: Optional[str] = None,
+            open=True,
+    ):
+        if not self.build_dialog():
+            self.dialog = self.build_snackbar(d_type, message)
         if type(self.dialog) == ft.Banner:
             self.page.banner = self.dialog
             self.page.banner.open = open

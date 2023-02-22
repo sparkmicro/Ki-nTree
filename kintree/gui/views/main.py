@@ -6,7 +6,9 @@ import flet as ft
 from ... import __version__
 # Common view
 from .common import GUI_PARAMS, data_from_views
-from .common import handle_transition, CommonView, DropdownWithSearch
+from .common import DialogType, CommonView, DropdownWithSearch
+from .common import handle_transition
+# Tools
 from ...common.tools import cprint
 # Settings
 from ...common import progress
@@ -15,6 +17,8 @@ from ...config import settings, config_interface
 from ...database import inventree_interface
 # KiCad
 from ...kicad import kicad_interface
+# SnapEDA
+from ...search import snapeda_api
 
 # Main AppBar
 main_appbar = ft.AppBar(
@@ -184,12 +188,6 @@ class MainView(CommonView):
             found_libraries = list(self.get_footprint_libraries().keys())
         return found_libraries
 
-    def show_error_dialog(self, message):
-        self.build_snackbar(False, message)
-        self.show_dialog()
-        if 'create' in self.fields:
-            self.enable_create(True)
-
     def process_enable(self, e, disable=None, ignore=['enable']):
         disabled = False
         if e.data.lower() == 'false':
@@ -223,8 +221,19 @@ class MainView(CommonView):
         # Push
         data_from_views[self.title] = self.data
 
-    def did_mount(self):
+    def did_mount(self, enable=False):
         handle_transition(self.page, transition=False, update_page=True)
+        if self.fields.get('enable', None) is not None:
+            # Create enable event
+            e = ft.ControlEvent(
+                target=None,
+                name='did_mount_enable',
+                data='true' if enable else 'false',
+                page=self.page,
+                control=self.fields['enable'],
+            )
+            # Process enable
+            self.process_enable(e)
         return super().did_mount()
 
 
@@ -282,10 +291,13 @@ class PartSearchView(MainView):
         # Validate form
         if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
             if not self.fields['part_number'].value:
-                self.build_snackbar(dialog_success=False, dialog_text='Missing Part Number')
+                error_msg = 'Missing Part Number'
             else:
-                self.build_snackbar(dialog_success=False, dialog_text='Missing Supplier')
-            self.show_dialog()
+                error_msg = 'Missing Supplier'
+            self.show_dialog(
+                d_type=DialogType.ERROR,
+                message=error_msg,
+            )
         else:
             self.page.splash.visible = True
             self.page.update()
@@ -325,10 +337,17 @@ class PartSearchView(MainView):
             # Add to data buffer
             self.push_data()
             self.page.splash.visible = False
+
+            if self.data['searched_part_number'].lower() != self.data['manufacturer_part_number'].lower():
+                self.show_dialog(
+                    d_type=DialogType.WARNING,
+                    message='Found part number does not match the requested part number',
+                )
             self.page.update()
         return
 
     def push_data(self, e=None):
+        self.data['searched_part_number'] = self.fields['part_number'].value
         for key, field in self.fields['search_form'].items():
             self.data[key] = field.value
         data_from_views[self.title] = self.data
@@ -394,20 +413,20 @@ class InventreeView(MainView):
         'Category': DropdownWithSearch(
             label='Category',
             dr_width=GUI_PARAMS['textfield_width'],
-            sr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
             dense=GUI_PARAMS['textfield_dense'],
             disabled=settings.ENABLE_ALTERNATE,
             options=[],
         ),
         'Existing Part ID': ft.TextField(
             label='Existing Part ID',
-            width=GUI_PARAMS['textfield_width'],
+            width=GUI_PARAMS['textfield_width'] / 2 - 5,
             dense=GUI_PARAMS['textfield_dense'],
             visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
         ),
         'Existing Part IPN': ft.TextField(
             label='Existing Part IPN',
-            width=GUI_PARAMS['textfield_width'],
+            width=GUI_PARAMS['textfield_width'] / 2 - 5,
             dense=GUI_PARAMS['textfield_dense'],
             visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
         ),
@@ -444,8 +463,10 @@ class InventreeView(MainView):
             if e.data.lower() == 'true':
                 visible = True
         if visible:
-            self.build_snackbar(True, 'Enter Existing Part ID or Part IPN')
-            self.show_dialog()
+            self.show_dialog(
+                d_type=DialogType.WARNING,
+                message='Enter Existing Part ID or Part IPN',
+            )
         settings.set_enable_flag('alternate', visible)
         self.fields['Existing Part ID'].visible = visible
         self.fields['Existing Part ID'].update()
@@ -514,6 +535,9 @@ class InventreeView(MainView):
                 ]),
             ],
         )
+    
+    def did_mount(self):
+        return super().did_mount(enable=settings.ENABLE_INVENTREE)
 
 
 class KicadView(MainView):
@@ -528,28 +552,28 @@ class KicadView(MainView):
         'Symbol Library': DropdownWithSearch(
             label='',
             dr_width=GUI_PARAMS['textfield_width'],
-            sr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
             dense=GUI_PARAMS['textfield_dense'],
             options=[],
         ),
         'Symbol Template': DropdownWithSearch(
             label='',
             dr_width=GUI_PARAMS['textfield_width'],
-            sr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
             dense=GUI_PARAMS['textfield_dense'],
             options=[],
         ),
         'Footprint Library': DropdownWithSearch(
             label='',
             dr_width=GUI_PARAMS['textfield_width'],
-            sr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
             dense=GUI_PARAMS['textfield_dense'],
             options=[],
         ),
         'Footprint': DropdownWithSearch(
             label='',
             dr_width=GUI_PARAMS['textfield_width'],
-            sr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
             dense=GUI_PARAMS['textfield_dense'],
             options=[],
         ),
@@ -571,7 +595,21 @@ class KicadView(MainView):
     }
 
     def check_snapeda(self, e):
-        print('Checking SnapEDA...')
+        if 'Part Search' not in data_from_views:
+            self.show_dialog(
+                d_type=DialogType.ERROR,
+                message='Missing Part Data',
+            )
+            return
+        self.page.splash.visible = True
+        self.page.update()
+        response = snapeda_api.fetch_snapeda_part_info(data_from_views['Part Search']['manufacturer_part_number'])
+        data = snapeda_api.parse_snapeda_response(response)
+        cprint(data)
+        images = snapeda_api.download_snapeda_images(data)
+        cprint(images)
+        self.page.splash.visible = False
+        self.page.update()
 
     def update_footprint_options(self, library: str):
         footprint_options = []
@@ -642,22 +680,17 @@ class KicadView(MainView):
     def did_mount(self):
         if 'InvenTree' in data_from_views:
             # Get value of alternate switch
-            alternate = data_from_views['InvenTree'].get('alternate', False)
-            e = ft.ControlEvent(
-                target=None,
-                name='did_mount_kicad_enable',
-                data='true' if alternate else 'false',
-                page=self.page,
-                control=self.fields['enable'],
-            )
-            self.process_enable(e, disable=alternate)
-            self.fields['enable'].disabled = alternate
-            if alternate:
+            if data_from_views['InvenTree'].get('alternate', False):
+                self.fields['enable'].disabled = True
                 self.fields['enable'].value = False
-                self.build_snackbar(False, 'InvenTree Alternate switch is enabled')
-                self.show_dialog()
-                
-        return super().did_mount()
+                self.show_dialog(
+                    d_type=DialogType.ERROR,
+                    message='InvenTree Alternate switch is enabled',
+                )
+                return super().did_mount(enable=False)
+            else:
+                self.fields['enable'].disabled = False
+        return super().did_mount(enable=settings.ENABLE_KICAD)
 
 
 class CreateView(MainView):
@@ -696,6 +729,11 @@ class CreateView(MainView):
     kicad_progress_row = None
     create_continue = True
 
+    def show_dialog(self, type: DialogType, message: str):
+        if 'create' in self.fields:
+            self.enable_create(True)
+        return super().show_dialog(type, message)
+
     def enable_create(self, enable=True):
         self.fields['create'].disabled = not enable
         self.fields['create'].update()
@@ -725,7 +763,7 @@ class CreateView(MainView):
         #     if self.fields['kicad_progress'].value < 1.0:
         #         self.fields['kicad_progress'].color = "red"
         #         self.fields['kicad_progress'].update()
-        self.show_error_dialog('Action Cancelled')
+        self.show_dialog(DialogType.ERROR, 'Action Cancelled')
         self.create_continue = True
         self.enable_create(True)
         return
@@ -752,13 +790,13 @@ class CreateView(MainView):
         self.reset_progress_bars()
 
         if not settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD:
-            self.show_error_dialog('Both InvenTree and KiCad are disabled (nothing to create)')
+            self.show_dialog(DialogType.ERROR, 'Both InvenTree and KiCad are disabled (nothing to create)')
 
         # print('data_from_views='); cprint(data_from_views)
 
         # Check data is present
         if not data_from_views.get('Part Search', None):
-            self.show_error_dialog('Missing Part Data (nothing to create)')
+            self.show_dialog(DialogType.ERROR, 'Missing Part Data (nothing to create)')
             return
         
         # Custom part check
@@ -769,7 +807,7 @@ class CreateView(MainView):
             # Part number check
             part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
             if not part_number:
-                self.show_error_dialog('Missing Part Number')
+                self.show_dialog(DialogType.ERROR, 'Missing Part Number')
                 return
 
         # Button update
@@ -782,7 +820,7 @@ class CreateView(MainView):
         if settings.ENABLE_KICAD and not settings.ENABLE_ALTERNATE:
             # Check data is present
             if not data_from_views.get('KiCad', None):
-                self.show_error_dialog('Missing KiCad Data')
+                self.show_dialog(DialogType.ERROR, 'Missing KiCad Data')
                 return
             
             # Process symbol
@@ -805,7 +843,7 @@ class CreateView(MainView):
             
             # print(symbol, template, footprint)
             if not symbol or not template or not footprint:
-                self.show_error_dialog('Missing KiCad Data')
+                self.show_dialog(DialogType.ERROR, 'Missing KiCad Data')
                 return
         
         if not self.create_continue:
@@ -815,17 +853,17 @@ class CreateView(MainView):
         if settings.ENABLE_INVENTREE:
             # Check data is present
             if not data_from_views.get('InvenTree', None):
-                self.show_error_dialog('Missing InvenTree Data')
+                self.show_dialog(DialogType.ERROR, 'Missing InvenTree Data')
                 return
             # Check connection
             if not inventree_interface.connect_to_server():
-                self.show_error_dialog('ERROR: Failed to connect to InvenTree server')
+                self.show_dialog(DialogType.ERROR, 'ERROR: Failed to connect to InvenTree server')
                 return
             
             if settings.ENABLE_ALTERNATE:
                 # Check mandatory data
                 if not data_from_views['InvenTree']['Existing Part ID'] and not data_from_views['InvenTree']['Existing Part IPN']:
-                    self.show_error_dialog('Missing Existing Part ID and Part IPN')
+                    self.show_dialog(DialogType.ERROR, 'Missing Existing Part ID and Part IPN')
                     return
                 # Create alternate
                 alt_result = inventree_interface.inventree_create_alternate(
@@ -837,16 +875,16 @@ class CreateView(MainView):
             else:
                 # Check mandatory data
                 if not data_from_views['Part Search'].get('name', None):
-                    self.show_error_dialog('Missing Part Name')
+                    self.show_dialog(DialogType.ERROR, 'Missing Part Name')
                     return
                 if not data_from_views['Part Search'].get('description', None):
-                    self.show_error_dialog('Missing Part Description')
+                    self.show_dialog(DialogType.ERROR, 'Missing Part Description')
                     return
                 # Get relevant data
                 category_tree = data_from_views['InvenTree'].get('Category', None)
                 if not category_tree:
                     # Check category is present
-                    self.show_error_dialog('Missing InvenTree Category')
+                    self.show_dialog(DialogType.ERROR, 'Missing InvenTree Category')
                     return
                 else:
                     part_info['category_tree'] = category_tree
