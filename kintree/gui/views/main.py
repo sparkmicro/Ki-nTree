@@ -594,6 +594,41 @@ class KicadView(MainView):
         ),
     }
 
+    def build_alert_dialog(self, symbol: str, footprint: str, download: str, single_result=False):
+        modal_content = ft.Row()
+        modal_msg = ft.Text('Symbol and footprint are not available on SnapEDA')
+        # Build content
+        if symbol:
+            modal_content.controls.append(ft.Image(symbol))
+            modal_msg = ft.Text('Symbol is available on SnapEDA')
+        if footprint:
+            modal_content.controls.append(ft.Image(footprint))
+            if symbol:
+                modal_msg = ft.Text('Symbol and footprint are available on SnapEDA')
+            else:
+                modal_msg = ft.Text('Footprint is available on SnapEDA')
+        # Build actions
+        modal_actions = []
+        if download:
+            if not symbol and not footprint:
+                if single_result:
+                    modal_actions.append(ft.TextButton('Check Part', on_click=lambda _: self.page.launch_url(download)))
+                else:
+                    modal_msg = ft.Text('Multiple matches found on SnapEDA')
+                    modal_actions.append(ft.TextButton('See Results', on_click=lambda _: self.page.launch_url(download)))
+            else:
+                modal_actions.append(ft.TextButton('Download', on_click=lambda _: self.page.launch_url(download)))
+        modal_actions.append(ft.TextButton('Close', on_click=lambda _: self.show_dialog(open=False)))
+        
+        return ft.AlertDialog(
+            modal=True,
+            title=modal_msg,
+            content=modal_content,
+            actions=modal_actions,
+            actions_alignment=ft.MainAxisAlignment.END,
+            # on_dismiss=None,
+        )
+
     def check_snapeda(self, e):
         if 'Part Search' not in data_from_views:
             self.show_dialog(
@@ -601,15 +636,27 @@ class KicadView(MainView):
                 message='Missing Part Data',
             )
             return
+        
         self.page.splash.visible = True
         self.page.update()
+
         response = snapeda_api.fetch_snapeda_part_info(data_from_views['Part Search']['manufacturer_part_number'])
         data = snapeda_api.parse_snapeda_response(response)
-        cprint(data)
-        images = snapeda_api.download_snapeda_images(data)
-        cprint(images)
+
+        images = {}
+        if data['has_symbol'] or data['has_footprint']:
+            images = snapeda_api.download_snapeda_images(data)
+
         self.page.splash.visible = False
         self.page.update()
+        
+        self.dialog = self.build_alert_dialog(
+            images.get('symbol', ''),
+            images.get('footprint', ''),
+            data.get('part_url', ''),
+            data.get('has_single_result', False),
+        )
+        self.show_dialog(open=True)
 
     def update_footprint_options(self, library: str):
         footprint_options = []

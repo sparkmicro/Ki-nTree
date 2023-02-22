@@ -85,6 +85,7 @@ class CommonView(ft.View):
     column = None
     fields = None
     data = None
+    dialog = None
     
     def __init__(self, page: ft.Page, appbar: ft.AppBar, navigation_rail: ft.NavigationRail):
         # Store page pointer
@@ -158,14 +159,17 @@ class CommonView(ft.View):
             message: Optional[str] = None,
             open=True,
     ):
-        if not self.build_dialog():
+        if not self.dialog:
             self.dialog = self.build_snackbar(d_type, message)
-        if type(self.dialog) == ft.Banner:
-            self.page.banner = self.dialog
-            self.page.banner.open = open
-        elif type(self.dialog) == ft.SnackBar:
+        if type(self.dialog) == ft.SnackBar:
             self.page.snack_bar = self.dialog
             self.page.snack_bar.open = True
+        elif type(self.dialog) == ft.Banner:
+            self.page.banner = self.dialog
+            self.page.banner.open = open
+        elif type(self.dialog) == ft.AlertDialog:
+            self.page.dialog = self.dialog
+            self.dialog.open = open
         self.page.update()
 
 
