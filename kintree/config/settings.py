@@ -344,6 +344,8 @@ def set_enable_flag(key: str, value: bool):
         user_settings['ENABLE_INVENTREE'] = value
     elif key == 'alternate':
         user_settings['ENABLE_ALTERNATE'] = value
+    else:
+        print(f'[INFO] Key {key} does not exist')
 
     # Save
     config_interface.dump_file(user_settings, os.path.join(CONFIG_USER_FILES, 'general.yaml'))

@@ -190,18 +190,22 @@ class MainView(CommonView):
         if 'create' in self.fields:
             self.enable_create(True)
 
-    def process_enable(self, e, ignore=['enable']):
-        disable = True
-        if e.data.lower() == 'true':
-            disable = False
+    def process_enable(self, e, disable=None, ignore=['enable']):
+        disabled = False
+        if e.data.lower() == 'false':
+            disabled = True
 
-        # print(e.control.label, not(disable))
+        # Overwrite
+        if disable is not None:
+            disabled = disable
+
+        # print(e.control.label, not disabled)
         key = e.control.label.lower()
-        settings.set_enable_flag(key, not disable)
+        settings.set_enable_flag(key, not disabled)
 
         for name, field in self.fields.items():
             if name not in ignore:
-                field.disabled = disable
+                field.disabled = disabled
                 field.update()
         self.push_data(e)
 
@@ -372,10 +376,41 @@ class InventreeView(MainView):
 
     title = 'InvenTree'
     fields = {
-        'enable': ft.Switch(label='InvenTree', value=settings.ENABLE_INVENTREE, on_change=None),
-        'alternate': ft.Switch(label='Alternate', value=False, disabled=True),
-        'load_categories': ft.ElevatedButton('Reload InvenTree Categories', height=36, icon=ft.icons.REPLAY, disabled=True),
-        'Category': DropdownWithSearch(label='Category', dr_width=400, sr_width=400, dense=True, options=[]),
+        'enable': ft.Switch(
+            label='InvenTree',
+            value=settings.ENABLE_INVENTREE,
+        ),
+        'alternate': ft.Switch(
+            label='Alternate',
+            value=settings.ENABLE_ALTERNATE if settings.ENABLE_INVENTREE else False,
+            disabled=not settings.ENABLE_INVENTREE,
+        ),
+        'load_categories': ft.ElevatedButton(
+            'Reload InvenTree Categories',
+            height=36,
+            icon=ft.icons.REPLAY,
+            disabled=True,
+        ),
+        'Category': DropdownWithSearch(
+            label='Category',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['textfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            disabled=settings.ENABLE_ALTERNATE,
+            options=[],
+        ),
+        'Existing Part ID': ft.TextField(
+            label='Existing Part ID',
+            width=GUI_PARAMS['textfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
+        ),
+        'Existing Part IPN': ft.TextField(
+            label='Existing Part IPN',
+            width=GUI_PARAMS['textfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
+        ),
     }
     category_separator = '/'
 
@@ -394,9 +429,36 @@ class InventreeView(MainView):
         if category_tree:
             self.data['Category'] = self.clean_split_category_tree(category_tree)
 
-    def process_enable(self, e, ignore=['enable', 'alternate', 'load_categories']):
-        return super().process_enable(e, ignore)
+    def process_enable(self, e):
+        if e.data.lower() == 'false':
+            self.fields['alternate'].value = False
+            self.fields['alternate'].update()
+            self.process_alternate(e, value=False)
+        return super().process_enable(e, ignore=['enable', 'load_categories'])
+    
+    def process_alternate(self, e, value=None):
+        if value:
+            visible = value
+        else:
+            visible = False
+            if e.data.lower() == 'true':
+                visible = True
+        if visible:
+            self.build_snackbar(True, 'Enter Existing Part ID or Part IPN')
+            self.show_dialog()
+        settings.set_enable_flag('alternate', visible)
+        self.fields['Existing Part ID'].visible = visible
+        self.fields['Existing Part ID'].update()
+        self.fields['Existing Part IPN'].visible = visible
+        self.fields['Existing Part IPN'].update()
 
+        if visible:
+            self.fields['Category'].value = None
+        self.fields['Category'].disabled = visible
+        self.fields['Category'].update()
+
+        self.push_data(e)
+        
     def reload_categories(self, e):
         # TODO: Implement pulling categories from InvenTree
         print('Loading categories from InvenTree...')
@@ -429,7 +491,11 @@ class InventreeView(MainView):
         self.fields['Category'].options = category_options
         self.fields['Category'].on_change = self.push_data
 
+        self.fields['alternate'].on_change = self.process_alternate
         self.fields['load_categories'].on_click = self.reload_categories
+
+        self.fields['Existing Part ID'].on_change = self.push_data
+        self.fields['Existing Part IPN'].on_change = self.push_data
 
         self.column = ft.Column(
             controls=[
@@ -441,7 +507,11 @@ class InventreeView(MainView):
                         self.fields['load_categories'],
                     ]
                 ),
-                self.fields['Category'],
+                ft.Row([self.fields['Category'],]),
+                ft.Row([
+                    self.fields['Existing Part ID'],
+                    self.fields['Existing Part IPN'],
+                ]),
             ],
         )
 
@@ -519,6 +589,26 @@ class KicadView(MainView):
             kicad_inputs.append(field)
         
         self.column.controls.extend(kicad_inputs)
+
+    def did_mount(self):
+        if 'InvenTree' in data_from_views:
+            # Get value of alternate switch
+            alternate = data_from_views['InvenTree'].get('alternate', False)
+            e = ft.ControlEvent(
+                target=None,
+                name='did_mount_kicad_enable',
+                data='true' if alternate else 'false',
+                page=self.page,
+                control=self.fields['enable'],
+            )
+            self.process_enable(e, disable=alternate)
+            self.fields['enable'].disabled = alternate
+            if alternate:
+                self.fields['enable'].value = False
+                self.build_snackbar(False, 'InvenTree Alternate switch is enabled')
+                self.show_dialog()
+                
+        return super().did_mount()
 
 
 class CreateView(MainView):
