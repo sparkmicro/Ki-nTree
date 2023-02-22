@@ -163,6 +163,7 @@ if __name__ == '__main__':
                         'category_tree': [supplier_info['category'], supplier_info['subcategory']],
                         'parameters': supplier_info['parameters'],
                         'Symbol': f'{category}:{number}',
+                        'Template': [supplier_info['category'], supplier_info['subcategory']],
                     })
                     # Update categories
                     part_info['category_tree'] = inventree_interface.get_categories_from_supplier_data(part_info)

@@ -730,7 +730,7 @@ class CreateView(MainView):
         symbol = None
         template = None
         footprint = None
-        if settings.ENABLE_KICAD:
+        if settings.ENABLE_KICAD and not settings.ENABLE_ALTERNATE:
             # Check data is present
             if not data_from_views.get('KiCad', None):
                 self.show_error_dialog('Missing KiCad Data')
@@ -772,54 +772,79 @@ class CreateView(MainView):
             if not inventree_interface.connect_to_server():
                 self.show_error_dialog('ERROR: Failed to connect to InvenTree server')
                 return
-            # Check mandatory data
-            if not data_from_views['Part Search'].get('name', None):
-                self.show_error_dialog('Missing Part Name')
-                return
-            if not data_from_views['Part Search'].get('description', None):
-                self.show_error_dialog('Missing Part Description')
-                return
-            # Get relevant data
-            category_tree = data_from_views['InvenTree'].get('Category', None)
-            if not category_tree:
-                # Check category is present
-                self.show_error_dialog('Missing InvenTree Category')
-                return
-            else:
-                part_info['category_tree'] = category_tree
             
-            # Create part
-            new_part, part_pk, part_info = inventree_interface.inventree_create(
-                part_info=part_info,
-                kicad=settings.ENABLE_KICAD,
-                symbol=symbol,
-                footprint=footprint,
-                show_progress=self.fields['inventree_progress'],
-                is_custom=custom,
-            )
-            # print(new_part, part_pk)
-            # cprint(part_info)
+            if settings.ENABLE_ALTERNATE:
+                # Check mandatory data
+                if not data_from_views['InvenTree']['Existing Part ID'] and not data_from_views['InvenTree']['Existing Part IPN']:
+                    self.show_error_dialog('Missing Existing Part ID and Part IPN')
+                    return
+                # Create alternate
+                alt_result = inventree_interface.inventree_create_alternate(
+                    part_info=part_info,
+                    part_id=data_from_views['InvenTree']['Existing Part ID'],
+                    part_ipn=data_from_views['InvenTree']['Existing Part IPN'],
+                    show_progress=self.fields['inventree_progress'],
+                )
+            else:
+                # Check mandatory data
+                if not data_from_views['Part Search'].get('name', None):
+                    self.show_error_dialog('Missing Part Name')
+                    return
+                if not data_from_views['Part Search'].get('description', None):
+                    self.show_error_dialog('Missing Part Description')
+                    return
+                # Get relevant data
+                category_tree = data_from_views['InvenTree'].get('Category', None)
+                if not category_tree:
+                    # Check category is present
+                    self.show_error_dialog('Missing InvenTree Category')
+                    return
+                else:
+                    part_info['category_tree'] = category_tree
+                # Create new part
+                new_part, part_pk, part_info = inventree_interface.inventree_create(
+                    part_info=part_info,
+                    kicad=settings.ENABLE_KICAD,
+                    symbol=symbol,
+                    footprint=footprint,
+                    show_progress=self.fields['inventree_progress'],
+                    is_custom=custom,
+                )
+                # print(new_part, part_pk)
+                # cprint(part_info)
 
-            if part_pk:
-                # Update symbol
-                if symbol:
-                    symbol = f'{symbol.split(":")[0]}:{part_info["IPN"]}'
-
-                if not new_part:
+            if settings.ENABLE_ALTERNATE:
+                if alt_result:
+                    # Update InvenTree URL
+                    if data_from_views['InvenTree']['Existing Part IPN']:
+                        part_ref = data_from_views['InvenTree']['Existing Part IPN']
+                    else:
+                        part_ref = data_from_views['InvenTree']['Existing Part ID']
+                    part_info['inventree_url'] = f'{settings.PART_URL_ROOT}{part_ref}/'
+                else:
                     self.fields['inventree_progress'].color = "amber"
-                    self.fields['inventree_progress'].update()
                 # Complete add operation
                 self.fields['inventree_progress'].value = progress.MAX_PROGRESS
-                self.fields['inventree_progress'].update()
             else:
-                self.fields['inventree_progress'].color = "red"
-                self.fields['inventree_progress'].update()
+                if part_pk:
+                    # Update symbol
+                    if symbol:
+                        symbol = f'{symbol.split(":")[0]}:{part_info["IPN"]}'
+
+                    if not new_part:
+                        self.fields['inventree_progress'].color = "amber"
+                    # Complete add operation
+                    self.fields['inventree_progress'].value = progress.MAX_PROGRESS
+                else:
+                    self.fields['inventree_progress'].color = "red"
+            
+            self.fields['inventree_progress'].update()
 
         if not self.create_continue:
             return self.process_cancel()
 
         # KiCad data processing
-        if settings.ENABLE_KICAD:
+        if settings.ENABLE_KICAD and not settings.ENABLE_ALTERNATE:
             part_info['Symbol'] = symbol
             part_info['Template'] = template.split('/')
             part_info['Footprint'] = footprint

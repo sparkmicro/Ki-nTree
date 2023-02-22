@@ -598,10 +598,6 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     cprint('\n[MAIN]\tSearching for original part in database', silent=settings.SILENT)
     part = inventree_api.fetch_part(part_id, part_ipn)
 
-    # Progress Update
-    if not progress.update_progress_bar(show_progress, increment=0.05):
-        return
-
     if part:
         part_pk = part.pk
         part_description = part.description
@@ -624,7 +620,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
                                            description=part_description)
 
     # Progress Update
-    if not progress.update_progress_bar(show_progress, increment=0.05):
+    if not progress.update_progress_bar(show_progress, increment=0.5):
         return
 
     supplier_name = part_info.get('supplier_name', '')
