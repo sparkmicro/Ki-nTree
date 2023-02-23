@@ -408,7 +408,7 @@ class InventreeView(MainView):
             'Reload InvenTree Categories',
             height=36,
             icon=ft.icons.REPLAY,
-            disabled=True,
+            disabled=False,
         ),
         'Category': DropdownWithSearch(
             label='Category',
@@ -431,22 +431,11 @@ class InventreeView(MainView):
             visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
         ),
     }
-    category_separator = '/'
-
-    def clean_category_tree(self, category_tree: str) -> str:
-        import re
-        find_prefix = re.match(r'^-+ (.+?)$', category_tree)
-        if find_prefix:
-            return find_prefix.group(1)
-        return category_tree
-
-    def clean_split_category_tree(self, category_tree: str) -> list:
-        return self.clean_category_tree(category_tree).split(self.category_separator)
     
     def sanitize_data(self):
         category_tree = self.data.get('Category', None)
         if category_tree:
-            self.data['Category'] = self.clean_split_category_tree(category_tree)
+            self.data['Category'] = inventree_interface.split_category_tree(category_tree)
 
     def process_enable(self, e):
         if e.data.lower() == 'false':
@@ -479,37 +468,30 @@ class InventreeView(MainView):
         self.fields['Category'].update()
 
         self.push_data(e)
+
+    def get_category_options(self, reload=False):
+        return [
+            ft.dropdown.Option(category)
+            for category in inventree_interface.build_category_tree(reload=reload)
+        ]
         
     def reload_categories(self, e):
-        # TODO: Implement pulling categories from InvenTree
-        print('Loading categories from InvenTree...')
+        self.page.splash.visible = True
+        self.page.update()
+
+        # Check connection
+        if not inventree_interface.connect_to_server():
+            self.show_dialog(DialogType.ERROR, 'ERROR: Failed to connect to InvenTree server')
+        else:
+            self.fields['Category'].options = self.get_category_options(reload=True)
+            self.fields['Category'].update()
+
+        self.page.splash.visible = False
+        self.page.update()
 
     def build_column(self):
-        def build_tree(tree, left_to_go, level):
-            try:
-                last_entry = f' {self.clean_category_tree(tree[-1])}{self.category_separator}'
-            except IndexError:
-                last_entry = ''
-            if type(left_to_go) == dict:
-                for key, value in left_to_go.items():
-                    tree.append(f'{"-" * level}{last_entry}{key}')
-                    build_tree(tree, value, level + 1)
-            elif type(left_to_go) == list:
-                for item in left_to_go:
-                    tree.append(f'{"-" * level}{last_entry}{item}')
-            elif left_to_go is None:
-                pass
-            return
-            
-        categories = config_interface.load_file(settings.CONFIG_CATEGORIES).get('CATEGORIES', {})
-
-        inventree_categories = []
-        # Build category tree
-        build_tree(inventree_categories, categories, 0)
-
-        category_options = [ft.dropdown.Option(category) for category in inventree_categories]
-        # Update dropdown
-        self.fields['Category'].options = category_options
+        # Update dropdown with category options
+        self.fields['Category'].options = self.get_category_options()
         self.fields['Category'].on_change = self.push_data
 
         self.fields['alternate'].on_change = self.process_alternate
