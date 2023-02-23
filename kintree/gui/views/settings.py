@@ -341,6 +341,9 @@ class UserSettingsView(SettingsView):
                 ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
             ],
         )
+    
+    def show_dialog(self, d_type=None, message=None, snackbar=False, open=True):
+        return super().show_dialog(d_type, message, snackbar, open)
 
     def did_mount(self):
         # Reset Index

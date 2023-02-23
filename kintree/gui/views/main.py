@@ -188,14 +188,14 @@ class MainView(CommonView):
             found_libraries = list(self.get_footprint_libraries().keys())
         return found_libraries
 
-    def process_enable(self, e, disable=None, ignore=['enable']):
+    def process_enable(self, e, value=None, ignore=['enable']):
         disabled = False
         if e.data.lower() == 'false':
             disabled = True
 
-        # Overwrite
-        if disable is not None:
-            disabled = disable
+        # Overwrite with value
+        if value is not None:
+            disabled = not value
 
         # print(e.control.label, not disabled)
         key = e.control.label.lower()
@@ -406,6 +406,7 @@ class InventreeView(MainView):
         ),
         'load_categories': ft.ElevatedButton(
             'Reload InvenTree Categories',
+            width=GUI_PARAMS['button_width'] * 2.6,
             height=36,
             icon=ft.icons.REPLAY,
             disabled=False,
@@ -438,11 +439,18 @@ class InventreeView(MainView):
             self.data['Category'] = inventree_interface.split_category_tree(category_tree)
 
     def process_enable(self, e):
+        # Switch control
         if e.data.lower() == 'false':
             self.fields['alternate'].value = False
             self.fields['alternate'].update()
             self.process_alternate(e, value=False)
-        return super().process_enable(e, ignore=['enable', 'load_categories'])
+        # View mounting control
+        if self.fields['alternate'].value:
+            # Alternate mode enabled: disable eveything except the alternate fields
+            super().process_enable(e, value=True, ignore=['enable', 'Existing Part ID', 'Existing Part IPN'])
+            self.process_alternate(e, value=True)
+        else:
+            super().process_enable(e, value=self.fields['enable'].value, ignore=['enable'])
     
     def process_alternate(self, e, value=None):
         if value:
@@ -462,10 +470,13 @@ class InventreeView(MainView):
         self.fields['Existing Part IPN'].visible = visible
         self.fields['Existing Part IPN'].update()
 
+        # Process category dropdown and load category button
         if visible:
             self.fields['Category'].value = None
         self.fields['Category'].disabled = visible
         self.fields['Category'].update()
+        self.fields['load_categories'].disabled = visible
+        self.fields['load_categories'].update()
 
         self.push_data(e)
 
@@ -508,7 +519,9 @@ class InventreeView(MainView):
                         self.fields['enable'],
                         self.fields['alternate'],
                         self.fields['load_categories'],
-                    ]
+                    ],
+                    width=GUI_PARAMS['dropdown_width'],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
                 ft.Row([self.fields['Category'],]),
                 ft.Row([
@@ -612,7 +625,7 @@ class KicadView(MainView):
         )
 
     def check_snapeda(self, e):
-        if 'Part Search' not in data_from_views:
+        if not data_from_views.get('Part Search', {}).get('manufacturer_part_number', ''):
             self.show_dialog(
                 d_type=DialogType.ERROR,
                 message='Missing Part Data',
@@ -638,7 +651,7 @@ class KicadView(MainView):
             data.get('part_url', ''),
             data.get('has_single_result', False),
         )
-        self.show_dialog(open=True)
+        self.show_dialog(snackbar=False, open=True)
 
     def update_footprint_options(self, library: str):
         footprint_options = []
@@ -814,6 +827,12 @@ class CreateView(MainView):
             # Reset progress bar
             progress.reset_progress_bar(self.fields['kicad_progress'])
         self.kicad_progress_row.current.update()
+
+        if not settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD:
+            self.fields['create'].disabled = True
+        else:
+            self.fields['create'].disabled = False
+        self.fields['create'].update()
         
     def create_part(self, e=None):
         self.reset_progress_bars()
@@ -1032,7 +1051,7 @@ class CreateView(MainView):
                     alignment=ft.MainAxisAlignment.CENTER,
                     width=600,
                 ),
-                ft.Text('Progress', style=ft.TextThemeStyle.HEADLINE_SMALL),
+                ft.Row(height=16),
                 ft.Row(
                     ref=self.inventree_progress_row,
                     controls=[

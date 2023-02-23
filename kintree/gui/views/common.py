@@ -123,7 +123,7 @@ class CommonView(ft.View):
     
     def build_snackbar(self, d_type: DialogType, message: str):
         if d_type == DialogType.VALID:
-            return ft.SnackBar(
+            self.dialog = ft.SnackBar(
                 bgcolor=ft.colors.GREEN_100,
                 content=ft.Text(
                     message,
@@ -133,7 +133,7 @@ class CommonView(ft.View):
                 ),
             )
         elif d_type == DialogType.WARNING:
-            return ft.SnackBar(
+            self.dialog = ft.SnackBar(
                 bgcolor=ft.colors.AMBER_100,
                 content=ft.Text(
                     message,
@@ -143,7 +143,7 @@ class CommonView(ft.View):
                 ),
             )
         elif d_type == DialogType.ERROR:
-            return ft.SnackBar(
+            self.dialog = ft.SnackBar(
                 bgcolor=ft.colors.RED_100,
                 content=ft.Text(
                     message,
@@ -157,10 +157,11 @@ class CommonView(ft.View):
             self,
             d_type: Optional[DialogType] = None,
             message: Optional[str] = None,
+            snackbar=True,
             open=True,
     ):
-        if not self.dialog:
-            self.dialog = self.build_snackbar(d_type, message)
+        if snackbar:
+            self.build_snackbar(d_type, message)
         if type(self.dialog) == ft.SnackBar:
             self.page.snack_bar = self.dialog
             self.page.snack_bar.open = True
