@@ -72,18 +72,13 @@ def get_inventree_category_id(category_tree: list) -> int:
     return -1
 
 
-def get_categories(category=None) -> dict:
-    '''Fetch InvenTree categories, with option to select a certain branch'''
+def get_categories() -> dict:
+    '''Fetch InvenTree categories'''
     global inventree_api
 
     categories = {}
     # Get all categories (list)
     db_categories = PartCategory.list(inventree_api)
-
-    def deep_get(d, keys):
-        if not keys or d is None:
-            return d
-        return deep_get(d.get(keys[0]), keys[1:])
 
     def deep_add(tree: dict, keys: list, item: dict):
         if len(keys) == 1:
@@ -97,7 +92,6 @@ def get_categories(category=None) -> dict:
     for category in db_categories:
         parent = category.getParentCategory()
         children = category.getChildCategories()
-        # print(f'\ncategory={category.name} | has_parent={bool(parent)} | has_children={bool(children)}')
 
         if not parent and not children:
             categories[category.name] = None

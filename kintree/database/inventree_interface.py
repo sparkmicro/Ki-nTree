@@ -77,14 +77,14 @@ def build_category_tree(reload=False, category=None) -> dict:
             pass
         return
     
-    if not reload:
-        categories = category_data.get('CATEGORIES', {})
-    else:
+    if reload:
         categories = inventree_api.get_categories(category)
         category_data['CATEGORIES'] = categories
         config_interface.dump_file(category_data, settings.CONFIG_CATEGORIES)
+    else:
+        categories = category_data.get('CATEGORIES', {})
 
-    # Get branch
+    # Get specified branch
     if category:
         categories = {category: categories.get(category, {})}
 
