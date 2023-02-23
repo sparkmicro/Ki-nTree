@@ -78,7 +78,7 @@ def build_category_tree(reload=False, category=None) -> dict:
         return
     
     if reload:
-        categories = inventree_api.get_categories(category)
+        categories = inventree_api.get_categories()
         category_data['CATEGORIES'] = categories
         config_interface.dump_file(category_data, settings.CONFIG_CATEGORIES)
     else:
