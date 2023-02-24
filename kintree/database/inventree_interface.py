@@ -79,7 +79,7 @@ def build_category_tree(reload=False, category=None) -> dict:
     
     if reload:
         categories = inventree_api.get_categories()
-        category_data['CATEGORIES'] = categories
+        category_data.update({'CATEGORIES': categories})
         config_interface.dump_file(category_data, settings.CONFIG_CATEGORIES)
     else:
         categories = category_data.get('CATEGORIES', {})
