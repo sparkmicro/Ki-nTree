@@ -392,10 +392,10 @@ def sync_inventree_supplier_categories(inventree_config_path: str, supplier_conf
 def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
     ''' Add Supplier category mapping to Supplier settings file
 
-                    categories = {
-                                    'Capacitors':
-                                                    { 'Tantalum': 'Tantalum Capacitors' }
-                    }
+        categories = {
+            'Capacitors':
+                { 'Tantalum': 'Tantalum Capacitors' }
+        }
     '''
     try:
         supplier_categories = load_file(supplier_config_path)

@@ -6,7 +6,9 @@ import flet as ft
 from ... import __version__
 # Common view
 from .common import GUI_PARAMS, data_from_views
-from .common import handle_transition, CommonView, DropdownWithSearch
+from .common import DialogType, CommonView, DropdownWithSearch
+from .common import handle_transition
+# Tools
 from ...common.tools import cprint
 # Settings
 from ...common import progress
@@ -15,6 +17,8 @@ from ...config import settings, config_interface
 from ...database import inventree_interface
 # KiCad
 from ...kicad import kicad_interface
+# SnapEDA
+from ...search import snapeda_api
 
 # Main AppBar
 main_appbar = ft.AppBar(
@@ -184,24 +188,22 @@ class MainView(CommonView):
             found_libraries = list(self.get_footprint_libraries().keys())
         return found_libraries
 
-    def show_error_dialog(self, message):
-        self.build_snackbar(False, message)
-        self.show_dialog()
-        if 'create' in self.fields:
-            self.enable_create(True)
+    def process_enable(self, e, value=None, ignore=['enable']):
+        disabled = False
+        if e.data.lower() == 'false':
+            disabled = True
 
-    def process_enable(self, e, ignore=['enable']):
-        disable = True
-        if e.data.lower() == 'true':
-            disable = False
+        # Overwrite with value
+        if value is not None:
+            disabled = not value
 
-        # print(e.control.label, not(disable))
+        # print(e.control.label, not disabled)
         key = e.control.label.lower()
-        settings.set_enable_flag(key, not disable)
+        settings.set_enable_flag(key, not disabled)
 
         for name, field in self.fields.items():
             if name not in ignore:
-                field.disabled = disable
+                field.disabled = disabled
                 field.update()
         self.push_data(e)
 
@@ -219,8 +221,19 @@ class MainView(CommonView):
         # Push
         data_from_views[self.title] = self.data
 
-    def did_mount(self):
+    def did_mount(self, enable=False):
         handle_transition(self.page, transition=False, update_page=True)
+        if self.fields.get('enable', None) is not None:
+            # Create enable event
+            e = ft.ControlEvent(
+                target=None,
+                name='did_mount_enable',
+                data='true' if enable else 'false',
+                page=self.page,
+                control=self.fields['enable'],
+            )
+            # Process enable
+            self.process_enable(e)
         return super().did_mount()
 
 
@@ -278,10 +291,13 @@ class PartSearchView(MainView):
         # Validate form
         if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
             if not self.fields['part_number'].value:
-                self.build_snackbar(dialog_success=False, dialog_text='Missing Part Number')
+                error_msg = 'Missing Part Number'
             else:
-                self.build_snackbar(dialog_success=False, dialog_text='Missing Supplier')
-            self.show_dialog()
+                error_msg = 'Missing Supplier'
+            self.show_dialog(
+                d_type=DialogType.ERROR,
+                message=error_msg,
+            )
         else:
             self.page.splash.visible = True
             self.page.update()
@@ -321,10 +337,17 @@ class PartSearchView(MainView):
             # Add to data buffer
             self.push_data()
             self.page.splash.visible = False
+
+            if self.data['searched_part_number'].lower() != self.data['manufacturer_part_number'].lower():
+                self.show_dialog(
+                    d_type=DialogType.WARNING,
+                    message='Found part number does not match the requested part number',
+                )
             self.page.update()
         return
 
     def push_data(self, e=None):
+        self.data['searched_part_number'] = self.fields['part_number'].value
         for key, field in self.fields['search_form'].items():
             self.data[key] = field.value
         data_from_views[self.title] = self.data
@@ -372,64 +395,121 @@ class InventreeView(MainView):
 
     title = 'InvenTree'
     fields = {
-        'enable': ft.Switch(label='InvenTree', value=settings.ENABLE_INVENTREE, on_change=None),
-        'alternate': ft.Switch(label='Alternate', value=False, disabled=True),
-        'load_categories': ft.ElevatedButton('Reload InvenTree Categories', height=36, icon=ft.icons.REPLAY, disabled=True),
-        'Category': DropdownWithSearch(label='Category', dr_width=400, sr_width=400, dense=True, options=[]),
+        'enable': ft.Switch(
+            label='InvenTree',
+            value=settings.ENABLE_INVENTREE,
+        ),
+        'alternate': ft.Switch(
+            label='Alternate',
+            value=settings.ENABLE_ALTERNATE if settings.ENABLE_INVENTREE else False,
+            disabled=not settings.ENABLE_INVENTREE,
+        ),
+        'load_categories': ft.ElevatedButton(
+            'Reload InvenTree Categories',
+            width=GUI_PARAMS['button_width'] * 2.6,
+            height=36,
+            icon=ft.icons.REPLAY,
+            disabled=False,
+        ),
+        'Category': DropdownWithSearch(
+            label='Category',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            disabled=settings.ENABLE_ALTERNATE,
+            options=[],
+        ),
+        'Existing Part ID': ft.TextField(
+            label='Existing Part ID',
+            width=GUI_PARAMS['textfield_width'] / 2 - 5,
+            dense=GUI_PARAMS['textfield_dense'],
+            visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
+        ),
+        'Existing Part IPN': ft.TextField(
+            label='Existing Part IPN',
+            width=GUI_PARAMS['textfield_width'] / 2 - 5,
+            dense=GUI_PARAMS['textfield_dense'],
+            visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
+        ),
     }
-    category_separator = '/'
-
-    def clean_category_tree(self, category_tree: str) -> str:
-        import re
-        find_prefix = re.match(r'^-+ (.+?)$', category_tree)
-        if find_prefix:
-            return find_prefix.group(1)
-        return category_tree
-
-    def clean_split_category_tree(self, category_tree: str) -> list:
-        return self.clean_category_tree(category_tree).split(self.category_separator)
     
     def sanitize_data(self):
         category_tree = self.data.get('Category', None)
         if category_tree:
-            self.data['Category'] = self.clean_split_category_tree(category_tree)
+            self.data['Category'] = inventree_interface.split_category_tree(category_tree)
 
-    def process_enable(self, e, ignore=['enable', 'alternate', 'load_categories']):
-        return super().process_enable(e, ignore)
+    def process_enable(self, e):
+        # Switch control
+        if e.data.lower() == 'false':
+            self.fields['alternate'].value = False
+            self.fields['alternate'].update()
+            self.process_alternate(e, value=False)
+        # View mounting control
+        if self.fields['alternate'].value:
+            # Alternate mode enabled: disable eveything except the alternate fields
+            super().process_enable(e, value=True, ignore=['enable', 'Existing Part ID', 'Existing Part IPN'])
+            self.process_alternate(e, value=True)
+        else:
+            super().process_enable(e, value=self.fields['enable'].value, ignore=['enable'])
+    
+    def process_alternate(self, e, value=None):
+        if value:
+            visible = value
+        else:
+            visible = False
+            if e.data.lower() == 'true':
+                visible = True
+        if visible:
+            self.show_dialog(
+                d_type=DialogType.WARNING,
+                message='Enter Existing Part ID or Part IPN',
+            )
+        settings.set_enable_flag('alternate', visible)
+        self.fields['Existing Part ID'].visible = visible
+        self.fields['Existing Part ID'].update()
+        self.fields['Existing Part IPN'].visible = visible
+        self.fields['Existing Part IPN'].update()
 
+        # Process category dropdown and load category button
+        if visible:
+            self.fields['Category'].value = None
+        self.fields['Category'].disabled = visible
+        self.fields['Category'].update()
+        self.fields['load_categories'].disabled = visible
+        self.fields['load_categories'].update()
+
+        self.push_data(e)
+
+    def get_category_options(self, reload=False):
+        return [
+            ft.dropdown.Option(category)
+            for category in inventree_interface.build_category_tree(reload=reload)
+        ]
+        
     def reload_categories(self, e):
-        # TODO: Implement pulling categories from InvenTree
-        print('Loading categories from InvenTree...')
+        self.page.splash.visible = True
+        self.page.update()
+
+        # Check connection
+        if not inventree_interface.connect_to_server():
+            self.show_dialog(DialogType.ERROR, 'ERROR: Failed to connect to InvenTree server')
+        else:
+            self.fields['Category'].options = self.get_category_options(reload=True)
+            self.fields['Category'].update()
+
+        self.page.splash.visible = False
+        self.page.update()
 
     def build_column(self):
-        def build_tree(tree, left_to_go, level):
-            try:
-                last_entry = f' {self.clean_category_tree(tree[-1])}{self.category_separator}'
-            except IndexError:
-                last_entry = ''
-            if type(left_to_go) == dict:
-                for key, value in left_to_go.items():
-                    tree.append(f'{"-" * level}{last_entry}{key}')
-                    build_tree(tree, value, level + 1)
-            elif type(left_to_go) == list:
-                for item in left_to_go:
-                    tree.append(f'{"-" * level}{last_entry}{item}')
-            elif left_to_go is None:
-                pass
-            return
-            
-        categories = config_interface.load_file(settings.CONFIG_CATEGORIES).get('CATEGORIES', {})
-
-        inventree_categories = []
-        # Build category tree
-        build_tree(inventree_categories, categories, 0)
-
-        category_options = [ft.dropdown.Option(category) for category in inventree_categories]
-        # Update dropdown
-        self.fields['Category'].options = category_options
+        # Update dropdown with category options
+        self.fields['Category'].options = self.get_category_options()
         self.fields['Category'].on_change = self.push_data
 
+        self.fields['alternate'].on_change = self.process_alternate
         self.fields['load_categories'].on_click = self.reload_categories
+
+        self.fields['Existing Part ID'].on_change = self.push_data
+        self.fields['Existing Part IPN'].on_change = self.push_data
 
         self.column = ft.Column(
             controls=[
@@ -439,11 +519,20 @@ class InventreeView(MainView):
                         self.fields['enable'],
                         self.fields['alternate'],
                         self.fields['load_categories'],
-                    ]
+                    ],
+                    width=GUI_PARAMS['dropdown_width'],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
-                self.fields['Category'],
+                ft.Row([self.fields['Category'],]),
+                ft.Row([
+                    self.fields['Existing Part ID'],
+                    self.fields['Existing Part IPN'],
+                ]),
             ],
         )
+    
+    def did_mount(self):
+        return super().did_mount(enable=settings.ENABLE_INVENTREE)
 
 
 class KicadView(MainView):
@@ -451,13 +540,118 @@ class KicadView(MainView):
 
     title = 'KiCad'
     fields = {
-        'enable': ft.Switch(label='KiCad', value=settings.ENABLE_KICAD, on_change=None),
-        'Symbol Library': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
-        'Symbol Template': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
-        'Footprint Library': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
-        'Footprint': DropdownWithSearch(label='', dr_width=400, sr_width=400, dense=True, options=[]),
-        'New Footprint Name': ft.TextField(label='New Footprint Name', width=400, dense=True),
+        'enable': ft.Switch(
+            label='KiCad',
+            value=settings.ENABLE_KICAD,
+        ),
+        'Symbol Library': DropdownWithSearch(
+            label='',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            options=[],
+        ),
+        'Symbol Template': DropdownWithSearch(
+            label='',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            options=[],
+        ),
+        'Footprint Library': DropdownWithSearch(
+            label='',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            options=[],
+        ),
+        'Footprint': DropdownWithSearch(
+            label='',
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            options=[],
+        ),
+        'New Footprint Name': ft.TextField(
+            label='New Footprint Name',
+            width=GUI_PARAMS['textfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+        ),
+        'Check SnapEDA': ft.ElevatedButton(
+            content=ft.Row(
+                [
+                    ft.Icon('search'),
+                    ft.Text('Check SnapEDA', size=16),
+                ]
+            ),
+            height=GUI_PARAMS['button_height'],
+            width=GUI_PARAMS['button_width'] * 2,
+        ),
     }
+
+    def build_alert_dialog(self, symbol: str, footprint: str, download: str, single_result=False):
+        modal_content = ft.Row()
+        modal_msg = ft.Text('Symbol and footprint are not available on SnapEDA')
+        # Build content
+        if symbol:
+            modal_content.controls.append(ft.Image(symbol))
+            modal_msg = ft.Text('Symbol is available on SnapEDA')
+        if footprint:
+            modal_content.controls.append(ft.Image(footprint))
+            if symbol:
+                modal_msg = ft.Text('Symbol and footprint are available on SnapEDA')
+            else:
+                modal_msg = ft.Text('Footprint is available on SnapEDA')
+        # Build actions
+        modal_actions = []
+        if download:
+            if not symbol and not footprint:
+                if single_result:
+                    modal_actions.append(ft.TextButton('Check Part', on_click=lambda _: self.page.launch_url(download)))
+                else:
+                    modal_msg = ft.Text('Multiple matches found on SnapEDA')
+                    modal_actions.append(ft.TextButton('See Results', on_click=lambda _: self.page.launch_url(download)))
+            else:
+                modal_actions.append(ft.TextButton('Download', on_click=lambda _: self.page.launch_url(download)))
+        modal_actions.append(ft.TextButton('Close', on_click=lambda _: self.show_dialog(open=False)))
+        
+        return ft.AlertDialog(
+            modal=True,
+            title=modal_msg,
+            content=modal_content,
+            actions=modal_actions,
+            actions_alignment=ft.MainAxisAlignment.END,
+            # on_dismiss=None,
+        )
+
+    def check_snapeda(self, e):
+        if not data_from_views.get('Part Search', {}).get('manufacturer_part_number', ''):
+            self.show_dialog(
+                d_type=DialogType.ERROR,
+                message='Missing Part Data',
+            )
+            return
+        
+        self.page.splash.visible = True
+        self.page.update()
+
+        response = snapeda_api.fetch_snapeda_part_info(data_from_views['Part Search']['manufacturer_part_number'])
+        data = snapeda_api.parse_snapeda_response(response)
+
+        images = {}
+        if data['has_symbol'] or data['has_footprint']:
+            images = snapeda_api.download_snapeda_images(data)
+
+        self.page.splash.visible = False
+        self.page.update()
+        
+        self.dialog = self.build_alert_dialog(
+            images.get('symbol', ''),
+            images.get('footprint', ''),
+            data.get('part_url', ''),
+            data.get('has_single_result', False),
+        )
+        self.show_dialog(snackbar=False, open=True)
 
     def update_footprint_options(self, library: str):
         footprint_options = []
@@ -505,8 +699,13 @@ class KicadView(MainView):
         )
         kicad_inputs = []
         for name, field in self.fields.items():
-            if name != 'enable':
-                field.on_change = self.push_data
+            # Update callbacks
+            if type(field) == ft.ElevatedButton:
+                field.on_click = self.check_snapeda
+            else:
+                if name != 'enable':
+                    field.on_change = self.push_data
+            # Update options
             if type(field) == DropdownWithSearch:
                 field.label = name
                 if name == 'Symbol Library':
@@ -519,6 +718,21 @@ class KicadView(MainView):
             kicad_inputs.append(field)
         
         self.column.controls.extend(kicad_inputs)
+
+    def did_mount(self):
+        if 'InvenTree' in data_from_views:
+            # Get value of alternate switch
+            if data_from_views['InvenTree'].get('alternate', False):
+                self.fields['enable'].disabled = True
+                self.fields['enable'].value = False
+                self.show_dialog(
+                    d_type=DialogType.ERROR,
+                    message='InvenTree Alternate switch is enabled',
+                )
+                return super().did_mount(enable=False)
+            else:
+                self.fields['enable'].disabled = False
+        return super().did_mount(enable=settings.ENABLE_KICAD)
 
 
 class CreateView(MainView):
@@ -557,6 +771,11 @@ class CreateView(MainView):
     kicad_progress_row = None
     create_continue = True
 
+    def show_dialog(self, type: DialogType, message: str):
+        if 'create' in self.fields:
+            self.enable_create(True)
+        return super().show_dialog(type, message)
+
     def enable_create(self, enable=True):
         self.fields['create'].disabled = not enable
         self.fields['create'].update()
@@ -586,7 +805,7 @@ class CreateView(MainView):
         #     if self.fields['kicad_progress'].value < 1.0:
         #         self.fields['kicad_progress'].color = "red"
         #         self.fields['kicad_progress'].update()
-        self.show_error_dialog('Action Cancelled')
+        self.show_dialog(DialogType.ERROR, 'Action Cancelled')
         self.create_continue = True
         self.enable_create(True)
         return
@@ -608,18 +827,24 @@ class CreateView(MainView):
             # Reset progress bar
             progress.reset_progress_bar(self.fields['kicad_progress'])
         self.kicad_progress_row.current.update()
+
+        if not settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD:
+            self.fields['create'].disabled = True
+        else:
+            self.fields['create'].disabled = False
+        self.fields['create'].update()
         
     def create_part(self, e=None):
         self.reset_progress_bars()
 
         if not settings.ENABLE_INVENTREE and not settings.ENABLE_KICAD:
-            self.show_error_dialog('Both InvenTree and KiCad are disabled (nothing to create)')
+            self.show_dialog(DialogType.ERROR, 'Both InvenTree and KiCad are disabled (nothing to create)')
 
         # print('data_from_views='); cprint(data_from_views)
 
         # Check data is present
         if not data_from_views.get('Part Search', None):
-            self.show_error_dialog('Missing Part Data (nothing to create)')
+            self.show_dialog(DialogType.ERROR, 'Missing Part Data (nothing to create)')
             return
         
         # Custom part check
@@ -630,7 +855,7 @@ class CreateView(MainView):
             # Part number check
             part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
             if not part_number:
-                self.show_error_dialog('Missing Part Number')
+                self.show_dialog(DialogType.ERROR, 'Missing Part Number')
                 return
 
         # Button update
@@ -640,10 +865,10 @@ class CreateView(MainView):
         symbol = None
         template = None
         footprint = None
-        if settings.ENABLE_KICAD:
+        if settings.ENABLE_KICAD and not settings.ENABLE_ALTERNATE:
             # Check data is present
             if not data_from_views.get('KiCad', None):
-                self.show_error_dialog('Missing KiCad Data')
+                self.show_dialog(DialogType.ERROR, 'Missing KiCad Data')
                 return
             
             # Process symbol
@@ -666,7 +891,7 @@ class CreateView(MainView):
             
             # print(symbol, template, footprint)
             if not symbol or not template or not footprint:
-                self.show_error_dialog('Missing KiCad Data')
+                self.show_dialog(DialogType.ERROR, 'Missing KiCad Data')
                 return
         
         if not self.create_continue:
@@ -676,60 +901,85 @@ class CreateView(MainView):
         if settings.ENABLE_INVENTREE:
             # Check data is present
             if not data_from_views.get('InvenTree', None):
-                self.show_error_dialog('Missing InvenTree Data')
+                self.show_dialog(DialogType.ERROR, 'Missing InvenTree Data')
                 return
             # Check connection
             if not inventree_interface.connect_to_server():
-                self.show_error_dialog('ERROR: Failed to connect to InvenTree server')
+                self.show_dialog(DialogType.ERROR, 'ERROR: Failed to connect to InvenTree server')
                 return
-            # Check mandatory data
-            if not data_from_views['Part Search'].get('name', None):
-                self.show_error_dialog('Missing Part Name')
-                return
-            if not data_from_views['Part Search'].get('description', None):
-                self.show_error_dialog('Missing Part Description')
-                return
-            # Get relevant data
-            category_tree = data_from_views['InvenTree'].get('Category', None)
-            if not category_tree:
-                # Check category is present
-                self.show_error_dialog('Missing InvenTree Category')
-                return
-            else:
-                part_info['category_tree'] = category_tree
             
-            # Create part
-            new_part, part_pk, part_info = inventree_interface.inventree_create(
-                part_info=part_info,
-                kicad=settings.ENABLE_KICAD,
-                symbol=symbol,
-                footprint=footprint,
-                show_progress=self.fields['inventree_progress'],
-                is_custom=custom,
-            )
-            # print(new_part, part_pk)
-            # cprint(part_info)
+            if settings.ENABLE_ALTERNATE:
+                # Check mandatory data
+                if not data_from_views['InvenTree']['Existing Part ID'] and not data_from_views['InvenTree']['Existing Part IPN']:
+                    self.show_dialog(DialogType.ERROR, 'Missing Existing Part ID and Part IPN')
+                    return
+                # Create alternate
+                alt_result = inventree_interface.inventree_create_alternate(
+                    part_info=part_info,
+                    part_id=data_from_views['InvenTree']['Existing Part ID'],
+                    part_ipn=data_from_views['InvenTree']['Existing Part IPN'],
+                    show_progress=self.fields['inventree_progress'],
+                )
+            else:
+                # Check mandatory data
+                if not data_from_views['Part Search'].get('name', None):
+                    self.show_dialog(DialogType.ERROR, 'Missing Part Name')
+                    return
+                if not data_from_views['Part Search'].get('description', None):
+                    self.show_dialog(DialogType.ERROR, 'Missing Part Description')
+                    return
+                # Get relevant data
+                category_tree = data_from_views['InvenTree'].get('Category', None)
+                if not category_tree:
+                    # Check category is present
+                    self.show_dialog(DialogType.ERROR, 'Missing InvenTree Category')
+                    return
+                else:
+                    part_info['category_tree'] = category_tree
+                # Create new part
+                new_part, part_pk, part_info = inventree_interface.inventree_create(
+                    part_info=part_info,
+                    kicad=settings.ENABLE_KICAD,
+                    symbol=symbol,
+                    footprint=footprint,
+                    show_progress=self.fields['inventree_progress'],
+                    is_custom=custom,
+                )
+                # print(new_part, part_pk)
+                # cprint(part_info)
 
-            if part_pk:
-                # Update symbol
-                if symbol:
-                    symbol = f'{symbol.split(":")[0]}:{part_info["IPN"]}'
-
-                if not new_part:
+            if settings.ENABLE_ALTERNATE:
+                if alt_result:
+                    # Update InvenTree URL
+                    if data_from_views['InvenTree']['Existing Part IPN']:
+                        part_ref = data_from_views['InvenTree']['Existing Part IPN']
+                    else:
+                        part_ref = data_from_views['InvenTree']['Existing Part ID']
+                    part_info['inventree_url'] = f'{settings.PART_URL_ROOT}{part_ref}/'
+                else:
                     self.fields['inventree_progress'].color = "amber"
-                    self.fields['inventree_progress'].update()
                 # Complete add operation
                 self.fields['inventree_progress'].value = progress.MAX_PROGRESS
-                self.fields['inventree_progress'].update()
             else:
-                self.fields['inventree_progress'].color = "red"
-                self.fields['inventree_progress'].update()
+                if part_pk:
+                    # Update symbol
+                    if symbol:
+                        symbol = f'{symbol.split(":")[0]}:{part_info["IPN"]}'
+
+                    if not new_part:
+                        self.fields['inventree_progress'].color = "amber"
+                    # Complete add operation
+                    self.fields['inventree_progress'].value = progress.MAX_PROGRESS
+                else:
+                    self.fields['inventree_progress'].color = "red"
+            
+            self.fields['inventree_progress'].update()
 
         if not self.create_continue:
             return self.process_cancel()
 
         # KiCad data processing
-        if settings.ENABLE_KICAD:
+        if settings.ENABLE_KICAD and not settings.ENABLE_ALTERNATE:
             part_info['Symbol'] = symbol
             part_info['Template'] = template.split('/')
             part_info['Footprint'] = footprint
@@ -801,7 +1051,7 @@ class CreateView(MainView):
                     alignment=ft.MainAxisAlignment.CENTER,
                     width=600,
                 ),
-                ft.Text('Progress', style=ft.TextThemeStyle.HEADLINE_SMALL),
+                ft.Row(height=16),
                 ft.Row(
                     ref=self.inventree_progress_row,
                     controls=[
