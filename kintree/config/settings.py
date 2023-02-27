@@ -338,14 +338,18 @@ def set_enable_flag(key: str, value: bool):
     global CONFIG_GENERAL
 
     user_settings = CONFIG_GENERAL
-    if key == 'kicad':
-        user_settings['ENABLE_KICAD'] = value
-    elif key == 'inventree':
-        user_settings['ENABLE_INVENTREE'] = value
-    elif key == 'alternate':
-        user_settings['ENABLE_ALTERNATE'] = value
+    if key in ['kicad', 'inventree', 'alternate']:
+        if key == 'kicad':
+            user_settings['ENABLE_KICAD'] = value
+        elif key == 'inventree':
+            user_settings['ENABLE_INVENTREE'] = value
+        elif key == 'alternate':
+            user_settings['ENABLE_ALTERNATE'] = value
 
-    # Save
-    config_interface.dump_file(user_settings, os.path.join(CONFIG_USER_FILES, 'general.yaml'))
+        # Save
+        config_interface.dump_file(
+            data=user_settings,
+            file_path=os.path.join(CONFIG_USER_FILES, 'general.yaml'),
+        )
 
     return reload_enable_flags()
