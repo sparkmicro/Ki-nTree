@@ -8,8 +8,6 @@ from ..database import inventree_api
 from fuzzywuzzy import fuzz
 from ..search import search_api, digikey_api, mouser_api, element14_api, lcsc_api
 
-category_separator = '/'
-
 
 def connect_to_server(timeout=5) -> bool:
     ''' Connect to InvenTree server using user settings '''
@@ -41,58 +39,6 @@ def connect_to_server(timeout=5) -> bool:
         cprint(f'[TREE]\tSuccessfully connected to InvenTree server (ENV={env})', silent=settings.SILENT)
 
     return connect
-
-
-def category_tree(tree: str) -> str:
-    import re
-    find_prefix = re.match(r'^-+ (.+?)$', tree)
-    if find_prefix:
-        return find_prefix.group(1)
-    return tree
-
-
-def split_category_tree(tree: str) -> list:
-    return category_tree(tree).split(category_separator)
-
-
-def build_category_tree(reload=False, category=None) -> dict:
-    '''Build InvenTree category tree from database data'''
-
-    category_data = config_interface.load_file(settings.CONFIG_CATEGORIES)
-
-    def build_tree(tree, left_to_go, level) -> list:
-        try:
-            last_entry = f' {category_tree(tree[-1])}{category_separator}'
-        except IndexError:
-            last_entry = ''
-        if type(left_to_go) == dict:
-            for key, value in left_to_go.items():
-                tree.append(f'{"-" * level}{last_entry}{key}')
-                build_tree(tree, value, level + 1)
-        elif type(left_to_go) == list:
-            # Supports legacy structure
-            for item in left_to_go:
-                tree.append(f'{"-" * level}{last_entry}{item}')
-        elif left_to_go is None:
-            pass
-        return
-    
-    if reload:
-        categories = inventree_api.get_categories()
-        category_data.update({'CATEGORIES': categories})
-        config_interface.dump_file(category_data, settings.CONFIG_CATEGORIES)
-    else:
-        categories = category_data.get('CATEGORIES', {})
-
-    # Get specified branch
-    if category:
-        categories = {category: categories.get(category, {})}
-
-    inventree_categories = []
-    # Build category tree
-    build_tree(inventree_categories, categories, 0)
-
-    return inventree_categories
 
 
 def get_categories_from_supplier_data(part_info: dict, supplier_only=False) -> list:
@@ -652,6 +598,10 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     cprint('\n[MAIN]\tSearching for original part in database', silent=settings.SILENT)
     part = inventree_api.fetch_part(part_id, part_ipn)
 
+    # Progress Update
+    if not progress.update_progress_bar(show_progress, increment=0.05):
+        return
+
     if part:
         part_pk = part.pk
         part_description = part.description
@@ -674,7 +624,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
                                            description=part_description)
 
     # Progress Update
-    if not progress.update_progress_bar(show_progress, increment=0.5):
+    if not progress.update_progress_bar(show_progress, increment=0.05):
         return
 
     supplier_name = part_info.get('supplier_name', '')

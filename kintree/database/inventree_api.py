@@ -72,41 +72,6 @@ def get_inventree_category_id(category_tree: list) -> int:
     return -1
 
 
-def get_categories() -> dict:
-    '''Fetch InvenTree categories'''
-    global inventree_api
-
-    categories = {}
-    # Get all categories (list)
-    db_categories = PartCategory.list(inventree_api)
-
-    def deep_add(tree: dict, keys: list, item: dict):
-        if len(keys) == 1:
-            try:
-                tree[keys[0]].update(item)
-            except (KeyError, AttributeError):
-                tree[keys[0]] = item
-            return
-        return deep_add(tree.get(keys[0]), keys[1:], item)
-
-    for category in db_categories:
-        parent = category.getParentCategory()
-        children = category.getChildCategories()
-
-        if not parent and not children:
-            categories[category.name] = None
-            continue
-        elif parent:
-            parent_list = []
-            while parent:
-                parent_list.insert(0, parent.name)
-                parent = parent.getParentCategory()
-            cat = {category.name: None}
-            deep_add(categories, parent_list, cat)
-            
-    return categories
-
-
 def get_category_parameters(category_id: int) -> list:
     ''' Get all default parameter templates for category '''
     global inventree_api

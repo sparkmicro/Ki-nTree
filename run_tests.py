@@ -166,8 +166,6 @@ if __name__ == '__main__':
                     })
                     # Update categories
                     part_info['category_tree'] = inventree_interface.get_categories_from_supplier_data(part_info)
-                    # Needed for tests
-                    part_info['Template'] = part_info['category_tree']
                     # Display part to be tested
                     pretty_test_print(f'[INFO]\tChecking "{number}" ({status})')
 
@@ -261,7 +259,6 @@ if __name__ == '__main__':
                 'Add invalid alternate supplier part using part IPN',
                 'Save InvenTree settings',
                 'Load configuration files with incorrect paths',
-                'Build InvenTree category tree (file, db and branch)',
             ]
             method_success = True
             # Line return
@@ -411,27 +408,6 @@ if __name__ == '__main__':
                     # Load configuration files with incorrect paths
                     if config_interface.load_user_config_files('', ''):
                         method_success = False
-
-                elif method_idx == 15:
-                    # Reload categories from file
-                    cat_from_file = inventree_interface.build_category_tree(reload=False)
-                    if type(cat_from_file) != list:
-                        print(f'{type(cat_from_file)} != list')
-                        method_success = False
-
-                    if method_success:
-                        # Reload categories from InvenTree database
-                        cat_from_db = inventree_interface.build_category_tree(reload=True)
-                        if len(cat_from_db) != len(cat_from_file):
-                            print(f'{len(cat_from_db)} != {len(cat_from_file)}')
-                            method_success = False
-                    
-                    if method_success:
-                        # Reload category branch
-                        cat_branch = inventree_interface.build_category_tree(category='Crystals and Oscillators')
-                        if len(cat_branch) != 3:
-                            print(f'{len(cat_branch)} != 3')
-                            method_success = False
 
                 if method_success:
                     cprint('[ PASS ]')

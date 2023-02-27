@@ -1,74 +1,4 @@
-CATEGORIES:
-  Assemblies:
-    Printed-Circuit Board Assembly: null
-    Product: null
-  Capacitors:
-    Aluminium: null
-    Ceramic:
-      '0402': null
-      '0603': null
-      '0805': null
-    Polymer: null
-    Super Capacitors: null
-    Tantalum: null
-  Circuit Protections:
-    Fuses: null
-    PTC: null
-    TVS: null
-  Connectors:
-    Battery: null
-    Board-to-Board: null
-    Coaxial: null
-    FPC: null
-    Header: null
-    Interface: null
-  Crystals and Oscillators:
-    Crystals: null
-    Oscillators: null
-  Diodes:
-    LED: null
-    Schottky: null
-    Standard: null
-    Zener: null
-  Inductors:
-    Ferrite Bead: null
-    Power: null
-  Integrated Circuits:
-    Interface: null
-    Logic: null
-    Memory: null
-    Microcontroller: null
-    Sensor: null
-  Mechanicals:
-    Nuts: null
-    Screws: null
-    Standoff: null
-    Switch: null
-  Miscellaneous:
-    Batteries: null
-  Modules: null
-  Power Management:
-    Boost: null
-    Buck: null
-    LDO: null
-    PMIC: null
-  Printed-Circuit Boards: null
-  RF:
-    Antenna: null
-    Chipset: null
-    Filter: null
-    Shield: null
-  Resistors:
-    NTC: null
-    Potentiometers: null
-    Surface Mount: null
-    Through Hole: null
-  Transistors:
-    Load Switches: null
-    N-Channel FET: null
-    NPN: null
-    P-Channel FET: null
-    PNP: null
+# Coding
 CODES:
   Assemblies: PCA
   Capacitors: CAP
@@ -86,3 +16,98 @@ CODES:
   RF: RFC
   Resistors: RES
   Transistors: TRA
+# Parents and Children Categories
+CATEGORIES:
+  Assemblies:
+  - Printed-Circuit Board Assembly
+  - Product
+  Capacitors:
+    Ceramic:
+      '0603':
+        10V:
+        - X5R
+        - X7R
+        16V:
+        - X5R
+        - X7R
+      '0402':
+        10V:
+        - X5R
+        - X7R
+        16V:
+        - X5R
+        - X7R
+    Aluminium:
+    Tantalum:
+    Polymer:
+    Super Capacitors:
+  Circuit Protections:
+  - TVS
+  - Fuses
+  - PTC
+  Connectors:
+  - Battery
+  - Board-to-Board
+  - Interface
+  - Coaxial
+  - FPC
+  - Header
+# - Wire-to-Board
+# - High-Speed
+# - RF
+# - Power
+  Crystals and Oscillators:
+  - Crystals
+  - Oscillators
+  Diodes:
+  - Standard
+  - Schottky
+  - Zener
+  - LED
+  Inductors:
+  - Power
+  - Ferrite Bead
+# - RF
+  Integrated Circuits:
+  - Logic
+  - Interface
+  - Microcontroller
+  - Memory
+  - Sensor
+# - SoC-CPU-GPU
+# - FPGA-ASIC-CPLD
+# - Driver
+  Mechanicals:
+  - Switch
+  - Standoff
+  - Nuts
+  - Screws
+  Miscellaneous:
+  - Batteries
+  Modules: null
+  Printed-Circuit Boards: null
+  Power Management:
+  - PMIC
+  - LDO
+  - Buck
+  - Boost
+  Printed-Circuit Boards: null
+  RF:
+  - Chipset
+  - Antenna
+  - Filter
+  - Shield
+  Resistors:
+  - Surface Mount
+  - Through Hole
+  - Potentiometers
+  - NTC
+# - Array
+  Transistors:
+  - N-Channel FET
+  - P-Channel FET
+  - NPN
+  - PNP
+  - Load Switches
+# - N+N-Channel FET
+# - N+P-Channel FET

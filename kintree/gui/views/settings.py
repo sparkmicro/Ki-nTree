@@ -1,9 +1,8 @@
 import flet as ft
 
 # Common view
-from .common import DialogType, CommonView
+from .common import handle_transition, CommonView
 from .common import GUI_PARAMS
-from .common import handle_transition
 # Settings
 from ...config import settings as global_settings
 from ...config import config_interface
@@ -208,10 +207,12 @@ class SettingsView(CommonView):
         config_interface.dump_file(updated_settings, self.settings_file)
 
         # Alert user
-        self.show_dialog(
-            d_type=DialogType.VALID,
-            message=f'{self.title} successfully saved',
-        )
+        if not self.dialog:
+            self.build_snackbar(
+                dialog_success=True,
+                dialog_text=f'{self.title} successfully saved',
+            )
+        self.show_dialog()
 
     def on_dialog_result(self, e: ft.FilePickerResultEvent):
         '''Populate field with user-selected system path'''
@@ -329,11 +330,7 @@ class UserSettingsView(SettingsView):
     settings_file = global_settings.USER_CONFIG_FILE
 
     def __init__(self, page: ft.Page):
-        super().__init__(page)
-        self.dialog = self.build_dialog()
-
-    def build_dialog(self):
-        return ft.Banner(
+        self.dialog = ft.Banner(
             bgcolor=ft.colors.AMBER_100,
             leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
             content=ft.Text('Restart Ki-nTree to load the new user paths', weight=ft.FontWeight.BOLD),
@@ -341,9 +338,8 @@ class UserSettingsView(SettingsView):
                 ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
             ],
         )
-    
-    def show_dialog(self, d_type=None, message=None, snackbar=False, open=True):
-        return super().show_dialog(d_type, message, snackbar, open)
+
+        super().__init__(page)
 
     def did_mount(self):
         # Reset Index
@@ -408,10 +404,11 @@ class SupplierSettingsView(SettingsView):
             config_interface.dump_file(lcsc_settings, global_settings.CONFIG_LCSC_API)
             
         if show_dialog:
-            self.show_dialog(
-                d_type=DialogType.VALID,
-                message=f'{supplier} Settings successfully saved',
+            self.build_snackbar(
+                dialog_success=True,
+                dialog_text=f'{supplier} Settings successfully saved',
             )
+            self.show_dialog()
 
     def test_s(self, e: ft.ControlEvent, supplier: str):
         '''Test supplier API settings'''
@@ -432,15 +429,16 @@ class SupplierSettingsView(SettingsView):
             result = lcsc_api.test_api()
 
         if result:
-            self.show_dialog(
-                d_type=DialogType.VALID,
-                message=f'Successfully connected to {supplier} API'
+            self.build_snackbar(
+                dialog_success=result,
+                dialog_text=f'Successfully connected to {supplier} API'
             )
         else:
-            self.show_dialog(
-                d_type=DialogType.ERROR,
-                message=f'ERROR: Failed to connect to {supplier} API. Verify the {supplier} credentials and re-try'
+            self.build_snackbar(
+                dialog_success=result,
+                dialog_text=f'ERROR: Failed to connect to {supplier} API. Verify the {supplier} credentials and re-try'
             )
+        self.show_dialog()
 
     def build_column(self):
         # Title and separator
@@ -530,25 +528,27 @@ class InvenTreeSettingsView(SettingsView):
         global_settings.load_inventree_settings()
         # Alert user
         if dialog:
-            self.show_dialog(
-                d_type=DialogType.VALID,
-                message=f'{self.title} successfully saved',
+            self.build_snackbar(
+                dialog_success=True,
+                dialog_text=f'{self.title} successfully saved',
             )
+            self.show_dialog()
 
     def test(self):
         from ...database import inventree_interface
         self.save(dialog=False)
         connection = inventree_interface.connect_to_server()
         if connection:
-            self.show_dialog(
-                d_type=DialogType.VALID,
-                message='Sucessfully connected to InvenTree server',
+            self.build_snackbar(
+                dialog_success=connection,
+                dialog_text='Sucessfully connected to InvenTree server'
             )
         else:
-            self.show_dialog(
-                d_type=DialogType.ERROR,
-                message='Failed to connect to InvenTree server. Check InvenTree credentials are correct and server is running',
+            self.build_snackbar(
+                dialog_success=connection,
+                dialog_text='ERROR: Failed to connect to InvenTree server. Verify the InvenTree credentials are correct and server is running'
             )
+        self.show_dialog()
 
     def __init__(self, page: ft.Page):
         # Load InvenTree settings
