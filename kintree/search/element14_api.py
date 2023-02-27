@@ -251,11 +251,11 @@ def test_api(store_url=None) -> bool:
         },
         {
             'store_url': 'au.element14.com',
-            'part_number': '2N7002-7-F',
+            'part_number': '2N7002K-T1-GE3',
             'expected': {
-                'displayName': 'Power MOSFET, N Channel, 60 V, 115 mA, 13.5 ohm, SOT-23, Surface Mount',
-                'brandName': 'DIODES INC.',
-                'translatedManufacturerPartNumber': '2N7002-7-F',
+                'displayName': 'Power MOSFET, N Channel, 60 V, 190 mA, 2 ohm, SOT-23, Surface Mount',
+                'brandName': 'VISHAY',
+                'translatedManufacturerPartNumber': '2N7002K-T1-GE3',
             }
         },
     ]
