@@ -98,8 +98,8 @@ if IPN_USE_VARIANT_SUFFIX:
     IPN_VARIANT_SUFFIX = CONFIG_IPN.get('IPN_VARIANT_SUFFIX', '00')
 
 # GENERAL SETTINGS
-CONFIG_GENERAL = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'general.yaml'))
-AUTOMATIC_SUBCATEGORY_CREATE = CONFIG_GENERAL.get('AUTOMATIC_SUBCATEGORY_CREATE', False)
+CONFIG_GENERAL_PATH = os.path.join(CONFIG_USER_FILES, 'general.yaml')
+CONFIG_GENERAL = config_interface.load_file(CONFIG_GENERAL_PATH)
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 DEFAULT_SUPPLIER = CONFIG_GENERAL.get('DEFAULT_SUPPLIER', 'Digi-Key')
 
@@ -135,7 +135,8 @@ SUPPORTED_SUPPLIERS_API = [
 
 # Generic API user configuration
 CONFIG_SUPPLIER_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'supplier_parameters.yaml')
-CONFIG_SEARCH_API = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'search_api.yaml'))
+CONFIG_SEARCH_API_PATH = os.path.join(CONFIG_USER_FILES, 'search_api.yaml')
+CONFIG_SEARCH_API = config_interface.load_file(CONFIG_SEARCH_API_PATH)
 
 # Digi-Key user configuration
 if 'Digi-Key' in SUPPORTED_SUPPLIERS_API:

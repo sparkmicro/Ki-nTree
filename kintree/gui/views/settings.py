@@ -78,6 +78,25 @@ SETTINGS = {
             ft.TextField(),
             True,  # Browse enabled
         ],
+        'Open Browser After Creating Part': [
+            'AUTOMATIC_BROWSER_OPEN',
+            ft.Switch(),
+            False,  # Browse enabled
+        ],
+        'Enable Supplier Search Cache': [
+            'CACHE_ENABLED',
+            ft.Switch(),
+            False,  # Browse enabled
+        ],
+        'CACHE_VALID_DAYS': [
+            'CACHE_VALID_DAYS',
+            ft.TextField(
+                text_align=ft.TextAlign.CENTER,
+                width=50,
+                dense=True,
+            ),
+            False,
+        ]
     },
     'Supplier Settings': supplier_settings,
     'InvenTree Settings': {
@@ -196,22 +215,32 @@ class SettingsView(CommonView):
         if not self.navigation_rail.on_change:
             self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
     
-    def save(self):
+    def save(self, settings_file=None, show_dialog=True):
         '''Save settings'''
-        # Load file
-        settings_from_file = config_interface.load_file(self.settings_file)
+        print(settings_file)
+        if settings_file is not None:
+            settings_from_file = config_interface.load_file(settings_file)
+        else:
+            settings_from_file = config_interface.load_file(self.settings_file)
+
         # Update settings values
-        for setting in SETTINGS[self.title].values():
-            self.settings[setting[0]] = setting[1].value
-        updated_settings = {**settings_from_file, **self.settings}
+        for key in settings_from_file:
+            for setting in SETTINGS[self.title].values():
+                if key == setting[0]:
+                    settings_from_file[key] = setting[1].value
+
         # Save
-        config_interface.dump_file(updated_settings, self.settings_file)
+        if settings_file is not None:
+            config_interface.dump_file(settings_from_file, settings_file)
+        else:
+            config_interface.dump_file(settings_from_file, self.settings_file)
 
         # Alert user
-        self.show_dialog(
-            d_type=DialogType.VALID,
-            message=f'{self.title} successfully saved',
-        )
+        if show_dialog:
+            self.show_dialog(
+                d_type=DialogType.VALID,
+                message=f'{self.title} successfully saved',
+            )
 
     def on_dialog_result(self, e: ft.FilePickerResultEvent):
         '''Populate field with user-selected system path'''
@@ -241,32 +270,33 @@ class SettingsView(CommonView):
         # Fields
         for field_name, field in self.fields.items():
             if type(field) == ft.TextField:
-                field.label = field_name
-                field.width = GUI_PARAMS['textfield_width']
-                field.dense = GUI_PARAMS['textfield_dense']
-                if 'password' in field.label.lower():
-                    field.password = True
-                field_row = ft.Row(
-                    controls=[
-                        field,
-                    ]
-                )
-                # Add browse button
-                if SETTINGS[self.title][field_name][2]:
-                    field_row.controls.append(
-                        ft.ElevatedButton(
-                            'Browse',
-                            width=GUI_PARAMS['button_width'],
-                            height=GUI_PARAMS['button_height'],
-                            on_click=lambda e, t=field_name: self.path_picker(e, title=t)
-                        ),
+                if not field.width:
+                    field.label = field_name
+                    field.width = GUI_PARAMS['textfield_width']
+                    field.dense = GUI_PARAMS['textfield_dense']
+                    if 'password' in field.label.lower():
+                        field.password = True
+                    field_row = ft.Row(
+                        controls=[
+                            field,
+                        ]
                     )
-                self.column.controls.extend(
-                    [
-                        field_row,
-                        ft.Row(height=GUI_PARAMS['textfield_space_after']),
-                    ]
-                )
+                    # Add browse button
+                    if SETTINGS[self.title][field_name][2]:
+                        field_row.controls.append(
+                            ft.ElevatedButton(
+                                'Browse',
+                                width=GUI_PARAMS['button_width'],
+                                height=GUI_PARAMS['button_height'],
+                                on_click=lambda e, t=field_name: self.path_picker(e, title=t)
+                            ),
+                        )
+                    self.column.controls.extend(
+                        [
+                            field_row,
+                            ft.Row(height=GUI_PARAMS['textfield_space_after']),
+                        ]
+                    )
             elif type(field) == ft.Text:
                 field.value = field_name
                 field_row = ft.Row(
@@ -288,6 +318,12 @@ class SettingsView(CommonView):
                 )
             elif type(field) == ft.Dropdown:
                 field.on_change = lambda _: self.save()
+                self.column.controls.append(
+                    field,
+                )
+            elif type(field) == ft.Switch:
+                field.on_change = lambda _: self.save()
+                field.label = field_name
                 self.column.controls.append(
                     field,
                 )
@@ -325,8 +361,17 @@ class UserSettingsView(SettingsView):
 
     title = 'User Settings'
     route = '/settings/user'
-    settings = global_settings.USER_SETTINGS
-    settings_file = global_settings.USER_CONFIG_FILE
+    settings = {
+        **global_settings.USER_SETTINGS,
+        **{'AUTOMATIC_BROWSER_OPEN': global_settings.AUTOMATIC_BROWSER_OPEN},
+        **{'CACHE_ENABLED': global_settings.CACHE_ENABLED,
+           'CACHE_VALID_DAYS': global_settings.CACHE_VALID_DAYS},
+    }
+    settings_file = [
+        global_settings.USER_CONFIG_FILE,
+        global_settings.CONFIG_GENERAL_PATH,
+        global_settings.CONFIG_SEARCH_API_PATH,
+    ]
 
     def __init__(self, page: ft.Page):
         super().__init__(page)
@@ -344,6 +389,42 @@ class UserSettingsView(SettingsView):
     
     def show_dialog(self, d_type=None, message=None, snackbar=False, open=True):
         return super().show_dialog(d_type, message, snackbar, open)
+
+    def build_column(self):
+        file1 = self.settings_file[1]
+        file2 = self.settings_file[2]
+
+        super().build_column()
+        self.column.controls.insert(-1,
+            ft.Text('Keep Cache Valid For (Days)'),
+        )
+        SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value = self.settings['CACHE_VALID_DAYS']
+        SETTINGS[self.title]['CACHE_VALID_DAYS'][1].on_change = lambda _: self.save(
+            settings_file=file2,
+            show_dialog=False
+        )
+        self.column.controls.insert(-1,
+            ft.Row(
+                [
+                    ft.IconButton(ft.icons.REMOVE, on_click=None),
+                    SETTINGS[self.title]['CACHE_VALID_DAYS'][1],
+                    ft.IconButton(ft.icons.ADD, on_click=None),
+                ],
+            ),
+        )
+        
+        for name, field in SETTINGS[self.title].items():
+            if field[0] == 'AUTOMATIC_BROWSER_OPEN':
+                self.fields[name].on_change = lambda _: self.save(
+                    settings_file=file1,
+                    show_dialog=False
+                )
+            elif field[0] == 'CACHE_ENABLED':
+                self.fields[name].on_change = lambda _: self.save(
+                    settings_file=file2,
+                    show_dialog=False
+                )
+        self.settings_file = self.settings_file[0]
 
     def did_mount(self):
         # Reset Index
