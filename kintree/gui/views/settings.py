@@ -92,8 +92,9 @@ SETTINGS = {
             'CACHE_VALID_DAYS',
             ft.TextField(
                 text_align=ft.TextAlign.CENTER,
-                width=50,
+                width=60,
                 dense=True,
+                disabled=True,
             ),
             False,
         ]
@@ -217,7 +218,6 @@ class SettingsView(CommonView):
     
     def save(self, settings_file=None, show_dialog=True):
         '''Save settings'''
-        print(settings_file)
         if settings_file is not None:
             settings_from_file = config_interface.load_file(settings_file)
         else:
@@ -270,7 +270,8 @@ class SettingsView(CommonView):
         # Fields
         for field_name, field in self.fields.items():
             if type(field) == ft.TextField:
-                if not field.width:
+                field_predefined = bool(field.width)
+                if not field_predefined:
                     field.label = field_name
                     field.width = GUI_PARAMS['textfield_width']
                     field.dense = GUI_PARAMS['textfield_dense']
@@ -287,7 +288,7 @@ class SettingsView(CommonView):
                             ft.ElevatedButton(
                                 'Browse',
                                 width=GUI_PARAMS['button_width'],
-                                height=GUI_PARAMS['button_height'],
+                                height=48,
                                 on_click=lambda e, t=field_name: self.path_picker(e, title=t)
                             ),
                         )
@@ -381,7 +382,7 @@ class UserSettingsView(SettingsView):
         return ft.Banner(
             bgcolor=ft.colors.AMBER_100,
             leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
-            content=ft.Text('Restart Ki-nTree to load the new user paths', weight=ft.FontWeight.BOLD),
+            content=ft.Text('Restart Ki-nTree to load the new user settings', weight=ft.FontWeight.BOLD),
             actions=[
                 ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
             ],
@@ -389,39 +390,45 @@ class UserSettingsView(SettingsView):
     
     def show_dialog(self, d_type=None, message=None, snackbar=False, open=True):
         return super().show_dialog(d_type, message, snackbar, open)
+    
+    def increment_cache_value(self, inc):
+        current_value = int(SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value)
+        if not inc:
+            if current_value > 1:
+                SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value = f'{current_value - 1}'
+        else:
+            if current_value < 99:
+                SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value = f'{current_value + 1}'
+        SETTINGS[self.title]['CACHE_VALID_DAYS'][1].on_change(_=None)
+        SETTINGS[self.title]['CACHE_VALID_DAYS'][1].update()
 
     def build_column(self):
-        file1 = self.settings_file[1]
-        file2 = self.settings_file[2]
-
         super().build_column()
-        self.column.controls.insert(-1,
-            ft.Text('Keep Cache Valid For (Days)'),
-        )
+        self.column.controls.insert(-1, ft.Text('Keep Cache Valid For (Days)'))
+
+        # Cache validity
         SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value = self.settings['CACHE_VALID_DAYS']
-        SETTINGS[self.title]['CACHE_VALID_DAYS'][1].on_change = lambda _: self.save(
-            settings_file=file2,
-            show_dialog=False
+        cache_row = ft.Row(
+            [
+                ft.IconButton(ft.icons.REMOVE, on_click=lambda _: self.increment_cache_value(False)),
+                SETTINGS[self.title]['CACHE_VALID_DAYS'][1],
+                ft.IconButton(ft.icons.ADD, on_click=lambda _: self.increment_cache_value(True)),
+            ],
         )
-        self.column.controls.insert(-1,
-            ft.Row(
-                [
-                    ft.IconButton(ft.icons.REMOVE, on_click=None),
-                    SETTINGS[self.title]['CACHE_VALID_DAYS'][1],
-                    ft.IconButton(ft.icons.ADD, on_click=None),
-                ],
-            ),
-        )
+        self.column.controls.insert(-1, cache_row)
         
+        setting_file1 = self.settings_file[1]
+        setting_file2 = self.settings_file[2]
+
         for name, field in SETTINGS[self.title].items():
             if field[0] == 'AUTOMATIC_BROWSER_OPEN':
                 self.fields[name].on_change = lambda _: self.save(
-                    settings_file=file1,
+                    settings_file=setting_file1,
                     show_dialog=False
                 )
-            elif field[0] == 'CACHE_ENABLED':
+            elif field[0] == 'CACHE_ENABLED' or field[0] == 'CACHE_VALID_DAYS':
                 self.fields[name].on_change = lambda _: self.save(
-                    settings_file=file2,
+                    settings_file=setting_file2,
                     show_dialog=False
                 )
         self.settings_file = self.settings_file[0]

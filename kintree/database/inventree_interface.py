@@ -372,17 +372,17 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
         cprint('\n[MAIN]\tError: Missing Part Number', silent=settings.SILENT)
         return part_info
 
-    # Load from file if cache is enabled
     store = ''
     if supplier in ['Farnell', 'Newark', 'Element14']:
         element14_config = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
         store = element14_config.get(f'{supplier.upper()}_STORE', '').replace(' ', '')
-    search_filename = settings.search_results['directory'] + supplier + store + '_' + part_number + settings.search_results['extension']
+    search_filename = f"{settings.search_results['directory']}{supplier}{store}_{part_number}{settings.search_results['extension']}"
+    # Get cached data, if cache is enabled (else returns None)
+    part_cache = search_api.load_from_file(search_filename, test_mode)
 
-    # Get cached data
-    part_info = search_api.load_from_file(search_filename, test_mode)
-    if part_info:
+    if part_cache:
         cprint(f'\n[MAIN]\tUsing {supplier} cached data for {part_number}', silent=settings.SILENT)
+        part_info = part_cache
     else:
         cprint(f'\n[MAIN]\t{supplier} search for {part_number}', silent=settings.SILENT)
         if supplier == 'Digi-Key':
@@ -400,7 +400,7 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
 
     # Save search results
     if part_info:
-        search_api.save_to_file(part_info, search_filename)
+        search_api.save_to_file(part_info, search_filename, update_ts=not bool(part_cache))
 
     return part_info
 

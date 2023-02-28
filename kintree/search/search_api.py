@@ -28,15 +28,16 @@ def load_from_file(search_file, test_mode=False) -> dict:
     return None
 
 
-def save_to_file(part_info, search_file):
+def save_to_file(part_info, search_file, update_ts=True):
     ''' Save part data to file '''
 
     # Check if search/results directory needs to be created
     if not os.path.exists(os.path.dirname(search_file)):
         os.mkdir(os.path.dirname(search_file))
 
-    # Add timestamp
-    part_info['search_timestamp'] = int(time.time())
+    if update_ts:
+        # Update timestamp
+        part_info['search_timestamp'] = int(time.time())
 
     # Save data if cache enabled
     if settings.CACHE_ENABLED:

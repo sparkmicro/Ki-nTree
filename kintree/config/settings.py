@@ -165,7 +165,7 @@ CATEGORY_MATCH_RATIO_LIMIT = CONFIG_SEARCH_API.get('CATEGORY_MATCH_RATIO_LIMIT',
 # Search results caching (stored in files)
 CACHE_ENABLED = CONFIG_SEARCH_API.get('CACHE_ENABLED', True)
 # Cache validity in days
-CACHE_VALID_DAYS = CONFIG_SEARCH_API.get('CACHE_VALID_DAYS', 7)
+CACHE_VALID_DAYS = int(CONFIG_SEARCH_API.get('CACHE_VALID_DAYS', '7'))
 
 
 # Caching settings
@@ -177,14 +177,13 @@ def load_cache_settings():
     
     USER_SETTINGS = config_interface.load_user_paths(home_dir=HOME_DIR)
 
-    if CACHE_ENABLED:
-        search_results = {
-            'directory': os.path.join(USER_SETTINGS['USER_CACHE'], 'search', ''),
-            'extension': '.yaml',
-        }
-        # Create folder if it does not exists
-        if not os.path.exists(search_results['directory']):
-            os.makedirs(search_results['directory'])
+    search_results = {
+        'directory': os.path.join(USER_SETTINGS['USER_CACHE'], 'search', ''),
+        'extension': '.yaml',
+    }
+    # Create folder if it does not exists
+    if not os.path.exists(search_results['directory']):
+        os.makedirs(search_results['directory'])
 
     # Part images
     search_images = os.path.join(USER_SETTINGS['USER_CACHE'], 'images', '')

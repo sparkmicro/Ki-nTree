@@ -314,6 +314,7 @@ class PartSearchView(MainView):
                     self.fields['part_number'].value
                 )
 
+                part_supplier_form = None
                 if part_supplier_info:
                     # Translate to user form format
                     part_supplier_form = inventree_interface.translate_supplier_to_form(
@@ -338,7 +339,12 @@ class PartSearchView(MainView):
             self.push_data()
             self.page.splash.visible = False
 
-            if self.data['searched_part_number'].lower() != self.data['manufacturer_part_number'].lower():
+            if not self.data['manufacturer_part_number']:
+                self.show_dialog(
+                    d_type=DialogType.ERROR,
+                    message='Part not found',
+                )
+            elif self.data['searched_part_number'].lower() != self.data['manufacturer_part_number'].lower():
                 self.show_dialog(
                     d_type=DialogType.WARNING,
                     message='Found part number does not match the requested part number',
