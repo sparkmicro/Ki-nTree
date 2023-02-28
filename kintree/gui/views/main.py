@@ -6,7 +6,9 @@ import flet as ft
 from ... import __version__
 # Common view
 from .common import GUI_PARAMS, data_from_views
-from .common import DialogType, CommonView, DropdownWithSearch
+from .common import DialogType
+from .common import CommonView
+from .common import DropdownWithSearch, SwitchWithRefs
 from .common import handle_transition
 # Tools
 from ...common.tools import cprint
@@ -405,7 +407,7 @@ class InventreeView(MainView):
             label='InvenTree',
             value=settings.ENABLE_INVENTREE,
         ),
-        'alternate': ft.Switch(
+        'alternate': SwitchWithRefs(
             label='Alternate',
             value=settings.ENABLE_ALTERNATE if settings.ENABLE_INVENTREE else False,
             disabled=not settings.ENABLE_INVENTREE,
@@ -438,6 +440,11 @@ class InventreeView(MainView):
             visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
         ),
     }
+
+    def __init__(self, page: ft.Page):
+        self.alt_part_id = ft.Ref[ft.TextField]()
+        self.alt_part_ipn = ft.Ref[ft.TextField]()
+        super().__init__(page)
     
     def sanitize_data(self):
         category_tree = self.data.get('Category', None)
@@ -471,10 +478,6 @@ class InventreeView(MainView):
                 message='Enter Existing Part ID or Part IPN',
             )
         settings.set_enable_flag('alternate', visible)
-        self.fields['Existing Part ID'].visible = visible
-        self.fields['Existing Part ID'].update()
-        self.fields['Existing Part IPN'].visible = visible
-        self.fields['Existing Part IPN'].update()
 
         # Process category dropdown and load category button
         if visible:
@@ -510,12 +513,14 @@ class InventreeView(MainView):
         # Update dropdown with category options
         self.fields['Category'].options = self.get_category_options()
         self.fields['Category'].on_change = self.push_data
-
-        self.fields['alternate'].on_change = self.process_alternate
         self.fields['load_categories'].on_click = self.reload_categories
 
         self.fields['Existing Part ID'].on_change = self.push_data
         self.fields['Existing Part IPN'].on_change = self.push_data
+        self.fields['alternate'].on_change = self.process_alternate
+        self.alt_part_id.current = self.fields['Existing Part ID']
+        self.alt_part_ipn.current = self.fields['Existing Part IPN']
+        self.fields['alternate'].refs = [self.alt_part_id, self.alt_part_ipn]
 
         self.column = ft.Column(
             controls=[

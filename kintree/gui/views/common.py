@@ -174,6 +174,62 @@ class CommonView(ft.View):
         self.page.update()
 
 
+class SwitchWithRefs(ft.Switch):
+    '''Link the visibility of other fields to a switch value'''
+
+    linked_refs = []
+    
+    def __init__(
+        self,
+        refs: list[ft.Ref] = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        if refs:
+            self.refs = refs
+            self.enable_refs(self.value)
+
+    def enable_refs(self, enable):
+        for ref in self.linked_refs:
+            ref.current.visible = enable
+            try:
+                ref.current.update()
+            except AssertionError:
+                # Control not added to page yet
+                pass
+    
+    def process_change(self, e, handler, *args, **kwargs):
+        enable = False
+        if e.data == 'true':
+            enable = True
+        self.enable_refs(enable)
+        handler(e, *args, **kwargs)
+
+    @property
+    def refs(self):
+        return self.linked_refs
+    
+    @refs.setter
+    def refs(self, references: list[ft.Ref]):
+        if references:
+            self.linked_refs = []
+            for ref in references:
+                if ref.current is None:
+                    raise Exception(f'Reference "{ref.current}" need to be added to page first')
+                if type(ref.current) is not ft.TextField:
+                    raise Exception(f'"{ref.current}" type ({type(ref.current)}) is not supported (TextField only)')
+                self.linked_refs.append(ref)
+            if self.linked_refs:
+                self.enable_refs(self.value)
+
+    @ft.Switch.on_change.setter
+    def on_change(self, handler, *args, **kwargs):
+        ft.Switch.on_change.fset(
+            self,
+            lambda e: self.process_change(e, handler, *args, **kwargs)
+        )
+
+
 class DropdownWithSearch(ft.UserControl):
     '''Implements a dropdown with search box'''
 
