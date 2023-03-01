@@ -118,6 +118,41 @@ SETTINGS = {
             ft.TextField(),
             False,  # Browse disabled
         ],
+        'Default Revision': [
+            'INVENTREE_DEFAULT_REV',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'Enable Internal Part Number (IPN)': [
+            'IPN_ENABLE_CREATE',
+            SwitchWithRefs(),
+            False,  # Browse disabled
+        ],
+        'IPN: Enable Prefix': [
+            'IPN_ENABLE_PREFIX',
+            SwitchWithRefs(),
+            False,  # Browse disabled
+        ],
+        'IPN: Prefix': [
+            'IPN_PREFIX',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'IPN: Length of Unique ID': [
+            'IPN_UNIQUE_ID_LENGTH',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'IPN: Enable Suffix': [
+            'IPN_ENABLE_SUFFIX',
+            SwitchWithRefs(),
+            False,  # Browse disabled
+        ],
+        'IPN: Suffix': [
+            'IPN_SUFFIX',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
         'Test': [
             None,
             ft.ElevatedButton,
@@ -394,15 +429,16 @@ class UserSettingsView(SettingsView):
         return super().show_dialog(d_type, message, snackbar, open)
     
     def increment_cache_value(self, inc):
-        current_value = int(SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value)
+        field = SETTINGS[self.title]['CACHE_VALID_DAYS'][1]
+        current_value = int(field.value)
         if not inc:
             if current_value > 1:
-                SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value = f'{current_value - 1}'
+                field.value = f'{current_value - 1}'
         else:
             if current_value < 99:
-                SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value = f'{current_value + 1}'
-        SETTINGS[self.title]['CACHE_VALID_DAYS'][1].on_change(_=None)
-        SETTINGS[self.title]['CACHE_VALID_DAYS'][1].update()
+                field.value = f'{current_value + 1}'
+        field.on_change(_=None)
+        field.update()
 
     def build_column(self):
         super().build_column()
@@ -611,8 +647,10 @@ class InvenTreeSettingsView(SettingsView):
 
     title = 'InvenTree Settings'
     route = '/settings/inventree'
-    # settings = None
-    settings_file = global_settings.INVENTREE_CONFIG
+    settings_file = [
+        global_settings.INVENTREE_CONFIG,
+        global_settings.CONFIG_IPN_PATH,
+    ]
 
     def save(self, dialog=True):
         # Save to file
@@ -620,7 +658,7 @@ class InvenTreeSettingsView(SettingsView):
                                                       server=SETTINGS[self.title]['Server Address'][1].value,
                                                       username=SETTINGS[self.title]['Username'][1].value,
                                                       password=SETTINGS[self.title]['Password'][1].value,
-                                                      user_config_path=self.settings_file)
+                                                      user_config_path=self.settings_file[0])
         # Reload InvenTree Settings
         global_settings.load_inventree_settings()
         # Alert user
@@ -646,9 +684,26 @@ class InvenTreeSettingsView(SettingsView):
             )
 
     def __init__(self, page: ft.Page):
-        # Load InvenTree settings
-        self.settings = config_interface.load_inventree_user_settings(self.settings_file)
+        # Load InvenTree and IPN settings
+        self.settings = {
+            **config_interface.load_inventree_user_settings(self.settings_file[0]),
+            **config_interface.load_file(self.settings_file[1]),
+        }
         super().__init__(page)
+        self.page.scroll = ft.ScrollMode.ALWAYS
+
+    def build_column(self):
+        super().build_column()
+    
+        # Create control refs
+        ipn_refs = []
+        for name, field in SETTINGS[self.title].items():
+            if name.startswith('IPN:'):
+                field_type = type(field[1])
+                ref = ft.Ref[field_type]()
+                ref.current = field[1]
+                ipn_refs.append(ref)
+        SETTINGS[self.title]['Enable Internal Part Number (IPN)'][1].refs = ipn_refs
 
 
 class KiCadSettingsView(SettingsView):

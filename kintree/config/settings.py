@@ -88,7 +88,8 @@ CONFIG_PARAMETERS_FILTERS = os.path.join(
     CONFIG_USER_FILES, 'parameters_filters.yaml')
 
 # INTERNAL PART NUMBERS
-CONFIG_IPN = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'internal_part_number.yaml'))
+CONFIG_IPN_PATH = os.path.join(CONFIG_USER_FILES, 'internal_part_number.yaml')
+CONFIG_IPN = config_interface.load_file(CONFIG_IPN_PATH)
 IPN_UNIQUE_ID_LENGTH = CONFIG_IPN.get('IPN_UNIQUE_ID_LENGTH', 6)
 IPN_USE_FIXED_PREFIX = CONFIG_IPN.get('IPN_USE_FIXED_PREFIX', False)
 if IPN_USE_FIXED_PREFIX:
