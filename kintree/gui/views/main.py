@@ -442,8 +442,6 @@ class InventreeView(MainView):
     }
 
     def __init__(self, page: ft.Page):
-        self.alt_part_id = ft.Ref[ft.TextField]()
-        self.alt_part_ipn = ft.Ref[ft.TextField]()
         super().__init__(page)
     
     def sanitize_data(self):
@@ -514,13 +512,17 @@ class InventreeView(MainView):
         self.fields['Category'].options = self.get_category_options()
         self.fields['Category'].on_change = self.push_data
         self.fields['load_categories'].on_click = self.reload_categories
-
-        self.fields['Existing Part ID'].on_change = self.push_data
-        self.fields['Existing Part IPN'].on_change = self.push_data
+        # Alternate fields
         self.fields['alternate'].on_change = self.process_alternate
-        self.alt_part_id.current = self.fields['Existing Part ID']
-        self.alt_part_ipn.current = self.fields['Existing Part IPN']
-        self.fields['alternate'].refs = [self.alt_part_id, self.alt_part_ipn]
+        for alt_field in ['Existing Part ID', 'Existing Part IPN']:
+            # Create ref
+            ref = ft.Ref[ft.TextField]()
+            # Assign ref to field
+            ref.current = self.fields[alt_field]
+            # Append to alt switch refs
+            self.fields['alternate'].refs.append(ref)
+            # Assign on_change method
+            self.fields[alt_field].on_change = self.push_data
 
         self.column = ft.Column(
             controls=[

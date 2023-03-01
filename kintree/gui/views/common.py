@@ -214,10 +214,13 @@ class SwitchWithRefs(ft.Switch):
         if references:
             self.linked_refs = []
             for ref in references:
-                if ref.current is None:
-                    raise Exception(f'Reference "{ref.current}" need to be added to page first')
-                if type(ref.current) is not ft.TextField:
-                    raise Exception(f'"{ref.current}" type ({type(ref.current)}) is not supported (TextField only)')
+                try:
+                    if ref.current is None:
+                        raise Exception(f'Reference "{ref.current}" needs to be added to the page first')
+                except AttributeError:
+                    raise Exception(f'"{ref}" is not a Flet Ref (type: {type(ref)})')
+                # if ft.Control not in ref.current.__class__.__mro__:
+                #     raise Exception(f'"{ref.current}" is not a Flet Control ({type(ref.current)})')
                 self.linked_refs.append(ref)
             if self.linked_refs:
                 self.enable_refs(self.value)

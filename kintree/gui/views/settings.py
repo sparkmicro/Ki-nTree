@@ -1,7 +1,9 @@
 import flet as ft
 
 # Common view
-from .common import DialogType, CommonView
+from .common import DialogType
+from .common import CommonView
+from .common import SwitchWithRefs
 from .common import GUI_PARAMS
 from .common import handle_transition
 # Settings
@@ -85,7 +87,7 @@ SETTINGS = {
         ],
         'Enable Supplier Search Cache': [
             'CACHE_ENABLED',
-            ft.Switch(),
+            SwitchWithRefs(),
             False,  # Browse enabled
         ],
         'CACHE_VALID_DAYS': [
@@ -322,7 +324,7 @@ class SettingsView(CommonView):
                 self.column.controls.append(
                     field,
                 )
-            elif type(field) == ft.Switch:
+            elif type(field) == ft.Switch or type(field) == SwitchWithRefs:
                 field.on_change = lambda _: self.save()
                 field.label = field_name
                 self.column.controls.append(
@@ -404,18 +406,23 @@ class UserSettingsView(SettingsView):
 
     def build_column(self):
         super().build_column()
-        self.column.controls.insert(-1, ft.Text('Keep Cache Valid For (Days)'))
-
-        # Cache validity
+    
+        # Create row ref
+        cache_row_ref = ft.Ref[ft.Row]()
+        # Create row for cache validity
         SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value = self.settings['CACHE_VALID_DAYS']
         cache_row = ft.Row(
-            [
+            ref=cache_row_ref,
+            controls=[
+                ft.Text('Keep Cache Valid For (Days): '),
                 ft.IconButton(ft.icons.REMOVE, on_click=lambda _: self.increment_cache_value(False)),
                 SETTINGS[self.title]['CACHE_VALID_DAYS'][1],
                 ft.IconButton(ft.icons.ADD, on_click=lambda _: self.increment_cache_value(True)),
             ],
         )
         self.column.controls.insert(-1, cache_row)
+        # Add cache row to switch refs
+        SETTINGS[self.title]['Enable Supplier Search Cache'][1].refs = [cache_row_ref]
         
         setting_file1 = self.settings_file[1]
         setting_file2 = self.settings_file[2]
