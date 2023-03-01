@@ -652,21 +652,29 @@ class InvenTreeSettingsView(SettingsView):
         global_settings.CONFIG_IPN_PATH,
     ]
 
-    def save(self, dialog=True):
-        # Save to file
-        config_interface.save_inventree_user_settings(enable=global_settings.ENABLE_INVENTREE,
-                                                      server=SETTINGS[self.title]['Server Address'][1].value,
-                                                      username=SETTINGS[self.title]['Username'][1].value,
-                                                      password=SETTINGS[self.title]['Password'][1].value,
-                                                      user_config_path=self.settings_file[0])
-        # Reload InvenTree Settings
-        global_settings.load_inventree_settings()
-        # Alert user
-        if dialog:
-            self.show_dialog(
-                d_type=DialogType.VALID,
-                message=f'{self.title} successfully saved',
+    def save(self, file=None, dialog=True):
+        if file is None:
+            # Save to InvenTree file
+            config_interface.save_inventree_user_settings(
+                enable=global_settings.ENABLE_INVENTREE,
+                server=SETTINGS[self.title]['Server Address'][1].value,
+                username=SETTINGS[self.title]['Username'][1].value,
+                password=SETTINGS[self.title]['Password'][1].value,
+                user_config_path=self.settings_file[0]
             )
+            # Alert user
+            if dialog:
+                self.show_dialog(
+                    d_type=DialogType.VALID,
+                    message=f'{self.title} successfully saved',
+                )
+        else:
+            super().save(settings_file=file, show_dialog=dialog)
+
+        # Reload InvenTree settings
+        global_settings.load_inventree_settings()
+        # Reload IPN settings
+        global_settings.load_ipn_settings()
 
     def test(self):
         from ...database import inventree_interface
@@ -690,12 +698,12 @@ class InvenTreeSettingsView(SettingsView):
             **config_interface.load_file(self.settings_file[1]),
         }
         super().__init__(page)
-        self.page.scroll = ft.ScrollMode.ALWAYS
 
     def build_column(self):
         super().build_column()
     
         # Create control refs
+        ipn_file = self.settings_file[1]
         ipn_refs = []
         for name, field in SETTINGS[self.title].items():
             if name.startswith('IPN:'):
@@ -703,7 +711,25 @@ class InvenTreeSettingsView(SettingsView):
                 ref = ft.Ref[field_type]()
                 ref.current = field[1]
                 ipn_refs.append(ref)
-        SETTINGS[self.title]['Enable Internal Part Number (IPN)'][1].refs = ipn_refs
+                # Update
+                field[1].on_change = lambda _: self.save(
+                    file=ipn_file,
+                    dialog=False,
+                )
+        main_control = 'Enable Internal Part Number (IPN)'
+        SETTINGS[self.title][main_control][1].refs = ipn_refs
+        SETTINGS[self.title][main_control][1].on_change = lambda _: self.save(
+            file=ipn_file,
+            dialog=False,
+        )
+
+        for name in ['IPN: Enable Prefix', 'IPN: Enable Suffix']:
+            ref = ft.Ref[ft.TextField]()
+            ref.current = SETTINGS[self.title][name.replace('Enable ', '')][1]
+            SETTINGS[self.title][name][1].refs = [ref]
+
+        # Enable scrolling
+        self.column.scroll = ft.ScrollMode.HIDDEN
 
 
 class KiCadSettingsView(SettingsView):

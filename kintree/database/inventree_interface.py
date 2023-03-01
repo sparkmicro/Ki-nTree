@@ -538,7 +538,7 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
         if kicad:
             # Update IPN if it does not exist
             if not inventree_part['IPN']:
-                ipn = list(inventree_part['manufacturer'].values())[0][0]
+                ipn = inventree_part['manufacturer_part_number']
                 inventree_part['IPN'] = ipn
 
             # Create symbol & footprint parameters

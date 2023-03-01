@@ -89,14 +89,14 @@ CONFIG_PARAMETERS_FILTERS = os.path.join(
 
 # INTERNAL PART NUMBERS
 CONFIG_IPN_PATH = os.path.join(CONFIG_USER_FILES, 'internal_part_number.yaml')
-CONFIG_IPN = config_interface.load_file(CONFIG_IPN_PATH)
-IPN_UNIQUE_ID_LENGTH = CONFIG_IPN.get('IPN_UNIQUE_ID_LENGTH', 6)
-IPN_USE_FIXED_PREFIX = CONFIG_IPN.get('IPN_USE_FIXED_PREFIX', False)
-if IPN_USE_FIXED_PREFIX:
-    IPN_PREFIX = CONFIG_IPN.get('IPN_PREFIX', '')
-IPN_USE_VARIANT_SUFFIX = CONFIG_IPN.get('IPN_USE_VARIANT_SUFFIX', True)
-if IPN_USE_VARIANT_SUFFIX:
-    IPN_VARIANT_SUFFIX = CONFIG_IPN.get('IPN_VARIANT_SUFFIX', '00')
+
+
+def load_ipn_settings():
+    global CONFIG_IPN
+    CONFIG_IPN = config_interface.load_file(CONFIG_IPN_PATH)
+
+
+load_ipn_settings()
 
 # GENERAL SETTINGS
 CONFIG_GENERAL_PATH = os.path.join(CONFIG_USER_FILES, 'general.yaml')

@@ -8,12 +8,12 @@ from .tools import cprint
 def generate_part_number(category: str, part_pk: int) -> str:
     ''' Generate Internal Part Number (IPN) '''
     try:
-        ipn = str(part_pk).zfill(settings.IPN_UNIQUE_ID_LENGTH)
+        ipn = str(part_pk).zfill(int(settings.CONFIG_IPN.get('IPN_UNIQUE_ID_LENGTH', '6')))
     except:
         return None
 
-    if settings.IPN_USE_FIXED_PREFIX:
-        prefix_id = settings.IPN_PREFIX
+    if settings.CONFIG_IPN.get('IPN_ENABLE_PREFIX', False):
+        prefix_id = settings.CONFIG_IPN.get('IPN_PREFIX', '')
     else:
         CATEGORY_CODES = config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES']
 
@@ -28,8 +28,8 @@ def generate_part_number(category: str, part_pk: int) -> str:
     if prefix_id:
         ipn = '-'.join([prefix_id, ipn])
 
-    if settings.IPN_USE_VARIANT_SUFFIX:
-        ipn = '-'.join([ipn, settings.IPN_VARIANT_SUFFIX])
+    if settings.CONFIG_IPN.get('IPN_ENABLE_SUFFIX', False):
+        ipn = '-'.join([ipn, settings.CONFIG_IPN.get('IPN_SUFFIX', '')])
 
     return ipn
 
