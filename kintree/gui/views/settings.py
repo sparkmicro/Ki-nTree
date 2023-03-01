@@ -294,7 +294,7 @@ class SettingsView(CommonView):
         self.page.update()
         path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
 
-    def build_column(self):
+    def build_column(self, ignore=[]):
         # Title and separator
         self.column = ft.Column(
             controls=[
@@ -306,65 +306,66 @@ class SettingsView(CommonView):
         )
         # Fields
         for field_name, field in self.fields.items():
-            if type(field) == ft.TextField:
-                field_predefined = bool(field.width)
-                if not field_predefined:
-                    field.label = field_name
-                    field.width = GUI_PARAMS['textfield_width']
-                    field.dense = GUI_PARAMS['textfield_dense']
-                    if 'password' in field.label.lower():
-                        field.password = True
+            if field_name not in ignore:
+                if type(field) == ft.TextField:
+                    field_predefined = bool(field.width)
+                    if not field_predefined:
+                        field.label = field_name
+                        field.width = GUI_PARAMS['textfield_width']
+                        field.dense = GUI_PARAMS['textfield_dense']
+                        if 'password' in field.label.lower():
+                            field.password = True
+                        field_row = ft.Row(
+                            controls=[
+                                field,
+                            ]
+                        )
+                        # Add browse button
+                        if SETTINGS[self.title][field_name][2]:
+                            field_row.controls.append(
+                                ft.ElevatedButton(
+                                    'Browse',
+                                    width=GUI_PARAMS['button_width'],
+                                    height=48,
+                                    on_click=lambda e, t=field_name: self.path_picker(e, title=t)
+                                ),
+                            )
+                        self.column.controls.extend(
+                            [
+                                field_row,
+                                ft.Row(height=GUI_PARAMS['textfield_space_after']),
+                            ]
+                        )
+                elif type(field) == ft.Text:
+                    field.value = field_name
                     field_row = ft.Row(
                         controls=[
                             field,
                         ]
                     )
-                    # Add browse button
-                    if SETTINGS[self.title][field_name][2]:
-                        field_row.controls.append(
-                            ft.ElevatedButton(
-                                'Browse',
-                                width=GUI_PARAMS['button_width'],
-                                height=48,
-                                on_click=lambda e, t=field_name: self.path_picker(e, title=t)
-                            ),
-                        )
-                    self.column.controls.extend(
-                        [
-                            field_row,
-                            ft.Row(height=GUI_PARAMS['textfield_space_after']),
-                        ]
+                    self.column.controls.append(field_row)
+                    self.column.controls.append(ft.Divider())
+                elif type(field) == ft.TextButton:
+                    self.column.controls.append(
+                        ft.ElevatedButton(
+                            field_name,
+                            width=GUI_PARAMS['button_width'] * 2,
+                            height=GUI_PARAMS['button_height'],
+                            icon=ft.icons.CHECK_OUTLINED,
+                            on_click=lambda e, s=field_name: self.test_s(e, s=s)
+                        ),
                     )
-            elif type(field) == ft.Text:
-                field.value = field_name
-                field_row = ft.Row(
-                    controls=[
+                elif type(field) == ft.Dropdown:
+                    field.on_change = lambda _: self.save()
+                    self.column.controls.append(
                         field,
-                    ]
-                )
-                self.column.controls.append(field_row)
-                self.column.controls.append(ft.Divider())
-            elif type(field) == ft.TextButton:
-                self.column.controls.append(
-                    ft.ElevatedButton(
-                        field_name,
-                        width=GUI_PARAMS['button_width'] * 2,
-                        height=GUI_PARAMS['button_height'],
-                        icon=ft.icons.CHECK_OUTLINED,
-                        on_click=lambda e, s=field_name: self.test_s(e, s=s)
-                    ),
-                )
-            elif type(field) == ft.Dropdown:
-                field.on_change = lambda _: self.save()
-                self.column.controls.append(
-                    field,
-                )
-            elif type(field) == ft.Switch or type(field) == SwitchWithRefs:
-                field.on_change = lambda _: self.save()
-                field.label = field_name
-                self.column.controls.append(
-                    field,
-                )
+                    )
+                elif type(field) == ft.Switch or type(field) == SwitchWithRefs:
+                    field.on_change = lambda _: self.save()
+                    field.label = field_name
+                    self.column.controls.append(
+                        field,
+                    )
 
         # Test and Save buttons
         test_save_buttons = ft.Row()
@@ -700,24 +701,39 @@ class InvenTreeSettingsView(SettingsView):
         super().__init__(page)
 
     def build_column(self):
-        super().build_column()
-    
-        # Create control refs
         ipn_file = self.settings_file[1]
-        ipn_refs = []
-        for name, field in SETTINGS[self.title].items():
-            if name.startswith('IPN:'):
-                field_type = type(field[1])
-                ref = ft.Ref[field_type]()
-                ref.current = field[1]
-                ipn_refs.append(ref)
-                # Update
-                field[1].on_change = lambda _: self.save(
-                    file=ipn_file,
-                    dialog=False,
-                )
+        ipn_fields = [
+            'IPN: Enable Prefix',
+            'IPN: Prefix',
+            'IPN: Length of Unique ID',
+            'IPN: Enable Suffix',
+            'IPN: Suffix',
+        ]
+        super().build_column(ignore=ipn_fields)
+
+        ipn_fields_ref = ft.Ref[ft.Row]()
+        ipn_fields_col = ft.Column()
+        for name in ipn_fields:
+            SETTINGS[self.title][name][1].label = name
+            SETTINGS[self.title][name][1].on_change = lambda _: self.save(
+                file=ipn_file,
+                dialog=False,
+            )
+            ipn_fields_col.controls.append(
+                ft.Row([SETTINGS[self.title][name][1]])
+            )
+        # Add before Save/Test buttons
+        self.column.controls.insert(
+            -1,
+            ft.Row(
+                ref=ipn_fields_ref,
+                controls=[ipn_fields_col]
+            )
+        )
+
+        # Also update main IPN switch
         main_control = 'Enable Internal Part Number (IPN)'
-        SETTINGS[self.title][main_control][1].refs = ipn_refs
+        SETTINGS[self.title][main_control][1].refs = [ipn_fields_ref]
         SETTINGS[self.title][main_control][1].on_change = lambda _: self.save(
             file=ipn_file,
             dialog=False,
@@ -729,7 +745,9 @@ class InvenTreeSettingsView(SettingsView):
             SETTINGS[self.title][name][1].refs = [ref]
 
         # Enable scrolling
-        self.column.scroll = ft.ScrollMode.HIDDEN
+        self.column.scroll = ft.ScrollMode.ADAPTIVE
+        # self.column.expand = 0
+        print(self.column)
 
 
 class KiCadSettingsView(SettingsView):
