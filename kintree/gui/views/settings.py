@@ -118,7 +118,7 @@ SETTINGS = {
             ft.TextField(),
             False,  # Browse disabled
         ],
-        'Default Revision': [
+        'Default Part Revision': [
             'INVENTREE_DEFAULT_REV',
             ft.TextField(),
             False,  # Browse disabled
@@ -136,6 +136,11 @@ SETTINGS = {
         'IPN: Prefix': [
             'IPN_PREFIX',
             ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'IPN: Enable Category Codes': [
+            'IPN_CATEGORY_CODE',
+            ft.Switch(),
             False,  # Browse disabled
         ],
         'IPN: Length of Unique ID': [
@@ -703,35 +708,71 @@ class InvenTreeSettingsView(SettingsView):
     def build_column(self):
         ipn_file = self.settings_file[1]
         ipn_fields = [
+            'Default Part Revision',
+            'Enable Internal Part Number (IPN)',
             'IPN: Enable Prefix',
             'IPN: Prefix',
+            'IPN: Enable Category Codes',
             'IPN: Length of Unique ID',
             'IPN: Enable Suffix',
             'IPN: Suffix',
         ]
+
+        # Tabs
+        inventree_tabs = ft.Tabs(
+            selected_index=0,
+            animation_duration=10,
+            expand=1,
+            tabs=[],
+        )
+        
+        # Build server tab content
         super().build_column(ignore=ipn_fields)
 
+        # Hack column
+        self.column.controls = self.column.controls[1:]
+        self.column.controls[0].height = 10
+
+        # Add InvenTree server tab
+        inventree_tabs.tabs.append(
+            ft.Tab(
+                tab_content=ft.Text('Server', size=16),
+                content=ft.Container(
+                    self.column,
+                )
+            )
+        )
+
+        # Create IPN fields
         ipn_fields_ref = ft.Ref[ft.Row]()
-        ipn_fields_col = ft.Column()
+        ipn_fields_col = ft.Column(
+            ref=ipn_fields_ref,
+            controls=[
+                ft.Row(height=10),
+            ],
+        )
         for name in ipn_fields:
             SETTINGS[self.title][name][1].label = name
             SETTINGS[self.title][name][1].on_change = lambda _: self.save(
                 file=ipn_file,
                 dialog=False,
             )
-            ipn_fields_col.controls.append(
-                ft.Row([SETTINGS[self.title][name][1]])
-            )
-        # Add before Save/Test buttons
-        self.column.controls.insert(
-            -1,
-            ft.Row(
-                ref=ipn_fields_ref,
-                controls=[ipn_fields_col]
-            )
+            if name.startswith('IPN: '):
+                ipn_fields_col.controls.append(
+                    ft.Row([SETTINGS[self.title][name][1]])
+                )
+        
+        # Build IPN tab column
+        ipn_tab_col = ft.Column(
+            [
+                ft.Row(height=10),
+                ft.Row([SETTINGS[self.title]['Default Part Revision'][1]]),
+                ft.Row([SETTINGS[self.title]['Enable Internal Part Number (IPN)'][1]]),
+                ft.Row([ipn_fields_col])
+            ]
         )
-
-        # Also update main IPN switch
+    
+        # Link main IPN switch to corresponding fields
         main_control = 'Enable Internal Part Number (IPN)'
         SETTINGS[self.title][main_control][1].refs = [ipn_fields_ref]
         SETTINGS[self.title][main_control][1].on_change = lambda _: self.save(
@@ -739,15 +780,32 @@ class InvenTreeSettingsView(SettingsView):
             dialog=False,
         )
 
+        # Link prefix/suffix switches to corresponding fields
         for name in ['IPN: Enable Prefix', 'IPN: Enable Suffix']:
             ref = ft.Ref[ft.TextField]()
             ref.current = SETTINGS[self.title][name.replace('Enable ', '')][1]
             SETTINGS[self.title][name][1].refs = [ref]
 
-        # Enable scrolling
-        self.column.scroll = ft.ScrollMode.ADAPTIVE
-        # self.column.expand = 0
-        print(self.column)
+        # Add IPN tab
+        inventree_tabs.tabs.append(
+            ft.Tab(
+                tab_content=ft.Text('Internal Part Number', size=16),
+                content=ft.Container(
+                    ipn_tab_col,
+                )
+            )
+        )
+
+        # Build column with tabs
+        self.column = ft.Column(
+            controls=[
+                ft.Text(self.title, style="bodyMedium"),
+                ft.Row(),
+                inventree_tabs,
+            ],
+            alignment=ft.MainAxisAlignment.START,
+            expand=True,
+        )
 
 
 class KiCadSettingsView(SettingsView):

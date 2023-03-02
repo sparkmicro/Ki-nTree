@@ -5,31 +5,35 @@ from ..config import config_interface
 from .tools import cprint
 
 
-def generate_part_number(category: str, part_pk: int) -> str:
+def generate_part_number(category: str, part_pk: int, category_code='') -> str:
     ''' Generate Internal Part Number (IPN) '''
+    ipn_elements = []
+
+    # Prefix
+    if settings.CONFIG_IPN.get('IPN_ENABLE_PREFIX', False):
+        ipn_elements.append(settings.CONFIG_IPN.get('IPN_PREFIX', ''))
+    
+    # Category code
+    if settings.CONFIG_IPN.get('IPN_CATEGORY_CODE', False):
+        if not category_code:
+            CATEGORY_CODES = config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES']
+            category_code = CATEGORY_CODES.get(category, '')
+        if category_code:
+            ipn_elements.append(category_code)
+
+    # Unique ID (mandatory)
     try:
-        ipn = str(part_pk).zfill(int(settings.CONFIG_IPN.get('IPN_UNIQUE_ID_LENGTH', '6')))
+        unique_id = str(part_pk).zfill(int(settings.CONFIG_IPN.get('IPN_UNIQUE_ID_LENGTH', '6')))
     except:
         return None
-
-    if settings.CONFIG_IPN.get('IPN_ENABLE_PREFIX', False):
-        prefix_id = settings.CONFIG_IPN.get('IPN_PREFIX', '')
-    else:
-        CATEGORY_CODES = config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES']
-
-        for key in CATEGORY_CODES.keys():
-            if key in category:
-                break
-        try:
-            prefix_id = CATEGORY_CODES[key]
-        except:
-            return None
-
-    if prefix_id:
-        ipn = '-'.join([prefix_id, ipn])
-
+    ipn_elements.append(unique_id)
+    
+    # Suffix
     if settings.CONFIG_IPN.get('IPN_ENABLE_SUFFIX', False):
-        ipn = '-'.join([ipn, settings.CONFIG_IPN.get('IPN_SUFFIX', '')])
+        ipn_elements.append(settings.CONFIG_IPN.get('IPN_SUFFIX', ''))
+    
+    # Build IPN
+    ipn = '-'.join(ipn_elements)
 
     return ipn
 
