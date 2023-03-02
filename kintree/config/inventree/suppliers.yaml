@@ -14,5 +14,5 @@ Newark:
   enable: true
   name: Newark
 LCSC:
-  enable: false
+  enable: true
   name: LCSC

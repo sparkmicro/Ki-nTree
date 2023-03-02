@@ -5,7 +5,7 @@ from ..common import part_tools, progress
 from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
-from fuzzywuzzy import fuzz
+from thefuzz import fuzz
 from ..search import search_api, digikey_api, mouser_api, element14_api, lcsc_api
 
 category_separator = '/'
