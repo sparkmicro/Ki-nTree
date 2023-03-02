@@ -293,7 +293,7 @@ class PartSearchView(MainView):
         # Reset view
         self.reset_view(e, ignore=['part_number', 'supplier'])
         # Validate form
-        if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
+        if not bool(self.fields['part_number'].value) or not bool(self.fields['supplier'].value):
             if not self.fields['part_number'].value:
                 error_msg = 'Missing Part Number'
             else:
@@ -361,10 +361,20 @@ class PartSearchView(MainView):
         for key, field in self.fields['search_form'].items():
             self.data[key] = field.value
         data_from_views[self.title] = self.data
+    
+    def update_suppliers(self):
+        # Reload suppliers
+        self.fields['supplier'].options = [
+            ft.dropdown.Option(supplier) for supplier in settings.SUPPORTED_SUPPLIERS_API
+        ]
+        try:
+            self.fields['supplier'].update()
+        except AssertionError:
+            # Control not added to page yet
+            pass
 
     def build_column(self):
-        # Populate dropdown suppliers
-        self.fields['supplier'].options = [ft.dropdown.Option(supplier) for supplier in settings.SUPPORTED_SUPPLIERS_API]
+        self.update_suppliers()
         # Enable search method
         self.fields['search_button'].on_click = self.run_search
 

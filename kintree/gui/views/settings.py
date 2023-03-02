@@ -13,10 +13,24 @@ from ...config import config_interface
 
 # Load Supplier Settings
 supplier_settings = {}
-for supplier in global_settings.SUPPORTED_SUPPLIERS_API:
+for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
     supplier_settings[supplier] = {}
 
-    # Add fields
+    # Add enable
+    supplier_settings[supplier]['Enable'] = [
+        data['enable'],
+        ft.Switch(),
+        None,
+    ]
+
+    # Add supplier name
+    supplier_settings[supplier]['InvenTree Name'] = [
+        data['name'],
+        ft.TextField(),
+        None,
+    ]
+
+    # Add API fields
     if supplier == 'Digi-Key':
         digikey_api_settings = config_interface.load_file(global_settings.CONFIG_DIGIKEY_API)
         supplier_settings[supplier]['Client ID'] = [
@@ -513,12 +527,27 @@ class SupplierSettingsView(SettingsView):
 
     title = 'Supplier Settings'
     route = '/settings/supplier'
+    settings = global_settings.CONFIG_SUPPLIERS
+    settings_file = global_settings.CONFIG_SUPPLIERS_PATH
 
     def __init__(self, page: ft.Page):
         super().__init__(page)
 
     def save_s(self, e: ft.ControlEvent, supplier: str, show_dialog=True):
-        '''Save supplier API settings'''
+        '''Save supplier settings'''
+
+        # Enable/Name settings
+        supplier_settings = self.settings
+        enable_name = {
+            'enable': SETTINGS[self.title][supplier]['Enable'][1].value,
+            'name': SETTINGS[self.title][supplier]['InvenTree Name'][1].value,
+        }
+        supplier_settings.update({supplier: enable_name})
+        config_interface.dump_file(supplier_settings, self.settings_file)
+        # Update suppliers
+        global_settings.load_suppliers()
+        
+        # API settings
         if supplier == 'Digi-Key':
             from ...search import digikey_api
             # Load settings from file
