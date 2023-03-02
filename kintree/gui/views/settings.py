@@ -299,9 +299,8 @@ class SettingsView(CommonView):
         self.page.update()
         path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
 
-    def build_column(self, ignore=[]):
-        # Title and separator
-        self.column = ft.Column(
+    def init_column(self) -> ft.Column:
+        return ft.Column(
             controls=[
                 ft.Text(self.title, style="bodyMedium"),
                 ft.Row(),
@@ -309,72 +308,71 @@ class SettingsView(CommonView):
             alignment=ft.MainAxisAlignment.START,
             expand=True,
         )
-        # Fields
-        for field_name, field in self.fields.items():
-            if field_name not in ignore:
-                if type(field) == ft.TextField:
-                    field_predefined = bool(field.width)
-                    if not field_predefined:
-                        field.label = field_name
-                        field.width = GUI_PARAMS['textfield_width']
-                        field.dense = GUI_PARAMS['textfield_dense']
-                        if 'password' in field.label.lower():
-                            field.password = True
-                        field_row = ft.Row(
-                            controls=[
-                                field,
-                            ]
-                        )
-                        # Add browse button
-                        if SETTINGS[self.title][field_name][2]:
-                            field_row.controls.append(
-                                ft.ElevatedButton(
-                                    'Browse',
-                                    width=GUI_PARAMS['button_width'],
-                                    height=48,
-                                    on_click=lambda e, t=field_name: self.path_picker(e, title=t)
-                                ),
-                            )
-                        self.column.controls.extend(
-                            [
-                                field_row,
-                                ft.Row(height=GUI_PARAMS['textfield_space_after']),
-                            ]
-                        )
-                elif type(field) == ft.Text:
-                    field.value = field_name
-                    field_row = ft.Row(
-                        controls=[
-                            field,
-                        ]
-                    )
-                    self.column.controls.append(field_row)
-                    self.column.controls.append(ft.Divider())
-                elif type(field) == ft.TextButton:
-                    self.column.controls.append(
+
+    def update_field(self, name, field, column):
+        if type(field) == ft.TextField:
+            field_predefined = bool(field.width)
+            if not field_predefined:
+                field.label = name
+                field.width = GUI_PARAMS['textfield_width']
+                field.dense = GUI_PARAMS['textfield_dense']
+                if 'password' in field.label.lower():
+                    field.password = True
+                field_row = ft.Row(
+                    controls=[
+                        field,
+                    ]
+                )
+                # Add browse button
+                if SETTINGS[self.title][name][2]:
+                    field_row.controls.append(
                         ft.ElevatedButton(
-                            field_name,
-                            width=GUI_PARAMS['button_width'] * 2,
-                            height=GUI_PARAMS['button_height'],
-                            icon=ft.icons.CHECK_OUTLINED,
-                            on_click=lambda e, s=field_name: self.test_s(e, s=s)
+                            'Browse',
+                            width=GUI_PARAMS['button_width'],
+                            height=48,
+                            on_click=lambda e, t=name: self.path_picker(e, title=t)
                         ),
                     )
-                elif type(field) == ft.Dropdown:
-                    field.on_change = lambda _: self.save()
-                    self.column.controls.append(
-                        field,
-                    )
-                elif type(field) == ft.Switch or type(field) == SwitchWithRefs:
-                    field.on_change = lambda _: self.save()
-                    field.label = field_name
-                    self.column.controls.append(
-                        field,
-                    )
+                column.controls.extend(
+                    [
+                        field_row,
+                        ft.Row(height=GUI_PARAMS['textfield_space_after']),
+                    ]
+                )
+        elif type(field) == ft.Text:
+            field.value = name
+            field_row = ft.Row(
+                controls=[
+                    field,
+                ]
+            )
+            column.controls.append(field_row)
+            column.controls.append(ft.Divider())
+        elif type(field) == ft.TextButton:
+            column.controls.append(
+                ft.ElevatedButton(
+                    name,
+                    width=GUI_PARAMS['button_width'] * 2,
+                    height=GUI_PARAMS['button_height'],
+                    icon=ft.icons.CHECK_OUTLINED,
+                    on_click=lambda e, s=name: self.test_s(e, s=s)
+                ),
+            )
+        elif type(field) == ft.Dropdown:
+            field.on_change = lambda _: self.save()
+            column.controls.append(
+                field,
+            )
+        elif type(field) == ft.Switch or type(field) == SwitchWithRefs:
+            field.on_change = lambda _: self.save()
+            field.label = name
+            column.controls.append(
+                field,
+            )
 
-        # Test and Save buttons
+    def add_buttons(self, column, test=False) -> ft.Row:
         test_save_buttons = ft.Row()
-        if list(SETTINGS[self.title])[-1] == 'Test':
+        if test:
             test_save_buttons.controls.append(
                 ft.ElevatedButton(
                     'Test',
@@ -393,7 +391,20 @@ class SettingsView(CommonView):
                 on_click=lambda _: self.save()
             ),
         )
-        self.column.controls.append(test_save_buttons)
+        column.controls.append(test_save_buttons)
+
+    def build_column(self, ignore=[]):
+        # Header
+        self.column = self.init_column()
+
+        # Fields
+        for name, field in self.fields.items():
+            if name not in ignore:
+                self.update_field(name, field, self.column)
+
+        # Test and Save buttons
+        enable_test = bool(list(SETTINGS[self.title])[-1] == 'Test')
+        self.add_buttons(self.column, test=enable_test)
 
     def did_mount(self):
         handle_transition(self.page, transition=False, timeout=0.05)
@@ -447,7 +458,11 @@ class UserSettingsView(SettingsView):
         field.update()
 
     def build_column(self):
-        super().build_column()
+        # Header
+        self.column = self.init_column()
+        # Fields
+        for name, field in self.fields.items():
+            self.update_field(name, field, self.column)
     
         # Create row ref
         cache_row_ref = ft.Ref[ft.Row]()
@@ -462,7 +477,7 @@ class UserSettingsView(SettingsView):
                 ft.IconButton(ft.icons.ADD, on_click=lambda _: self.increment_cache_value(True)),
             ],
         )
-        self.column.controls.insert(-1, cache_row)
+        self.column.controls.append(cache_row)
         # Add cache row to switch refs
         SETTINGS[self.title]['Enable Supplier Search Cache'][1].refs = [cache_row_ref]
         
@@ -481,6 +496,9 @@ class UserSettingsView(SettingsView):
                     show_dialog=False
                 )
         self.settings_file = self.settings_file[0]
+
+        # Save button
+        self.add_buttons(self.column, test=False)
 
     def did_mount(self):
         # Reset Index
@@ -580,15 +598,9 @@ class SupplierSettingsView(SettingsView):
             )
 
     def build_column(self):
-        # Title and separator
-        self.column = ft.Column(
-            controls=[
-                ft.Text(self.title, style="bodyMedium"),
-                ft.Row(),
-            ],
-            alignment=ft.MainAxisAlignment.START,
-            expand=True,
-        )
+        # Header
+        self.column = self.init_column()
+        
         # Tabs
         supplier_tabs = ft.Tabs(
             selected_index=0,
@@ -727,18 +739,18 @@ class InvenTreeSettingsView(SettingsView):
         )
         
         # Build server tab content
-        super().build_column(ignore=ipn_fields)
-
-        # Hack column
-        self.column.controls = self.column.controls[1:]
-        self.column.controls[0].height = 10
+        server_col = ft.Column([ft.Row(height=10)])
+        for name, field in self.fields.items():
+            if name not in ipn_fields:
+                self.update_field(name, field, server_col)
+        self.add_buttons(server_col, test=True)
 
         # Add InvenTree server tab
         inventree_tabs.tabs.append(
             ft.Tab(
                 tab_content=ft.Text('Server', size=16),
                 content=ft.Container(
-                    self.column,
+                    server_col,
                 )
             )
         )
@@ -747,9 +759,7 @@ class InvenTreeSettingsView(SettingsView):
         ipn_fields_ref = ft.Ref[ft.Row]()
         ipn_fields_col = ft.Column(
             ref=ipn_fields_ref,
-            controls=[
-                ft.Row(height=10),
-            ],
+            controls=[],
         )
         for name in ipn_fields:
             SETTINGS[self.title][name][1].label = name
@@ -768,7 +778,7 @@ class InvenTreeSettingsView(SettingsView):
                 ft.Row(height=10),
                 ft.Row([SETTINGS[self.title]['Default Part Revision'][1]]),
                 ft.Row([SETTINGS[self.title]['Enable Internal Part Number (IPN)'][1]]),
-                ft.Row([ipn_fields_col])
+                ft.Row([ipn_fields_col]),
             ]
         )
     
@@ -796,16 +806,10 @@ class InvenTreeSettingsView(SettingsView):
             )
         )
 
-        # Build column with tabs
-        self.column = ft.Column(
-            controls=[
-                ft.Text(self.title, style="bodyMedium"),
-                ft.Row(),
-                inventree_tabs,
-            ],
-            alignment=ft.MainAxisAlignment.START,
-            expand=True,
-        )
+        # Build column
+        self.column = self.init_column()
+        # Add tabs
+        self.column.controls.append(inventree_tabs)
 
 
 class KiCadSettingsView(SettingsView):

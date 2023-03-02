@@ -290,6 +290,8 @@ class PartSearchView(MainView):
         return
 
     def run_search(self, e):
+        # Reset view
+        self.reset_view(e, ignore=['part_number', 'supplier'])
         # Validate form
         if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
             if not self.fields['part_number'].value:
