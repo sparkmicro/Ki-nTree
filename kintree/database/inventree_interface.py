@@ -287,6 +287,20 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     return inventree_part
 
 
+def get_supplier_name(supplier: str) -> str:
+    ''' Get InvenTree supplier name '''
+
+    supplier_name = supplier
+
+    for supplier, data in settings.CONFIG_SUPPLIERS.items():
+        if data['name'] == supplier_name:
+            # Update supplier name
+            supplier_name = supplier
+            break
+    
+    return supplier_name
+
+
 def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
     ''' Translate supplier data to user form format '''
 
@@ -313,27 +327,8 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
         # Get value for user key, return value from default key if not found
         return part_info.get(user_search_key, part_info.get(default_key, default_value))
 
-    def get_supplier_name(supplier: str) -> str:
-        ''' Get InvenTree supplier name '''
-        # Check that supplier is supported
-        if supplier not in settings.SUPPORTED_SUPPLIERS_API:
-            return ''
-
-        if supplier == 'Digi-Key':
-            supplier_name = settings.CONFIG_DIGIKEY.get('SUPPLIER_INVENTREE_NAME', None)
-        elif supplier == 'Mouser':
-            supplier_name = settings.CONFIG_MOUSER.get('SUPPLIER_INVENTREE_NAME', None)
-        # elif supplier in ['Farnell', 'Newark', 'Element14']:
-        #     supplier_name = settings.CONFIG_ELEMENT14.get('SUPPLIER_INVENTREE_NAME', None)
-        elif supplier == 'LCSC':
-            supplier_name = settings.CONFIG_LCSC.get('SUPPLIER_INVENTREE_NAME', None)
-        else:
-            supplier_name = supplier
-        
-        return supplier_name
-
     # Check that supplier argument is valid
-    if not supplier or (supplier != 'custom' and supplier not in settings.SUPPORTED_SUPPLIERS_API):
+    if not supplier and supplier != 'custom':
         return part_form
     # Get default keys
     if supplier == 'Digi-Key':
@@ -355,7 +350,7 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
     part_form['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', default_search_keys[1], default_value='')
     part_form['revision'] = get_value_from_user_key('SEARCH_REVISION', default_search_keys[2], default_value=revision)
     part_form['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', default_search_keys[1], default_value='')
-    part_form['supplier_name'] = get_supplier_name(supplier)
+    part_form['supplier_name'] = settings.CONFIG_SUPPLIERS[supplier]['name']
     part_form['supplier_part_number'] = get_value_from_user_key('SEARCH_SKU', default_search_keys[4], default_value='')
     part_form['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', default_search_keys[7], default_value='')
     part_form['manufacturer_name'] = get_value_from_user_key('SEARCH_MANUFACTURER', default_search_keys[5], default_value='')

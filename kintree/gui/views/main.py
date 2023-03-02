@@ -312,17 +312,20 @@ class PartSearchView(MainView):
             else:
                 self.data['custom_part'] = False
 
+                # Get supplier
+                supplier = inventree_interface.get_supplier_name(self.fields['supplier'].value)
                 # Supplier search
                 part_supplier_info = inventree_interface.supplier_search(
-                    self.fields['supplier'].value,
+                    supplier,
                     self.fields['part_number'].value
                 )
 
                 part_supplier_form = None
+
                 if part_supplier_info:
                     # Translate to user form format
                     part_supplier_form = inventree_interface.translate_supplier_to_form(
-                        supplier=self.fields['supplier'].value,
+                        supplier=supplier,
                         part_info=part_supplier_info,
                     )
                     # Stitch parameters
