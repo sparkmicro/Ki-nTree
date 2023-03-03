@@ -28,6 +28,14 @@ def init_gui(page: ft.Page):
     # Creating a progress bar that will be used to show the user that the app is busy doing something.
     page.splash = ft.ProgressBar(visible=False)
 
+    # Init dialogs
+    page.snack_bar = ft.SnackBar(
+        content=None,
+        open=False,
+    )
+    page.banner = ft.Banner()
+    page.dialog = ft.AlertDialog()
+
     # Update
     page.update()
 

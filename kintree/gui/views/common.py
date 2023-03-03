@@ -170,7 +170,7 @@ class CommonView(ft.View):
             self.page.banner.open = open
         elif type(self.dialog) == ft.AlertDialog:
             self.page.dialog = self.dialog
-            self.dialog.open = open
+            self.page.dialog.open = open
         self.page.update()
 
 

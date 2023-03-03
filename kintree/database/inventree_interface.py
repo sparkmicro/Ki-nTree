@@ -5,7 +5,6 @@ from ..common import part_tools, progress
 from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
-from thefuzz import fuzz
 from ..search import search_api, digikey_api, mouser_api, element14_api, lcsc_api
 
 category_separator = '/'
@@ -97,6 +96,8 @@ def build_category_tree(reload=False, category=None) -> dict:
 
 def get_categories_from_supplier_data(part_info: dict, supplier_only=False) -> list:
     ''' Find categories from part supplier data, use "somewhat automatic" matching '''
+    from thefuzz import fuzz
+    
     categories = [None, None]
 
     try:
@@ -404,6 +405,8 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
 
 def inventree_fuzzy_company_match(name: str) -> str:
     ''' Fuzzy match company name to exisiting companies '''
+    from thefuzz import fuzz
+    
     inventree_companies = inventree_api.get_all_companies()
 
     for company_name in inventree_companies.keys():

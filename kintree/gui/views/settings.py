@@ -848,3 +848,20 @@ class KiCadSettingsView(SettingsView):
     route = '/settings/kicad'
     settings = global_settings.KICAD_SETTINGS
     settings_file = global_settings.KICAD_CONFIG_PATHS
+
+    def __init__(self, page: ft.Page):
+        super().__init__(page)
+        self.dialog = self.build_dialog()
+
+    def build_dialog(self):
+        return ft.Banner(
+            bgcolor=ft.colors.AMBER_100,
+            leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
+            content=ft.Text('Restart Ki-nTree to load the new KiCad paths', weight=ft.FontWeight.BOLD),
+            actions=[
+                ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
+            ],
+        )
+    
+    def show_dialog(self, d_type=None, message=None, snackbar=False, open=True):
+        return super().show_dialog(d_type, message, snackbar, open)

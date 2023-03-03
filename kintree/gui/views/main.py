@@ -165,19 +165,25 @@ class MainView(CommonView):
 
     def get_footprint_libraries(self) -> dict:
         footprint_libraries = {}
-        for folder in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'])):
-            if os.path.isdir(os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)):
-                footprint_libraries[folder.replace('.pretty', '')] = os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)
+        try:
+            for folder in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'])):
+                if os.path.isdir(os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)):
+                    footprint_libraries[folder.replace('.pretty', '')] = os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)
+        except FileNotFoundError:
+            pass
         return footprint_libraries
     
     def find_libraries(self, type: str) -> list:
         found_libraries = []
         if type == 'symbol':
-            found_libraries = [
-                file.replace('.kicad_sym', '')
-                for file in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH']))
-                if file.endswith('.kicad_sym')
-            ]
+            try:
+                found_libraries = [
+                    file.replace('.kicad_sym', '')
+                    for file in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH']))
+                    if file.endswith('.kicad_sym')
+                ]
+            except FileNotFoundError:
+                pass
         elif type == 'template':
             templates = config_interface.load_templates_paths(
                 user_config_path=settings.KICAD_CONFIG_CATEGORY_MAP,
@@ -715,11 +721,16 @@ class KicadView(MainView):
                 pass
 
     def build_library_options(self, type: str):
+        options = []
         found_libraries = self.find_libraries(type)
-        options = [ft.dropdown.Option(lib_name) for lib_name in found_libraries]
+        if found_libraries:
+            options = [ft.dropdown.Option(lib_name) for lib_name in found_libraries]
         return options
 
     def build_column(self):
+        # Library options checks
+        self.checks = []
+
         self.column = ft.Column(
             controls=[ft.Row()],
             alignment=ft.MainAxisAlignment.START,
@@ -742,6 +753,8 @@ class KicadView(MainView):
                     field.options = self.build_library_options(type='template')
                 elif name == 'Footprint Library':
                     field.options = self.build_library_options(type='footprint')
+                if not field.options and name != 'Footprint':
+                    self.checks.append(f'KiCad {name} path does not exists or folder is empty')
 
             kicad_inputs.append(field)
         
@@ -760,6 +773,17 @@ class KicadView(MainView):
                 return super().did_mount(enable=False)
             else:
                 self.fields['enable'].disabled = False
+
+        # Process checks
+        if self.checks:
+            error_msg = f'{self.checks[0]}'
+            for check in self.checks[1:]:
+                error_msg += f'\n{check}'
+            self.show_dialog(
+                d_type=DialogType.ERROR,
+                message=error_msg,
+            )
+
         return super().did_mount(enable=settings.ENABLE_KICAD)
 
 
