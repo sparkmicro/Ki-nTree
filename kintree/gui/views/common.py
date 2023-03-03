@@ -82,6 +82,7 @@ class CommonView(ft.View):
     page = None
     navigation_rail = None
     NAV_BAR_INDEX = None
+    title = None
     column = None
     fields = None
     data = None

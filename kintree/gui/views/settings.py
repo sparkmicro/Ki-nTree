@@ -423,9 +423,30 @@ class SettingsView(CommonView):
     def did_mount(self):
         handle_transition(self.page, transition=False, timeout=0.05)
         return super().did_mount()
+    
+
+class PathSettingsView(SettingsView):
+    '''Template View for Path Setters'''
+
+    def __init__(self, page: ft.Page):
+        super().__init__(page)
+        self.dialog = self.build_dialog()
+
+    def build_dialog(self):
+        return ft.Banner(
+            bgcolor=ft.colors.AMBER_100,
+            leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
+            content=ft.Text(f'Restart Ki-nTree to load the new {self.title}', weight=ft.FontWeight.BOLD),
+            actions=[
+                ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
+            ],
+        )
+    
+    def show_dialog(self, d_type=None, message=None, snackbar=False, open=True):
+        return super().show_dialog(d_type, message, snackbar, open)
 
 
-class UserSettingsView(SettingsView):
+class UserSettingsView(PathSettingsView):
     '''User settings view'''
 
     title = 'User Settings'
@@ -441,23 +462,6 @@ class UserSettingsView(SettingsView):
         global_settings.CONFIG_GENERAL_PATH,
         global_settings.CONFIG_SEARCH_API_PATH,
     ]
-
-    def __init__(self, page: ft.Page):
-        super().__init__(page)
-        self.dialog = self.build_dialog()
-
-    def build_dialog(self):
-        return ft.Banner(
-            bgcolor=ft.colors.AMBER_100,
-            leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
-            content=ft.Text('Restart Ki-nTree to load the new user settings', weight=ft.FontWeight.BOLD),
-            actions=[
-                ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
-            ],
-        )
-    
-    def show_dialog(self, d_type=None, message=None, snackbar=False, open=True):
-        return super().show_dialog(d_type, message, snackbar, open)
     
     def increment_cache_value(self, inc):
         field = SETTINGS[self.title]['CACHE_VALID_DAYS'][1]
@@ -841,27 +845,10 @@ class InvenTreeSettingsView(SettingsView):
         self.column.controls.append(inventree_tabs)
 
 
-class KiCadSettingsView(SettingsView):
+class KiCadSettingsView(PathSettingsView):
     '''KiCad settings view'''
 
     title = 'KiCad Settings'
     route = '/settings/kicad'
     settings = global_settings.KICAD_SETTINGS
     settings_file = global_settings.KICAD_CONFIG_PATHS
-
-    def __init__(self, page: ft.Page):
-        super().__init__(page)
-        self.dialog = self.build_dialog()
-
-    def build_dialog(self):
-        return ft.Banner(
-            bgcolor=ft.colors.AMBER_100,
-            leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
-            content=ft.Text('Restart Ki-nTree to load the new KiCad paths', weight=ft.FontWeight.BOLD),
-            actions=[
-                ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
-            ],
-        )
-    
-    def show_dialog(self, d_type=None, message=None, snackbar=False, open=True):
-        return super().show_dialog(d_type, message, snackbar, open)

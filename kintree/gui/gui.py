@@ -95,6 +95,7 @@ def kintree_gui(page: ft.Page):
         page.go(top_view.route)
         if 'main' in top_view.route:
             handle_transition(page, transition=False, update_page=True, timeout=0.3)
+        if 'part' in top_view.route:
             part_view.update_suppliers()
 
     page.on_route_change = route_change
