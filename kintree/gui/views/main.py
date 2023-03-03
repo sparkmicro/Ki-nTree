@@ -266,7 +266,7 @@ class PartSearchView(MainView):
         # Reset view
         self.reset_view(e, ignore=['part_number', 'supplier'])
         # Validate form
-        if not bool(self.fields['part_number'].value) or not bool(self.fields['supplier'].value):
+        if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
             if not self.fields['part_number'].value:
                 error_msg = 'Missing Part Number'
             else:
@@ -319,7 +319,7 @@ class PartSearchView(MainView):
             self.push_data()
             self.page.splash.visible = False
 
-            if not self.data['manufacturer_part_number']:
+            if not self.data['manufacturer_part_number'] and not self.data['custom_part']:
                 self.show_dialog(
                     d_type=DialogType.ERROR,
                     message='Part not found',
@@ -343,6 +343,10 @@ class PartSearchView(MainView):
         self.fields['supplier'].options = [
             ft.dropdown.Option(supplier) for supplier in settings.SUPPORTED_SUPPLIERS_API
         ]
+        if len(self.fields['supplier'].options) == 1:
+            self.fields['supplier'].value = self.fields['supplier'].options[0].key
+        else:
+            self.fields['supplier'].value = None
         try:
             self.fields['supplier'].update()
         except AssertionError:
@@ -395,7 +399,7 @@ class InventreeView(MainView):
             label='InvenTree',
             value=settings.ENABLE_INVENTREE,
         ),
-        'alternate': SwitchWithRefs(
+        'alternate': ft.Switch(
             label='Alternate',
             value=settings.ENABLE_ALTERNATE if settings.ENABLE_INVENTREE else False,
             disabled=not settings.ENABLE_INVENTREE,
@@ -415,21 +419,39 @@ class InventreeView(MainView):
             disabled=settings.ENABLE_ALTERNATE,
             options=[],
         ),
+        'IPN Category Code': ft.Dropdown(
+            label='IPN Category Code',
+            width=GUI_PARAMS['textfield_width'] / 2 - 5,
+            dense=GUI_PARAMS['textfield_dense'],
+            disabled=settings.CONFIG_IPN.get('IPN_CATEGORY_CODE', False),
+            options=[],
+        ),
+        'Create New Code': SwitchWithRefs(
+            label='Create New Code',
+        ),
+        'New Category Code': ft.TextField(
+            label='New Category Code',
+            width=GUI_PARAMS['textfield_width'] / 2 - 5,
+            dense=GUI_PARAMS['textfield_dense'],
+            visible=False,
+        ),
         'Existing Part ID': ft.TextField(
             label='Existing Part ID',
             width=GUI_PARAMS['textfield_width'] / 2 - 5,
             dense=GUI_PARAMS['textfield_dense'],
-            visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
+            visible=True,
         ),
         'Existing Part IPN': ft.TextField(
             label='Existing Part IPN',
             width=GUI_PARAMS['textfield_width'] / 2 - 5,
             dense=GUI_PARAMS['textfield_dense'],
-            visible=settings.ENABLE_INVENTREE and settings.ENABLE_ALTERNATE,
+            visible=True,
         ),
     }
 
     def __init__(self, page: ft.Page):
+        self.category_row_ref = ft.Ref[ft.Row]()
+        self.alternate_row_ref = ft.Ref[ft.Row]()
         super().__init__(page)
     
     def sanitize_data(self):
@@ -438,42 +460,66 @@ class InventreeView(MainView):
             self.data['Category'] = inventree_interface.split_category_tree(category_tree)
 
     def process_enable(self, e):
-        # Switch control
+        inventree_enable = True
+        # Switch control: override
         if e.data.lower() == 'false':
-            self.fields['alternate'].value = False
+            inventree_enable = False
+        
+        super().process_enable(e, value=inventree_enable, ignore=['enable'])
+        if not inventree_enable:
+            # If InvenTree disabled
+            self.fields['alternate'].value = inventree_enable
             self.fields['alternate'].update()
-            self.process_alternate(e, value=False)
-        # View mounting control
-        if self.fields['alternate'].value:
-            # Alternate mode enabled: disable eveything except the alternate fields
-            super().process_enable(e, value=True, ignore=['enable', 'Existing Part ID', 'Existing Part IPN'])
-            self.process_alternate(e, value=True)
+            self.process_alternate(e, value=inventree_enable)
         else:
-            super().process_enable(e, value=self.fields['enable'].value, ignore=['enable'])
-    
+            alternate_enable = self.fields['alternate'].value
+            self.process_alternate(e, value=alternate_enable)
+
     def process_alternate(self, e, value=None):
-        if value:
-            visible = value
+        if value is not None:
+            alt_visible = value
         else:
-            visible = False
+            # Switch control
+            # Reset view
+            self.reset_view(e, ignore=['enable', 'alternate'])
+            self.fields['New Category Code'].visible = False
+            # Get switch value
+            alt_visible = False
             if e.data.lower() == 'true':
-                visible = True
-        if visible:
+                alt_visible = True
+
+        # Load category button
+        self.fields['load_categories'].disabled = alt_visible
+        self.fields['load_categories'].update()
+
+        # Category row visibility
+        self.category_row_ref.current.visible = not alt_visible
+        self.category_row_ref.current.update()
+
+        # Alternate row visibility
+        self.alternate_row_ref.current.visible = alt_visible
+        self.alternate_row_ref.current.update()
+
+        # Update settings
+        settings.set_enable_flag('alternate', alt_visible)
+        # User dialog
+        if alt_visible:
             self.show_dialog(
                 d_type=DialogType.WARNING,
                 message='Enter Existing Part ID or Part IPN',
             )
-        settings.set_enable_flag('alternate', visible)
-
-        # Process category dropdown and load category button
-        if visible:
-            self.fields['Category'].value = None
-        self.fields['Category'].disabled = visible
-        self.fields['Category'].update()
-        self.fields['load_categories'].disabled = visible
-        self.fields['load_categories'].update()
 
         self.push_data(e)
+
+    def get_code_options(self, category=None):
+        if category is not None:
+            code = config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES'].get(category, None)
+            if code:
+                return [ft.dropdown.Option(code)]
+        return [
+            ft.dropdown.Option(code)
+            for code in config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES'].values()
+        ]
 
     def get_category_options(self, reload=False):
         return [
@@ -495,22 +541,30 @@ class InventreeView(MainView):
         self.page.splash.visible = False
         self.page.update()
 
+    def process_category(self, e=None, label=None, value=None):
+        parent_category = None
+        if type(self.fields['Category'].value) == str:
+            parent_category = inventree_interface.split_category_tree(self.fields['Category'].value)[0]
+        self.fields['IPN Category Code'].options = self.get_code_options(category=parent_category)
+        if len(self.fields['IPN Category Code'].options) == 1:
+            self.fields['IPN Category Code'].value = self.fields['IPN Category Code'].options[0].key
+        self.fields['IPN Category Code'].update()
+        self.push_data(e)
+
     def build_column(self):
         # Update dropdown with category options
         self.fields['Category'].options = self.get_category_options()
-        self.fields['Category'].on_change = self.push_data
+        self.fields['Category'].on_change = self.process_category
         self.fields['load_categories'].on_click = self.reload_categories
+        # Category codes
+        self.fields['IPN Category Code'].options = self.get_code_options()
+        self.fields['IPN Category Code'].on_change = self.push_data
+        self.fields['Create New Code'].on_change = self.push_data
+        self.fields['New Category Code'].on_change = self.push_data
         # Alternate fields
         self.fields['alternate'].on_change = self.process_alternate
-        for alt_field in ['Existing Part ID', 'Existing Part IPN']:
-            # Create ref
-            ref = ft.Ref[ft.TextField]()
-            # Assign ref to field
-            ref.current = self.fields[alt_field]
-            # Append to alt switch refs
-            self.fields['alternate'].refs.append(ref)
-            # Assign on_change method
-            self.fields[alt_field].on_change = self.push_data
+        self.fields['Existing Part ID'].on_change = self.push_data
+        self.fields['Existing Part IPN'].on_change = self.push_data
 
         self.column = ft.Column(
             controls=[
@@ -524,13 +578,32 @@ class InventreeView(MainView):
                     width=GUI_PARAMS['dropdown_width'],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
-                ft.Row([self.fields['Category'],]),
-                ft.Row([
-                    self.fields['Existing Part ID'],
-                    self.fields['Existing Part IPN'],
-                ]),
+                ft.Row(
+                    ref=self.category_row_ref,
+                    controls=[
+                        ft.Column(
+                            [
+                                ft.Row([self.fields['Category'],]),
+                                ft.Row([self.fields['IPN Category Code'], self.fields['Create New Code']]),
+                                ft.Row([self.fields['New Category Code']]),
+                            ],
+                        ),
+                    ],
+                ),
+                ft.Row(
+                    ref=self.alternate_row_ref,
+                    controls=[
+                        self.fields['Existing Part ID'],
+                        self.fields['Existing Part IPN'],
+                    ],
+                ),
             ],
         )
+
+        # Connect New Category Code fields
+        cc_ref = ft.Ref[ft.TextField]()
+        cc_ref.current = self.fields['New Category Code']
+        self.fields['Create New Code'].refs = [cc_ref]
     
     def did_mount(self):
         return super().did_mount(enable=settings.ENABLE_INVENTREE)
@@ -573,10 +646,14 @@ class KicadView(MainView):
             dense=GUI_PARAMS['textfield_dense'],
             options=[],
         ),
+        'New Footprint': SwitchWithRefs(
+            label='New Footprint',
+        ),
         'New Footprint Name': ft.TextField(
             label='New Footprint Name',
             width=GUI_PARAMS['textfield_width'],
             dense=GUI_PARAMS['textfield_dense'],
+            visible=False,
         ),
         'Check SnapEDA': ft.ElevatedButton(
             content=ft.Row(
@@ -744,11 +821,8 @@ class KicadView(MainView):
             # Update callbacks
             if type(field) == ft.ElevatedButton:
                 field.on_click = self.check_snapeda
-            else:
-                if name != 'enable':
-                    field.on_change = self.push_data
             # Update options
-            if type(field) == DropdownWithSearch:
+            elif type(field) == DropdownWithSearch:
                 field.label = name
                 if name == 'Symbol Library':
                     field.options = self.build_library_options(type='symbol')
@@ -758,11 +832,19 @@ class KicadView(MainView):
                     field.options = self.build_library_options(type='footprint')
                 if not field.options and name != 'Footprint':
                     self.checks.append(f'KiCad {name} path does not exists or folder is empty')
+            else:
+                if name != 'enable':
+                    field.on_change = self.push_data
 
             kicad_inputs.append(field)
         
         self.column.controls.extend(kicad_inputs)
 
+        # Connect New Footprint fields
+        fp_ref = ft.Ref[ft.TextField]()
+        fp_ref.current = self.fields['New Footprint Name']
+        self.fields['New Footprint'].refs = [fp_ref]
+        
     def did_mount(self):
         if 'InvenTree' in data_from_views:
             # Get value of alternate switch
@@ -937,8 +1019,9 @@ class CreateView(MainView):
             # Process footprint
             footprint_lib = data_from_views['KiCad'].get('Footprint Library', None)
             if footprint_lib:
-                if data_from_views['KiCad'].get('New Footprint Name', None):
-                    footprint = f"{footprint_lib}:{data_from_views['KiCad']['New Footprint Name']}"
+                if data_from_views['KiCad'].get('New Footprint', False):
+                    new_footprint = data_from_views['KiCad'].get('New Footprint Name', 'TBD')
+                    footprint = f"{footprint_lib}:{new_footprint}"
                 elif data_from_views['KiCad'].get('Footprint', None):
                     footprint = f"{footprint_lib}:{data_from_views['KiCad']['Footprint']}"
                 else:
@@ -991,6 +1074,13 @@ class CreateView(MainView):
                     return
                 else:
                     part_info['category_tree'] = category_tree
+                # Category code
+                if settings.CONFIG_IPN.get('IPN_CATEGORY_CODE', False):
+                    if data_from_views['InvenTree'].get('Create New Code', False):
+                        part_info['category_code'] = data_from_views['InvenTree'].get('New Category Code', '')
+                    else:
+                        part_info['category_code'] = data_from_views['InvenTree'].get('IPN Category Code', '')
+                
                 # Create new part
                 new_part, part_pk, part_info = inventree_interface.inventree_create(
                     part_info=part_info,
