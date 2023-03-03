@@ -202,7 +202,7 @@ def load_libraries_paths(user_config_path: str, library_path: str) -> dict:
 def load_templates_paths(user_config_path: str, template_path: str) -> dict:
     ''' Construct KiCad template files names and paths from KiCad settings file '''
     symbol_templates_paths = {}
-    if not template_path:
+    if not template_path or not os.path.exists(template_path):
         return symbol_templates_paths
 
     # Load configuration file
@@ -217,9 +217,10 @@ def load_templates_paths(user_config_path: str, template_path: str) -> dict:
                     try:
                         symbol_templates_paths[category][subcategory] = template_path + \
                             file_name + '.kicad_sym'
-                    except:
+                    except KeyError:
                         symbol_templates_paths[category] = {
-                            subcategory: template_path + file_name + '.kicad_sym'}
+                            subcategory: template_path + file_name + '.kicad_sym'
+                        }
     except:
         pass
 

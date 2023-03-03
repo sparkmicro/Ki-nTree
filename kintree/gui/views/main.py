@@ -163,39 +163,6 @@ class MainView(CommonView):
         # Clear data
         self.push_data()
 
-    def get_footprint_libraries(self) -> dict:
-        footprint_libraries = {}
-        try:
-            for folder in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'])):
-                if os.path.isdir(os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)):
-                    footprint_libraries[folder.replace('.pretty', '')] = os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)
-        except FileNotFoundError:
-            pass
-        return footprint_libraries
-    
-    def find_libraries(self, type: str) -> list:
-        found_libraries = []
-        if type == 'symbol':
-            try:
-                found_libraries = [
-                    file.replace('.kicad_sym', '')
-                    for file in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH']))
-                    if file.endswith('.kicad_sym')
-                ]
-            except FileNotFoundError:
-                pass
-        elif type == 'template':
-            templates = config_interface.load_templates_paths(
-                user_config_path=settings.KICAD_CONFIG_CATEGORY_MAP,
-                template_path=settings.KICAD_SETTINGS['KICAD_TEMPLATES_PATH']
-            )
-            for key in templates:
-                for template in templates[key]:
-                    found_libraries.append(f'{key}/{template}')
-        elif type == 'footprint':
-            found_libraries = list(self.get_footprint_libraries().keys())
-        return found_libraries
-
     def process_enable(self, e, value=None, ignore=['enable']):
         disabled = False
         if e.data.lower() == 'false':
@@ -719,6 +686,42 @@ class KicadView(MainView):
             except AttributeError:
                 # Handles condition where search field tries to reset dropdown
                 pass
+
+    def get_footprint_libraries(self) -> dict:
+        footprint_libraries = {}
+        try:
+            for folder in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'])):
+                if os.path.isdir(os.path.join(settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'], folder)):
+                    footprint_libraries[folder.replace('.pretty', '')] = os.path.join(
+                        settings.KICAD_SETTINGS['KICAD_FOOTPRINTS_PATH'],
+                        folder
+                    )
+        except FileNotFoundError:
+            pass
+        return footprint_libraries
+
+    def find_libraries(self, type: str) -> list:
+        found_libraries = []
+        if type == 'symbol':
+            try:
+                found_libraries = [
+                    file.replace('.kicad_sym', '')
+                    for file in sorted(os.listdir(settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH']))
+                    if file.endswith('.kicad_sym')
+                ]
+            except FileNotFoundError:
+                pass
+        elif type == 'template':
+            templates = config_interface.load_templates_paths(
+                user_config_path=settings.KICAD_CONFIG_CATEGORY_MAP,
+                template_path=settings.KICAD_SETTINGS['KICAD_TEMPLATES_PATH']
+            )
+            for key in templates:
+                for template in templates[key]:
+                    found_libraries.append(f'{key}/{template}')
+        elif type == 'footprint':
+            found_libraries = list(self.get_footprint_libraries().keys())
+        return found_libraries
 
     def build_library_options(self, type: str):
         options = []
