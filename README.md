@@ -6,6 +6,15 @@
 [![Tests | Linting | Publishing](https://github.com/sparkmicro/Ki-nTree/actions/workflows/test_deploy.yaml/badge.svg)](https://github.com/sparkmicro/Ki-nTree/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=main&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=main)
 
+## New version (1.0) is coming soon!
+
+To install the beta release:
+``` shell
+pip install --pre -U kintree
+```
+
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_preview.png" width="auto" height="auto">
+
 ## Demo Videos :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) :fast_forward: [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
 
 <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_example.png"  width="auto" height="auto">
@@ -265,23 +274,22 @@ pip install dist/kintree-0.6.99-py3-none-any.whl
 > Open to new ideas and pull requests :smiley:
 
 #### Versions 1.0.x or later
-##### New Features
+(Strikethrough items are supported in V1.0.0 beta1 release)
 
-- Revamp category selection based on hierarchical structure from InvenTree ([reference](https://github.com/sparkmicro/Ki-nTree/issues/87)) 
-- Allow user to decide the category code to use for IPN
-- Enable option to download and save PDF files locally/to internal server storage
+##### New Features
+~~- Revamp category selection based on hierarchical structure from InvenTree ([reference](https://github.com/sparkmicro/Ki-nTree/issues/87))~~  
+~~- Allow user to decide the category code to use for IPN~~  
+~~- Enable option to download and save PDF files locally/to internal server storage~~
 
 ##### Improvements
-
-- Optimize the category search ([reference](https://github.com/sparkmicro/Ki-nTree/issues/104))
-- Migrate KiCad library management to [KiUtils](https://github.com/mvnmgrx/kiutils) ([reference](https://github.com/sparkmicro/Ki-nTree/issues/119))
+~~- Optimize the category search ([reference](https://github.com/sparkmicro/Ki-nTree/issues/104))~~  
+~~- Migrate KiCad library management to [KiUtils](https://github.com/mvnmgrx/kiutils) ([reference](https://github.com/sparkmicro/Ki-nTree/issues/119))~~  
+- Add support for KiCad V7 ([reference](https://github.com/sparkmicro/Ki-nTree/issues/120))
 
 ##### GUI
-
-- Migrate to [Flet](https://github.com/flet-dev/flet) ([reference](https://github.com/sparkmicro/Ki-nTree/issues/37))
+~~- Migrate to [Flet](https://github.com/flet-dev/flet) ([reference](https://github.com/sparkmicro/Ki-nTree/issues/37))~~
 
 ## License
-
 The Ki-nTree source code is licensed under the [GPL3.0 license](https://github.com/sparkmicro/Ki-nTree/blob/main/LICENSE) as it uses source code under that license:
 * https://gitlab.com/kicad/libraries/kicad-library-utils
 * https://github.com/peeter123/digikey-api
