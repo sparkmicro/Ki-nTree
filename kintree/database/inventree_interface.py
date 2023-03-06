@@ -251,6 +251,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     inventree_part['supplier_part_number'] = part_info['supplier_part_number']
     inventree_part['manufacturer_name'] = part_info['manufacturer_name']
     inventree_part['manufacturer_part_number'] = part_info['manufacturer_part_number']
+    inventree_part['IPN'] = part_info['IPN']
     # Replace whitespaces in URL
     inventree_part['supplier_link'] = part_info['supplier_link'].replace(' ', '%20')
     inventree_part['datasheet'] = part_info['datasheet'].replace(' ', '%20')
@@ -540,11 +541,6 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                     cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
 
         if kicad:
-            # Update IPN if it does not exist
-            if not inventree_part['IPN']:
-                ipn = inventree_part['manufacturer_part_number']
-                inventree_part['IPN'] = ipn
-
             # Create symbol & footprint parameters
             if symbol:
                 symbol = f'{symbol.split(":")[0]}:{ipn}'

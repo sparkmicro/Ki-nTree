@@ -11,7 +11,7 @@ from .common import CommonView
 from .common import DropdownWithSearch, SwitchWithRefs
 from .common import handle_transition
 # Tools
-from ...common.tools import cprint
+from ...common.tools import cprint, download
 # Settings
 from ...common import progress
 from ...config import settings, config_interface
@@ -1048,12 +1048,15 @@ class CreateView(MainView):
         part_info = copy.deepcopy(data_from_views['Part Search'])
         custom = part_info.pop('custom_part')
         
-        if not custom:
-            # Part number check
-            part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
-            if not part_number:
+        # Part number check
+        part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
+        if not part_number:
+            if not custom:
                 self.show_dialog(DialogType.ERROR, 'Missing Part Number')
                 return
+        else:
+            # Update IPN (later overwritten)
+            part_info['IPN'] = part_number
 
         # Button update
         self.enable_create(False)
@@ -1171,12 +1174,13 @@ class CreateView(MainView):
                     if symbol:
                         symbol = f'{symbol.split(":")[0]}:{part_info["IPN"]}'
 
+                    self.fields['inventree_progress'].color = 'green'
                     if not new_part:
-                        self.fields['inventree_progress'].color = "amber"
+                        self.fields['inventree_progress'].color = 'amber'
                     # Complete add operation
                     self.fields['inventree_progress'].value = progress.MAX_PROGRESS
                 else:
-                    self.fields['inventree_progress'].color = "red"
+                    self.fields['inventree_progress'].color = 'red'
             
             self.fields['inventree_progress'].update()
 
@@ -1206,19 +1210,31 @@ class CreateView(MainView):
 
             # Complete add operation
             if kicad_success:
+                self.fields['kicad_progress'].color = 'green'
                 if not kicad_new_part:
-                    self.fields['kicad_progress'].color = "amber"
+                    self.fields['kicad_progress'].color = 'amber'
                     self.fields['kicad_progress'].update()
                 self.fields['kicad_progress'].value = progress.MAX_PROGRESS
                 self.fields['kicad_progress'].update()
             else:
-                self.fields['kicad_progress'].color = "red"
+                self.fields['kicad_progress'].color = 'red'
                 self.fields['kicad_progress'].update()
 
         if not self.create_continue:
             return self.process_cancel()
         
         # Final operations
+        # Download datasheet
+        if settings.DATASHEET_SAVE_ENABLED:
+            datasheet_url = part_info.get('datasheet', None)
+            filename = os.path.join(
+                settings.DATASHEET_SAVE_PATH,
+                f'{part_info.get("IPN", "datasheet")}.pdf',
+            )
+            cprint('\n[MAIN]\tDownloading Datasheet')
+            if download(datasheet_url, filetype='PDF', fileoutput=filename, timeout=10):
+                cprint(f'[INFO]\tSuccess: Datasheet saved to {filename}')
+        # Open browser
         if settings.ENABLE_INVENTREE:
             if part_info.get('inventree_url', None):
                 if settings.AUTOMATIC_BROWSER_OPEN:
