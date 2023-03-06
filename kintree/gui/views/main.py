@@ -176,7 +176,6 @@ class MainView(CommonView):
         if value is not None:
             disabled = not value
 
-        # print(e.control.label, not disabled)
         key = e.control.label.lower()
         settings.set_enable_flag(key, not disabled)
 
@@ -748,6 +747,11 @@ class KicadView(MainView):
             actions_alignment=ft.MainAxisAlignment.END,
             # on_dismiss=None,
         )
+    
+    def process_enable(self, e, value=None, ignore=['enable']):
+        super().process_enable(e, value, ignore)
+        self.fields['Footprint'].disabled = self.fields['New Footprint'].value
+        self.fields['Footprint'].update()
         
     def push_data(self, e=None, label=None, value=None):
         super().push_data(e, label, value)

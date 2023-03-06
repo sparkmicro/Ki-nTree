@@ -399,7 +399,8 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
 
     # Save search results
     if part_info:
-        search_api.save_to_file(part_info, search_filename, update_ts=not bool(part_cache))
+        update_ts = not bool(part_cache) or test_mode
+        search_api.save_to_file(part_info, search_filename, update_ts=update_ts)
 
     return part_info
 

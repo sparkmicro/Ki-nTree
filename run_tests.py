@@ -370,7 +370,10 @@ if __name__ == '__main__':
                     if not download_image(test_image_requestslib, './image2.jpg', silent=True):
                         method_success = False
                     # Test PDF
-                    if not download(test_pdf_urllib, filetype='PDF', fileoutput='./datasheet.pdf', timeout=10):
+                    if not download(test_pdf_urllib, filetype='PDF', fileoutput='./datasheet.pdf'):
+                        method_success = False
+                    # Wrong folder
+                    if download(test_pdf_urllib, filetype='PDF', fileoutput='./myfolder/datasheet.pdf'):
                         method_success = False
                     # Test erroneous URL
                     if download_image('http', '', silent=True):
