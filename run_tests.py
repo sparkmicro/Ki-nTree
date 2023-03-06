@@ -2,7 +2,7 @@ import os
 import sys
 
 import kintree.config.settings as settings
-from kintree.common.tools import cprint, create_library, download_image
+from kintree.common.tools import cprint, create_library, download, download_image
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
@@ -256,7 +256,7 @@ if __name__ == '__main__':
                 'Add supplier category',
                 'Sync InvenTree and supplier categories',
                 'SnapEDA API methods',
-                'Download image method',
+                'Download image/PDF method',
                 'Get category parameters',
                 'Add valid alternate supplier part using part ID',
                 'Add invalid alternate supplier part using part IPN',
@@ -302,6 +302,7 @@ if __name__ == '__main__':
                         'manufacturer_part_number': 'part_mpn',
                         'datasheet': 'part_data',
                         'image': 'part_image',
+                        'IPN': 'part_mpn',
                     }
                     if not inventree_interface.translate_form_to_inventree(part_info, categories, is_custom=True):
                         method_success = False
@@ -362,13 +363,19 @@ if __name__ == '__main__':
                 elif method_idx == 9:
                     test_image_urllib = 'https://media.digikey.com/Renders/Diodes%20Renders/31;%20SOD-123;%20;%202.jpg'
                     test_image_requestslib = 'https://www.newark.com/productimages/standard/en_GB/GE2SOD12307-40.jpg'
-                    # Test download image
+                    test_pdf_urllib = 'https://www.seielect.com/Catalog/SEI-CF_CFM.pdf'
+                    # Test different download methods for images
                     if not download_image(test_image_urllib, './image1.jpg', silent=True):
                         method_success = False
                     if not download_image(test_image_requestslib, './image2.jpg', silent=True):
                         method_success = False
+                    # Test PDF
+                    if not download(test_pdf_urllib, filetype='PDF', fileoutput='./datasheet.pdf', timeout=10):
+                        method_success = False
+                    # Test erroneous URL
                     if download_image('http', '', silent=True):
                         method_success = False
+                    # Test empty URL
                     if download_image('', '', silent=True):
                         method_success = False
 
@@ -385,7 +392,7 @@ if __name__ == '__main__':
                         "manufacturer_part_number": "GRM155R71C104KA88D",
                         "supplier_link": "https://www.digikey.com/en/products/detail/murata-electronics/GRM155R71C104KA88D/675947",
                         "supplier_name": "Digi-Key",
-                        "supplier_part_number": "490-3261-1-ND"
+                        "supplier_part_number": "490-3261-1-ND",
                     }
                     if not inventree_interface.inventree_create_alternate(part_info=part_info,
                                                                           part_id='1',
