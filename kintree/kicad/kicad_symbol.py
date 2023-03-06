@@ -99,15 +99,12 @@ class ComponentLibManager(object):
                     property.value = symbol_data['parameters'][property.value]
                     continue
 
-            # Special properties
-            if property.key in ['Value', 'Manufacturer', 'Manufacturer Part Number']:
-                if property.key == 'Value':
-                    property.value = symbol_id
-                elif property.key == 'Manufacturer':
-                    property.value = symbol_data['manufacturer_name']
-                elif property.key == 'Manufacturer Part Number':
-                    property.value = symbol_data['manufacturer_part_number']
-                continue
+            # Maufacturer properties
+            if property.key == 'Manufacturer':
+                property.value = symbol_data['manufacturer_name']
+            elif property.key == 'Manufacturer Part Number':
+                property.value = symbol_data['manufacturer_part_number']
+            continue
 
         # Add symbol to library
         self.kicad_lib.symbols.append(new_symbol)

@@ -82,6 +82,7 @@ class CommonView(ft.View):
     page = None
     navigation_rail = None
     NAV_BAR_INDEX = None
+    title = None
     column = None
     fields = None
     data = None
@@ -170,8 +171,67 @@ class CommonView(ft.View):
             self.page.banner.open = open
         elif type(self.dialog) == ft.AlertDialog:
             self.page.dialog = self.dialog
-            self.dialog.open = open
+            self.page.dialog.open = open
         self.page.update()
+
+
+class SwitchWithRefs(ft.Switch):
+    '''Link the visibility of other fields to a switch value'''
+
+    linked_refs = []
+    
+    def __init__(
+        self,
+        refs: list[ft.Ref] = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        if refs:
+            self.refs = refs
+            self.enable_refs(self.value)
+
+    def enable_refs(self, enable):
+        for ref in self.linked_refs:
+            ref.current.visible = enable
+            try:
+                ref.current.update()
+            except AssertionError:
+                # Control not added to page yet
+                pass
+    
+    def process_change(self, e, handler, *args, **kwargs):
+        enable = False
+        if e.data == 'true':
+            enable = True
+        self.enable_refs(enable)
+        handler(e, *args, **kwargs)
+
+    @property
+    def refs(self):
+        return self.linked_refs
+    
+    @refs.setter
+    def refs(self, references: list[ft.Ref]):
+        if references:
+            self.linked_refs = []
+            for ref in references:
+                try:
+                    if ref.current is None:
+                        raise Exception(f'Reference "{ref.current}" needs to be added to the page first')
+                except AttributeError:
+                    raise Exception(f'"{ref}" is not a Flet Ref (type: {type(ref)})')
+                # if ft.Control not in ref.current.__class__.__mro__:
+                #     raise Exception(f'"{ref.current}" is not a Flet Control ({type(ref.current)})')
+                self.linked_refs.append(ref)
+            if self.linked_refs:
+                self.enable_refs(self.value)
+
+    @ft.Switch.on_change.setter
+    def on_change(self, handler, *args, **kwargs):
+        ft.Switch.on_change.fset(
+            self,
+            lambda e: self.process_change(e, handler, *args, **kwargs)
+        )
 
 
 class DropdownWithSearch(ft.UserControl):

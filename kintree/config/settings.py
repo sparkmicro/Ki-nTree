@@ -88,19 +88,25 @@ CONFIG_PARAMETERS_FILTERS = os.path.join(
     CONFIG_USER_FILES, 'parameters_filters.yaml')
 
 # INTERNAL PART NUMBERS
-CONFIG_IPN = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'internal_part_number.yaml'))
-IPN_UNIQUE_ID_LENGTH = CONFIG_IPN.get('IPN_UNIQUE_ID_LENGTH', 6)
-IPN_USE_FIXED_PREFIX = CONFIG_IPN.get('IPN_USE_FIXED_PREFIX', False)
-if IPN_USE_FIXED_PREFIX:
-    IPN_PREFIX = CONFIG_IPN.get('IPN_PREFIX', '')
-IPN_USE_VARIANT_SUFFIX = CONFIG_IPN.get('IPN_USE_VARIANT_SUFFIX', True)
-if IPN_USE_VARIANT_SUFFIX:
-    IPN_VARIANT_SUFFIX = CONFIG_IPN.get('IPN_VARIANT_SUFFIX', '00')
+CONFIG_IPN_PATH = os.path.join(CONFIG_USER_FILES, 'internal_part_number.yaml')
+
+
+def load_ipn_settings():
+    global CONFIG_IPN
+    CONFIG_IPN = config_interface.load_file(CONFIG_IPN_PATH)
+
+
+load_ipn_settings()
 
 # GENERAL SETTINGS
-CONFIG_GENERAL = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'general.yaml'))
-AUTOMATIC_SUBCATEGORY_CREATE = CONFIG_GENERAL.get('AUTOMATIC_SUBCATEGORY_CREATE', False)
+CONFIG_GENERAL_PATH = os.path.join(CONFIG_USER_FILES, 'general.yaml')
+CONFIG_GENERAL = config_interface.load_file(CONFIG_GENERAL_PATH)
+# Datasheets
+DATASHEET_SAVE_ENABLED = CONFIG_GENERAL.get('DATASHEET_SAVE_ENABLED', False)
+DATASHEET_SAVE_PATH = CONFIG_GENERAL.get('DATASHEET_SAVE_PATH', False)
+# Open Browser
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
+# Default Supplier
 DEFAULT_SUPPLIER = CONFIG_GENERAL.get('DEFAULT_SUPPLIER', 'Digi-Key')
 
 
@@ -124,47 +130,56 @@ def reload_enable_flags():
 reload_enable_flags()
 
 # Supported suppliers APIs
-SUPPORTED_SUPPLIERS_API = [
-    'Digi-Key',
-    'Mouser',
-    'Element14',
-    'Farnell',
-    'Newark',
-    'LCSC',
-]
+CONFIG_SUPPLIERS_PATH = os.path.join(CONFIG_USER_FILES, 'suppliers.yaml')
+CONFIG_SUPPLIERS = config_interface.load_file(CONFIG_SUPPLIERS_PATH)
+SUPPORTED_SUPPLIERS_API = []
+
+
+# Load suppliers
+def load_suppliers():
+    global CONFIG_SUPPLIERS
+    global SUPPORTED_SUPPLIERS_API
+
+    SUPPORTED_SUPPLIERS_API = []
+    for supplier, data in CONFIG_SUPPLIERS.items():
+        if data['enable']:
+            if data['name']:
+                SUPPORTED_SUPPLIERS_API.append(data['name'])
+            else:
+                SUPPORTED_SUPPLIERS_API.append(supplier)
+
+
+load_suppliers()
 
 # Generic API user configuration
 CONFIG_SUPPLIER_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'supplier_parameters.yaml')
-CONFIG_SEARCH_API = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'search_api.yaml'))
+CONFIG_SEARCH_API_PATH = os.path.join(CONFIG_USER_FILES, 'search_api.yaml')
+CONFIG_SEARCH_API = config_interface.load_file(CONFIG_SEARCH_API_PATH)
 
 # Digi-Key user configuration
-if 'Digi-Key' in SUPPORTED_SUPPLIERS_API:
-    CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
-    CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
-    CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
-    # CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
+CONFIG_DIGIKEY = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'digikey_config.yaml'))
+CONFIG_DIGIKEY_API = os.path.join(CONFIG_USER_FILES, 'digikey_api.yaml')
+CONFIG_DIGIKEY_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'digikey_categories.yaml')
+# CONFIG_DIGIKEY_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'digikey_parameters.yaml')
 
 # Mouser user configuration
-if 'Mouser' in SUPPORTED_SUPPLIERS_API:
-    CONFIG_MOUSER = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'mouser_config.yaml'))
-    CONFIG_MOUSER_API = os.path.join(CONFIG_USER_FILES, 'mouser_api.yaml')
+CONFIG_MOUSER = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'mouser_config.yaml'))
+CONFIG_MOUSER_API = os.path.join(CONFIG_USER_FILES, 'mouser_api.yaml')
 
 # Element14 user configuration (includes Farnell, Newark and Element14)
-if 'Element14' in SUPPORTED_SUPPLIERS_API:
-    CONFIG_ELEMENT14 = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'element14_config.yaml'))
-    CONFIG_ELEMENT14_API = os.path.join(CONFIG_USER_FILES, 'element14_api.yaml')
+CONFIG_ELEMENT14 = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'element14_config.yaml'))
+CONFIG_ELEMENT14_API = os.path.join(CONFIG_USER_FILES, 'element14_api.yaml')
 
 # LCSC user configuration
-if 'LCSC' in SUPPORTED_SUPPLIERS_API:
-    CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
-    CONFIG_LCSC_API = os.path.join(CONFIG_USER_FILES, 'lcsc_api.yaml')
+CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
+CONFIG_LCSC_API = os.path.join(CONFIG_USER_FILES, 'lcsc_api.yaml')
 
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = CONFIG_SEARCH_API.get('CATEGORY_MATCH_RATIO_LIMIT', 100)
 # Search results caching (stored in files)
 CACHE_ENABLED = CONFIG_SEARCH_API.get('CACHE_ENABLED', True)
 # Cache validity in days
-CACHE_VALID_DAYS = CONFIG_SEARCH_API.get('CACHE_VALID_DAYS', 7)
+CACHE_VALID_DAYS = int(CONFIG_SEARCH_API.get('CACHE_VALID_DAYS', '7'))
 
 
 # Caching settings
@@ -176,14 +191,13 @@ def load_cache_settings():
     
     USER_SETTINGS = config_interface.load_user_paths(home_dir=HOME_DIR)
 
-    if CACHE_ENABLED:
-        search_results = {
-            'directory': os.path.join(USER_SETTINGS['USER_CACHE'], 'search', ''),
-            'extension': '.yaml',
-        }
-        # Create folder if it does not exists
-        if not os.path.exists(search_results['directory']):
-            os.makedirs(search_results['directory'])
+    search_results = {
+        'directory': os.path.join(USER_SETTINGS['USER_CACHE'], 'search', ''),
+        'extension': '.yaml',
+    }
+    # Create folder if it does not exists
+    if not os.path.exists(search_results['directory']):
+        os.makedirs(search_results['directory'])
 
     # Part images
     search_images = os.path.join(USER_SETTINGS['USER_CACHE'], 'images', '')
@@ -310,9 +324,6 @@ def load_inventree_settings():
         # Set part URL
         PART_URL_ROOT = root_url + 'part/'
 
-
-# Default revision
-INVENTREE_DEFAULT_REV = inventree_settings.get('INVENTREE_DEFAULT_REV', 'A')
 
 # InvenTree part dictionary template
 inventree_part_template = {

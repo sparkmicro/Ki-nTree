@@ -1,0 +1,18 @@
+Digi-Key:
+  enable: true
+  name: Digi-Key
+Mouser:
+  enable: true
+  name: Mouser
+Element14:
+  enable: true
+  name: Element14
+Farnell:
+  enable: true
+  name: Farnell
+Newark:
+  enable: true
+  name: Newark
+LCSC:
+  enable: true
+  name: LCSC

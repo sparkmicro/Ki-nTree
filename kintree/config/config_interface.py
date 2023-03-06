@@ -60,72 +60,25 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=Tr
     def load_config(path):
         for template_file in os.listdir(path):
             filename = os.path.basename(template_file)
-            template_data = load_file(path + template_file)
+            template_data = load_file(os.path.join(path, filename))
             try:
-                user_data = load_file(path_to_user_files + filename)
+                user_data = load_file(os.path.join(path_to_user_files, filename))
                 # Join user data to template data
                 user_settings = {**template_data, **user_data}
-            except:
+            except TypeError:
+                # Config file does not exists
                 user_settings = template_data
 
-            dump_file(user_settings, path_to_user_files + filename)
+            dump_file(user_settings, os.path.join(path_to_user_files, filename))
 
-    # Load User settings
-    try:
-        config_files = os.path.join(path_to_root, 'settings', '')
-        load_config(config_files)
-    except:
-        cprint('[INFO]\tWarning: Failed to load User settings', silent=silent)
-        result = False
-    # Load Search API configuration files
-    try:
-        config_files = os.path.join(path_to_root, 'search', '')
-        load_config(config_files)
-    except:
-        cprint('[INFO]\tWarning: Failed to load Search API configuration', silent=silent)
-        result = False
-    # Load Digi-Key configuration files
-    try:
-        config_files = os.path.join(path_to_root, 'digikey', '')
-        load_config(config_files)
-    except:
-        cprint('[INFO]\tWarning: Failed to load Digi-Key configuration', silent=silent)
-        result = False
-    # Load Mouser configuration files
-    try:
-        config_files = os.path.join(path_to_root, 'mouser', '')
-        load_config(config_files)
-    except:
-        cprint('[INFO]\tWarning: Failed to load Mouser configuration', silent=silent)
-        result = False
-    # Load Element14 configuration files
-    try:
-        config_files = os.path.join(path_to_root, 'element14', '')
-        load_config(config_files)
-    except:
-        cprint('[INFO]\tWarning: Failed to load Element14 configuration', silent=silent)
-        result = False
-    # Load LCSC configuration files
-    try:
-        config_files = os.path.join(path_to_root, 'lcsc', '')
-        load_config(config_files)
-    except:
-        cprint('[INFO]\tWarning: Failed to load LCSC configuration', silent=silent)
-        result = False
-    # Load InvenTree configuration files
-    try:
-        config_files = os.path.join(path_to_root, 'inventree', '')
-        load_config(config_files)
-    except:
-        cprint('[INFO]\tWarning: Failed to load InvenTree configuration', silent=silent)
-        result = False
-    # Load KiCad configuration files
-    try:
-        config_files = os.path.join(path_to_root, 'kicad', '')
-        load_config(config_files)
-    except:
-        cprint('[INFO]\tWarning: Failed to load KiCad configuration', silent=silent)
-        result = False
+    for dir in ['user', 'inventree', 'kicad', 'digikey', 'mouser', 'element14', 'lcsc']:
+        try:
+            # Load configuration
+            config_files = os.path.join(path_to_root, dir, '')
+            load_config(config_files)
+        except FileNotFoundError:
+            cprint(f'[INFO]\tWarning: Failed to load {dir.title()} configuration', silent=silent)
+            result = False
 
     return result
 
@@ -249,7 +202,7 @@ def load_libraries_paths(user_config_path: str, library_path: str) -> dict:
 def load_templates_paths(user_config_path: str, template_path: str) -> dict:
     ''' Construct KiCad template files names and paths from KiCad settings file '''
     symbol_templates_paths = {}
-    if not template_path:
+    if not template_path or not os.path.exists(template_path):
         return symbol_templates_paths
 
     # Load configuration file
@@ -264,9 +217,10 @@ def load_templates_paths(user_config_path: str, template_path: str) -> dict:
                     try:
                         symbol_templates_paths[category][subcategory] = template_path + \
                             file_name + '.kicad_sym'
-                    except:
+                    except KeyError:
                         symbol_templates_paths[category] = {
-                            subcategory: template_path + file_name + '.kicad_sym'}
+                            subcategory: template_path + file_name + '.kicad_sym'
+                        }
     except:
         pass
 

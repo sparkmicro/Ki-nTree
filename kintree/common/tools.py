@@ -84,6 +84,9 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
             else:
                 (image, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
             return image
+        elif filetype == 'PDF':
+            (pdf, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
+            return pdf
         else:
             url_data = urllib.request.urlopen(url)
             data = url_data.read()
@@ -95,6 +98,8 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
         cprint(f'[INFO]\tWarning: {filetype} download failed (HTTP Error)', silent=silent)
     except (urllib.error.URLError, ValueError):
         cprint(f'[INFO]\tWarning: {filetype} download failed (URL Error)', silent=silent)
+    except FileNotFoundError:
+        cprint(f'[INFO]\tWarning: {os.path.dirname(fileoutput)} folder does not exist')
     return None
 
 

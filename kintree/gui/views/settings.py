@@ -1,7 +1,9 @@
 import flet as ft
 
 # Common view
-from .common import DialogType, CommonView
+from .common import DialogType
+from .common import CommonView
+from .common import SwitchWithRefs
 from .common import GUI_PARAMS
 from .common import handle_transition
 # Settings
@@ -11,10 +13,24 @@ from ...config import config_interface
 
 # Load Supplier Settings
 supplier_settings = {}
-for supplier in global_settings.SUPPORTED_SUPPLIERS_API:
+for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
     supplier_settings[supplier] = {}
 
-    # Add fields
+    # Add enable
+    supplier_settings[supplier]['Enable'] = [
+        data['enable'],
+        ft.Switch(),
+        None,
+    ]
+
+    # Add supplier name
+    supplier_settings[supplier]['InvenTree Name'] = [
+        data['name'],
+        ft.TextField(),
+        None,
+    ]
+
+    # Add API fields
     if supplier == 'Digi-Key':
         digikey_api_settings = config_interface.load_file(global_settings.CONFIG_DIGIKEY_API)
         supplier_settings[supplier]['Client ID'] = [
@@ -78,6 +94,36 @@ SETTINGS = {
             ft.TextField(),
             True,  # Browse enabled
         ],
+        'Save Datasheets to Local Folder': [
+            'DATASHEET_SAVE_ENABLED',
+            SwitchWithRefs(),
+            False,  # Browse enabled
+        ],
+        'Datasheet Folder': [
+            'DATASHEET_SAVE_PATH',
+            ft.TextField(),
+            True,  # Browse enabled
+        ],
+        'Open Browser After Creating Part': [
+            'AUTOMATIC_BROWSER_OPEN',
+            ft.Switch(),
+            False,  # Browse enabled
+        ],
+        'Enable Supplier Search Cache': [
+            'CACHE_ENABLED',
+            SwitchWithRefs(),
+            False,  # Browse enabled
+        ],
+        'CACHE_VALID_DAYS': [
+            'CACHE_VALID_DAYS',
+            ft.TextField(
+                text_align=ft.TextAlign.CENTER,
+                width=60,
+                dense=True,
+                disabled=True,
+            ),
+            False,
+        ]
     },
     'Supplier Settings': supplier_settings,
     'InvenTree Settings': {
@@ -93,6 +139,46 @@ SETTINGS = {
         ],
         'Password': [
             'PASSWORD',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'Default Part Revision': [
+            'INVENTREE_DEFAULT_REV',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'Enable Internal Part Number (IPN)': [
+            'IPN_ENABLE_CREATE',
+            SwitchWithRefs(),
+            False,  # Browse disabled
+        ],
+        'IPN: Enable Prefix': [
+            'IPN_ENABLE_PREFIX',
+            SwitchWithRefs(),
+            False,  # Browse disabled
+        ],
+        'IPN: Prefix': [
+            'IPN_PREFIX',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'IPN: Enable Category Codes': [
+            'IPN_CATEGORY_CODE',
+            ft.Switch(),
+            False,  # Browse disabled
+        ],
+        'IPN: Length of Unique ID': [
+            'IPN_UNIQUE_ID_LENGTH',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'IPN: Enable Suffix': [
+            'IPN_ENABLE_SUFFIX',
+            SwitchWithRefs(),
+            False,  # Browse disabled
+        ],
+        'IPN: Suffix': [
+            'IPN_SUFFIX',
             ft.TextField(),
             False,  # Browse disabled
         ],
@@ -196,22 +282,31 @@ class SettingsView(CommonView):
         if not self.navigation_rail.on_change:
             self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
     
-    def save(self):
+    def save(self, settings_file=None, show_dialog=True):
         '''Save settings'''
-        # Load file
-        settings_from_file = config_interface.load_file(self.settings_file)
+        if settings_file is not None:
+            settings_from_file = config_interface.load_file(settings_file)
+        else:
+            settings_from_file = config_interface.load_file(self.settings_file)
+
         # Update settings values
-        for setting in SETTINGS[self.title].values():
-            self.settings[setting[0]] = setting[1].value
-        updated_settings = {**settings_from_file, **self.settings}
+        for key in settings_from_file:
+            for setting in SETTINGS[self.title].values():
+                if key == setting[0]:
+                    settings_from_file[key] = setting[1].value
+
         # Save
-        config_interface.dump_file(updated_settings, self.settings_file)
+        if settings_file is not None:
+            config_interface.dump_file(settings_from_file, settings_file)
+        else:
+            config_interface.dump_file(settings_from_file, self.settings_file)
 
         # Alert user
-        self.show_dialog(
-            d_type=DialogType.VALID,
-            message=f'{self.title} successfully saved',
-        )
+        if show_dialog:
+            self.show_dialog(
+                d_type=DialogType.VALID,
+                message=f'{self.title} successfully saved',
+            )
 
     def on_dialog_result(self, e: ft.FilePickerResultEvent):
         '''Populate field with user-selected system path'''
@@ -226,11 +321,13 @@ class SettingsView(CommonView):
         path_picker = ft.FilePicker(on_result=self.on_dialog_result)
         self.page.overlay.append(path_picker)
         self.page.update()
-        path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
+        if self.fields[title].value:
+            path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
+        else:
+            path_picker.get_directory_path(dialog_title=title, initial_directory=global_settings.HOME_DIR)
 
-    def build_column(self):
-        # Title and separator
-        self.column = ft.Column(
+    def init_column(self) -> ft.Column:
+        return ft.Column(
             controls=[
                 ft.Text(self.title, style="bodyMedium"),
                 ft.Row(),
@@ -238,10 +335,12 @@ class SettingsView(CommonView):
             alignment=ft.MainAxisAlignment.START,
             expand=True,
         )
-        # Fields
-        for field_name, field in self.fields.items():
-            if type(field) == ft.TextField:
-                field.label = field_name
+
+    def update_field(self, name, field, column):
+        if type(field) == ft.TextField:
+            field_predefined = bool(field.width)
+            if not field_predefined:
+                field.label = name
                 field.width = GUI_PARAMS['textfield_width']
                 field.dense = GUI_PARAMS['textfield_dense']
                 if 'password' in field.label.lower():
@@ -252,49 +351,55 @@ class SettingsView(CommonView):
                     ]
                 )
                 # Add browse button
-                if SETTINGS[self.title][field_name][2]:
+                if SETTINGS[self.title][name][2]:
                     field_row.controls.append(
                         ft.ElevatedButton(
                             'Browse',
                             width=GUI_PARAMS['button_width'],
-                            height=GUI_PARAMS['button_height'],
-                            on_click=lambda e, t=field_name: self.path_picker(e, title=t)
+                            height=48,
+                            on_click=lambda e, t=name: self.path_picker(e, title=t)
                         ),
                     )
-                self.column.controls.extend(
+                column.controls.extend(
                     [
                         field_row,
                         ft.Row(height=GUI_PARAMS['textfield_space_after']),
                     ]
                 )
-            elif type(field) == ft.Text:
-                field.value = field_name
-                field_row = ft.Row(
-                    controls=[
-                        field,
-                    ]
-                )
-                self.column.controls.append(field_row)
-                self.column.controls.append(ft.Divider())
-            elif type(field) == ft.TextButton:
-                self.column.controls.append(
-                    ft.ElevatedButton(
-                        field_name,
-                        width=GUI_PARAMS['button_width'] * 2,
-                        height=GUI_PARAMS['button_height'],
-                        icon=ft.icons.CHECK_OUTLINED,
-                        on_click=lambda e, s=field_name: self.test_s(e, s=s)
-                    ),
-                )
-            elif type(field) == ft.Dropdown:
-                field.on_change = lambda _: self.save()
-                self.column.controls.append(
+        elif type(field) == ft.Text:
+            field.value = name
+            field_row = ft.Row(
+                controls=[
                     field,
-                )
+                ]
+            )
+            column.controls.append(field_row)
+            column.controls.append(ft.Divider())
+        elif type(field) == ft.TextButton:
+            column.controls.append(
+                ft.ElevatedButton(
+                    name,
+                    width=GUI_PARAMS['button_width'] * 2,
+                    height=GUI_PARAMS['button_height'],
+                    icon=ft.icons.CHECK_OUTLINED,
+                    on_click=lambda e, s=name: self.test_s(e, s=s)
+                ),
+            )
+        elif type(field) == ft.Dropdown:
+            field.on_change = lambda _: self.save()
+            column.controls.append(
+                field,
+            )
+        elif type(field) == ft.Switch or type(field) == SwitchWithRefs:
+            field.on_change = lambda _: self.save()
+            field.label = name
+            column.controls.append(
+                field,
+            )
 
-        # Test and Save buttons
+    def add_buttons(self, column, test=False) -> ft.Row:
         test_save_buttons = ft.Row()
-        if list(SETTINGS[self.title])[-1] == 'Test':
+        if test:
             test_save_buttons.controls.append(
                 ft.ElevatedButton(
                     'Test',
@@ -313,20 +418,28 @@ class SettingsView(CommonView):
                 on_click=lambda _: self.save()
             ),
         )
-        self.column.controls.append(test_save_buttons)
+        column.controls.append(test_save_buttons)
+
+    def build_column(self, ignore=[]):
+        # Header
+        self.column = self.init_column()
+
+        # Fields
+        for name, field in self.fields.items():
+            if name not in ignore:
+                self.update_field(name, field, self.column)
+
+        # Test and Save buttons
+        enable_test = bool(list(SETTINGS[self.title])[-1] == 'Test')
+        self.add_buttons(self.column, test=enable_test)
 
     def did_mount(self):
         handle_transition(self.page, transition=False, timeout=0.05)
         return super().did_mount()
+    
 
-
-class UserSettingsView(SettingsView):
-    '''User settings view'''
-
-    title = 'User Settings'
-    route = '/settings/user'
-    settings = global_settings.USER_SETTINGS
-    settings_file = global_settings.USER_CONFIG_FILE
+class PathSettingsView(SettingsView):
+    '''Template View for Path Setters'''
 
     def __init__(self, page: ft.Page):
         super().__init__(page)
@@ -336,7 +449,7 @@ class UserSettingsView(SettingsView):
         return ft.Banner(
             bgcolor=ft.colors.AMBER_100,
             leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=GUI_PARAMS['icon_size']),
-            content=ft.Text('Restart Ki-nTree to load the new user paths', weight=ft.FontWeight.BOLD),
+            content=ft.Text(f'Restart Ki-nTree to load the new {self.title}', weight=ft.FontWeight.BOLD),
             actions=[
                 ft.TextButton('Discard', on_click=lambda _: self.show_dialog(open=False)),
             ],
@@ -344,6 +457,94 @@ class UserSettingsView(SettingsView):
     
     def show_dialog(self, d_type=None, message=None, snackbar=False, open=True):
         return super().show_dialog(d_type, message, snackbar, open)
+
+
+class UserSettingsView(PathSettingsView):
+    '''User settings view'''
+
+    title = 'User Settings'
+    route = '/settings/user'
+    settings = {
+        **global_settings.USER_SETTINGS,
+        **{
+            'DATASHEET_SAVE_ENABLED': global_settings.DATASHEET_SAVE_ENABLED,
+            'DATASHEET_SAVE_PATH': global_settings.DATASHEET_SAVE_PATH,
+            'AUTOMATIC_BROWSER_OPEN': global_settings.AUTOMATIC_BROWSER_OPEN
+        },
+        **{
+            'CACHE_ENABLED': global_settings.CACHE_ENABLED,
+            'CACHE_VALID_DAYS': global_settings.CACHE_VALID_DAYS
+        },
+    }
+    settings_file = [
+        global_settings.USER_CONFIG_FILE,
+        global_settings.CONFIG_GENERAL_PATH,
+        global_settings.CONFIG_SEARCH_API_PATH,
+    ]
+    
+    def increment_cache_value(self, inc):
+        field = SETTINGS[self.title]['CACHE_VALID_DAYS'][1]
+        current_value = int(field.value)
+        if not inc:
+            if current_value > 1:
+                field.value = f'{current_value - 1}'
+        else:
+            if current_value < 99:
+                field.value = f'{current_value + 1}'
+        field.on_change(_=None)
+        field.update()
+
+    def build_column(self):
+        # Header
+        self.column = self.init_column()
+        # Fields
+        for name, field in self.fields.items():
+            self.update_field(name, field, self.column)
+    
+        # Create refs
+        datasheet_row_ref = ft.Ref[ft.Row]()
+        cache_row_ref = ft.Ref[ft.Row]()
+
+        # Create row for cache validity
+        SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value = self.settings['CACHE_VALID_DAYS']
+        cache_row = ft.Row(
+            ref=cache_row_ref,
+            controls=[
+                ft.Text('Keep Cache Valid For (Days): '),
+                ft.IconButton(ft.icons.REMOVE, on_click=lambda _: self.increment_cache_value(False)),
+                SETTINGS[self.title]['CACHE_VALID_DAYS'][1],
+                ft.IconButton(ft.icons.ADD, on_click=lambda _: self.increment_cache_value(True)),
+            ],
+        )
+        self.column.controls.append(cache_row)
+        # Add cache row to switch refs
+        SETTINGS[self.title]['Enable Supplier Search Cache'][1].refs = [cache_row_ref]
+        
+        setting_file1 = self.settings_file[1]
+        setting_file2 = self.settings_file[2]
+
+        for name, field in SETTINGS[self.title].items():
+            if field[0] in ['AUTOMATIC_BROWSER_OPEN', 'DATASHEET_SAVE_ENABLED', 'DATASHEET_SAVE_PATH']:
+                self.fields[name].on_change = lambda _: self.save(
+                    settings_file=setting_file1,
+                    show_dialog=False
+                )
+            elif field[0] in ['CACHE_ENABLED', 'CACHE_VALID_DAYS']:
+                self.fields[name].on_change = lambda _: self.save(
+                    settings_file=setting_file2,
+                    show_dialog=False
+                )
+        self.settings_file = self.settings_file[0]
+
+        # Update datasheet ref
+        for idx, field in enumerate(self.column.controls):
+            if type(field) == SwitchWithRefs:
+                if field.label == 'Save Datasheets to Local Folder':
+                    datasheet_row_ref.current = self.column.controls[idx + 1]
+                    SETTINGS[self.title]['Save Datasheets to Local Folder'][1].refs = [datasheet_row_ref]
+        
+        # Save button
+        self.add_buttons(self.column, test=False)
 
     def did_mount(self):
         # Reset Index
@@ -358,12 +559,27 @@ class SupplierSettingsView(SettingsView):
 
     title = 'Supplier Settings'
     route = '/settings/supplier'
+    settings = global_settings.CONFIG_SUPPLIERS
+    settings_file = global_settings.CONFIG_SUPPLIERS_PATH
 
     def __init__(self, page: ft.Page):
         super().__init__(page)
 
     def save_s(self, e: ft.ControlEvent, supplier: str, show_dialog=True):
-        '''Save supplier API settings'''
+        '''Save supplier settings'''
+
+        # Enable/Name settings
+        supplier_settings = self.settings
+        enable_name = {
+            'enable': SETTINGS[self.title][supplier]['Enable'][1].value,
+            'name': SETTINGS[self.title][supplier]['InvenTree Name'][1].value,
+        }
+        supplier_settings.update({supplier: enable_name})
+        config_interface.dump_file(supplier_settings, self.settings_file)
+        # Update suppliers
+        global_settings.load_suppliers()
+        
+        # API settings
         if supplier == 'Digi-Key':
             from ...search import digikey_api
             # Load settings from file
@@ -443,15 +659,9 @@ class SupplierSettingsView(SettingsView):
             )
 
     def build_column(self):
-        # Title and separator
-        self.column = ft.Column(
-            controls=[
-                ft.Text(self.title, style="bodyMedium"),
-                ft.Row(),
-            ],
-            alignment=ft.MainAxisAlignment.START,
-            expand=True,
-        )
+        # Header
+        self.column = self.init_column()
+        
         # Tabs
         supplier_tabs = ft.Tabs(
             selected_index=0,
@@ -516,24 +726,34 @@ class InvenTreeSettingsView(SettingsView):
 
     title = 'InvenTree Settings'
     route = '/settings/inventree'
-    # settings = None
-    settings_file = global_settings.INVENTREE_CONFIG
+    settings_file = [
+        global_settings.INVENTREE_CONFIG,
+        global_settings.CONFIG_IPN_PATH,
+    ]
 
-    def save(self, dialog=True):
-        # Save to file
-        config_interface.save_inventree_user_settings(enable=global_settings.ENABLE_INVENTREE,
-                                                      server=SETTINGS[self.title]['Server Address'][1].value,
-                                                      username=SETTINGS[self.title]['Username'][1].value,
-                                                      password=SETTINGS[self.title]['Password'][1].value,
-                                                      user_config_path=self.settings_file)
-        # Reload InvenTree Settings
-        global_settings.load_inventree_settings()
-        # Alert user
-        if dialog:
-            self.show_dialog(
-                d_type=DialogType.VALID,
-                message=f'{self.title} successfully saved',
+    def save(self, file=None, dialog=True):
+        if file is None:
+            # Save to InvenTree file
+            config_interface.save_inventree_user_settings(
+                enable=global_settings.ENABLE_INVENTREE,
+                server=SETTINGS[self.title]['Server Address'][1].value,
+                username=SETTINGS[self.title]['Username'][1].value,
+                password=SETTINGS[self.title]['Password'][1].value,
+                user_config_path=self.settings_file[0]
             )
+            # Alert user
+            if dialog:
+                self.show_dialog(
+                    d_type=DialogType.VALID,
+                    message=f'{self.title} successfully saved',
+                )
+        else:
+            super().save(settings_file=file, show_dialog=dialog)
+
+        # Reload InvenTree settings
+        global_settings.load_inventree_settings()
+        # Reload IPN settings
+        global_settings.load_ipn_settings()
 
     def test(self):
         from ...database import inventree_interface
@@ -551,12 +771,109 @@ class InvenTreeSettingsView(SettingsView):
             )
 
     def __init__(self, page: ft.Page):
-        # Load InvenTree settings
-        self.settings = config_interface.load_inventree_user_settings(self.settings_file)
+        # Load InvenTree and IPN settings
+        self.settings = {
+            **config_interface.load_inventree_user_settings(self.settings_file[0]),
+            **config_interface.load_file(self.settings_file[1]),
+        }
         super().__init__(page)
 
+    def build_column(self):
+        ipn_file = self.settings_file[1]
+        ipn_fields = [
+            'Default Part Revision',
+            'Enable Internal Part Number (IPN)',
+            'IPN: Enable Prefix',
+            'IPN: Prefix',
+            'IPN: Enable Category Codes',
+            'IPN: Length of Unique ID',
+            'IPN: Enable Suffix',
+            'IPN: Suffix',
+        ]
 
-class KiCadSettingsView(SettingsView):
+        # Tabs
+        inventree_tabs = ft.Tabs(
+            selected_index=0,
+            animation_duration=10,
+            expand=1,
+            tabs=[],
+        )
+        
+        # Build server tab content
+        server_col = ft.Column([ft.Row(height=10)])
+        for name, field in self.fields.items():
+            if name not in ipn_fields:
+                self.update_field(name, field, server_col)
+        self.add_buttons(server_col, test=True)
+
+        # Add InvenTree server tab
+        inventree_tabs.tabs.append(
+            ft.Tab(
+                tab_content=ft.Text('Server', size=16),
+                content=ft.Container(
+                    server_col,
+                )
+            )
+        )
+
+        # Create IPN fields
+        ipn_fields_ref = ft.Ref[ft.Row]()
+        ipn_fields_col = ft.Column(
+            ref=ipn_fields_ref,
+            controls=[],
+        )
+        for name in ipn_fields:
+            SETTINGS[self.title][name][1].label = name
+            SETTINGS[self.title][name][1].on_change = lambda _: self.save(
+                file=ipn_file,
+                dialog=False,
+            )
+            if name.startswith('IPN: '):
+                ipn_fields_col.controls.append(
+                    ft.Row([SETTINGS[self.title][name][1]])
+                )
+        
+        # Build IPN tab column
+        ipn_tab_col = ft.Column(
+            [
+                ft.Row(height=10),
+                ft.Row([SETTINGS[self.title]['Default Part Revision'][1]]),
+                ft.Row([SETTINGS[self.title]['Enable Internal Part Number (IPN)'][1]]),
+                ft.Row([ipn_fields_col]),
+            ]
+        )
+    
+        # Link main IPN switch to corresponding fields
+        main_control = 'Enable Internal Part Number (IPN)'
+        SETTINGS[self.title][main_control][1].refs = [ipn_fields_ref]
+        SETTINGS[self.title][main_control][1].on_change = lambda _: self.save(
+            file=ipn_file,
+            dialog=False,
+        )
+
+        # Link prefix/suffix switches to corresponding fields
+        for name in ['IPN: Enable Prefix', 'IPN: Enable Suffix']:
+            ref = ft.Ref[ft.TextField]()
+            ref.current = SETTINGS[self.title][name.replace('Enable ', '')][1]
+            SETTINGS[self.title][name][1].refs = [ref]
+
+        # Add IPN tab
+        inventree_tabs.tabs.append(
+            ft.Tab(
+                tab_content=ft.Text('Internal Part Number', size=16),
+                content=ft.Container(
+                    ipn_tab_col,
+                )
+            )
+        )
+
+        # Build column
+        self.column = self.init_column()
+        # Add tabs
+        self.column.controls.append(inventree_tabs)
+
+
+class KiCadSettingsView(PathSettingsView):
     '''KiCad settings view'''
 
     title = 'KiCad Settings'

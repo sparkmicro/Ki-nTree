@@ -5,7 +5,6 @@ from ..common import part_tools, progress
 from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
-from fuzzywuzzy import fuzz
 from ..search import search_api, digikey_api, mouser_api, element14_api, lcsc_api
 
 category_separator = '/'
@@ -97,6 +96,8 @@ def build_category_tree(reload=False, category=None) -> dict:
 
 def get_categories_from_supplier_data(part_info: dict, supplier_only=False) -> list:
     ''' Find categories from part supplier data, use "somewhat automatic" matching '''
+    from thefuzz import fuzz
+    
     categories = [None, None]
 
     try:
@@ -250,6 +251,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     inventree_part['supplier_part_number'] = part_info['supplier_part_number']
     inventree_part['manufacturer_name'] = part_info['manufacturer_name']
     inventree_part['manufacturer_part_number'] = part_info['manufacturer_part_number']
+    inventree_part['IPN'] = part_info['IPN']
     # Replace whitespaces in URL
     inventree_part['supplier_link'] = part_info['supplier_link'].replace(' ', '%20')
     inventree_part['datasheet'] = part_info['datasheet'].replace(' ', '%20')
@@ -287,6 +289,20 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     return inventree_part
 
 
+def get_supplier_name(supplier: str) -> str:
+    ''' Get InvenTree supplier name '''
+
+    supplier_name = supplier
+
+    for supplier, data in settings.CONFIG_SUPPLIERS.items():
+        if data['name'] == supplier_name:
+            # Update supplier name
+            supplier_name = supplier
+            break
+    
+    return supplier_name
+
+
 def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
     ''' Translate supplier data to user form format '''
 
@@ -313,27 +329,8 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
         # Get value for user key, return value from default key if not found
         return part_info.get(user_search_key, part_info.get(default_key, default_value))
 
-    def get_supplier_name(supplier: str) -> str:
-        ''' Get InvenTree supplier name '''
-        # Check that supplier is supported
-        if supplier not in settings.SUPPORTED_SUPPLIERS_API:
-            return ''
-
-        if supplier == 'Digi-Key':
-            supplier_name = settings.CONFIG_DIGIKEY.get('SUPPLIER_INVENTREE_NAME', None)
-        elif supplier == 'Mouser':
-            supplier_name = settings.CONFIG_MOUSER.get('SUPPLIER_INVENTREE_NAME', None)
-        # elif supplier in ['Farnell', 'Newark', 'Element14']:
-        #     supplier_name = settings.CONFIG_ELEMENT14.get('SUPPLIER_INVENTREE_NAME', None)
-        elif supplier == 'LCSC':
-            supplier_name = settings.CONFIG_LCSC.get('SUPPLIER_INVENTREE_NAME', None)
-        else:
-            supplier_name = supplier
-        
-        return supplier_name
-
     # Check that supplier argument is valid
-    if not supplier or (supplier != 'custom' and supplier not in settings.SUPPORTED_SUPPLIERS_API):
+    if not supplier and supplier != 'custom':
         return part_form
     # Get default keys
     if supplier == 'Digi-Key':
@@ -348,12 +345,14 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
         # Empty array of default search keys
         default_search_keys = [''] * len(digikey_api.get_default_search_keys())
 
+    # Default revision
+    revision = settings.CONFIG_IPN.get('INVENTREE_DEFAULT_REV', '')
     # Translate supplier data to form fields
     part_form['name'] = get_value_from_user_key('SEARCH_NAME', default_search_keys[0], default_value='')
     part_form['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', default_search_keys[1], default_value='')
-    part_form['revision'] = get_value_from_user_key('SEARCH_REVISION', default_search_keys[2], default_value=settings.INVENTREE_DEFAULT_REV)
+    part_form['revision'] = get_value_from_user_key('SEARCH_REVISION', default_search_keys[2], default_value=revision)
     part_form['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', default_search_keys[1], default_value='')
-    part_form['supplier_name'] = get_supplier_name(supplier)
+    part_form['supplier_name'] = settings.CONFIG_SUPPLIERS[supplier]['name']
     part_form['supplier_part_number'] = get_value_from_user_key('SEARCH_SKU', default_search_keys[4], default_value='')
     part_form['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', default_search_keys[7], default_value='')
     part_form['manufacturer_name'] = get_value_from_user_key('SEARCH_MANUFACTURER', default_search_keys[5], default_value='')
@@ -372,17 +371,17 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
         cprint('\n[MAIN]\tError: Missing Part Number', silent=settings.SILENT)
         return part_info
 
-    # Load from file if cache is enabled
     store = ''
     if supplier in ['Farnell', 'Newark', 'Element14']:
         element14_config = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
         store = element14_config.get(f'{supplier.upper()}_STORE', '').replace(' ', '')
-    search_filename = settings.search_results['directory'] + supplier + store + '_' + part_number + settings.search_results['extension']
+    search_filename = f"{settings.search_results['directory']}{supplier}{store}_{part_number}{settings.search_results['extension']}"
+    # Get cached data, if cache is enabled (else returns None)
+    part_cache = search_api.load_from_file(search_filename, test_mode)
 
-    # Get cached data
-    part_info = search_api.load_from_file(search_filename, test_mode)
-    if part_info:
+    if part_cache:
         cprint(f'\n[MAIN]\tUsing {supplier} cached data for {part_number}', silent=settings.SILENT)
+        part_info = part_cache
     else:
         cprint(f'\n[MAIN]\t{supplier} search for {part_number}', silent=settings.SILENT)
         if supplier == 'Digi-Key':
@@ -400,13 +399,16 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
 
     # Save search results
     if part_info:
-        search_api.save_to_file(part_info, search_filename)
+        update_ts = not bool(part_cache) or test_mode
+        search_api.save_to_file(part_info, search_filename, update_ts=update_ts)
 
     return part_info
 
 
 def inventree_fuzzy_company_match(name: str) -> str:
     ''' Fuzzy match company name to exisiting companies '''
+    from thefuzz import fuzz
+    
     inventree_companies = inventree_api.get_all_companies()
 
     for company_name in inventree_companies.keys():
@@ -467,10 +469,6 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
     if not inventree_part:
         cprint('\n[MAIN]\tError: Failed to process form data', silent=settings.SILENT)
 
-    # Progress Update
-    if not progress.update_progress_bar(show_progress):
-        return new_part, part_pk, inventree_part
-
     category_pk = inventree_api.get_inventree_category_id(category_tree)
     if category_pk <= 0:
         cprint(f'[ERROR]\tCategory ({category_tree}) does not exist in InvenTree', silent=settings.SILENT)
@@ -510,7 +508,11 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
             if settings.CONFIG_IPN.get('IPN_ENABLE_CREATE', True):
                 # Generate Internal Part Number
                 cprint('\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
-                ipn = part_tools.generate_part_number(category_tree[0], part_pk)
+                ipn = part_tools.generate_part_number(
+                    category=category_tree[0],
+                    part_pk=part_pk,
+                    category_code=part_info.get('category_code', ''),
+                )
                 cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
                 # Update InvenTree part number
                 ipn_update = inventree_api.set_part_number(part_pk, ipn)
@@ -536,11 +538,6 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                     cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
 
         if kicad:
-            # Update IPN if it does not exist
-            if not inventree_part['IPN']:
-                ipn = list(inventree_part['manufacturer'].values())[0][0]
-                inventree_part['IPN'] = ipn
-
             # Create symbol & footprint parameters
             if symbol:
                 symbol = f'{symbol.split(":")[0]}:{ipn}'
@@ -565,7 +562,7 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
             for name, value in inventree_part['parameters'].items():
                 parameter, is_new_parameter = inventree_api.create_parameter(part_id=part_pk, template_name=name, value=value)
                 # Progress Update
-                if not progress.update_progress_bar(show_progress, increment=0.05):
+                if not progress.update_progress_bar(show_progress, increment=0.03):
                     return new_part, part_pk, inventree_part
 
                 if is_new_parameter:
@@ -674,7 +671,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
                                            description=part_description)
 
     # Progress Update
-    if not progress.update_progress_bar(show_progress, increment=0.5):
+    if not progress.update_progress_bar(show_progress, increment=0.2):
         return
 
     supplier_name = part_info.get('supplier_name', '')
