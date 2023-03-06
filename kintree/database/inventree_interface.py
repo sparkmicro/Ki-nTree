@@ -468,10 +468,6 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
     if not inventree_part:
         cprint('\n[MAIN]\tError: Failed to process form data', silent=settings.SILENT)
 
-    # Progress Update
-    if not progress.update_progress_bar(show_progress):
-        return new_part, part_pk, inventree_part
-
     category_pk = inventree_api.get_inventree_category_id(category_tree)
     if category_pk <= 0:
         cprint(f'[ERROR]\tCategory ({category_tree}) does not exist in InvenTree', silent=settings.SILENT)
@@ -565,7 +561,7 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
             for name, value in inventree_part['parameters'].items():
                 parameter, is_new_parameter = inventree_api.create_parameter(part_id=part_pk, template_name=name, value=value)
                 # Progress Update
-                if not progress.update_progress_bar(show_progress, increment=0.05):
+                if not progress.update_progress_bar(show_progress, increment=0.03):
                     return new_part, part_pk, inventree_part
 
                 if is_new_parameter:

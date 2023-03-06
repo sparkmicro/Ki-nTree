@@ -27,7 +27,7 @@ def progress_increment(inc):
         CREATE_PART_PROGRESS += inc
     else:
         CREATE_PART_PROGRESS = MAX_PROGRESS
-
+    print(CREATE_PART_PROGRESS)
     return CREATE_PART_PROGRESS
 
 
