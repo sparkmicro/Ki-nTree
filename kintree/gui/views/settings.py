@@ -94,6 +94,16 @@ SETTINGS = {
             ft.TextField(),
             True,  # Browse enabled
         ],
+        'Save Datasheets to Local Folder': [
+            'DATASHEET_SAVE_ENABLED',
+            SwitchWithRefs(),
+            False,  # Browse enabled
+        ],
+        'Datasheet Folder': [
+            'DATASHEET_SAVE_PATH',
+            ft.TextField(),
+            True,  # Browse enabled
+        ],
         'Open Browser After Creating Part': [
             'AUTOMATIC_BROWSER_OPEN',
             ft.Switch(),
@@ -311,7 +321,10 @@ class SettingsView(CommonView):
         path_picker = ft.FilePicker(on_result=self.on_dialog_result)
         self.page.overlay.append(path_picker)
         self.page.update()
-        path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
+        if self.fields[title].value:
+            path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
+        else:
+            path_picker.get_directory_path(dialog_title=title, initial_directory=global_settings.HOME_DIR)
 
     def init_column(self) -> ft.Column:
         return ft.Column(
@@ -453,9 +466,15 @@ class UserSettingsView(PathSettingsView):
     route = '/settings/user'
     settings = {
         **global_settings.USER_SETTINGS,
-        **{'AUTOMATIC_BROWSER_OPEN': global_settings.AUTOMATIC_BROWSER_OPEN},
-        **{'CACHE_ENABLED': global_settings.CACHE_ENABLED,
-           'CACHE_VALID_DAYS': global_settings.CACHE_VALID_DAYS},
+        **{
+            'DATASHEET_SAVE_ENABLED': global_settings.DATASHEET_SAVE_ENABLED,
+            'DATASHEET_SAVE_PATH': global_settings.DATASHEET_SAVE_PATH,
+            'AUTOMATIC_BROWSER_OPEN': global_settings.AUTOMATIC_BROWSER_OPEN
+        },
+        **{
+            'CACHE_ENABLED': global_settings.CACHE_ENABLED,
+            'CACHE_VALID_DAYS': global_settings.CACHE_VALID_DAYS
+        },
     }
     settings_file = [
         global_settings.USER_CONFIG_FILE,
@@ -482,8 +501,10 @@ class UserSettingsView(PathSettingsView):
         for name, field in self.fields.items():
             self.update_field(name, field, self.column)
     
-        # Create row ref
+        # Create refs
+        datasheet_row_ref = ft.Ref[ft.Row]()
         cache_row_ref = ft.Ref[ft.Row]()
+
         # Create row for cache validity
         SETTINGS[self.title]['CACHE_VALID_DAYS'][1].value = self.settings['CACHE_VALID_DAYS']
         cache_row = ft.Row(
@@ -503,18 +524,25 @@ class UserSettingsView(PathSettingsView):
         setting_file2 = self.settings_file[2]
 
         for name, field in SETTINGS[self.title].items():
-            if field[0] == 'AUTOMATIC_BROWSER_OPEN':
+            if field[0] in ['AUTOMATIC_BROWSER_OPEN', 'DATASHEET_SAVE_ENABLED', 'DATASHEET_SAVE_PATH']:
                 self.fields[name].on_change = lambda _: self.save(
                     settings_file=setting_file1,
                     show_dialog=False
                 )
-            elif field[0] == 'CACHE_ENABLED' or field[0] == 'CACHE_VALID_DAYS':
+            elif field[0] in ['CACHE_ENABLED', 'CACHE_VALID_DAYS']:
                 self.fields[name].on_change = lambda _: self.save(
                     settings_file=setting_file2,
                     show_dialog=False
                 )
         self.settings_file = self.settings_file[0]
 
+        # Update datasheet ref
+        for idx, field in enumerate(self.column.controls):
+            if type(field) == SwitchWithRefs:
+                if field.label == 'Save Datasheets to Local Folder':
+                    datasheet_row_ref.current = self.column.controls[idx + 1]
+                    SETTINGS[self.title]['Save Datasheets to Local Folder'][1].refs = [datasheet_row_ref]
+        
         # Save button
         self.add_buttons(self.column, test=False)
 
