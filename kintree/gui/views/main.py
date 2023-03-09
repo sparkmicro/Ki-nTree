@@ -367,18 +367,24 @@ class PartSearchView(MainView):
 
         self.column = ft.Column(
             controls=[
-                ft.Row(),
-                ft.Row(
-                    controls=[
-                        self.fields['part_number'],
-                        self.fields['supplier'],
-                        self.fields['search_button'],
-                    ],
+                ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            ft.Row(
+                                controls=[
+                                    self.fields['part_number'],
+                                    self.fields['supplier'],
+                                    self.fields['search_button'],
+                                ],
+                            ),
+                            ft.Divider(),
+                        ],
+                        scroll=ft.ScrollMode.HIDDEN,
+                    ),
+                    expand=True,
                 ),
-                ft.Divider(),
             ],
-            alignment=ft.MainAxisAlignment.START,
-            scroll=ft.ScrollMode.HIDDEN,
+            alignment=ft.MainAxisAlignment.END,
             expand=True,
         )
 
@@ -393,7 +399,7 @@ class PartSearchView(MainView):
                 expand=True,
                 on_change=self.push_data,
             )
-            self.column.controls.append(ft.Row([text_field]))
+            self.column.controls[0].content.controls.append(ft.Row([text_field]))
             self.fields['search_form'][field] = text_field
 
 
@@ -798,6 +804,9 @@ class KicadView(MainView):
 
     def update_footprint_options(self, library: str):
         footprint_options = []
+        if library is None:
+            return footprint_options
+        
         # Load paths
         footprint_paths = self.get_footprint_libraries()
         # Get path matching selected footprint library
