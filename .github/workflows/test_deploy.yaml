@@ -87,6 +87,7 @@ jobs:
         run: |
           python kintree_gui.py b > gui.log 2>&1 &
           sleep 2
+          cat gui.log
           export len_log=$(cat gui.log | wc -l)
           [[ ${len_log} -eq 0 ]] && true || false
       - name: Digi-Key API setup

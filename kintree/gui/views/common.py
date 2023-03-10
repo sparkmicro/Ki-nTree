@@ -1,6 +1,6 @@
 from enum import Enum
 from math import pi
-from typing import Optional
+from typing import Optional, List
 
 import flet as ft
 
@@ -182,7 +182,7 @@ class SwitchWithRefs(ft.Switch):
     
     def __init__(
         self,
-        refs: list[ft.Ref] = None,
+        refs: List[ft.Ref] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -211,7 +211,7 @@ class SwitchWithRefs(ft.Switch):
         return self.linked_refs
     
     @refs.setter
-    def refs(self, references: list[ft.Ref]):
+    def refs(self, references: List[ft.Ref]):
         if references:
             self.linked_refs = []
             for ref in references:
