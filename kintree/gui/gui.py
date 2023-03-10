@@ -21,7 +21,7 @@ def init_gui(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.scroll = ft.ScrollMode.ALWAYS
-
+    
     # Theme
     update_theme(page)
 
