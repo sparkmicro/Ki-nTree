@@ -370,6 +370,7 @@ class PartSearchView(MainView):
                 ft.Container(
                     content=ft.Column(
                         controls=[
+                            ft.Row(),
                             ft.Row(
                                 controls=[
                                     self.fields['part_number'],
