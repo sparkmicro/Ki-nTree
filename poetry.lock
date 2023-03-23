@@ -158,6 +158,17 @@ urllib3 = ">=1.25.3"
 
 [[package]]
 name = "dill"
+version = "0.3.4"
+description = "serialize all of python"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*"
+
+[package.extras]
+graph = ["objgraph (>=1.7.2)"]
+
+[[package]]
+name = "dill"
 version = "0.3.6"
 description = "serialize all of python"
 category = "main"
@@ -177,15 +188,15 @@ python-versions = "*"
 
 [[package]]
 name = "filelock"
-version = "3.9.0"
+version = "3.10.2"
 description = "A platform independent file lock."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-docs = ["furo (>=2022.12.7)", "sphinx (>=5.3)", "sphinx-autodoc-typehints (>=1.19.5)"]
-testing = ["covdefaults (>=2.2.2)", "coverage (>=7.0.1)", "pytest (>=7.2)", "pytest-cov (>=4)", "pytest-timeout (>=2.1)"]
+docs = ["furo (>=2022.12.7)", "sphinx (>=6.1.3)", "sphinx-autodoc-typehints (>=1.22,!=1.23.4)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.2.2)", "pytest (>=7.2.2)", "pytest-cov (>=4)", "pytest-timeout (>=2.1)"]
 
 [[package]]
 name = "flet"
@@ -327,6 +338,17 @@ python-versions = ">=3.8,<4.0"
 [package.dependencies]
 click = ">=8.0,<9.0"
 requests = ">=2.26,<3.0"
+
+[[package]]
+name = "multiprocess"
+version = "0.70.12.2"
+description = "better multiprocessing and multithreading in python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+dill = ">=0.3.4"
 
 [[package]]
 name = "multiprocess"
@@ -500,7 +522,7 @@ requests-file = ">=1.4"
 
 [[package]]
 name = "urllib3"
-version = "1.26.14"
+version = "1.26.15"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
@@ -567,21 +589,6 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [[package]]
 name = "wrapt-timeout-decorator"
-version = "1.3.10"
-description = "The better timout decorator"
-category = "main"
-optional = false
-python-versions = ">=3.6.0"
-
-[package.dependencies]
-cli-exit-tools = "*"
-dill = "*"
-lib-detect-testenv = "*"
-multiprocess = "*"
-wrapt = "*"
-
-[[package]]
-name = "wrapt-timeout-decorator"
 version = "1.3.12.2"
 description = "The better timout decorator"
 category = "main"
@@ -590,7 +597,10 @@ python-versions = ">=3.6.0"
 
 [package.dependencies]
 cli-exit-tools = "*"
-dill = {version = "*", markers = "sys_platform != \"win32\""}
+dill = [
+    {version = "*", markers = "sys_platform != \"win32\""},
+    {version = ">0.3.0,<0.3.5", markers = "sys_platform == \"win32\""},
+]
 lib-detect-testenv = "*"
 multiprocess = "*"
 wrapt = "*"
@@ -598,7 +608,7 @@ wrapt = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "e1c6189f62c9e8f3ff07266efb767d8edfe82fc3fb2d27cffdb03ef5d8d67f39"
+content-hash = "344c279ab8851de963db2b877c808650a7ed6539562d044644d83eecabd92b6c"
 
 [metadata.files]
 anyio = [
@@ -858,6 +868,8 @@ digikey-api = [
     {file = "digikey_api-1.0.0-py3-none-any.whl", hash = "sha256:3e5c825aa17a61b1c79df0d3ec7162bbd298f0b655f478cd4b0534bf0a68138a"},
 ]
 dill = [
+    {file = "dill-0.3.4-py2.py3-none-any.whl", hash = "sha256:7e40e4a70304fd9ceab3535d36e58791d9c4a776b38ec7f7ec9afc8d3dca4d4f"},
+    {file = "dill-0.3.4.zip", hash = "sha256:9f9734205146b2b353ab3fec9af0070237b6ddae78452af83d2fca84d739e675"},
     {file = "dill-0.3.6-py3-none-any.whl", hash = "sha256:a07ffd2351b8c678dfc4a856a3005f8067aea51d6ba6c700796a4d9e280f39f0"},
     {file = "dill-0.3.6.tar.gz", hash = "sha256:e5db55f3687856d8fbdab002ed78544e1c4559a130302693d839dfe8f93f2373"},
 ]
@@ -865,8 +877,8 @@ docopt = [
     {file = "docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"},
 ]
 filelock = [
-    {file = "filelock-3.9.0-py3-none-any.whl", hash = "sha256:f58d535af89bb9ad5cd4df046f741f8553a418c01a7856bf0d173bbc9f6bd16d"},
-    {file = "filelock-3.9.0.tar.gz", hash = "sha256:7b319f24340b51f55a2bf7a12ac0755a9b03e718311dac567a0f4f7fabd2f5de"},
+    {file = "filelock-3.10.2-py3-none-any.whl", hash = "sha256:eb8f0f2d37ed68223ea63e3bddf2fac99667e4362c88b3f762e434d160190d18"},
+    {file = "filelock-3.10.2.tar.gz", hash = "sha256:75997740323c5f12e18f10b494bc11c03e42843129f980f17c04352cc7b09d40"},
 ]
 flet = [
     {file = "flet-0.4.2-py3-none-any.whl", hash = "sha256:e2f92e45fe79ac2ad0694024204357f675538b9b44c9fbd6d540d7ca696e7644"},
@@ -925,6 +937,19 @@ mouser = [
     {file = "mouser-0.1.2.tar.gz", hash = "sha256:6d9712ad0402c3b127fb2f8f94e131ab82b8a6909031d2a192674f4fd55c5bda"},
 ]
 multiprocess = [
+    {file = "multiprocess-0.70.12.2-cp27-cp27m-macosx_10_12_x86_64.whl", hash = "sha256:35d41e410ca2a32977a483ae1f40f86b193b45cecf85567c2fae402fb8bf172e"},
+    {file = "multiprocess-0.70.12.2-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:9a02237eae21975155c816883479f72e239d16823a6bc063173d59acec9bcf41"},
+    {file = "multiprocess-0.70.12.2-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:f12a939cd2f01d0a900e7ef2aaee3c351a49fd2297d7f760b537af22727561b8"},
+    {file = "multiprocess-0.70.12.2-cp27-cp27m-win32.whl", hash = "sha256:be3ad3eaf204abc646d85e70e41244f66d88200628a0ab867c8fc206b97cedbf"},
+    {file = "multiprocess-0.70.12.2-cp27-cp27m-win_amd64.whl", hash = "sha256:c85ffc38c50c5a4f32f3f3c1a284725b7b5040188f254eba6e572c53d3da525b"},
+    {file = "multiprocess-0.70.12.2-pp27-none-any.whl", hash = "sha256:a9f58945edb234591684c0a181b744a3231643814ef3a8f47cea9a2073b4b2bb"},
+    {file = "multiprocess-0.70.12.2-pp36-none-any.whl", hash = "sha256:0e0a5ae4bd84e4c22baddf824d3b8168214f8c1cce51e2cb080421cb1f7b04d1"},
+    {file = "multiprocess-0.70.12.2-pp37-none-any.whl", hash = "sha256:916a314a1e0f3454033d59672ba6181fa45948ab1091d68cdd479258576e7b27"},
+    {file = "multiprocess-0.70.12.2-py36-none-any.whl", hash = "sha256:b3f866f7d9c7acc1a9cb1b6063a29f5cb140ff545b35b71fd4bfdac6f19d75fa"},
+    {file = "multiprocess-0.70.12.2-py37-none-any.whl", hash = "sha256:6aa67e805e50b6e9dfc56dd0f0c85ac3409e6791d4ec5405c5f9bc0a47d745a4"},
+    {file = "multiprocess-0.70.12.2-py38-none-any.whl", hash = "sha256:85941e650c277af44fc82e3e97faacb920e5ce3615238b540cbad4012d6f60e9"},
+    {file = "multiprocess-0.70.12.2-py39-none-any.whl", hash = "sha256:6f812a1d3f198b7cacd63983f60e2dc1338bd4450893f90c435067b5a3127e6f"},
+    {file = "multiprocess-0.70.12.2.zip", hash = "sha256:206bb9b97b73f87fec1ed15a19f8762950256aa84225450abc7150d02855a083"},
     {file = "multiprocess-0.70.14-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:560a27540daef4ce8b24ed3cc2496a3c670df66c96d02461a4da67473685adf3"},
     {file = "multiprocess-0.70.14-pp37-pypy37_pp73-manylinux_2_24_i686.whl", hash = "sha256:bfbbfa36f400b81d1978c940616bc77776424e5e34cb0c94974b178d727cfcd5"},
     {file = "multiprocess-0.70.14-pp37-pypy37_pp73-manylinux_2_24_x86_64.whl", hash = "sha256:89fed99553a04ec4f9067031f83a886d7fdec5952005551a896a4b6a59575bb9"},
@@ -1024,8 +1049,8 @@ tldextract = [
     {file = "tldextract-3.4.0.tar.gz", hash = "sha256:78aef13ac1459d519b457a03f1f74c1bf1c2808122a6bcc0e6840f81ba55ad73"},
 ]
 urllib3 = [
-    {file = "urllib3-1.26.14-py2.py3-none-any.whl", hash = "sha256:75edcdc2f7d85b137124a6c3c9fc3933cdeaa12ecb9a6a959f22797a0feca7e1"},
-    {file = "urllib3-1.26.14.tar.gz", hash = "sha256:076907bf8fd355cde77728471316625a4d2f7e713c125f51953bb5b3eecf4f72"},
+    {file = "urllib3-1.26.15-py2.py3-none-any.whl", hash = "sha256:aa751d169e23c7479ce47a0cb0da579e3ede798f994f5816a74e4f4500dcea42"},
+    {file = "urllib3-1.26.15.tar.gz", hash = "sha256:8a388717b9476f934a21484e8c8e61875ab60644d29b9b39e11e4b9dc1c6b305"},
 ]
 validators = [
     {file = "validators-0.19.0.tar.gz", hash = "sha256:dec45f4381f042f1e705cfa74949505b77f1e27e8b05409096fee8152c839cbe"},
@@ -1213,8 +1238,6 @@ wrapt = [
     {file = "wrapt-1.15.0.tar.gz", hash = "sha256:d06730c6aed78cee4126234cf2d071e01b44b915e725a6cb439a879ec9754a3a"},
 ]
 wrapt-timeout-decorator = [
-    {file = "wrapt_timeout_decorator-1.3.10-py3-none-any.whl", hash = "sha256:4202a2930c7aa8956f84e405e7486d80c736c22150233c7696ae98a1697c8efb"},
-    {file = "wrapt_timeout_decorator-1.3.10.tar.gz", hash = "sha256:6d4d5927efcd0aa1fa7356d5376ae65c7afa7f25e952071c0d8985c9dbfd6eb2"},
     {file = "wrapt_timeout_decorator-1.3.12.2-py3-none-any.whl", hash = "sha256:4ce77343ab496e62954e677a7c869b49175fd1f09efa68ba116303570fd1c6bc"},
     {file = "wrapt_timeout_decorator-1.3.12.2.tar.gz", hash = "sha256:0b0f1a0d608c51f24cbcba3fd93226ae84029450328957be4245530177a610c9"},
 ]
