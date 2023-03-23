@@ -484,7 +484,7 @@ class InventreeView(MainView):
         if e.data.lower() == 'false':
             inventree_enable = False
         
-        super().process_enable(e, value=inventree_enable, ignore=['enable'])
+        super().process_enable(e, value=inventree_enable, ignore=['enable', 'IPN: Category Code'])
         if not inventree_enable:
             # If InvenTree disabled
             self.fields['alternate'].value = inventree_enable
@@ -1064,13 +1064,13 @@ class CreateView(MainView):
         
         # Part number check
         part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
-        if not part_number:
-            if not custom:
+        if not custom:
+            if not part_number:
                 self.show_dialog(DialogType.ERROR, 'Missing Part Number')
                 return
-        else:
-            # Update IPN (later overwritten)
-            part_info['IPN'] = part_number
+            else:
+                # Update IPN (later overwritten)
+                part_info['IPN'] = part_number
 
         # Button update
         self.enable_create(False)
@@ -1241,13 +1241,14 @@ class CreateView(MainView):
         # Download datasheet
         if settings.DATASHEET_SAVE_ENABLED:
             datasheet_url = part_info.get('datasheet', None)
-            filename = os.path.join(
-                settings.DATASHEET_SAVE_PATH,
-                f'{part_info.get("IPN", "datasheet")}.pdf',
-            )
-            cprint('\n[MAIN]\tDownloading Datasheet')
-            if download(datasheet_url, filetype='PDF', fileoutput=filename, timeout=10):
-                cprint(f'[INFO]\tSuccess: Datasheet saved to {filename}')
+            if datasheet_url:
+                filename = os.path.join(
+                    settings.DATASHEET_SAVE_PATH,
+                    f'{part_info.get("IPN", "datasheet")}.pdf',
+                )
+                cprint('\n[MAIN]\tDownloading Datasheet')
+                if download(datasheet_url, filetype='PDF', fileoutput=filename, timeout=10):
+                    cprint(f'[INFO]\tSuccess: Datasheet saved to {filename}')
         # Open browser
         if settings.ENABLE_INVENTREE:
             if part_info.get('inventree_url', None):

@@ -251,7 +251,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     inventree_part['supplier_part_number'] = part_info['supplier_part_number']
     inventree_part['manufacturer_name'] = part_info['manufacturer_name']
     inventree_part['manufacturer_part_number'] = part_info['manufacturer_part_number']
-    inventree_part['IPN'] = part_info['IPN']
+    inventree_part['IPN'] = part_info.get('IPN', '')
     # Replace whitespaces in URL
     inventree_part['supplier_link'] = part_info['supplier_link'].replace(' ', '%20')
     inventree_part['datasheet'] = part_info['datasheet'].replace(' ', '%20')
@@ -663,12 +663,14 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     datasheet = part_info.get('datasheet', '')
 
     # Create manufacturer part
-    if manufacturer_mpn:
+    if manufacturer_name and manufacturer_mpn:
         inventree_create_manufacturer_part(part_id=part_pk,
                                            manufacturer_name=manufacturer_name,
                                            manufacturer_mpn=manufacturer_mpn,
                                            datasheet=datasheet,
                                            description=part_description)
+    else:
+        cprint('[INFO]\tWarning: No manufacturer part to create', silent=settings.SILENT)
 
     # Progress Update
     if not progress.update_progress_bar(show_progress, increment=0.2):
@@ -679,7 +681,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     supplier_link = part_info.get('supplier_link', '')
 
     # Add supplier alternate
-    if supplier_sku:
+    if supplier_name and supplier_sku:
         cprint('\n[MAIN]\tCreating supplier part', silent=settings.SILENT)
         is_new_supplier_part = inventree_api.is_new_supplier_part(supplier_name=supplier_name,
                                                                   supplier_sku=supplier_sku)
@@ -699,5 +701,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
             if is_supplier_part_created:
                 cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
                 result = True
+    else:
+        cprint('[INFO]\tWarning: No supplier part to create', silent=settings.SILENT)
 
     return result
