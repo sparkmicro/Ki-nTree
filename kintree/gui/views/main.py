@@ -144,7 +144,7 @@ class MainView(CommonView):
         handle_transition(self.page, transition=True)
         self.page.go('/settings')
 
-    def reset_view(self, e, ignore=['enable']):
+    def reset_view(self, e, ignore=['enable'], hidden={}):
         def reset_field(field):
             if type(field) is ft.ProgressBar:
                 field.value = 0
@@ -160,6 +160,14 @@ class MainView(CommonView):
             else:
                 if name not in ignore:
                     reset_field(field)
+
+        if hidden:
+            for key, value in hidden.items():
+                if not value:
+                    self.data[key] = value
+                else:
+                    self.data[key] = None
+
         # Clear data
         self.push_data()
 
@@ -188,12 +196,17 @@ class MainView(CommonView):
     def sanitize_data(self):
         return
 
-    def push_data(self, e=None, label=None, value=None):
+    def push_data(self, e=None, hidden={}):
         for key, field in self.fields.items():
             try:
                 self.data[key] = field.value
             except AttributeError:
                 pass
+
+        if hidden:
+            for key, value in hidden.items():
+                self.data[key] = value
+
         # Sanitize data before pushing
         self.sanitize_data()
         # Push
@@ -258,6 +271,13 @@ class PartSearchView(MainView):
         ),
         'search_form': {},
     }
+
+    def reset_view(self, e, ignore=['enable']):
+        hidden_fields = {
+            'searched_part_number': '',
+            'custom_part': None,
+        }
+        return super().reset_view(e, ignore=ignore, hidden=hidden_fields)
 
     def enable_search_fields(self):
         for form_field in self.fields['search_form'].values():
@@ -336,11 +356,14 @@ class PartSearchView(MainView):
         return
 
     def push_data(self, e=None):
-        self.data['searched_part_number'] = self.fields['part_number'].value
+        hidden_fields = {
+            'searched_part_number': self.fields['part_number'].value,
+            'custom_part': self.data.get('custom_part', None),
+        }
         for key, field in self.fields['search_form'].items():
             self.data[key] = field.value
-        data_from_views[self.title] = self.data
-
+        return super().push_data(e, hidden=hidden_fields)
+        
     def partial_update(self):
         # Update supplier options
         self.update_suppliers()
@@ -402,6 +425,18 @@ class PartSearchView(MainView):
             )
             self.column.controls[0].content.controls.append(ft.Row([text_field]))
             self.fields['search_form'][field] = text_field
+
+    def did_mount(self, enable=False):
+        if (
+            not self.fields['part_number'].value
+            and self.fields['supplier'].value is None
+            and self.data.get('custom_part', None) is None
+        ):
+            self.show_dialog(
+                d_type=DialogType.WARNING,
+                message='To create a Custom Part click on the Submit button',
+            )
+        return super().did_mount(enable)
 
 
 class InventreeView(MainView):
@@ -527,7 +562,7 @@ class InventreeView(MainView):
         if alt_visible:
             self.show_dialog(
                 d_type=DialogType.WARNING,
-                message='Enter Existing Part ID or Part IPN',
+                message='Alternate Mode Enabled: Enter Existing Part ID or Part IPN',
             )
 
         self.push_data(e)
@@ -761,7 +796,7 @@ class KicadView(MainView):
         self.fields['Footprint'].update()
         
     def push_data(self, e=None, label=None, value=None):
-        super().push_data(e, label, value)
+        super().push_data(e)
         if label or e:
             try:
                 if 'Footprint Library' in [label, e.control.label]:
