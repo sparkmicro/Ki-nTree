@@ -18,8 +18,7 @@ def load_file(file_path: str, silent=True) -> dict:
                 print(exc)
                 return None
     except FileNotFoundError:
-        if not silent:
-            cprint(f'[ERROR] File {file_path} does not exists!')
+        cprint(f'[ERROR]\tFile {file_path} does not exists!', silent=silent)
         return None
 
     return data
@@ -66,6 +65,7 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=Tr
                 # Join user data to template data
                 user_settings = {**template_data, **user_data}
             except TypeError:
+                cprint(f'[INFO]\tCreating new {filename} configuration file', silent=silent)
                 # Config file does not exists
                 user_settings = template_data
 

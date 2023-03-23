@@ -99,7 +99,7 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
     except (urllib.error.URLError, ValueError):
         cprint(f'[INFO]\tWarning: {filetype} download failed (URL Error)', silent=silent)
     except FileNotFoundError:
-        cprint(f'[INFO]\tWarning: {os.path.dirname(fileoutput)} folder does not exist')
+        cprint(f'[INFO]\tWarning: {os.path.dirname(fileoutput)} folder does not exist', silent=silent)
     return None
 
 
