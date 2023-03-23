@@ -144,7 +144,7 @@ class MainView(CommonView):
         handle_transition(self.page, transition=True)
         self.page.go('/settings')
 
-    def reset_view(self, e, ignore=['enable']):
+    def reset_view(self, e, ignore=['enable'], hidden={}):
         def reset_field(field):
             if type(field) is ft.ProgressBar:
                 field.value = 0
@@ -160,6 +160,14 @@ class MainView(CommonView):
             else:
                 if name not in ignore:
                     reset_field(field)
+
+        if hidden:
+            for key, value in hidden.items():
+                if not value:
+                    self.data[key] = value
+                else:
+                    self.data[key] = None
+
         # Clear data
         self.push_data()
 
@@ -188,12 +196,17 @@ class MainView(CommonView):
     def sanitize_data(self):
         return
 
-    def push_data(self, e=None, label=None, value=None):
+    def push_data(self, e=None, hidden={}):
         for key, field in self.fields.items():
             try:
                 self.data[key] = field.value
             except AttributeError:
                 pass
+
+        if hidden:
+            for key, value in hidden.items():
+                self.data[key] = value
+
         # Sanitize data before pushing
         self.sanitize_data()
         # Push
@@ -258,6 +271,13 @@ class PartSearchView(MainView):
         ),
         'search_form': {},
     }
+
+    def reset_view(self, e, ignore=['enable']):
+        hidden_fields = {
+            'searched_part_number': '',
+            'custom_part': None,
+        }
+        return super().reset_view(e, ignore=ignore, hidden=hidden_fields)
 
     def enable_search_fields(self):
         for form_field in self.fields['search_form'].values():
@@ -336,11 +356,14 @@ class PartSearchView(MainView):
         return
 
     def push_data(self, e=None):
-        self.data['searched_part_number'] = self.fields['part_number'].value
+        hidden_fields = {
+            'searched_part_number': self.fields['part_number'].value,
+            'custom_part': self.data.get('custom_part', None),
+        }
         for key, field in self.fields['search_form'].items():
             self.data[key] = field.value
-        data_from_views[self.title] = self.data
-
+        return super().push_data(e, hidden=hidden_fields)
+        
     def partial_update(self):
         # Update supplier options
         self.update_suppliers()
@@ -367,18 +390,25 @@ class PartSearchView(MainView):
 
         self.column = ft.Column(
             controls=[
-                ft.Row(),
-                ft.Row(
-                    controls=[
-                        self.fields['part_number'],
-                        self.fields['supplier'],
-                        self.fields['search_button'],
-                    ],
+                ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            ft.Row(),
+                            ft.Row(
+                                controls=[
+                                    self.fields['part_number'],
+                                    self.fields['supplier'],
+                                    self.fields['search_button'],
+                                ],
+                            ),
+                            ft.Divider(),
+                        ],
+                        scroll=ft.ScrollMode.HIDDEN,
+                    ),
+                    expand=True,
                 ),
-                ft.Divider(),
             ],
-            alignment=ft.MainAxisAlignment.START,
-            scroll=ft.ScrollMode.HIDDEN,
+            alignment=ft.MainAxisAlignment.END,
             expand=True,
         )
 
@@ -393,8 +423,20 @@ class PartSearchView(MainView):
                 expand=True,
                 on_change=self.push_data,
             )
-            self.column.controls.append(ft.Row([text_field]))
+            self.column.controls[0].content.controls.append(ft.Row([text_field]))
             self.fields['search_form'][field] = text_field
+
+    def did_mount(self, enable=False):
+        if (
+            not self.fields['part_number'].value
+            and self.fields['supplier'].value is None
+            and self.data.get('custom_part', None) is None
+        ):
+            self.show_dialog(
+                d_type=DialogType.WARNING,
+                message='To create a Custom Part click on the Submit button',
+            )
+        return super().did_mount(enable)
 
 
 class InventreeView(MainView):
@@ -477,7 +519,7 @@ class InventreeView(MainView):
         if e.data.lower() == 'false':
             inventree_enable = False
         
-        super().process_enable(e, value=inventree_enable, ignore=['enable'])
+        super().process_enable(e, value=inventree_enable, ignore=['enable', 'IPN: Category Code'])
         if not inventree_enable:
             # If InvenTree disabled
             self.fields['alternate'].value = inventree_enable
@@ -520,7 +562,7 @@ class InventreeView(MainView):
         if alt_visible:
             self.show_dialog(
                 d_type=DialogType.WARNING,
-                message='Enter Existing Part ID or Part IPN',
+                message='Alternate Mode Enabled: Enter Existing Part ID or Part IPN',
             )
 
         self.push_data(e)
@@ -754,7 +796,7 @@ class KicadView(MainView):
         self.fields['Footprint'].update()
         
     def push_data(self, e=None, label=None, value=None):
-        super().push_data(e, label, value)
+        super().push_data(e)
         if label or e:
             try:
                 if 'Footprint Library' in [label, e.control.label]:
@@ -798,6 +840,9 @@ class KicadView(MainView):
 
     def update_footprint_options(self, library: str):
         footprint_options = []
+        if library is None:
+            return footprint_options
+        
         # Load paths
         footprint_paths = self.get_footprint_libraries()
         # Get path matching selected footprint library
@@ -1054,13 +1099,13 @@ class CreateView(MainView):
         
         # Part number check
         part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
-        if not part_number:
-            if not custom:
+        if not custom:
+            if not part_number:
                 self.show_dialog(DialogType.ERROR, 'Missing Part Number')
                 return
-        else:
-            # Update IPN (later overwritten)
-            part_info['IPN'] = part_number
+            else:
+                # Update IPN (later overwritten)
+                part_info['IPN'] = part_number
 
         # Button update
         self.enable_create(False)
@@ -1231,13 +1276,14 @@ class CreateView(MainView):
         # Download datasheet
         if settings.DATASHEET_SAVE_ENABLED:
             datasheet_url = part_info.get('datasheet', None)
-            filename = os.path.join(
-                settings.DATASHEET_SAVE_PATH,
-                f'{part_info.get("IPN", "datasheet")}.pdf',
-            )
-            cprint('\n[MAIN]\tDownloading Datasheet')
-            if download(datasheet_url, filetype='PDF', fileoutput=filename, timeout=10):
-                cprint(f'[INFO]\tSuccess: Datasheet saved to {filename}')
+            if datasheet_url:
+                filename = os.path.join(
+                    settings.DATASHEET_SAVE_PATH,
+                    f'{part_info.get("IPN", "datasheet")}.pdf',
+                )
+                cprint('\n[MAIN]\tDownloading Datasheet')
+                if download(datasheet_url, filetype='PDF', fileoutput=filename, timeout=10):
+                    cprint(f'[INFO]\tSuccess: Datasheet saved to {filename}')
         # Open browser
         if settings.ENABLE_INVENTREE:
             if part_info.get('inventree_url', None):

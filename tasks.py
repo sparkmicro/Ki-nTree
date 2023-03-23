@@ -145,6 +145,18 @@ def style(c):
 
     c.run('pip install -U flake8', hide=True)
     print("Running PEP style checks...")
-    c.run('flake8 tasks.py run_tests.py kintree_gui.py kintree/kintree_gui.py kintree/setup_inventree.py \
+    c.run('flake8 --extend-ignore W503 \
+        tasks.py run_tests.py kintree_gui.py kintree/kintree_gui.py kintree/setup_inventree.py \
         kintree/common/ kintree/config/ kintree/database/ kintree/kicad/*.py kintree/search/*.py \
         kintree/gui/gui.py kintree/gui/views/*.py')
+
+
+@task
+def gui(c, browser=False):
+    """
+    Open GUI in either app or browser mode
+    """
+    if browser:
+        c.run('python -m kintree_gui b')
+        return
+    c.run('python -m kintree_gui')

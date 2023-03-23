@@ -56,7 +56,7 @@ def find_categories(part_details: str):
 def fetch_part_info(part_number: str) -> dict:
     ''' Fetch part data from API '''
 
-    from ..wrapt_timeout_decorator import timeout
+    from wrapt_timeout_decorator import timeout
 
     setup_environment()
     part_info = {}

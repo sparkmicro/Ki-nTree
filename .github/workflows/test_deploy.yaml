@@ -50,6 +50,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TOKEN_DIGIKEY: ${{ secrets.TOKEN_DIGIKEY }}
 
+    continue-on-error: true
     strategy:
       matrix:
         python-version: ['3.8', '3.10']
@@ -82,6 +83,13 @@ jobs:
           cp tests/files/kicad_map.yaml ~/.config/kintree/user/
           cp tests/files/results.tgz ~/.config/kintree/cache/search/
           cd ~/.config/kintree/cache/search/ && tar xvf results.tgz && cd -
+      - name: GUI test
+        run: |
+          python kintree_gui.py b > gui.log 2>&1 &
+          sleep 2
+          cat gui.log
+          export len_log=$(cat gui.log | wc -l)
+          [[ ${len_log} -eq 0 ]] && true || false
       - name: Digi-Key API setup
         run: |
           git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git

@@ -261,7 +261,7 @@ if __name__ == '__main__':
                 'Add valid alternate supplier part using part ID',
                 'Add invalid alternate supplier part using part IPN',
                 'Save InvenTree settings',
-                'Load configuration files with incorrect paths',
+                'Load configuration files',
                 'Build InvenTree category tree (file, db and branch)',
             ]
             method_success = True
@@ -370,10 +370,10 @@ if __name__ == '__main__':
                     if not download_image(test_image_requestslib, './image2.jpg', silent=True):
                         method_success = False
                     # Test PDF
-                    if not download(test_pdf_urllib, filetype='PDF', fileoutput='./datasheet.pdf'):
+                    if not download(test_pdf_urllib, filetype='PDF', fileoutput='./datasheet.pdf', silent=True):
                         method_success = False
                     # Wrong folder
-                    if download(test_pdf_urllib, filetype='PDF', fileoutput='./myfolder/datasheet.pdf'):
+                    if download(test_pdf_urllib, filetype='PDF', fileoutput='./myfolder/datasheet.pdf', silent=True):
                         method_success = False
                     # Test erroneous URL
                     if download_image('http', '', silent=True):
@@ -419,9 +419,23 @@ if __name__ == '__main__':
                         method_success = False
 
                 elif method_idx == 14:
-                    # Load configuration files with incorrect paths
-                    if config_interface.load_user_config_files('', ''):
+                    # Select one configuration file
+                    element14_config = os.path.join(settings.USER_SETTINGS['USER_FILES'], 'element14_config.yaml')
+                    # Delete the user configuration file
+                    os.remove(element14_config)
+                    # Try to load this file
+                    if config_interface.load_file(element14_config):
                         method_success = False
+
+                    if method_success:
+                        # Load user configuration files
+                        if not settings.load_user_config():
+                            method_success = False
+
+                    if method_success:
+                        # Load configuration files with incorrect paths
+                        if config_interface.load_user_config_files('', ''):
+                            method_success = False
 
                 elif method_idx == 15:
                     # Reload categories from file
