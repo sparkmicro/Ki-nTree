@@ -1238,18 +1238,30 @@ class CreateView(MainView):
 
         # KiCad data processing
         if settings.ENABLE_KICAD and not settings.ENABLE_ALTERNATE:
+            # Store "pseudo-category" as re-used in multiple places
+            pseudo_category = symbol.split(':')[0]
+            # Translate part info if InvenTree not enabled
+            if not settings.ENABLE_INVENTREE:
+                part_info = inventree_interface.translate_form_to_inventree(
+                    part_info=part_info,
+                    category_tree=[pseudo_category],
+                    is_custom=custom,
+                )
+                # Also add datasheet URL as part page URL
+                part_info['inventree_url'] = part_info['datasheet']
             part_info['Symbol'] = symbol
             part_info['Template'] = template.split('/')
             part_info['Footprint'] = footprint
 
             symbol_library_path = os.path.join(
                 settings.KICAD_SETTINGS['KICAD_SYMBOLS_PATH'],
-                f'{symbol.split(":")[0]}.kicad_sym',
+                f'{pseudo_category}.kicad_sym',
             )
 
             # Reset progress
             progress.CREATE_PART_PROGRESS = 0
-            # Create part
+            # Add part symbol to KiCAD
+            cprint('\n[MAIN]\tAdding part to KiCad', silent=settings.SILENT)
             kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(
                 part_data=part_info,
                 library_path=symbol_library_path,

@@ -259,8 +259,13 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     inventree_part['image'] = part_info['image'].replace(' ', '%20')
 
     # Load parameters map
-    parameter_map = config_interface.load_category_parameters(category=category_tree[0],
-                                                              supplier_config_path=settings.CONFIG_SUPPLIER_PARAMETERS, )
+    if category_tree:
+        parameter_map = config_interface.load_category_parameters(
+            category=category_tree[0],
+            supplier_config_path=settings.CONFIG_SUPPLIER_PARAMETERS,
+        )
+    else:
+        cprint('[INFO]\tWarning: Parameter map not loaded (no category selected)', silent=settings.SILENT)
 
     if not is_custom:
         # Add Parameters
@@ -270,9 +275,11 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
                 if inventree_param not in inventree_part['parameters'].keys():
                     if supplier_param != 'Manufacturer Part Number':
                         try:
-                            parameter_value = part_tools.clean_parameter_value(category=category_tree[0],
-                                                                               name=supplier_param,
-                                                                               value=part_info['parameters'][supplier_param])
+                            parameter_value = part_tools.clean_parameter_value(
+                                category=category_tree[0],
+                                name=supplier_param,
+                                value=part_info['parameters'][supplier_param],
+                            )
                             inventree_part['parameters'][inventree_param] = parameter_value
                         except:
                             cprint(f'[INFO]\tWarning: Parameter "{supplier_param}" not found in supplier data', silent=settings.SILENT)
