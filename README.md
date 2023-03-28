@@ -8,7 +8,7 @@
 
 ## New version (1.0) is coming soon!
 
-To install the beta release:
+To install the release candidate:
 ``` shell
 pip install --pre -U kintree
 ```
@@ -29,13 +29,14 @@ Ki-nTree works with:
 - [Digi-Key](https://developer.digikey.com/), [Mouser](https://www.mouser.com/api-hub/), [Element14](https://partner.element14.com/docs) and [LCSC](https://lcsc.com/) **enormous** part databases and free APIs
 - the awesome open-source [Digi-Key API python library](https://github.com/peeter123/digikey-api) built and maintained by [@peeter123](https://github.com/peeter123)
 - the [Mouser Python API](https://github.com/sparkmicro/mouser-api/) built and maintained by [@eeintech](https://github.com/eeintech)
-- the awesome open-source [InvenTree Inventory Management System](https://github.com/inventree/inventree) built and maintained by [@SchrodingersGat](https://github.com/SchrodingersGat)
-- [KiCad](https://www.kicad.org/) (of course!) and their open-source [library utils](https://gitlab.com/kicad/libraries/kicad-library-utils)
+- the awesome open-source [InvenTree Inventory Management System](https://github.com/inventree/inventree) built and maintained by [@SchrodingersGat](https://github.com/SchrodingersGat) and [@matmair](https://github.com/matmair)
+- [KiUtils](https://github.com/mvnmgrx/kiutils), an amazing and SCM-friendly KiCad file parser which is built and maintained by [@mvnmgrx](https://github.com/mvnmgrx)
 
 > **Important Note**
 >
-> Because of limited maintenance bandwidth, Ki-nTree versions `0.5.x` and newer will only support KiCad version **6**.
-> To keep using Ki-nTree with KiCad version **5**, use older `0.4.x` versions (`pip install kintree==0.4.8`).
+> Ki-nTree version `1.0.x` and forward support KiCad versions **6 and up**.
+> Ki-nTree versions `0.5.x` and `0.6.x` only support KiCad version **6**.
+> To use Ki-nTree with KiCad version **5**, use older `0.4.x` versions (`pip install kintree==0.4.8`).
 
 Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK Microsystems](https://www.sparkmicro.com/), who generously accepted to make it open-source!
 
@@ -137,7 +138,7 @@ Below is a summary table of the different configuration files, their function an
 | `digikey_categories.yaml` | Mapping between InvenTree categories and Digi-Key categories | :heavy_check_mark: |
 | `digikey_parameters.yaml` | Mapping between InvenTree parameters and Digi-Key parameters/attributes | :x: |
 
-> In versions `0.6.x` and older, Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attibutes (help wanted!)
+> Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attibutes (help wanted!)
 
 </p>
 </details>
@@ -230,7 +231,7 @@ git clone https://github.com/sparkmicro/Ki-nTree
 poetry install
 Installing dependencies from lock file
 ...
-Installing the current project: kintree (0.4.99)
+Installing the current project: kintree (1.0.99)
 ```
 > Note: the version is not accurate (placeholder only)
 
@@ -249,11 +250,11 @@ $ python -m kintree_gui
 1. Make sure you followed the previous installation steps, then run:
 ``` bash
 $ poetry build
-Building kintree (0.6.99)
+Building kintree (1.0.99)
   - Building sdist
-  - Built kintree-0.6.99.tar.gz
+  - Built kintree-1.0.99.tar.gz
   - Building wheel
-  - Built kintree-0.6.99-py3-none-any.whl
+  - Built kintree-1.0.99-py3-none-any.whl
 ```
 2. Exit the virtual environment (`Ctrl + D` on Linux; you can also close the
    terminal and reopen it in the same folder).
@@ -262,36 +263,15 @@ Building kintree (0.6.99)
    step. For example:
 
 ```bash
-pip install dist/kintree-0.6.99-py3-none-any.whl
+pip install dist/kintree-1.0.99-py3-none-any.whl
 ```
 
 3. You can now start Ki-nTree by typing `kintree` in the terminal, provided
    that your python dist path is a part of your `$PATH`.
 
-## Roadmap
-
-> Priority goes to implementing new features over GUI improvements  
-> Open to new ideas and pull requests :smiley:
-
-#### Versions 1.0.x or later
-(Strikethrough items are supported in V1.0.0 beta1 release)
-
-##### New Features
-~~- Revamp category selection based on hierarchical structure from InvenTree ([reference](https://github.com/sparkmicro/Ki-nTree/issues/87))~~  
-~~- Allow user to decide the category code to use for IPN~~  
-~~- Enable option to download and save PDF files locally/to internal server storage~~
-
-##### Improvements
-~~- Optimize the category search ([reference](https://github.com/sparkmicro/Ki-nTree/issues/104))~~  
-~~- Migrate KiCad library management to [KiUtils](https://github.com/mvnmgrx/kiutils) ([reference](https://github.com/sparkmicro/Ki-nTree/issues/119))~~  
-- Add support for KiCad V7 ([reference](https://github.com/sparkmicro/Ki-nTree/issues/120))
-
-##### GUI
-~~- Migrate to [Flet](https://github.com/flet-dev/flet) ([reference](https://github.com/sparkmicro/Ki-nTree/issues/37))~~
-
 ## License
 The Ki-nTree source code is licensed under the [GPL3.0 license](https://github.com/sparkmicro/Ki-nTree/blob/main/LICENSE) as it uses source code under that license:
-* https://gitlab.com/kicad/libraries/kicad-library-utils
+* https://github.com/mvnmgrx/kiutils
 * https://github.com/peeter123/digikey-api
 
 The [KiCad templates](https://github.com/sparkmicro/Ki-nTree/tree/main/kintree/kicad/templates) are licensed under the [Creative Commons CC0 1.0 license](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/kicad/templates/LICENSE) which means that "you can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission" ([reference](https://creativecommons.org/publicdomain/zero/1.0/)).
