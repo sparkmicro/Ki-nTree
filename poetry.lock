@@ -309,18 +309,11 @@ python-versions = "*"
 
 [[package]]
 name = "kiutils"
-version = "1.3.0"
+version = "1.4.0"
 description = "Simple and SCM-friendly KiCad file parser for KiCad 6.0 and up"
 category = "main"
 optional = false
 python-versions = ">=3.7"
-develop = false
-
-[package.source]
-type = "git"
-url = "https://github.com/mvnmgrx/kiutils.git"
-reference = "HEAD"
-resolved_reference = "94f0b0d11e13f36e0a41270042028739fe39893e"
 
 [[package]]
 name = "lib-detect-testenv"
@@ -399,7 +392,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pyopenssl"
-version = "23.1.0"
+version = "23.1.1"
 description = "Python wrapper module around the OpenSSL library"
 category = "main"
 optional = false
@@ -615,7 +608,7 @@ wrapt = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "199846bcaf0d88959565981b52f7589e39261042ccd11764c8c5caa958efd306"
+content-hash = "a2064f909db4af77420e07dccd2d9a39a3104c643dcdf15767d94d5574e29d6c"
 
 [metadata.files]
 anyio = [
@@ -927,7 +920,10 @@ invoke = [
     {file = "invoke-1.7.3-py3-none-any.whl", hash = "sha256:d9694a865764dd3fd91f25f7e9a97fb41666e822bbb00e670091e3f43933574d"},
     {file = "invoke-1.7.3.tar.gz", hash = "sha256:41b428342d466a82135d5ab37119685a989713742be46e42a3a399d685579314"},
 ]
-kiutils = []
+kiutils = [
+    {file = "kiutils-1.4.0-py3-none-any.whl", hash = "sha256:bcb63d495f7f97e08203e757eecb86cf37793093ef178d3a5f46b5edeb767b3d"},
+    {file = "kiutils-1.4.0.tar.gz", hash = "sha256:fcdb6ddae050729670854b3e233e86ebb71b9c9e568908d2eb70192d6ec9988f"},
+]
 lib-detect-testenv = [
     {file = "lib_detect_testenv-2.0.3-py3-none-any.whl", hash = "sha256:b6113bf4974a0e91db2cb0bc468b69a919be9c6ded27765229b3ee7a6dcf6302"},
     {file = "lib_detect_testenv-2.0.3.tar.gz", hash = "sha256:3b02e4c874aaf62ef819fa662cc879a8c29791983b790791863b6613357e201c"},
@@ -978,8 +974,8 @@ pycparser = [
     {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
 ]
 pyopenssl = [
-    {file = "pyOpenSSL-23.1.0-py3-none-any.whl", hash = "sha256:fb96e936866ad65662c22d0de84ca0fba58397893cdfe0f01334fa93382af23c"},
-    {file = "pyOpenSSL-23.1.0.tar.gz", hash = "sha256:8cb78010a1eb2c8e24b851693b7b04dfe9b1dc0a5ab3843927b10a85b1dfbb2e"},
+    {file = "pyOpenSSL-23.1.1-py3-none-any.whl", hash = "sha256:9e0c526404a210df9d2b18cd33364beadb0dc858a739b885677bc65e105d4a4c"},
+    {file = "pyOpenSSL-23.1.1.tar.gz", hash = "sha256:841498b9bec61623b1b6c47ebbc02367c07d60e0e195f19790817f10cc8db0b7"},
 ]
 pyyaml = [
     {file = "PyYAML-5.4.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:3b2b1824fe7112845700f815ff6a489360226a5609b96ec2190a45e62a9fc922"},
