@@ -155,9 +155,16 @@ if __name__ == '__main__':
                     kicad_result = False
                     inventree_result = False
                     # Fetch supplier data
-                    supplier_info = inventree_interface.supplier_search(supplier='Digi-Key', part_number=number, test_mode=True)
+                    supplier_info = inventree_interface.supplier_search(
+                        supplier='Digi-Key',
+                        part_number=number,
+                        test_mode=True,
+                    )
                     # Translate to form
-                    part_info = inventree_interface.translate_supplier_to_form(supplier='Digi-Key', part_info=supplier_info)
+                    part_info = inventree_interface.translate_supplier_to_form(
+                        supplier='Digi-Key',
+                        part_info=supplier_info,
+                    )
                     # Stitch categories and parameters
                     part_info.update({
                         'category_tree': [supplier_info['category'], supplier_info['subcategory']],
