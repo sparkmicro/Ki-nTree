@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/logo.png" width="auto" height="auto"> Ki-nTree
+# <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/logo.png" width="auto" height="32"> Ki-nTree
 ### Fast part creation in [KiCad](https://kicad.org/) and [InvenTree](https://inventree.org/) 
 [![License: GPL v3.0](https://img.shields.io/badge/license-GPL_v3.0-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Versions](https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/python_versions.svg)](https://www.python.org/)
@@ -30,7 +30,7 @@ Ki-nTree works with:
 - the amazing [Digi-Key API python library](https://github.com/peeter123/digikey-api) built and maintained by [@peeter123](https://github.com/peeter123)
 - the [Mouser Python API](https://github.com/sparkmicro/mouser-api/) built and maintained by [@eeintech](https://github.com/eeintech)
 
-> **Important Note**
+> :warning: **Important Note**
 >
 > Ki-nTree version `1.0.x` and forward support KiCad versions **6 and up**.
 >
@@ -122,18 +122,18 @@ Below is a summary table of the different configuration files, their function an
 | Filename | Function | GUI Update? |
 | --- | --- | --- |
 | `categories.yaml` | InvenTree categories hierarchy tree and category codes for IPN generation (see [Before Starting section](#before-starting)) | :x: |
-| `general.yaml` | General user settings | _Partial_ |
-| `internal_part_number.yaml` | Controls for IPN generation | :x: |
+| `general.yaml` | General user settings | :heavy_check_mark: |
+| `internal_part_number.yaml` | Controls for IPN generation | :heavy_check_mark: |
 | `inventree_<env>.yaml` | InvenTree login credentials, per environment (`<env>=['dev', 'prod']`) | :heavy_check_mark: |
 | `kicad.yaml` | KiCad symbol, footprint and library paths | :heavy_check_mark: |
 | `kicad_map.yaml` | Mapping between InvenTree parent categories and KiCad symbol/footprint libraries and templates | :x: |
 | `parameters.yaml` | List of InvenTree parameters templates (see [InvenTree Part Parameters documentation](https://docs.inventree.org/en/latest/part/parameter/)) | :x: |
 | `parameters_filters.yaml` | Mapping between InvenTree parent categories and InvenTree parameters templates | :x: |
-| `search_api.yaml` | Generic controls for Supplier search APIs like cache validity and category matching ratio | :x: |
+| `search_api.yaml` | Generic controls for Supplier search APIs like cache validity | :heavy_check_mark: |
 | `supplier_parameters.yaml` | Mapping between InvenTree parameters templates and suppliers parameters/attributes, sorted by InvenTree parent categories (see [Part Parameters section](#part-parameters)) | :x: |
 | `<supplier>_config.yaml` | Mapping for supplier name and search results fields, to overwrite defaults (`<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`) | :x: |
 | `<supplier>_api.yaml` | Required supplier API fields, custom to each supplier (`<supplier>=['digikey', 'element14', 'lcsc', 'mouser']`) | :heavy_check_mark: |
-| `digikey_categories.yaml` | Mapping between InvenTree categories and Digi-Key categories | :heavy_check_mark: |
+| `digikey_categories.yaml` | Mapping between InvenTree categories and Digi-Key categories | :x: |
 | `digikey_parameters.yaml` | Mapping between InvenTree parameters and Digi-Key parameters/attributes | :x: |
 
 > Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attibutes (help wanted!)
