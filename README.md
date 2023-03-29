@@ -1,5 +1,5 @@
-# Ki-nTree
-### Fast part creation in [KiCad](https://kicad.org/) and [InvenTree](https://inventree.readthedocs.io/) 
+# <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/logo.png" width="auto" height="auto"> Ki-nTree
+### Fast part creation in [KiCad](https://kicad.org/) and [InvenTree](https://inventree.org/) 
 [![License: GPL v3.0](https://img.shields.io/badge/license-GPL_v3.0-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Versions](https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/python_versions.svg)](https://www.python.org/)
 [![PyPI](https://img.shields.io/pypi/v/kintree)](https://pypi.org/project/kintree/)
@@ -13,11 +13,9 @@ To install the release candidate:
 pip install --pre -U kintree
 ```
 
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_preview.png" width="auto" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_example.png" width="auto" height="auto">
 
 ## Demo Videos :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) :fast_forward: [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
-
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_example.png"  width="auto" height="auto">
 
 ## Introduction
 Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
@@ -27,16 +25,18 @@ Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
 
 Ki-nTree works with:
 - [Digi-Key](https://developer.digikey.com/), [Mouser](https://www.mouser.com/api-hub/), [Element14](https://partner.element14.com/docs) and [LCSC](https://lcsc.com/) **enormous** part databases and free APIs
-- the awesome open-source [Digi-Key API python library](https://github.com/peeter123/digikey-api) built and maintained by [@peeter123](https://github.com/peeter123)
-- the [Mouser Python API](https://github.com/sparkmicro/mouser-api/) built and maintained by [@eeintech](https://github.com/eeintech)
 - the awesome open-source [InvenTree Inventory Management System](https://github.com/inventree/inventree) built and maintained by [@SchrodingersGat](https://github.com/SchrodingersGat) and [@matmair](https://github.com/matmair)
-- [KiUtils](https://github.com/mvnmgrx/kiutils), an amazing and SCM-friendly KiCad file parser which is built and maintained by [@mvnmgrx](https://github.com/mvnmgrx)
+- the reliable and SCM-friendly KiCad file parser [KiUtils](https://github.com/mvnmgrx/kiutils) built and maintained by [@mvnmgrx](https://github.com/mvnmgrx)
+- the amazing [Digi-Key API python library](https://github.com/peeter123/digikey-api) built and maintained by [@peeter123](https://github.com/peeter123)
+- the [Mouser Python API](https://github.com/sparkmicro/mouser-api/) built and maintained by [@eeintech](https://github.com/eeintech)
 
 > **Important Note**
 >
 > Ki-nTree version `1.0.x` and forward support KiCad versions **6 and up**.
-> Ki-nTree versions `0.5.x` and `0.6.x` only support KiCad version **6**.
-> To use Ki-nTree with KiCad version **5**, use older `0.4.x` versions (`pip install kintree==0.4.8`).
+>
+> Ki-nTree versions `0.5.x` and `0.6.x` only support KiCad version **6** (`pip install kintree==0.6.6`).
+>
+> To use with KiCad version **5**, use older Ki-nTree `0.4.x` versions (`pip install kintree==0.4.8`).
 
 Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK Microsystems](https://www.sparkmicro.com/), who generously accepted to make it open-source!
 
@@ -93,8 +93,6 @@ Ki-nTree is [available on Arch Linux's AUR](https://aur.archlinux.org/packages/p
 
 ### Usage Instructions
 
-> :warning: Warning: **KiCad library writer is still in development**: Make sure to open KiCad libraries inside the symbol editor and save them after adding symbols.
-
 #### Before Starting
 
 If you intend to use Ki-nTree with InvenTree, this tool offers to setup the InvenTree category tree with a simple script that you can run as follow:
@@ -111,7 +109,7 @@ If the InvenTree category tree is **not setup** before starting to use Ki-nTree,
 
 Configuration files are stored in the folder pointed by the `Configuration Files Folder` path in the "User Settings" window:
 
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/settings_user_cache.png" width="600" height="auto">
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_settings_user.png" width="600" height="auto">
 
 
 <details>
