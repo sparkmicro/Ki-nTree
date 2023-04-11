@@ -78,8 +78,7 @@ footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'fil
 # Check the current origin
 proc = subprocess.Popen('git config --get remote.origin.url'.split(), stdout=subprocess.PIPE)
 output, error = proc.communicate()
-print(output)
-ENABLE_API = output.decode('utf-8').replace('\n', '') == 'git@github.com:sparkmicro/Ki-nTree.git'
+ENABLE_API = output.decode('utf-8').replace('\n', '') == 'https://github.com/sparkmicro/Ki-nTree'
 
 if ENABLE_API:
     # Disable Digi-Key API logging
