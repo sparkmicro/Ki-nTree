@@ -25,7 +25,8 @@ def init_gui(page: ft.Page):
     # Theme
     update_theme(page)
 
-    # Creating a progress bar that will be used to show the user that the app is busy doing something.
+    # Creating a progress bar that will be used
+    # to show the user that the app is busy doing something
     page.splash = ft.ProgressBar(visible=False)
 
     # Init dialogs
@@ -94,7 +95,12 @@ def kintree_gui(page: ft.Page):
         # Route and render
         page.go(top_view.route)
         if 'main' in top_view.route:
-            handle_transition(page, transition=False, update_page=True, timeout=0.3)
+            handle_transition(
+                page,
+                transition=False,
+                update_page=True,
+                timeout=0.3,
+            )
         if 'part' in top_view.route:
             part_view.partial_update()
         elif 'inventree' in top_view.route:
