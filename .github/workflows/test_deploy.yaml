@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.8', '3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11']
 
     steps:
       - name: Checkout code
@@ -53,12 +53,9 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python-version: ['3.8', '3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11']
 
     steps:
-      # - name: Test SnapEDA API
-      #   run: |
-      #     curl snapeda.eeinte.ch/?SN74LV4T125PWR
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -74,7 +71,7 @@ jobs:
           git clone https://github.com/inventree/InvenTree/
           mkdir InvenTree/static
           cp tests/files/inventree_default_db.sqlite3 InvenTree/
-          cd InvenTree/ && invoke install && invoke migrate && cd -
+          cd InvenTree/ && git switch stable && invoke install && invoke migrate && cd -
       - name: Ki-nTree setup
         run: |
           invoke install

@@ -9,8 +9,3 @@ def inventree_to_kicad(part_data: dict, library_path: str, template_path=None, s
         template_path=template_path,
         show_progress=show_progress
     )
-
-# NOT YET SUPPORTED - REMOVE?
-# def delete_part(part_number: str, library_path: str) -> bool:
-#     ''' Delete KiCad symbol from library '''
-#     pass
