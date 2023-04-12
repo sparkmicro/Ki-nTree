@@ -6,9 +6,9 @@
 [![Tests | Linting | Publishing](https://github.com/sparkmicro/Ki-nTree/actions/workflows/test_deploy.yaml/badge.svg)](https://github.com/sparkmicro/Ki-nTree/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=main&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=main)
 
-<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_example.png" width="auto" height="auto">
+## :fast_forward: [Demo Video](https://youtu.be/xyz)
 
-## Demo Videos :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) :fast_forward: [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
+<img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_example.png" width="auto" height="auto">
 
 ## Introduction
 Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
@@ -37,7 +37,7 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 
 ### Requirements
 
-* Ki-nTree is currently tested for Python 3.8 to 3.10 versions.
+* Ki-nTree is currently tested for Python 3.8 to 3.11 versions.
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
@@ -103,7 +103,6 @@ If the InvenTree category tree is **not setup** before starting to use Ki-nTree,
 Configuration files are stored in the folder pointed by the `Configuration Files Folder` path in the "User Settings" window:
 
 <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_settings_user.png" width="600" height="auto">
-
 
 <details>
 <summary><b>Click here to read about configuration files</b></summary>

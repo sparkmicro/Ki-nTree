@@ -1,13 +1,10 @@
 [run]
 omit =
-    # Do not run coverage on virtual environment files
-    env-kintree/*
-    .venv/*
-    # Skip UI coverage
+    # Do not run coverage on environment files
+    *env*
+    # Skip GUI coverage
     kintree/kintree_gui.py
-    kintree/common/progress.py
     kintree/gui/*
-    # Skip wrapt_timeout_decorator
-    kintree/wrapt_timeout_decorator/*
+    kintree/common/progress.py
     # Skip test script
     run_tests.py

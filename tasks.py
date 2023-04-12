@@ -17,14 +17,6 @@ def install(c, is_install=True):
         cprint('[MAIN]\tUpdating required dependencies')
     c.run('pip install -U -r requirements.txt', hide='out')
 
-    # if is_install:
-    #     cprint('[MAIN]\tInstalling optional dependencies')
-    #     try:
-    #         c.run('pip install -U python-Levenshtein', hide=True)
-    #     except UnexpectedExit:
-    #         cprint('\n[INFO]\tFailed to install python-Levenshtein...\t'
-    #                'You may be missing python3.x-dev')
-
 
 @task
 def update(c):
