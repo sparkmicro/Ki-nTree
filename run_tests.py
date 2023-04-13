@@ -1,6 +1,5 @@
 import os
 import sys
-import subprocess
 
 import kintree.config.settings as settings
 from kintree.common.tools import cprint, create_library, download, download_image
@@ -14,7 +13,10 @@ from kintree.setup_inventree import setup_inventree
 
 # SETTINGS
 # Enable API tests
-ENABLE_API = False
+try:
+    ENABLE_API = int(sys.argv[1])
+except IndexError:
+    ENABLE_API = 0
 # Enable InvenTree tests
 ENABLE_INVENTREE = True
 # Enable KiCad tests
@@ -75,11 +77,6 @@ test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.kicad_sym'
 symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
 footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
 
-# Check the current origin
-proc = subprocess.Popen('git config --get remote.origin.url'.split(), stdout=subprocess.PIPE)
-output, error = proc.communicate()
-ENABLE_API = output.decode('utf-8').replace('\n', '') == 'https://github.com/sparkmicro/Ki-nTree'
-
 if ENABLE_API:
     # Disable Digi-Key API logging
     digikey_api.disable_api_logger()
@@ -129,8 +126,9 @@ if ENABLE_API:
     else:
         cprint('[ PASS ]')
 
+    cprint('\n-----')
+
 # Setup InvenTree
-cprint('\n-----')
 setup_inventree()
 cprint('\n-----')
 

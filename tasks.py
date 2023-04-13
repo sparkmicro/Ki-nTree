@@ -90,7 +90,7 @@ def coverage_report(c, open_browser=True):
 
 
 @task
-def test(c):
+def test(c, enable_api=0):
     """
     Run Ki-nTree tests
     """
@@ -107,7 +107,7 @@ def test(c):
     # Copy test files
     c.run('cp -r tests/ kintree/')
     # Run Tests
-    run_tests = c.run('coverage run run_tests.py')
+    run_tests = c.run(f'coverage run run_tests.py {enable_api}')
     if run_tests.exited == 0:
         coverage_report(c, open_browser=False)
 
