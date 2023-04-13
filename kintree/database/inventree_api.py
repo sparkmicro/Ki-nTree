@@ -19,14 +19,22 @@ from inventree.company import Company, ManufacturerPart, SupplierPart
 from inventree.part import Part, PartCategory, Parameter, ParameterTemplate
 
 
-def connect(server: str, username: str, password: str, connect_timeout=5, silent=False) -> bool:
+def connect(server: str,
+            username: str,
+            password: str,
+            connect_timeout=5,
+            silent=False,
+            proxies={}) -> bool:
     ''' Connect to InvenTree server and create API object '''
     from wrapt_timeout_decorator import timeout
     global inventree_api
 
     @timeout(dec_timeout=connect_timeout)
     def get_inventree_api_timeout():
-        return InvenTreeAPI(server, username=username, password=password)
+        return InvenTreeAPI(server,
+                            username=username,
+                            password=password,
+                            proxies=proxies)
 
     try:
         inventree_api = get_inventree_api_timeout()

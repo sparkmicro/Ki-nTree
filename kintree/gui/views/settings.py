@@ -142,6 +142,16 @@ SETTINGS = {
             ft.TextField(),
             False,  # Browse disabled
         ],
+        'Http Proxy': [
+            'PROXY_HTTP',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
+        'Https Proxy': [
+            'PROXY_HTTPS',
+            ft.TextField(),
+            False,  # Browse disabled
+        ],
         'Default Part Revision': [
             'INVENTREE_DEFAULT_REV',
             ft.TextField(),
@@ -739,6 +749,9 @@ class InvenTreeSettingsView(SettingsView):
                 server=SETTINGS[self.title]['Server Address'][1].value,
                 username=SETTINGS[self.title]['Username'][1].value,
                 password=SETTINGS[self.title]['Password'][1].value,
+                proxies={'http': SETTINGS[self.title]['Http Proxy'][1].value,
+                         'https': SETTINGS[self.title]['Https Proxy'][1].value
+                         },
                 user_config_path=self.settings_file[0]
             )
             # Alert user
