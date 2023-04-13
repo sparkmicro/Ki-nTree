@@ -19,6 +19,7 @@ def connect_to_server(timeout=5) -> bool:
         connect = inventree_api.connect(server=settings.SERVER_ADDRESS,
                                         username=settings.USERNAME,
                                         password=settings.PASSWORD,
+                                        proxies=settings.PROXIES,
                                         connect_timeout=timeout)
     except TimeoutError:
         pass
