@@ -14,12 +14,17 @@ def connect_to_server(timeout=5) -> bool:
     ''' Connect to InvenTree server using user settings '''
     connect = False
     settings.load_inventree_settings()
+    if not settings.USERNAME:
+        token = settings.PASSWORD
+    else:
+        token = ''
 
     try:
         connect = inventree_api.connect(server=settings.SERVER_ADDRESS,
                                         username=settings.USERNAME,
                                         password=settings.PASSWORD,
                                         proxies=settings.PROXIES,
+                                        token=token,
                                         connect_timeout=timeout)
     except TimeoutError:
         pass

@@ -137,7 +137,7 @@ SETTINGS = {
             ft.TextField(),
             False,  # Browse disabled
         ],
-        'Password': [
+        'Password or Token': [
             'PASSWORD',
             ft.TextField(),
             False,  # Browse disabled
@@ -748,7 +748,7 @@ class InvenTreeSettingsView(SettingsView):
                 enable=global_settings.ENABLE_INVENTREE,
                 server=SETTINGS[self.title]['Server Address'][1].value,
                 username=SETTINGS[self.title]['Username'][1].value,
-                password=SETTINGS[self.title]['Password'][1].value,
+                password=SETTINGS[self.title]['Password or Token'][1].value,
                 proxies={'http': SETTINGS[self.title]['Http Proxy'][1].value,
                          'https': SETTINGS[self.title]['Https Proxy'][1].value
                          },
