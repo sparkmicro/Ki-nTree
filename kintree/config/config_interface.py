@@ -98,7 +98,7 @@ def load_inventree_user_settings(user_config_path: str) -> dict:
     except TypeError:
         user_settings['PASSWORD'] = ''
 
-    proxies = user_settings.get('PROXIES',None)
+    proxies = user_settings.get('PROXIES', None)
     if not proxies:
         user_settings['PROXY_HTTP'] = ''
         user_settings['PROXY_HTTPS'] = ''
