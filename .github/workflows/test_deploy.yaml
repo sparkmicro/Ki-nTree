@@ -64,16 +64,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Repo tests
-        run: |
-          echo ${{ github.event.pull_request.head.repo }}
-          echo ${{ github.event.pull_request.head.repo.name }}
-          echo ${{ github.event.pull_request.head.repo.full_name }}
-          echo ${{ github.event.pull_request.head.repo.url }}
-          echo ${{ github.event.pull_request.base.repo }}
-          echo ${{ github.event.pull_request.base.repo.name }}
-          echo ${{ github.event.pull_request.base.repo.full_name }}
-          echo ${{ github.event.pull_request.base.repo.url }}
+      # - name: Repo tests
+      #   run: |
+      #     echo ${{ github.event.pull_request.head.repo }}
+      #     echo ${{ github.event.pull_request.head.repo.name }}
+      #     echo ${{ github.event.pull_request.head.repo.full_name }}
+      #     echo ${{ github.event.pull_request.head.repo.url }}
+      #     echo ${{ github.event.pull_request.base.repo }}
+      #     echo ${{ github.event.pull_request.base.repo.name }}
+      #     echo ${{ github.event.pull_request.base.repo.full_name }}
+      #     echo ${{ github.event.pull_request.base.repo.url }}
       - name: Install dependencies
         run: |
           sudo apt install sqlite3
@@ -100,7 +100,7 @@ jobs:
           export len_log=$(cat gui.log | wc -l)
           [[ ${len_log} -eq 0 ]] && true || false
       - name: Setup Digi-Key token
-        if: github.event.pull_request.head.repo.name == 'sparkmicro/Ki-nTree'
+        if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
         run: |
           git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git
           cd digikey-token/
@@ -115,21 +115,21 @@ jobs:
           echo -e "Digi-Key Token: $dk_token\n"
           cd ..
       - name: Run tests
-        if: github.event.pull_request.head.repo.name == 'sparkmicro/Ki-nTree'
+        if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
         run: |
           invoke test -e 1
         env:
           MOUSER_PART_API_KEY: ${{ secrets.MOUSER_PART_API_KEY }}
           ELEMENT14_PART_API_KEY: ${{ secrets.ELEMENT14_PART_API_KEY }}
       - name: Run tests (skip APIs)
-        if: github.event.pull_request.head.repo.name != 'sparkmicro/Ki-nTree'
+        if: github.event.pull_request.head.repo.full_name != 'sparkmicro/Ki-nTree'
         run: |
           invoke test -e 0
       - name: Run build
         run: |
           invoke build
       - name: Coveralls
-        if: github.event.pull_request.head.repo.name == 'sparkmicro/Ki-nTree'
+        if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
         run: |
           coveralls --version
           coveralls --service=github
