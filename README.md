@@ -159,7 +159,7 @@ Note that each time you enable the "Add" permission to an object, InvenTree auto
 2. Click on "Settings > Supplier > Mouser" and fill in the Mouser part search API key
 3. Click on "Settings > Supplier > Element14" and fill in the Element14 product search API key (key is shared with Farnell and Newark)
 4. Click on "Settings > KiCad", browse to the location where KiCad symbol, template and footprint libraries are stored on your computer then click "Save"
-5. If you intend to use InvenTree with this tool, click on "Settings > InvenTree" and fill in your InvenTree server address and credentials then click "Save" (optional: click on "Test" to get an API token)
+5. If you intend to use InvenTree with this tool, click on "Settings > InvenTree" and fill in your InvenTree server address and credentials then click "Save" (optional: click on "Test" to check communication with server) You can also use token authentication directly by leaving the username field empty and put your token into the password field.
 
 #### Get Digi-Key API token
 <details>

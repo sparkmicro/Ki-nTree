@@ -98,10 +98,23 @@ def load_inventree_user_settings(user_config_path: str) -> dict:
     except TypeError:
         user_settings['PASSWORD'] = ''
 
+    proxies = user_settings.get('PROXIES', None)
+    if not proxies:
+        user_settings['PROXY_HTTP'] = ''
+        user_settings['PROXY_HTTPS'] = ''
+    else:
+        user_settings['PROXY_HTTP'] = proxies['http']
+        user_settings['PROXY_HTTPS'] = proxies['https']
+
     return user_settings
 
 
-def save_inventree_user_settings(enable: bool, server: str, username: str, password: str, user_config_path: str):
+def save_inventree_user_settings(enable: bool,
+                                 server: str,
+                                 username: str,
+                                 password: str,
+                                 proxies: dict,
+                                 user_config_path: str):
     ''' Save InvenTree user settings to file '''
     user_settings = {}
 
@@ -110,6 +123,7 @@ def save_inventree_user_settings(enable: bool, server: str, username: str, passw
     user_settings['USERNAME'] = username
     # Use base64 encoding to make password unreadable inside the file
     user_settings['PASSWORD'] = base64.b64encode(password.encode())
+    user_settings['PROXIES'] = proxies
 
     return dump_file(user_settings, user_config_path)
 
