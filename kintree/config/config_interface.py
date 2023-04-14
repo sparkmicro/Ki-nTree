@@ -417,11 +417,19 @@ def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
     return dump_file(supplier_categories, supplier_config_path)
 
 
-def load_category_parameters(category: str, supplier_config_path: str) -> dict:
+def load_category_parameters(categories: list, supplier_config_path: str) -> dict:
     ''' Load Supplier parameters mapping from Supplier settings file '''
     try:
-        category_parameters = load_file(supplier_config_path)[category]
+        category_file = load_file(supplier_config_path)
     except:
+        return None
+    category_parameters = None
+    for category in reversed(categories):
+        try:
+            category_parameters = category_file[category]
+            break
+        except: pass
+    if not category_parameters:
         return None
 
     category_parameters_inversed = {}
