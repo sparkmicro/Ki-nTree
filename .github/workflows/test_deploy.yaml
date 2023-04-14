@@ -115,14 +115,14 @@ jobs:
         if: github.event.pull_request.head.repo.full_name != 'sparkmicro/Ki-nTree'
         run: |
           invoke test -e 0
-      - name: Run build
-        run: |
-          invoke build
       - name: Coveralls
         if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
         run: |
           coveralls --version
           coveralls --service=github
+      - name: Run build
+        run: |
+          invoke build
 
   test-publish:
     name: Publish to Test PyPI, then PyPI
