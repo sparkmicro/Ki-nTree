@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.8', '3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11']
 
     steps:
       - name: Checkout code
@@ -49,16 +49,15 @@ jobs:
       INVENTREE_ENV: 0
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TOKEN_DIGIKEY: ${{ secrets.TOKEN_DIGIKEY }}
+      DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
+      DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
 
     continue-on-error: true
     strategy:
       matrix:
-        python-version: ['3.8', '3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11']
 
     steps:
-      # - name: Test SnapEDA API
-      #   run: |
-      #     curl snapeda.eeinte.ch/?SN74LV4T125PWR
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -74,7 +73,7 @@ jobs:
           git clone https://github.com/inventree/InvenTree/
           mkdir InvenTree/static
           cp tests/files/inventree_default_db.sqlite3 InvenTree/
-          cd InvenTree/ && invoke install && invoke migrate && cd -
+          cd InvenTree/ && git switch stable && invoke install && invoke migrate && cd -
       - name: Ki-nTree setup
         run: |
           invoke install
@@ -90,37 +89,40 @@ jobs:
           cat gui.log
           export len_log=$(cat gui.log | wc -l)
           [[ ${len_log} -eq 0 ]] && true || false
-      - name: Digi-Key API setup
+      - name: Setup Digi-Key token
+        if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
         run: |
           git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git
-          cp digikey-token/token_storage.json ~/.config/kintree/cache/
-          cat ~/.config/kintree/cache/token_storage.json
+          cd digikey-token/
+          python digikey_token_refresh.py
+          git config --global user.email "kintree@github.actions"
+          git config --global user.name "Ki-nTree Github Actions"
+          git add -u
+          git diff-index --quiet HEAD || git commit -m "Update token"
+          git push origin master
+          cp token_storage.json ~/.config/kintree/cache/
+          dk_token=$(cat ~/.config/kintree/cache/token_storage.json)
+          echo -e "Digi-Key Token: $dk_token\n"
+          cd ..
       - name: Run tests
+        if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
         run: |
-          invoke test
+          invoke test -e 1
         env:
-          DIGIKEY_CLIENT_ID: ${{ secrets.DIGIKEY_CLIENT_ID }}
-          DIGIKEY_CLIENT_SECRET: ${{ secrets.DIGIKEY_CLIENT_SECRET }}
           MOUSER_PART_API_KEY: ${{ secrets.MOUSER_PART_API_KEY }}
           ELEMENT14_PART_API_KEY: ${{ secrets.ELEMENT14_PART_API_KEY }}
+      - name: Run tests (skip APIs)
+        if: github.event.pull_request.head.repo.full_name != 'sparkmicro/Ki-nTree'
+        run: |
+          invoke test -e 0
       - name: Coveralls
+        if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
         run: |
           coveralls --version
           coveralls --service=github
       - name: Run build
         run: |
           invoke build
-      - name: Push Digi-Key Token
-        run: |
-          cd digikey-token/
-          git pull
-          cp ~/.config/kintree/cache/token_storage.json .
-          git config --global user.email "kintree@github.actions"
-          git config --global user.name "Ki-nTree Github Actions"
-          git add -u
-          git diff-index --quiet HEAD || git commit -m "Updated token"
-          git push origin master
-          cd ..
 
   test-publish:
     name: Publish to Test PyPI, then PyPI

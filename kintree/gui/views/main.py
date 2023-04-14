@@ -24,10 +24,9 @@ from ...search import snapeda_api
 
 # Main AppBar
 main_appbar = ft.AppBar(
-    # leading=ft.Icon(ft.icons.DOUBLE_ARROW),
     leading=ft.Container(
         content=ft.Image(
-            src=os.path.join(settings.PROJECT_DIR, 'logo.png'),
+            src=os.path.join(settings.PROJECT_DIR, 'gui', 'logo.png'),
             fit=ft.ImageFit.CONTAIN,
         ),
         padding=ft.padding.only(left=10),

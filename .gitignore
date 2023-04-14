@@ -2,7 +2,7 @@
 dist/
 build/
 *.spec
-# Cache-backup files
+# Cache and backup files
 *__pycache__*
 *.bck
 # Test files

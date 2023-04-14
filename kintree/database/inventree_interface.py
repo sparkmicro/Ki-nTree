@@ -545,9 +545,14 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                     cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
 
         if kicad:
+            try:
+                symbol_name = ipn
+            except UnboundLocalError:
+                symbol_name = inventree_part.get('manufacturer_part_number')
+
             # Create symbol & footprint parameters
             if symbol:
-                symbol = f'{symbol.split(":")[0]}:{ipn}'
+                symbol = f'{symbol.split(":")[0]}:{symbol_name}'
                 inventree_part['parameters']['Symbol'] = symbol
             if footprint:
                 inventree_part['parameters']['Footprint'] = footprint
