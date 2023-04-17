@@ -428,7 +428,8 @@ def load_category_parameters(categories: list, supplier_config_path: str) -> dic
         try:
             category_parameters = category_file[category]
             break
-        except: pass
+        except:
+            pass
     if not category_parameters:
         return None
 
