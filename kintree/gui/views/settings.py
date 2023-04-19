@@ -142,13 +142,13 @@ SETTINGS = {
             ft.TextField(),
             False,  # Browse disabled
         ],
-        'Http Proxy': [
-            'PROXY_HTTP',
-            ft.TextField(),
+        'Enable Proxy Support': [
+            'ENABLE_PROXY',
+            SwitchWithRefs(),
             False,  # Browse disabled
         ],
-        'Https Proxy': [
-            'PROXY_HTTPS',
+        'Proxy': [
+            'PROXY',
             ft.TextField(),
             False,  # Browse disabled
         ],
@@ -401,7 +401,10 @@ class SettingsView(CommonView):
                 field,
             )
         elif type(field) == ft.Switch or type(field) == SwitchWithRefs:
-            field.on_change = lambda _: self.save()
+            if 'proxy' in name.lower():
+                field.on_change = lambda _: None
+            else:
+                field.on_change = lambda _: self.save()
             field.label = name
             column.controls.append(
                 field,
@@ -742,16 +745,24 @@ class InvenTreeSettingsView(SettingsView):
     ]
 
     def save(self, file=None, dialog=True):
+        address = SETTINGS[self.title]['Server Address'][1].value
+        proxy = SETTINGS[self.title]['Proxy'][1].value
+        enable_proxy = SETTINGS[self.title]['Enable Proxy Support'][1].value
+        if not enable_proxy:
+            proxies = {}
+        elif address.startswith('https'):
+            proxies = {'https': proxy}
+        else:
+            proxies = {'http': proxy}
         if file is None:
             # Save to InvenTree file
             config_interface.save_inventree_user_settings(
                 enable=global_settings.ENABLE_INVENTREE,
-                server=SETTINGS[self.title]['Server Address'][1].value,
+                server=address,
                 username=SETTINGS[self.title]['Username'][1].value,
                 password=SETTINGS[self.title]['Password or Token'][1].value,
-                proxies={'http': SETTINGS[self.title]['Http Proxy'][1].value,
-                         'https': SETTINGS[self.title]['Https Proxy'][1].value
-                         },
+                enable_proxy=enable_proxy,
+                proxies=proxies,
                 user_config_path=self.settings_file[0]
             )
             # Alert user
@@ -828,6 +839,11 @@ class InvenTreeSettingsView(SettingsView):
                 )
             )
         )
+
+        # Link Proxy Switch to the input field
+        ref = ft.Ref[ft.TextField]()
+        ref.current = SETTINGS[self.title]['Proxy'][1]
+        SETTINGS[self.title]['Enable Proxy Support'][1].refs = [ref]
 
         # Create IPN fields
         ipn_fields_ref = ft.Ref[ft.Row]()

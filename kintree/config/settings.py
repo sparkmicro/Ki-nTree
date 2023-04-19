@@ -308,6 +308,7 @@ def load_inventree_settings():
     global SERVER_ADDRESS
     global USERNAME
     global PASSWORD
+    global ENABLE_PROXY
     global PROXIES
     global PART_URL_ROOT
 
@@ -316,6 +317,7 @@ def load_inventree_settings():
     SERVER_ADDRESS = inventree_settings.get('SERVER_ADDRESS', None)
     USERNAME = inventree_settings.get('USERNAME', None)
     PASSWORD = inventree_settings.get('PASSWORD', None)
+    ENABLE_PROXY = inventree_settings.get('ENABLE_PROXY', False)
     PROXIES = inventree_settings.get('PROXIES', {})
     # Part URL
     if SERVER_ADDRESS:
