@@ -10,14 +10,17 @@ from kintree.search import digikey_api, mouser_api, element14_api, lcsc_api
 from kintree.search.snapeda_api import test_snapeda_api
 from kintree.setup_inventree import setup_inventree
 
+
 # SETTINGS
+# Enable API tests
+try:
+    ENABLE_API = int(sys.argv[1])
+except IndexError:
+    ENABLE_API = 0
 # Enable InvenTree tests
 ENABLE_INVENTREE = True
 # Enable KiCad tests
 ENABLE_KICAD = True
-# Enable test samples deletion
-ENABLE_DELETE = True
-AUTO_DELETE = True
 # Set categories to test
 PART_CATEGORIES = [
     'Capacitors',
@@ -73,48 +76,59 @@ settings.load_user_config()
 test_library_path = os.path.join(settings.PROJECT_DIR, 'tests', 'TEST.kicad_sym')
 symbol_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'SYMBOLS')
 footprint_libraries_test_path = os.path.join(settings.PROJECT_DIR, 'tests', 'files', 'FOOTPRINTS', '')
-# Disable Digi-Key API logging
-digikey_api.disable_api_logger()
 
-# Test Digi-Key API
-if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
-    pretty_test_print('[MAIN]\tDigi-Key API Test')
-    if not digikey_api.test_api(check_content=True):
+if ENABLE_API:
+    # Disable Digi-Key API logging
+    digikey_api.disable_api_logger()
+
+    # Test Digi-Key API
+    if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
+        pretty_test_print('[MAIN]\tDigi-Key API Test')
+        if not digikey_api.test_api(check_content=True):
+            cprint('[ FAIL ]')
+            cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+            sys.exit(-1)
+        else:
+            cprint('[ PASS ]')
+
+    # Test Mouser API
+    if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
+        pretty_test_print('[MAIN]\tMouser API Test')
+        if not mouser_api.test_api():
+            cprint('[ FAIL ]')
+            sys.exit(-1)
+        else:
+            cprint('[ PASS ]')
+
+    # Test Element14 API
+    if 'Element14' in settings.SUPPORTED_SUPPLIERS_API:
+        pretty_test_print('[MAIN]\tElement14 API Test')
+        if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
+            cprint('[ FAIL ]')
+            sys.exit(-1)
+        else:
+            cprint('[ PASS ]')
+
+    # Test LCSC API
+    if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
+        pretty_test_print('[MAIN]\tLCSC API Test')
+        if not lcsc_api.test_api():
+            cprint('[ FAIL ]')
+            sys.exit(-1)
+        else:
+            cprint('[ PASS ]')
+
+    # Test SnapEDA API methods
+    pretty_test_print('[MAIN]\tSnapEDA API Test')
+    if not test_snapeda_api():
         cprint('[ FAIL ]')
-        cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
         sys.exit(-1)
     else:
         cprint('[ PASS ]')
 
-# Test Mouser API
-if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
-    pretty_test_print('[MAIN]\tMouser API Test')
-    if not mouser_api.test_api():
-        cprint('[ FAIL ]')
-        sys.exit(-1)
-    else:
-        cprint('[ PASS ]')
-
-# Test Element14 API
-if 'Element14' in settings.SUPPORTED_SUPPLIERS_API:
-    pretty_test_print('[MAIN]\tElement14 API Test')
-    if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
-        cprint('[ FAIL ]')
-        sys.exit(-1)
-    else:
-        cprint('[ PASS ]')
-
-# Test LCSC API
-if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
-    pretty_test_print('[MAIN]\tLCSC API Test')
-    if not lcsc_api.test_api():
-        cprint('[ FAIL ]')
-        sys.exit(-1)
-    else:
-        cprint('[ PASS ]')
+    cprint('\n-----')
 
 # Setup InvenTree
-cprint('\n-----')
 setup_inventree()
 cprint('\n-----')
 
@@ -244,14 +258,6 @@ if __name__ == '__main__':
                             cprint(f'[DBUG]\tnew_part = {new_part}')
                             cprint(f'[DBUG]\tpart_pk = {part_pk}')
 
-            # if True:
-            # 	if ENABLE_KICAD:
-            # 		cprint(f'\nKiCad Results\n-----', silent=not(settings.ENABLE_TEST))
-            # 		cprint(kicad_results, silent=not(settings.ENABLE_TEST))
-            # 	if ENABLE_INVENTREE:
-            # 		cprint(f'\nInvenTree Results\n-----', silent=not(settings.ENABLE_TEST))
-            # 		cprint(inventree_results, silent=not(settings.ENABLE_TEST))
-
         if ENABLE_TEST_METHODS:
             methods = [
                 'Fuzzy category matching',
@@ -262,7 +268,6 @@ if __name__ == '__main__':
                 'Add footprint library to user file',
                 'Add supplier category',
                 'Sync InvenTree and supplier categories',
-                'SnapEDA API methods',
                 'Download image/PDF method',
                 'Get category parameters',
                 'Add valid alternate supplier part using part ID',
@@ -362,12 +367,6 @@ if __name__ == '__main__':
                         method_success = False
 
                 elif method_idx == 8:
-                    # Test SnapEDA API methods
-                    snapeda_success = test_snapeda_api()
-                    if not snapeda_success:
-                        method_success = False
-
-                elif method_idx == 9:
                     test_image_urllib = 'https://media.digikey.com/Renders/Diodes%20Renders/31;%20SOD-123;%20;%202.jpg'
                     test_image_requestslib = 'https://www.newark.com/productimages/standard/en_GB/GE2SOD12307-40.jpg'
                     test_pdf_urllib = 'https://www.seielect.com/Catalog/SEI-CF_CFM.pdf'
@@ -389,12 +388,12 @@ if __name__ == '__main__':
                     if download_image('', '', silent=True):
                         method_success = False
 
-                elif method_idx == 10:
+                elif method_idx == 9:
                     # Test InvenTree category parameters
                     if inventree_api.get_category_parameters(1):
                         method_success = False
 
-                elif method_idx == 11:
+                elif method_idx == 10:
                     # Test manufacturer and supplier alternates using Part ID
                     part_info = {
                         "datasheet": "https://search.murata.co.jp/Ceramy/image/img/A01X/G101/ENG/GRM155R71C104KA88-01.pdf",
@@ -409,14 +408,14 @@ if __name__ == '__main__':
                                                                           show_progress=False, ):
                         method_success = False
 
-                elif method_idx == 12:
+                elif method_idx == 11:
                     # Test manufacturer and supplier alternates using Part IPN
                     if inventree_interface.inventree_create_alternate(part_info=part_info,
                                                                       part_ipn='CAP-000001-00',
                                                                       show_progress=False, ):
                         method_success = False
 
-                elif method_idx == 13:
+                elif method_idx == 12:
                     # Save InvenTree settings
                     if not config_interface.save_inventree_user_settings(enable=True,
                                                                          server='http://127.0.0.1:8000',
@@ -427,7 +426,7 @@ if __name__ == '__main__':
                                                                          user_config_path=settings.INVENTREE_CONFIG):
                         method_success = False
 
-                elif method_idx == 14:
+                elif method_idx == 13:
                     # Select one configuration file
                     element14_config = os.path.join(settings.USER_SETTINGS['USER_FILES'], 'element14_config.yaml')
                     # Delete the user configuration file
@@ -446,7 +445,7 @@ if __name__ == '__main__':
                         if config_interface.load_user_config_files('', ''):
                             method_success = False
 
-                elif method_idx == 15:
+                elif method_idx == 14:
                     # Reload categories from file
                     cat_from_file = inventree_interface.build_category_tree(reload=False)
                     if type(cat_from_file) != list:
@@ -473,52 +472,6 @@ if __name__ == '__main__':
                     cprint('[ FAIL ]')
                     exit_code = -1
                     break
-        
-        if ENABLE_DELETE:
-            if kicad_results or inventree_results:
-                if not AUTO_DELETE:
-                    input('\nPress "Enter" to delete parts...')
-                else:
-                    cprint('')
-
-                # NOT YET SUPPORTED - REMOVE?
-                # if ENABLE_KICAD:
-                #     error = 0
-
-                #     pretty_test_print('[MAIN]\tDeleting KiCad test parts')
-                #     # Delete all KiCad test parts
-                #     for number, result in kicad_results.items():
-                #         try:
-                #             kicad_interface.delete_part(part_number=number,
-                #                                         library_path=test_library_path)
-                #         except:
-                #             error += 1
-                #             cprint(f'[KCAD]\tWarning: "{number}" could not be deleted')
-
-                #     if error > 0:
-                #         cprint('[ FAIL ]')
-                #         exit_code = -1
-                #     else:
-                #         cprint('[ PASS ]')
-
-                if ENABLE_INVENTREE:
-                    error = 0
-
-                    pretty_test_print('[MAIN]\tDeleting InvenTree test parts')
-                    # Delete all InvenTree test parts
-                    for number, result in inventree_results.items():
-                        if result[2]:
-                            try:
-                                if not inventree_api.delete_part(part_id=result[0]):
-                                    error += 1
-                            except:
-                                error += 1
-
-                    if error > 0:
-                        cprint('[ FAIL ]')
-                        exit_code = -1
-                    else:
-                        cprint('[ PASS ]')
 
             # Line return
             cprint('')

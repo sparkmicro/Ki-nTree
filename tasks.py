@@ -17,14 +17,6 @@ def install(c, is_install=True):
         cprint('[MAIN]\tUpdating required dependencies')
     c.run('pip install -U -r requirements.txt', hide='out')
 
-    # if is_install:
-    #     cprint('[MAIN]\tInstalling optional dependencies')
-    #     try:
-    #         c.run('pip install -U python-Levenshtein', hide=True)
-    #     except UnexpectedExit:
-    #         cprint('\n[INFO]\tFailed to install python-Levenshtein...\t'
-    #                'You may be missing python3.x-dev')
-
 
 @task
 def update(c):
@@ -98,7 +90,7 @@ def coverage_report(c, open_browser=True):
 
 
 @task
-def test(c):
+def test(c, enable_api=0):
     """
     Run Ki-nTree tests
     """
@@ -115,7 +107,7 @@ def test(c):
     # Copy test files
     c.run('cp -r tests/ kintree/')
     # Run Tests
-    run_tests = c.run('coverage run run_tests.py')
+    run_tests = c.run(f'coverage run run_tests.py {enable_api}')
     if run_tests.exited == 0:
         coverage_report(c, open_browser=False)
 
@@ -129,7 +121,7 @@ def python_badge(c):
     cprint('[MAIN]\tInstall pybadges')
     c.run('pip install pybadges pip-autoremove', hide=True)
     cprint('[MAIN]\tCreate badge')
-    c.run('python -m pybadges --left-text="python" --right-text="3.8 - 3.10" '
+    c.run('python -m pybadges --left-text="python" --right-text="3.8 | 3.9 | 3.10 | 3.11" '
           '--whole-link="https://www.python.org/" --browser --embed-logo '
           '--logo="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/python.svg"')
     cprint('[MAIN]\tUninstall pybadges')

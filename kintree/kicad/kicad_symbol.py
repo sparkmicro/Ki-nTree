@@ -120,8 +120,3 @@ class ComponentLibManager(object):
             pass
 
         return part_in_lib, new_part
-
-    # NOT YET SUPPORTED - REMOVE?
-    # def delete_symbol_from_lib(self, part_number):
-    #     ''' Remove symbol from KiCad library '''
-    #     pass

@@ -1,21 +1,14 @@
 # <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/logo.png" width="auto" height="32"> Ki-nTree
-### Fast part creation in [KiCad](https://kicad.org/) and [InvenTree](https://inventree.org/) 
+### Fast part creation for [KiCad](https://kicad.org/) and [InvenTree](https://inventree.org/) 
 [![License: GPL v3.0](https://img.shields.io/badge/license-GPL_v3.0-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Versions](https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/python_versions.svg)](https://www.python.org/)
 [![PyPI](https://img.shields.io/pypi/v/kintree)](https://pypi.org/project/kintree/)
 [![Tests | Linting | Publishing](https://github.com/sparkmicro/Ki-nTree/actions/workflows/test_deploy.yaml/badge.svg)](https://github.com/sparkmicro/Ki-nTree/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=main&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=main)
 
-## New version (1.0) is coming soon!
-
-To install the release candidate:
-``` shell
-pip install --pre -U kintree
-```
+## :fast_forward: [Demo Video](https://youtu.be/YeWBqOCb4pw)
 
 <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_example.png" width="auto" height="auto">
-
-## Demo Videos :fast_forward: [Full Demo](https://youtu.be/haSAu926BOI) :fast_forward: [KiCad Demo](https://youtu.be/NSMfCCD0uVw)
 
 ## Introduction
 Ki-nTree (pronounced "Key Entry" or "Key 'n' Tree") aims to:
@@ -44,7 +37,7 @@ Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK M
 
 ### Requirements
 
-* Ki-nTree is currently tested for Python 3.8 to 3.10 versions.
+* Ki-nTree is currently tested for Python 3.8 to 3.11 versions.
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
@@ -110,7 +103,6 @@ If the InvenTree category tree is **not setup** before starting to use Ki-nTree,
 Configuration files are stored in the folder pointed by the `Configuration Files Folder` path in the "User Settings" window:
 
 <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_settings_user.png" width="600" height="auto">
-
 
 <details>
 <summary><b>Click here to read about configuration files</b></summary>

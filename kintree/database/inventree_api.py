@@ -372,24 +372,6 @@ def create_part(category_id: int, name: str, description: str, revision: str, im
         return 0
 
 
-def delete_part(part_id: int) -> bool:
-    ''' Delete InvenTree part (only used for testing) '''
-    global inventree_api
-
-    part = Part(inventree_api, part_id)
-    if part.pk:
-        part._data['active'] = False
-        # Remove image url (API rejects it as it is not a file)
-        try:
-            del part._data['image']
-        except:
-            pass
-        part.save()
-        return part.delete()
-    else:
-        return True
-
-
 def create_company(company_name: str, manufacturer=False, supplier=False) -> bool:
     ''' Create InvenTree company '''
     global inventree_api
