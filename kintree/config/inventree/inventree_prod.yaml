@@ -1,4 +1,7 @@
+ENABLE: true
+ENABLE_PROXY: false
 PASSWORD: !!binary |
   ''
+PROXIES: null
 SERVER_ADDRESS: ''
 USERNAME: ''

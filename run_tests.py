@@ -417,18 +417,23 @@ if __name__ == '__main__':
 
                 elif method_idx == 12:
                     # Save InvenTree settings
-                    if not config_interface.save_inventree_user_settings(enable=True,
-                                                                         server='http://127.0.0.1:8000',
-                                                                         username='admin',
-                                                                         password='admin',
-                                                                         enable_proxy=False,
-                                                                         proxies={},
-                                                                         user_config_path=settings.INVENTREE_CONFIG):
+                    if not config_interface.save_inventree_user_settings(
+                        enable=True,
+                        server='http://127.0.0.1:8000',
+                        username='admin',
+                        password='admin',
+                        enable_proxy=False,
+                        proxies={},
+                        user_config_path=settings.INVENTREE_CONFIG,
+                    ):
                         method_success = False
 
                 elif method_idx == 13:
                     # Select one configuration file
-                    element14_config = os.path.join(settings.USER_SETTINGS['USER_FILES'], 'element14_config.yaml')
+                    element14_config = os.path.join(
+                        settings.USER_SETTINGS['USER_FILES'],
+                        'element14_config.yaml',
+                    )
                     # Delete the user configuration file
                     os.remove(element14_config)
                     # Try to load this file

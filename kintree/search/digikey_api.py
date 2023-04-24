@@ -149,6 +149,15 @@ def fetch_part_info(part_number: str) -> dict:
         # Append to parameters dictionary
         part_info['parameters'][parameter_name] = parameter_value
 
+    # Extra search fields
+    if settings.CONFIG_DIGIKEY.get('EXTRA_FIELDS', None):
+        for extra_field in settings.CONFIG_DIGIKEY['EXTRA_FIELDS']:
+            if part.get(extra_field, None):
+                part_info['parameters'][extra_field] = part[extra_field]
+            else:
+                from ..common.tools import cprint
+                cprint(f'[INFO]\tWarning: Extra field "{extra_field}" not found in search results', silent=False)
+
     return part_info
 
 

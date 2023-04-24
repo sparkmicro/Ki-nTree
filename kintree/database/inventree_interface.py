@@ -276,6 +276,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     if not is_custom:
         # Add Parameters
         if parameter_map:
+            parameters_missing = []
             for supplier_param, inventree_param in parameter_map.items():
                 # Some parameters may not be mapped
                 if inventree_param not in inventree_part['parameters'].keys():
@@ -287,15 +288,32 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
                                 value=part_info['parameters'][supplier_param],
                             )
                             inventree_part['parameters'][inventree_param] = parameter_value
-                        except:
-                            cprint(f'[INFO]\tWarning: Parameter "{supplier_param}" not found in supplier data', silent=settings.SILENT)
+                        except KeyError:
+                            parameters_missing.append(supplier_param)
                     else:
                         inventree_part['parameters'][inventree_param] = part_info['manufacturer_part_number']
 
-            # Check for missing parameters and fill value with dash
+            if parameters_missing:
+                msg = '[INFO]\tWarning: The following parameters were not found in supplier data:\n'
+                msg += str(parameters_missing)
+                cprint(msg, silent=settings.SILENT)
+
+            # Check for missing InvenTree parameters and fill value with dash
             for inventree_param in parameter_map.values():
                 if inventree_param not in inventree_part['parameters'].keys():
                     inventree_part['parameters'][inventree_param] = '-'
+
+            # Check for extra parameters which weren't mapped
+            parameters_unmapped = []
+            for search_param in part_info['parameters'].keys():
+                if search_param not in parameter_map.keys():
+                    parameters_unmapped.append(search_param)
+            
+            if parameters_unmapped:
+                if not settings.SILENT:
+                    msg = f'[INFO]\tThe following parameters are not mapped in {inventree_part["supplier_name"]} parameters configuration:\n'
+                    msg += str(parameters_unmapped)
+                    print(msg)
         else:
             cprint(f'[INFO]\tWarning: Parameter map for "{category_tree[0]}" does not exist or is empty', silent=settings.SILENT)
 

@@ -208,6 +208,15 @@ def fetch_part_info(part_number: str, supplier: str, store_url=None) -> dict:
         except TypeError:
             # Parameter list is empty
             pass
+
+    # Extra search fields
+    if settings.CONFIG_ELEMENT14.get('EXTRA_FIELDS', None):
+        for extra_field in settings.CONFIG_ELEMENT14['EXTRA_FIELDS']:
+            if part.get(extra_field, None):
+                part_info['parameters'][extra_field] = part[extra_field]
+            else:
+                from ..common.tools import cprint
+                cprint(f'[INFO]\tWarning: Extra field "{extra_field}" not found in search results', silent=False)
     
     # Append Store URL
     # Element14 support said "At this time our API is not structured to provide a URL to product pages in the selected storeInfo.id value."

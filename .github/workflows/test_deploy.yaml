@@ -80,6 +80,7 @@ jobs:
           mkdir -p ~/.config/kintree/user/ && mkdir -p ~/.config/kintree/cache/search/
           cp tests/files/inventree_dev.yaml ~/.config/kintree/user/
           cp tests/files/kicad_map.yaml ~/.config/kintree/user/
+          cp tests/files/digikey_config.yaml ~/.config/kintree/user/
           cp tests/files/results.tgz ~/.config/kintree/cache/search/
           cd ~/.config/kintree/cache/search/ && tar xvf results.tgz && cd -
       - name: GUI test

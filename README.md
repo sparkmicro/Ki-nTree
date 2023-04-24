@@ -151,9 +151,9 @@ Note that each time you enable the "Add" permission to an object, InvenTree auto
 2. Click on "Settings > Supplier > Mouser" and fill in the Mouser part search API key
 3. Click on "Settings > Supplier > Element14" and fill in the Element14 product search API key (key is shared with Farnell and Newark)
 4. Click on "Settings > KiCad", browse to the location where KiCad symbol, template and footprint libraries are stored on your computer then click "Save"
-5. If you intend to use InvenTree with this tool, click on "Settings > InvenTree" and fill in your InvenTree server address and credentials then click "Save" (optional: click on "Test" to check communication with server)
-  i. It is possible to define a Proxy Server over which all interactions with InvenTree will be routed. To set a proxy server use the "Enable Proxy Support" switch in "Settings > InvenTree" and define the proxy address in the new input field.
-  ii. Instead of user credential authentication token authentication is also supported. To use a token add it it to the "Password or Token" field and leave the "Username" empty. You can retrieve your personal access token from your InvenTree server by sending an get-request to its api url `api/user/token/`.
+5. If you intend to use InvenTree with this tool, click on "Settings > InvenTree" and fill in your InvenTree server address and credentials then click "Save" (optional: click on "Test" to check communication with server)  
+  a. It is possible to define a Proxy Server over which all interactions with InvenTree will be routed. To set a proxy server use the "Enable Proxy Support" switch in "Settings > InvenTree" and define the proxy address in the new input field.  
+  b. Instead of user credential authentication token authentication is also supported. To use a token add it it to the "Password or Token" field and leave the "Username" empty. You can retrieve your personal access token from your InvenTree server by sending an get-request to its api url `api/user/token/`.
 
 
 #### Get Digi-Key API token
