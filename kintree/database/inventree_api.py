@@ -24,7 +24,7 @@ def connect(server: str,
             password: str,
             connect_timeout=5,
             silent=False,
-            proxies={},
+            proxies=None,
             token='') -> bool:
     ''' Connect to InvenTree server and create API object '''
     from wrapt_timeout_decorator import timeout

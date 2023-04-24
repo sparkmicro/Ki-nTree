@@ -749,7 +749,7 @@ class InvenTreeSettingsView(SettingsView):
         proxy = SETTINGS[self.title]['Proxy'][1].value
         enable_proxy = SETTINGS[self.title]['Enable Proxy Support'][1].value
         if not enable_proxy:
-            proxies = {}
+            proxies = None
         elif address.startswith('https'):
             proxies = {'https': proxy}
         else:

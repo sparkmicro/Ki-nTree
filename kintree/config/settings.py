@@ -318,7 +318,7 @@ def load_inventree_settings():
     USERNAME = inventree_settings.get('USERNAME', None)
     PASSWORD = inventree_settings.get('PASSWORD', None)
     ENABLE_PROXY = inventree_settings.get('ENABLE_PROXY', False)
-    PROXIES = inventree_settings.get('PROXIES', {})
+    PROXIES = inventree_settings.get('PROXIES', None)
     # Part URL
     if SERVER_ADDRESS:
         # If missing, append slash to root URL
