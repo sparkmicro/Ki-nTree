@@ -14,11 +14,17 @@ def connect_to_server(timeout=5) -> bool:
     ''' Connect to InvenTree server using user settings '''
     connect = False
     settings.load_inventree_settings()
+    if not settings.USERNAME:
+        token = settings.PASSWORD
+    else:
+        token = ''
 
     try:
         connect = inventree_api.connect(server=settings.SERVER_ADDRESS,
                                         username=settings.USERNAME,
                                         password=settings.PASSWORD,
+                                        proxies=settings.PROXIES,
+                                        token=token,
                                         connect_timeout=timeout)
     except TimeoutError:
         pass
@@ -141,7 +147,7 @@ def get_categories_from_supplier_data(part_info: dict, supplier_only=False) -> l
     if not categories[1] and function_filter:
         cprint(f'[INFO]\tSubcategory is filtered using "{filter_parameter}" parameter', silent=settings.SILENT, end='')
         # Load parameter map
-        parameter_map = config_interface.load_category_parameters(categories[0], settings.CONFIG_SUPPLIER_PARAMETERS)
+        parameter_map = config_interface.load_category_parameters(categories, settings.CONFIG_SUPPLIER_PARAMETERS)
         # Build compare list
         compare = []
         for supplier_parameter, inventree_parameter in parameter_map.items():
@@ -261,7 +267,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     # Load parameters map
     if category_tree:
         parameter_map = config_interface.load_category_parameters(
-            category=category_tree[0],
+            categories=category_tree,
             supplier_config_path=settings.CONFIG_SUPPLIER_PARAMETERS,
         )
     else:

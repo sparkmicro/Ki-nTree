@@ -307,6 +307,8 @@ def load_inventree_settings():
     global SERVER_ADDRESS
     global USERNAME
     global PASSWORD
+    global ENABLE_PROXY
+    global PROXIES
     global PART_URL_ROOT
 
     inventree_settings = config_interface.load_inventree_user_settings(INVENTREE_CONFIG)
@@ -314,6 +316,8 @@ def load_inventree_settings():
     SERVER_ADDRESS = inventree_settings.get('SERVER_ADDRESS', None)
     USERNAME = inventree_settings.get('USERNAME', None)
     PASSWORD = inventree_settings.get('PASSWORD', None)
+    ENABLE_PROXY = inventree_settings.get('ENABLE_PROXY', False)
+    PROXIES = inventree_settings.get('PROXIES', None)
     # Part URL
     if SERVER_ADDRESS:
         # If missing, append slash to root URL

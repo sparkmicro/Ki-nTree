@@ -98,10 +98,25 @@ def load_inventree_user_settings(user_config_path: str) -> dict:
     except TypeError:
         user_settings['PASSWORD'] = ''
 
+    if 'ENABLE_PROXY' not in user_settings:
+        user_settings['ENABLE_PROXY'] = False
+    proxies = user_settings.get('PROXIES', None)
+    if not proxies:
+        user_settings['PROXY'] = ''
+    else:
+        # loading the proxy independent if it is http or https
+        user_settings['PROXY'] = list(proxies.values())[0]
+
     return user_settings
 
 
-def save_inventree_user_settings(enable: bool, server: str, username: str, password: str, user_config_path: str):
+def save_inventree_user_settings(enable: bool,
+                                 server: str,
+                                 username: str,
+                                 password: str,
+                                 enable_proxy: bool,
+                                 proxies: dict,
+                                 user_config_path: str):
     ''' Save InvenTree user settings to file '''
     user_settings = {}
 
@@ -110,6 +125,8 @@ def save_inventree_user_settings(enable: bool, server: str, username: str, passw
     user_settings['USERNAME'] = username
     # Use base64 encoding to make password unreadable inside the file
     user_settings['PASSWORD'] = base64.b64encode(password.encode())
+    user_settings['ENABLE_PROXY'] = enable_proxy
+    user_settings['PROXIES'] = proxies
 
     return dump_file(user_settings, user_config_path)
 
@@ -403,11 +420,20 @@ def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
     return dump_file(supplier_categories, supplier_config_path)
 
 
-def load_category_parameters(category: str, supplier_config_path: str) -> dict:
+def load_category_parameters(categories: list, supplier_config_path: str) -> dict:
     ''' Load Supplier parameters mapping from Supplier settings file '''
     try:
-        category_parameters = load_file(supplier_config_path)[category]
+        category_file = load_file(supplier_config_path)
     except:
+        return None
+    category_parameters = None
+    for category in reversed(categories):
+        try:
+            category_parameters = category_file[category]
+            break
+        except:
+            pass
+    if not category_parameters:
         return None
 
     category_parameters_inversed = {}

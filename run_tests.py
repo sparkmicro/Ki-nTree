@@ -421,6 +421,8 @@ if __name__ == '__main__':
                                                                          server='http://127.0.0.1:8000',
                                                                          username='admin',
                                                                          password='admin',
+                                                                         enable_proxy=False,
+                                                                         proxies={},
                                                                          user_config_path=settings.INVENTREE_CONFIG):
                         method_success = False
 
