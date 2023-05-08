@@ -2,7 +2,7 @@ from enum import Enum
 from math import pi
 from typing import Optional, List
 
-import flet as ft
+import flet_core as ft
 
 GUI_PARAMS = {
     'nav_rail_min_width': 100,
