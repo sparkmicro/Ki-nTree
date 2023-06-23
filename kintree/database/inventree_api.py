@@ -168,14 +168,14 @@ def get_part_from_ipn(part_ipn='') -> int:
     ''' Get Part ID from Part IPN '''
     global inventree_api
 
-    parts = Part.list(inventree_api)
+    parts = Part.list(inventree_api, IPN=part_ipn)
 
-    for part in parts:
-        if part.IPN == part_ipn:
-            return part
-    
-    # No part found
-    return None
+    if not parts:
+        # No part found
+        return None
+    else:
+        # parts should have only one entry
+        return parts[0]
 
 
 def fetch_part(part_id='', part_ipn='') -> int:
