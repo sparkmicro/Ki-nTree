@@ -102,6 +102,8 @@ load_ipn_settings()
 CONFIG_GENERAL_PATH = os.path.join(CONFIG_USER_FILES, 'general.yaml')
 CONFIG_GENERAL = config_interface.load_file(CONFIG_GENERAL_PATH)
 # Datasheets
+DATASHEET_INVENTREE_ENABLED = CONFIG_GENERAL.get(
+    'DATASHEET_INVENTREE_ENABLED', False)
 DATASHEET_SAVE_ENABLED = CONFIG_GENERAL.get('DATASHEET_SAVE_ENABLED', False)
 DATASHEET_SAVE_PATH = CONFIG_GENERAL.get('DATASHEET_SAVE_PATH', False)
 # Open Browser
@@ -185,6 +187,7 @@ CACHE_VALID_DAYS = int(CONFIG_SEARCH_API.get('CACHE_VALID_DAYS', '7'))
 def load_cache_settings():
     global search_results
     global search_images
+    global search_datasheets
     global CACHE_ENABLED
     global DIGIKEY_STORAGE_PATH
     
@@ -203,6 +206,13 @@ def load_cache_settings():
     # Create folder if it does not exists
     if not os.path.exists(search_images):
         os.makedirs(search_images)
+
+    # Part images
+    search_datasheets = os.path.join(
+        USER_SETTINGS['USER_CACHE'], 'datasheets', '')
+    # Create folder if it does not exists
+    if not os.path.exists(search_datasheets):
+        os.makedirs(search_datasheets)
 
     # API token storage path
     DIGIKEY_STORAGE_PATH = os.path.join(USER_SETTINGS['USER_CACHE'], '')

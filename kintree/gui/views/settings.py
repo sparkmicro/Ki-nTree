@@ -94,6 +94,11 @@ SETTINGS = {
             ft.TextField(),
             True,  # Browse enabled
         ],
+        'Save Datasheets to InvenTree': [
+            'DATASHEET_INVENTREE_ENABLED',
+            SwitchWithRefs(),
+            False,  # Browse enabled
+        ],
         'Save Datasheets to Local Folder': [
             'DATASHEET_SAVE_ENABLED',
             SwitchWithRefs(),
@@ -480,6 +485,7 @@ class UserSettingsView(PathSettingsView):
     settings = {
         **global_settings.USER_SETTINGS,
         **{
+            'DATASHEET_INVENTREE_ENABLED': global_settings.DATASHEET_INVENTREE_ENABLED,
             'DATASHEET_SAVE_ENABLED': global_settings.DATASHEET_SAVE_ENABLED,
             'DATASHEET_SAVE_PATH': global_settings.DATASHEET_SAVE_PATH,
             'AUTOMATIC_BROWSER_OPEN': global_settings.AUTOMATIC_BROWSER_OPEN
@@ -537,7 +543,7 @@ class UserSettingsView(PathSettingsView):
         setting_file2 = self.settings_file[2]
 
         for name, field in SETTINGS[self.title].items():
-            if field[0] in ['AUTOMATIC_BROWSER_OPEN', 'DATASHEET_SAVE_ENABLED', 'DATASHEET_SAVE_PATH']:
+            if field[0] in ['AUTOMATIC_BROWSER_OPEN', 'DATASHEET_SAVE_ENABLED', 'DATASHEET_SAVE_PATH', 'DATASHEET_INVENTREE_ENABLED']:
                 self.fields[name].on_change = lambda _: self.save(
                     settings_file=setting_file1,
                     show_dialog=False

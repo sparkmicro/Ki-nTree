@@ -1,7 +1,7 @@
 from ..config import settings
 import validators
 from ..common import part_tools
-from ..common.tools import cprint, download_image
+from ..common.tools import cprint, download, download_image
 from ..config import config_interface
 
 # Required to use local CA certificates on Linux
@@ -176,6 +176,7 @@ def get_part_from_ipn(part_ipn='') -> int:
     else:
         # parts should have only one entry
         return parts[0]
+    
 
 
 def fetch_part(part_id='', part_ipn='') -> int:
@@ -350,7 +351,31 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
         return False
 
 
-def create_part(category_id: int, name: str, description: str, revision: str, image: str, keywords=None) -> int:
+def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
+    ''' Upload InvenTree part attachment'''
+    global inventree_api
+
+    # Get attachment full path
+    datasheet_name = f'{str(part_id)}{os.path.splitext(datasheet_url)[1]}'
+    datasheet_location = settings.search_datasheets + datasheet_name
+
+    # Download image (multiple attempts)
+    if not download(datasheet_url,
+                    filetype='PDF',
+                    fileoutput=datasheet_location,
+                    timeout=10):
+        return ''
+
+    # Upload Datasheet to InvenTree
+    part = Part(inventree_api, part_id)
+    if part:
+        attachment = part.uploadAttachment(attachment=datasheet_location)
+        return inventree_api.base_url.strip('/') + attachment['attachment']
+    else:
+        return ''
+
+
+def create_part(category_id: int, name: str, description: str, revision: str, keywords=None) -> int:
     ''' Create InvenTree part '''
     global inventree_api
 
