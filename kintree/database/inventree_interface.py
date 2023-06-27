@@ -526,8 +526,6 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                                                 name=inventree_part['name'],
                                                 description=inventree_part['description'],
                                                 revision=inventree_part['revision'],
-#                                                image=inventree_part['image'],
-#                                                datasheet=inventree_part['datasheet'],
                                                 keywords=inventree_part['keywords'])
 
             # Check part primary key
@@ -575,7 +573,7 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                 if not datasheet_link:
                     cprint('[TREE]\tWarning: Failed to upload part datasheet', silent=settings.SILENT)
                 else:
-                    inventree_part['datasheet'] = datasheet_links
+                    inventree_part['datasheet'] = datasheet_link
 
         if kicad:
             try:

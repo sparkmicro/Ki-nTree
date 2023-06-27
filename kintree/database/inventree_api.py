@@ -1,7 +1,7 @@
 from ..config import settings
 import validators
 from ..common import part_tools
-from ..common.tools import cprint, download, download_image
+from ..common.tools import cprint, download_with_retry
 from ..config import config_interface
 
 # Required to use local CA certificates on Linux
@@ -176,7 +176,6 @@ def get_part_from_ipn(part_ipn='') -> int:
     else:
         # parts should have only one entry
         return parts[0]
-    
 
 
 def fetch_part(part_id='', part_ipn='') -> int:
@@ -340,7 +339,7 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
     image_location = settings.search_images + image_name
 
     # Download image (multiple attempts)
-    if not download_image(image_url, image_location):
+    if not download_with_retry(image_url, image_location, filetype='Image'):
         return False
 
     # Upload image to InvenTree
@@ -356,20 +355,18 @@ def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
     global inventree_api
 
     # Get attachment full path
-    datasheet_name = f'{str(part_id)}{os.path.splitext(datasheet_url)[1]}'
+    datasheet_name = f'{os.path.basename(datasheet_url)}'
     datasheet_location = settings.search_datasheets + datasheet_name
 
     # Download image (multiple attempts)
-    if not download(datasheet_url,
-                    filetype='PDF',
-                    fileoutput=datasheet_location,
-                    timeout=10):
+    if not download_with_retry(datasheet_url, datasheet_location, filetype='PDF'):
         return ''
 
     # Upload Datasheet to InvenTree
     part = Part(inventree_api, part_id)
     if part:
         attachment = part.uploadAttachment(attachment=datasheet_location)
+        os.remove(datasheet_location)
         return inventree_api.base_url.strip('/') + attachment['attachment']
     else:
         return ''
