@@ -424,6 +424,7 @@ if __name__ == '__main__':
                         password='admin',
                         enable_proxy=False,
                         proxies={},
+                        datasheet_upload=True,
                         user_config_path=settings.INVENTREE_CONFIG,
                     ):
                         method_success = False
