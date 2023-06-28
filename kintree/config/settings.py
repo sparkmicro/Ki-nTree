@@ -102,8 +102,6 @@ load_ipn_settings()
 CONFIG_GENERAL_PATH = os.path.join(CONFIG_USER_FILES, 'general.yaml')
 CONFIG_GENERAL = config_interface.load_file(CONFIG_GENERAL_PATH)
 # Datasheets
-DATASHEET_INVENTREE_ENABLED = CONFIG_GENERAL.get(
-    'DATASHEET_INVENTREE_ENABLED', False)
 DATASHEET_SAVE_ENABLED = CONFIG_GENERAL.get('DATASHEET_SAVE_ENABLED', False)
 DATASHEET_SAVE_PATH = CONFIG_GENERAL.get('DATASHEET_SAVE_PATH', False)
 # Open Browser
@@ -320,6 +318,7 @@ def load_inventree_settings():
     global ENABLE_PROXY
     global PROXIES
     global PART_URL_ROOT
+    global DATASHEET_UPLOAD
 
     inventree_settings = config_interface.load_inventree_user_settings(INVENTREE_CONFIG)
 
@@ -328,6 +327,7 @@ def load_inventree_settings():
     PASSWORD = inventree_settings.get('PASSWORD', None)
     ENABLE_PROXY = inventree_settings.get('ENABLE_PROXY', False)
     PROXIES = inventree_settings.get('PROXIES', None)
+    DATASHEET_UPLOAD = inventree_settings.get('DATASHEET_UPLOAD', False)
     # Part URL
     if SERVER_ADDRESS:
         # If missing, append slash to root URL

@@ -566,7 +566,7 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                 image_result = inventree_api.upload_part_image(inventree_part['image'], part_pk)
                 if not image_result:
                     cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
-            if inventree_part['datasheet'] and settings.DATASHEET_INVENTREE_ENABLED:
+            if inventree_part['datasheet'] and settings.DATASHEET_UPLOAD:
                 # Upload datasheet
                 datasheet_link = inventree_api.upload_part_datasheet(
                     inventree_part['datasheet'], part_pk)

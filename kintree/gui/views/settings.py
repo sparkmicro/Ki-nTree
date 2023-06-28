@@ -94,11 +94,6 @@ SETTINGS = {
             ft.TextField(),
             True,  # Browse enabled
         ],
-        'Save Datasheets to InvenTree': [
-            'DATASHEET_INVENTREE_ENABLED',
-            SwitchWithRefs(),
-            False,  # Browse enabled
-        ],
         'Save Datasheets to Local Folder': [
             'DATASHEET_SAVE_ENABLED',
             SwitchWithRefs(),
@@ -156,6 +151,11 @@ SETTINGS = {
             'PROXY',
             ft.TextField(),
             False,  # Browse disabled
+        ],
+        'Upload Datasheets to InvenTree': [
+            'DATASHEET_UPLOAD',
+            SwitchWithRefs(),
+            False,  # Browse enabled
         ],
         'Default Part Revision': [
             'INVENTREE_DEFAULT_REV',
@@ -485,7 +485,6 @@ class UserSettingsView(PathSettingsView):
     settings = {
         **global_settings.USER_SETTINGS,
         **{
-            'DATASHEET_INVENTREE_ENABLED': global_settings.DATASHEET_INVENTREE_ENABLED,
             'DATASHEET_SAVE_ENABLED': global_settings.DATASHEET_SAVE_ENABLED,
             'DATASHEET_SAVE_PATH': global_settings.DATASHEET_SAVE_PATH,
             'AUTOMATIC_BROWSER_OPEN': global_settings.AUTOMATIC_BROWSER_OPEN
@@ -769,6 +768,8 @@ class InvenTreeSettingsView(SettingsView):
                 password=SETTINGS[self.title]['Password or Token'][1].value,
                 enable_proxy=enable_proxy,
                 proxies=proxies,
+                datasheet_upload=SETTINGS[self.title][
+                    'Upload Datasheets to InvenTree'][1].value,
                 user_config_path=self.settings_file[0]
             )
             # Alert user
