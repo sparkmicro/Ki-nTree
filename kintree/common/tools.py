@@ -79,13 +79,16 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
                 import requests
                 headers = {'User-agent': 'Mozilla/5.0'}
                 response = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
-                if filetype.lower() not in response.headers['Content-Type']:
+                if filetype.lower() not in response.headers['Content-Type'].lower():
                     cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type', silent=silent)
                     return None
                 with open(fileoutput, 'wb') as file:
                     file.write(response.content)
             else:
                 (file, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
+                if filetype.lower() not in headers['Content-Type'].lower():
+                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type', silent=silent)
+                    return None
             return file
         else:
             url_data = urllib.request.urlopen(url)
@@ -94,7 +97,7 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
             return data_json
     except socket.timeout:
         cprint(f'[INFO]\tWarning: {filetype} download socket timed out ({timeout}s)', silent=silent)
-    except urllib.error.HTTPError as err:
+    except urllib.error.HTTPError:
         cprint(f'[INFO]\tWarning: {filetype} download failed (HTTP Error)', silent=silent)
     except (urllib.error.URLError, ValueError):
         cprint(f'[INFO]\tWarning: {filetype} download failed (URL Error)', silent=silent)

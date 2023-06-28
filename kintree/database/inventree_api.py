@@ -345,7 +345,10 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
     # Upload image to InvenTree
     part = Part(inventree_api, part_id)
     if part:
-        return part.uploadImage(image=image_location)
+        try:
+            return part.uploadImage(image=image_location)
+        except Exception:
+            return False
     else:
         return False
 
@@ -356,18 +359,27 @@ def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
 
     # Get attachment full path
     datasheet_name = f'{os.path.basename(datasheet_url)}'
+    # inventree needs .pdf at the end of filename to recognize a PDF
+    if not datasheet_name.lower().endswith('.pdf'):
+        datasheet_name += '.pdf'
     datasheet_location = settings.search_datasheets + datasheet_name
 
     # Download image (multiple attempts)
-    if not download_with_retry(datasheet_url, datasheet_location, filetype='PDF'):
+    if not download_with_retry(datasheet_url,
+                               datasheet_location,
+                               filetype='PDF',
+                               timeout=10):
         return ''
 
     # Upload Datasheet to InvenTree
     part = Part(inventree_api, part_id)
     if part:
-        attachment = part.uploadAttachment(attachment=datasheet_location)
-        os.remove(datasheet_location)
-        return inventree_api.base_url.strip('/') + attachment['attachment']
+        try:
+            attachment = part.uploadAttachment(attachment=datasheet_location)
+            os.remove(datasheet_location)
+            return inventree_api.base_url.strip('/') + attachment['attachment']
+        except Exception:
+            return ''
     else:
         return ''
 
