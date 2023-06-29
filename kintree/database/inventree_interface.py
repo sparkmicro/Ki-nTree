@@ -700,10 +700,22 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
         cprint('[INFO] Error: Original part was not found in database', silent=settings.SILENT)
         return result
 
+    # If the part has no image yet try to upload it from the data
+    if not part.image:
+        image = part_info.get('image', '')
+        if image:
+            inventree_api.upload_part_image(image_url=image, part_id=part_pk)
+
     # Overwrite manufacturer name with matching one from database
     manufacturer_name = inventree_fuzzy_company_match(part_info.get('manufacturer_name', ''))
     manufacturer_mpn = part_info.get('manufacturer_part_number', '')
     datasheet = part_info.get('datasheet', '')
+
+    # if datasheet upload is enabled and no attechment present yet upload
+    if settings.DATASHEET_UPLOAD and not part.getAttachments():
+        if datasheet:
+            inventree_api.upload_part_datasheet(part_id=part_pk,
+                                                datasheet_url=datasheet)
 
     # Create manufacturer part
     if manufacturer_name and manufacturer_mpn:
