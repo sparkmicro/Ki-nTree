@@ -113,8 +113,20 @@ def get_categories() -> dict:
                 parent = parent.getParentCategory()
             cat = {category.name: None}
             deep_add(categories, parent_list, cat)
-            
+
     return categories
+
+
+def get_category_tree(category_id: int) -> dict:
+    ''' Get all parents of a category'''
+    category = PartCategory(inventree_api, category_id)
+    category_list = {category_id: category.name}
+
+    while category.parent:
+        category = category.getParentCategory()
+        category_list[category.pk] = category.name
+
+    return category_list
 
 
 def get_category_parameters(category_id: int) -> list:
@@ -645,10 +657,18 @@ def create_parameter(part_id: int, template_name: int, value: str):
     part = Part(inventree_api, part_id)
     part_parameters = part.getParameters()
     is_new_part_parameters_template_id = True
+    was_updated = False
     for item in part_parameters:
         # cprint(f'[TREE]\t{parameter.template} ?= {template_id}', silent=SILENT)
         if item.template == template_id:
             is_new_part_parameters_template_id = False
+            if settings.UPDATE_INVENTREE:
+                print(item.__dict__)
+                was_updated = True
+                #parameter = Parameter.save(inventree_api, {
+                #    id
+                #    }
+                #    )
             break
     # cprint(part_parameters, silent=SILENT)
 
@@ -666,8 +686,8 @@ def create_parameter(part_id: int, template_name: int, value: str):
         })
 
     if parameter:
-        return parameter.pk, is_new_part_parameters_template_id
+        return parameter.pk, is_new_part_parameters_template_id, was_updated
     else:
         if template_id == 0:
             cprint(f'[TREE]\tError: Parameter template "{template_name}" does not exist', silent=settings.SILENT)
-        return 0, False
+        return 0, False, False

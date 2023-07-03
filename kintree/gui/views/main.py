@@ -448,7 +448,7 @@ class InventreeView(MainView):
             value=settings.ENABLE_INVENTREE,
         ),
         'alternate': ft.Switch(
-            label='Alternate',
+            label='Update existing',
             value=settings.ENABLE_ALTERNATE if settings.ENABLE_INVENTREE else False,
             disabled=not settings.ENABLE_INVENTREE,
         ),
@@ -494,6 +494,9 @@ class InventreeView(MainView):
             width=GUI_PARAMS['textfield_width'] / 2 - 5,
             dense=GUI_PARAMS['textfield_dense'],
             visible=True,
+        ),
+        'Update Parameter': SwitchWithRefs(
+            label='Update Parameter',
         ),
     }
 
@@ -565,6 +568,18 @@ class InventreeView(MainView):
             )
 
         self.push_data(e)
+
+    def process_update(self, e, value=None):
+        if value is not None:
+            update_enabled = value
+        else:
+            # Get switch value
+            update_enabled = False
+            if e.data.lower() == 'true':
+                update_enabled = True
+        settings.set_enable_flag('update', update_enabled)
+        self.push_data(e)
+
 
     def process_category(self, e=None, label=None, value=None):
         parent_category = None
@@ -638,6 +653,7 @@ class InventreeView(MainView):
         self.fields['alternate'].on_change = self.process_alternate
         self.fields['Existing Part ID'].on_change = self.push_data
         self.fields['Existing Part IPN'].on_change = self.push_data
+        self.fields['Update Parameter'].on_change = self.process_update
 
         self.column = ft.Column(
             controls=[
@@ -677,12 +693,19 @@ class InventreeView(MainView):
                         ),
                     ],
                 ),
-                ft.Row(
+                ft.Column(
                     ref=self.alternate_row_ref,
                     controls=[
-                        self.fields['Existing Part ID'],
-                        self.fields['Existing Part IPN'],
-                    ],
+                        ft.Row(
+                            controls=[
+                                self.fields['Existing Part ID'],
+                                self.fields['Existing Part IPN'],
+                            ],
+                        ),
+                        ft.Row(
+                            controls=[self.fields['Update Parameter']]
+                        )
+                    ]
                 ),
             ],
         )
