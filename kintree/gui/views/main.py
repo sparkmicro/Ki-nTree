@@ -254,7 +254,6 @@ class PartSearchView(MainView):
             hint_text="Part Number",
             width=300,
             expand=True,
-            value='CGA3E3X7S2A104K080AB'
         ),
         'supplier': ft.Dropdown(
             label="Supplier",
@@ -495,7 +494,6 @@ class InventreeView(MainView):
             width=GUI_PARAMS['textfield_width'] / 2 - 5,
             dense=GUI_PARAMS['textfield_dense'],
             visible=True,
-            value='CAP-002831-00'
         ),
         'Update Parameter': SwitchWithRefs(
             label='Update Parameter',
