@@ -253,7 +253,8 @@ class PartSearchView(MainView):
             dense=True,
             hint_text="Part Number",
             width=300,
-            expand=True
+            expand=True,
+            value='CGA3E3X7S2A104K080AB'
         ),
         'supplier': ft.Dropdown(
             label="Supplier",
@@ -494,9 +495,12 @@ class InventreeView(MainView):
             width=GUI_PARAMS['textfield_width'] / 2 - 5,
             dense=GUI_PARAMS['textfield_dense'],
             visible=True,
+            value='CAP-002831-00'
         ),
         'Update Parameter': SwitchWithRefs(
             label='Update Parameter',
+            value=settings.UPDATE_INVENTREE if settings.ENABLE_INVENTREE else False,
+            disabled=not settings.ENABLE_INVENTREE,
         ),
     }
 
@@ -560,6 +564,7 @@ class InventreeView(MainView):
 
         # Update settings
         settings.set_enable_flag('alternate', alt_visible)
+        settings.set_enable_flag('update', alt_visible)
         # User dialog
         if alt_visible:
             self.show_dialog(
@@ -579,7 +584,6 @@ class InventreeView(MainView):
                 update_enabled = True
         settings.set_enable_flag('update', update_enabled)
         self.push_data(e)
-
 
     def process_category(self, e=None, label=None, value=None):
         parent_category = None

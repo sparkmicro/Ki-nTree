@@ -658,17 +658,18 @@ def create_parameter(part_id: int, template_name: int, value: str):
     part_parameters = part.getParameters()
     is_new_part_parameters_template_id = True
     was_updated = False
+    parameter = None
     for item in part_parameters:
         # cprint(f'[TREE]\t{parameter.template} ?= {template_id}', silent=SILENT)
         if item.template == template_id:
             is_new_part_parameters_template_id = False
             if settings.UPDATE_INVENTREE:
-                print(item.__dict__)
-                was_updated = True
-                #parameter = Parameter.save(inventree_api, {
-                #    id
-                #    }
-                #    )
+                if value != item.data and value != '-':
+                    parameter = item
+                    was_updated = True
+                    parameter.save(data={
+                        'data': value
+                    })
             break
     # cprint(part_parameters, silent=SILENT)
 
@@ -677,7 +678,6 @@ def create_parameter(part_id: int, template_name: int, value: str):
         - template exists
         - parameter does not exist for this part
     '''
-    parameter = None
     if template_id > 0 and is_new_part_parameters_template_id:
         parameter = Parameter.create(inventree_api, {
             'part': part_id,

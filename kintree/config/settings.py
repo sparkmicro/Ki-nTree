@@ -190,7 +190,7 @@ def load_cache_settings():
     global search_datasheets
     global CACHE_ENABLED
     global DIGIKEY_STORAGE_PATH
-    
+
     USER_SETTINGS = config_interface.load_user_paths(home_dir=HOME_DIR)
 
     search_results = {
@@ -364,7 +364,7 @@ def set_enable_flag(key: str, value: bool):
     global CONFIG_GENERAL
 
     user_settings = CONFIG_GENERAL
-    if key in ['kicad', 'inventree', 'alternate','update']:
+    if key in ['kicad', 'inventree', 'alternate', 'update']:
         if key == 'kicad':
             user_settings['ENABLE_KICAD'] = value
         elif key == 'inventree':

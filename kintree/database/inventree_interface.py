@@ -665,6 +665,7 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
 
     return new_part, part_pk, inventree_part
 
+
 def inventree_process_parameters(part_id: str, parameters: dict, show_progress=True) -> bool:
     ''' Create or Update parameters for an InvenTree part'''
     cprint('\n[MAIN]\tCreating parameters', silent=settings.SILENT)
@@ -696,6 +697,7 @@ def inventree_process_parameters(part_id: str, parameters: dict, show_progress=T
         cprint('[TREE]\tWarning: The following parameters were skipped:', silent=settings.SILENT)
         for item in parameters_lists[2]:
             cprint(f'--->\t{item}', silent=settings.SILENT)
+    return True
 
 
 def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_progress=None) -> bool:
@@ -761,6 +763,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     supplier_name = part_info.get('supplier_name', '')
     supplier_sku = part_info.get('supplier_part_number', '')
     supplier_link = part_info.get('supplier_link', '')
+    print(supplier_sku)
 
     # Add supplier alternate
     if supplier_name and supplier_sku:
