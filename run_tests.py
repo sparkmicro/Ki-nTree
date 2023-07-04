@@ -402,6 +402,13 @@ if __name__ == '__main__':
                         "supplier_link": "https://www.digikey.com/en/products/detail/murata-electronics/GRM155R71C104KA88D/675947",
                         "supplier_name": "Digi-Key",
                         "supplier_part_number": "490-3261-1-ND",
+                        "name": "",
+                        "description": "",
+                        "revision": "",
+                        "keywords": "",
+                        "IPN": "",
+                        "image": "",
+                        "parameters": {},
                     }
                     if not inventree_interface.inventree_create_alternate(part_info=part_info,
                                                                           part_id='1',
