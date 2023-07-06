@@ -109,6 +109,8 @@ def load_inventree_user_settings(user_config_path: str) -> dict:
 
     if 'DATASHEET_UPLOAD' not in user_settings:
         user_settings['DATASHEET_UPLOAD'] = False
+    if 'PRICING_UPLOAD' not in user_settings:
+        user_settings['PRICING_UPLOAD'] = False
     return user_settings
 
 
@@ -119,6 +121,7 @@ def save_inventree_user_settings(enable: bool,
                                  enable_proxy: bool,
                                  proxies: dict,
                                  datasheet_upload: bool,
+                                 pricing_upload: bool,
                                  user_config_path: str):
     ''' Save InvenTree user settings to file '''
     user_settings = {}
@@ -131,6 +134,7 @@ def save_inventree_user_settings(enable: bool,
     user_settings['ENABLE_PROXY'] = enable_proxy
     user_settings['PROXIES'] = proxies
     user_settings['DATASHEET_UPLOAD'] = datasheet_upload
+    user_settings['PRICING_UPLOAD'] = pricing_upload
 
     return dump_file(user_settings, user_config_path)
 

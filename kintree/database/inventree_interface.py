@@ -263,6 +263,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     inventree_part['datasheet'] = part_info['datasheet'].replace(' ', '%20')
     # Image URL is not shown to user so force default key/value
     inventree_part['image'] = part_info['image'].replace(' ', '%20')
+    inventree_part['pricing'] = part_info.get('pricing', {})
 
     # Load parameters map
     if category_tree:
@@ -639,14 +640,15 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
             supplier_sku = inventree_part['supplier_part_number']
 
             cprint('\n[MAIN]\tCreating supplier part', silent=settings.SILENT)
-            is_new_supplier_part = inventree_api.is_new_supplier_part(supplier_name=supplier_name,
-                                                                      supplier_sku=supplier_sku)
+            is_new_supplier_part, supplier_part = inventree_api.is_new_supplier_part(
+                supplier_name=supplier_name,
+                supplier_sku=supplier_sku)
 
             if not is_new_supplier_part:
                 cprint('[INFO]\tSupplier part already exists, skipping.', silent=settings.SILENT)
             else:
                 # Create a new supplier part
-                is_supplier_part_created = inventree_api.create_supplier_part(
+                is_supplier_part_created, supplier_part = inventree_api.create_supplier_part(
                     part_id=part_pk,
                     manufacturer_name=manufacturer_name,
                     manufacturer_mpn=manufacturer_mpn,
@@ -658,6 +660,12 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
 
                 if is_supplier_part_created:
                     cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
+            
+            if supplier_part:
+                cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
+                inventree_api.update_price_breaks(
+                    supplier_part=supplier_part,
+                    price_breaks=inventree_part['pricing'])
 
     # Progress Update
     if not progress.update_progress_bar(show_progress):
@@ -717,7 +725,6 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     # Translate to InvenTree part format
     category_tree = inventree_api.get_category_tree(part.category)
     category_tree = list(category_tree.values())
-    print(category_tree)
     inventree_part = translate_form_to_inventree(
         part_info=part_info,
         category_tree=category_tree,
@@ -763,29 +770,38 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     supplier_name = part_info.get('supplier_name', '')
     supplier_sku = part_info.get('supplier_part_number', '')
     supplier_link = part_info.get('supplier_link', '')
-    print(supplier_sku)
 
     # Add supplier alternate
     if supplier_name and supplier_sku:
         cprint('\n[MAIN]\tCreating supplier part', silent=settings.SILENT)
-        is_new_supplier_part = inventree_api.is_new_supplier_part(supplier_name=supplier_name,
-                                                                  supplier_sku=supplier_sku)
+        is_new_supplier_part, supplier_part = inventree_api.is_new_supplier_part(
+            supplier_name=supplier_name,
+            supplier_sku=supplier_sku)
 
         if not is_new_supplier_part:
             cprint('[INFO]\tSupplier part already exists, skipping.', silent=settings.SILENT)
         else:
             # Create a new supplier part
-            is_supplier_part_created = inventree_api.create_supplier_part(part_id=part_pk,
-                                                                          manufacturer_name=manufacturer_name,
-                                                                          manufacturer_mpn=manufacturer_mpn,
-                                                                          supplier_name=supplier_name,
-                                                                          supplier_sku=supplier_sku,
-                                                                          description=part_description,
-                                                                          link=supplier_link)
+            is_supplier_part_created, supplier_part = inventree_api.create_supplier_part(
+                part_id=part_pk,
+                manufacturer_name=manufacturer_name,
+                manufacturer_mpn=manufacturer_mpn,
+                supplier_name=supplier_name,
+                supplier_sku=supplier_sku,
+                description=part_description,
+                link=supplier_link)
 
             if is_supplier_part_created:
                 cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
                 result = True
+
+        if supplier_part:
+            cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
+            inventree_api.update_price_breaks(
+                supplier_part=supplier_part,
+                price_breaks=inventree_part['pricing'])
+            result = True
+    
     else:
         cprint('[INFO]\tWarning: No supplier part to create', silent=settings.SILENT)
 

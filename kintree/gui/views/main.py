@@ -326,6 +326,9 @@ class PartSearchView(MainView):
                     # Stitch parameters
                     if part_supplier_info.get('parameters', None):
                         self.data['parameters'] = part_supplier_info['parameters']
+                    # and pricing
+                    if part_supplier_info.get('pricing', None):
+                        self.data['pricing'] = part_supplier_info['pricing']
 
                 if part_supplier_form:
                     for field_idx, field_name in enumerate(self.fields['search_form'].keys()):

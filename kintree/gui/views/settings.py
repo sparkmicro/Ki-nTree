@@ -157,6 +157,11 @@ SETTINGS = {
             SwitchWithRefs(),
             False,  # Browse enabled
         ],
+        'Upload Pricing Data to InvenTree': [
+            'PRICING_UPLOAD',
+            SwitchWithRefs(),
+            False,  # Browse enabled
+        ],
         'Default Part Revision': [
             'INVENTREE_DEFAULT_REV',
             ft.TextField(),
@@ -770,6 +775,8 @@ class InvenTreeSettingsView(SettingsView):
                 proxies=proxies,
                 datasheet_upload=SETTINGS[self.title][
                     'Upload Datasheets to InvenTree'][1].value,
+                pricing_upload=SETTINGS[self.title][
+                    'Upload Pricing Data to InvenTree'][1].value,
                 user_config_path=self.settings_file[0]
             )
             # Alert user

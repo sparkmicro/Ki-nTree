@@ -3,19 +3,20 @@ import validators
 from ..common import part_tools
 from ..common.tools import cprint, download_with_retry
 from ..config import config_interface
+import re
 
 # Required to use local CA certificates on Linux
 # For more details, refer to https://github.com/sparkmicro/Ki-nTree/pull/45
 import platform
+import os
 if platform.system() == 'Linux':
-    import os
     cert_path = '/etc/ssl/certs/ca-certificates.crt'
     if os.path.isfile(cert_path):
         os.environ['REQUESTS_CA_BUNDLE'] = cert_path
 
 # InvenTree
 from inventree.api import InvenTreeAPI
-from inventree.company import Company, ManufacturerPart, SupplierPart
+from inventree.company import Company, ManufacturerPart, SupplierPart, SupplierPriceBreak
 from inventree.part import Part, PartCategory, Parameter, ParameterTemplate
 
 
@@ -501,7 +502,7 @@ def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str, crea
     return 0
 
 
-def is_new_supplier_part(supplier_name: str, supplier_sku: str) -> bool:
+def is_new_supplier_part(supplier_name: str, supplier_sku: str):
     ''' Check if InvenTree supplier part exists to avoid duplicates '''
     global inventree_api
 
@@ -531,11 +532,11 @@ def is_new_supplier_part(supplier_name: str, supplier_sku: str) -> bool:
     for item in part_list:
         if supplier_sku in item.SKU:
             cprint(f'[TREE]\t{item.SKU} ?= {supplier_sku} => True', silent=settings.HIDE_DEBUG)
-            return False
+            return False, item
         else:
             cprint(f'[TREE]\t{item.SKU} ?= {supplier_sku} => False', silent=settings.HIDE_DEBUG)
 
-    return True
+    return True, False
 
 
 def create_manufacturer_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, description: str, datasheet: str) -> bool:
@@ -574,7 +575,7 @@ def create_manufacturer_part(part_id: int, manufacturer_name: str, manufacturer_
     return False
 
 
-def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, supplier_name: str, supplier_sku: str, description: str, link: str) -> bool:
+def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, supplier_name: str, supplier_sku: str, description: str, link: str):
     ''' Create InvenTree supplier part
 
         part_id: Part the supplier data is linked to
@@ -613,12 +614,57 @@ def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn:
         })
 
         if supplier_part:
-            return True
+            return True, supplier_part
     else:
         cprint(f'[TREE]\tError: Supplier "{supplier_name}" not found (failed to create supplier part)',
                silent=settings.SILENT)
 
-    return False
+    return False, False
+
+
+def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
+    ''' Update the Price Breaks associated with a supplier part '''
+    if not isinstance(supplier_part, SupplierPart):
+        try:
+            supplier_part = SupplierPart(inventree_api, supplier_part)
+        except:
+            cprint('[TREE]\tWarning: Supplier part not found, skipping price break update',
+                   silent=settings.SILENT)
+            return False
+    if not price_breaks:
+        cprint('[TREE]\tWarning: No price breaks found, skipping.', silent=settings.SILENT)
+        return False
+
+    old_price_breaks = supplier_part.getPriceBreaks()
+    updated = []
+    # First process existing price breaks
+    for old_price_break in old_price_breaks:
+        quantity = old_price_break.quantity
+        price = price_breaks[quantity]
+        # remove everything but the numbers from the price break
+        if isinstance(price, str):
+            price = re.findall('\d+.\d+', price)[0]
+            price = price.replace(',', '.')
+        if quantity in price_breaks:
+            old_price_break.save(data={'price': price})
+            updated.append(quantity)
+        else:
+            old_price_break.delete()
+    for quantity in updated:
+        del price_breaks[quantity]
+    # if any price breaks are left over these will be created
+    for quantity, price in price_breaks.items():
+        # remove everything but the numbers from the price break
+        if isinstance(price, str):
+            price = re.findall('\d+.\d+', price)[0]
+            price = price.replace(',', '.')
+        SupplierPriceBreak.create(inventree_api, {
+            'part': supplier_part.pk,
+            'quantity': quantity,
+            'price': price,
+        })
+    cprint('[INFO]\tSuccess: The price breaks were updated', silent=settings.SILENT)
+    return True
 
 
 def create_parameter_template(name: str, units: str) -> int:

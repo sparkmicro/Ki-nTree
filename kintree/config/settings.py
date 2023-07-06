@@ -321,6 +321,7 @@ def load_inventree_settings():
     global PROXIES
     global PART_URL_ROOT
     global DATASHEET_UPLOAD
+    global PRICING_UPLOAD
 
     inventree_settings = config_interface.load_inventree_user_settings(INVENTREE_CONFIG)
 
@@ -330,6 +331,7 @@ def load_inventree_settings():
     ENABLE_PROXY = inventree_settings.get('ENABLE_PROXY', False)
     PROXIES = inventree_settings.get('PROXIES', None)
     DATASHEET_UPLOAD = inventree_settings.get('DATASHEET_UPLOAD', False)
+    PRICING_UPLOAD = inventree_settings.get('PRICING_UPLOAD', False)
     # Part URL
     if SERVER_ADDRESS:
         # If missing, append slash to root URL
