@@ -20,6 +20,12 @@ PARAMETERS_MAP = [
     'value',
 ]
 
+PRICING_MAP = [
+    'standard_pricing',
+    'break_quantity',
+    'unit_price',
+]
+
 
 os.environ['DIGIKEY_STORAGE_PATH'] = settings.DIGIKEY_STORAGE_PATH
 # Check if storage path exists, else create it
@@ -148,6 +154,15 @@ def fetch_part_info(part_number: str) -> dict:
         parameter_value = part[parameter_key][parameter][value_key]
         # Append to parameters dictionary
         part_info['parameters'][parameter_name] = parameter_value
+
+    # Pricing
+    part_info['pricing'] = {}
+    [pricing_key, qty_key, price_key] = PRICING_MAP
+
+    for price_break in part[pricing_key]:
+        quantity = price_break[qty_key]
+        price = price_break[price_key]
+        part_info['pricing'][quantity] = price
 
     # Extra search fields
     if settings.CONFIG_DIGIKEY.get('EXTRA_FIELDS', None):

@@ -1,21 +1,22 @@
 from ..config import settings
 import validators
 from ..common import part_tools
-from ..common.tools import cprint, download_image
+from ..common.tools import cprint, download_with_retry
 from ..config import config_interface
+import re
 
 # Required to use local CA certificates on Linux
 # For more details, refer to https://github.com/sparkmicro/Ki-nTree/pull/45
 import platform
+import os
 if platform.system() == 'Linux':
-    import os
     cert_path = '/etc/ssl/certs/ca-certificates.crt'
     if os.path.isfile(cert_path):
         os.environ['REQUESTS_CA_BUNDLE'] = cert_path
 
 # InvenTree
 from inventree.api import InvenTreeAPI
-from inventree.company import Company, ManufacturerPart, SupplierPart
+from inventree.company import Company, ManufacturerPart, SupplierPart, SupplierPriceBreak
 from inventree.part import Part, PartCategory, Parameter, ParameterTemplate
 
 
@@ -113,8 +114,20 @@ def get_categories() -> dict:
                 parent = parent.getParentCategory()
             cat = {category.name: None}
             deep_add(categories, parent_list, cat)
-            
+
     return categories
+
+
+def get_category_tree(category_id: int) -> dict:
+    ''' Get all parents of a category'''
+    category = PartCategory(inventree_api, category_id)
+    category_list = {category_id: category.name}
+
+    while category.parent:
+        category = category.getParentCategory()
+        category_list[category.pk] = category.name
+
+    return category_list
 
 
 def get_category_parameters(category_id: int) -> list:
@@ -168,14 +181,14 @@ def get_part_from_ipn(part_ipn='') -> int:
     ''' Get Part ID from Part IPN '''
     global inventree_api
 
-    parts = Part.list(inventree_api)
+    parts = Part.list(inventree_api, IPN=part_ipn)
 
-    for part in parts:
-        if part.IPN == part_ipn:
-            return part
-    
-    # No part found
-    return None
+    if not parts:
+        # No part found
+        return None
+    else:
+        # parts should have only one entry
+        return parts[0]
 
 
 def fetch_part(part_id='', part_ipn='') -> int:
@@ -339,18 +352,52 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
     image_location = settings.search_images + image_name
 
     # Download image (multiple attempts)
-    if not download_image(image_url, image_location):
+    if not download_with_retry(image_url, image_location, filetype='Image'):
         return False
 
     # Upload image to InvenTree
     part = Part(inventree_api, part_id)
     if part:
-        return part.uploadImage(image=image_location)
+        try:
+            return part.uploadImage(image=image_location)
+        except Exception:
+            return False
     else:
         return False
 
 
-def create_part(category_id: int, name: str, description: str, revision: str, image: str, keywords=None) -> int:
+def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
+    ''' Upload InvenTree part attachment'''
+    global inventree_api
+
+    # Get attachment full path
+    datasheet_name = f'{os.path.basename(datasheet_url)}'
+    # inventree needs .pdf at the end of filename to recognize a PDF
+    if not datasheet_name.lower().endswith('.pdf'):
+        datasheet_name += '.pdf'
+    datasheet_location = settings.search_datasheets + datasheet_name
+
+    # Download image (multiple attempts)
+    if not download_with_retry(datasheet_url,
+                               datasheet_location,
+                               filetype='PDF',
+                               timeout=10):
+        return ''
+
+    # Upload Datasheet to InvenTree
+    part = Part(inventree_api, part_id)
+    if part:
+        try:
+            attachment = part.uploadAttachment(attachment=datasheet_location)
+            os.remove(datasheet_location)
+            return inventree_api.base_url.strip('/') + attachment['attachment']
+        except Exception:
+            return ''
+    else:
+        return ''
+
+
+def create_part(category_id: int, name: str, description: str, revision: str, keywords=None) -> int:
     ''' Create InvenTree part '''
     global inventree_api
 
@@ -455,7 +502,7 @@ def is_new_manufacturer_part(manufacturer_name: str, manufacturer_mpn: str, crea
     return 0
 
 
-def is_new_supplier_part(supplier_name: str, supplier_sku: str) -> bool:
+def is_new_supplier_part(supplier_name: str, supplier_sku: str):
     ''' Check if InvenTree supplier part exists to avoid duplicates '''
     global inventree_api
 
@@ -485,11 +532,11 @@ def is_new_supplier_part(supplier_name: str, supplier_sku: str) -> bool:
     for item in part_list:
         if supplier_sku in item.SKU:
             cprint(f'[TREE]\t{item.SKU} ?= {supplier_sku} => True', silent=settings.HIDE_DEBUG)
-            return False
+            return False, item
         else:
             cprint(f'[TREE]\t{item.SKU} ?= {supplier_sku} => False', silent=settings.HIDE_DEBUG)
 
-    return True
+    return True, False
 
 
 def create_manufacturer_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, description: str, datasheet: str) -> bool:
@@ -528,7 +575,7 @@ def create_manufacturer_part(part_id: int, manufacturer_name: str, manufacturer_
     return False
 
 
-def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, supplier_name: str, supplier_sku: str, description: str, link: str) -> bool:
+def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn: str, supplier_name: str, supplier_sku: str, description: str, link: str):
     ''' Create InvenTree supplier part
 
         part_id: Part the supplier data is linked to
@@ -567,12 +614,57 @@ def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn:
         })
 
         if supplier_part:
-            return True
+            return True, supplier_part
     else:
         cprint(f'[TREE]\tError: Supplier "{supplier_name}" not found (failed to create supplier part)',
                silent=settings.SILENT)
 
-    return False
+    return False, False
+
+
+def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
+    ''' Update the Price Breaks associated with a supplier part '''
+    if not isinstance(supplier_part, SupplierPart):
+        try:
+            supplier_part = SupplierPart(inventree_api, supplier_part)
+        except:
+            cprint('[TREE]\tWarning: Supplier part not found, skipping price break update',
+                   silent=settings.SILENT)
+            return False
+    if not price_breaks:
+        cprint('[TREE]\tWarning: No price breaks found, skipping.', silent=settings.SILENT)
+        return False
+
+    old_price_breaks = supplier_part.getPriceBreaks()
+    updated = []
+    # First process existing price breaks
+    for old_price_break in old_price_breaks:
+        quantity = old_price_break.quantity
+        price = price_breaks[quantity]
+        # remove everything but the numbers from the price break
+        if isinstance(price, str):
+            price = re.findall('\d+.\d+', price)[0]
+            price = price.replace(',', '.')
+        if quantity in price_breaks:
+            old_price_break.save(data={'price': price})
+            updated.append(quantity)
+        else:
+            old_price_break.delete()
+    for quantity in updated:
+        del price_breaks[quantity]
+    # if any price breaks are left over these will be created
+    for quantity, price in price_breaks.items():
+        # remove everything but the numbers from the price break
+        if isinstance(price, str):
+            price = re.findall('\d+.\d+', price)[0]
+            price = price.replace(',', '.')
+        SupplierPriceBreak.create(inventree_api, {
+            'part': supplier_part.pk,
+            'quantity': quantity,
+            'price': price,
+        })
+    cprint('[INFO]\tSuccess: The price breaks were updated', silent=settings.SILENT)
+    return True
 
 
 def create_parameter_template(name: str, units: str) -> int:
@@ -611,10 +703,19 @@ def create_parameter(part_id: int, template_name: int, value: str):
     part = Part(inventree_api, part_id)
     part_parameters = part.getParameters()
     is_new_part_parameters_template_id = True
+    was_updated = False
+    parameter = None
     for item in part_parameters:
         # cprint(f'[TREE]\t{parameter.template} ?= {template_id}', silent=SILENT)
         if item.template == template_id:
             is_new_part_parameters_template_id = False
+            if settings.UPDATE_INVENTREE:
+                if value != item.data and value != '-':
+                    parameter = item
+                    was_updated = True
+                    parameter.save(data={
+                        'data': value
+                    })
             break
     # cprint(part_parameters, silent=SILENT)
 
@@ -623,7 +724,6 @@ def create_parameter(part_id: int, template_name: int, value: str):
         - template exists
         - parameter does not exist for this part
     '''
-    parameter = None
     if template_id > 0 and is_new_part_parameters_template_id:
         parameter = Parameter.create(inventree_api, {
             'part': part_id,
@@ -632,8 +732,8 @@ def create_parameter(part_id: int, template_name: int, value: str):
         })
 
     if parameter:
-        return parameter.pk, is_new_part_parameters_template_id
+        return parameter.pk, is_new_part_parameters_template_id, was_updated
     else:
         if template_id == 0:
             cprint(f'[TREE]\tError: Parameter template "{template_name}" does not exist', silent=settings.SILENT)
-        return 0, False
+        return 0, False, False

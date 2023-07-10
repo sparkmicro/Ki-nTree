@@ -115,11 +115,13 @@ def reload_enable_flags():
     global ENABLE_KICAD
     global ENABLE_INVENTREE
     global ENABLE_ALTERNATE
+    global UPDATE_INVENTREE
 
     try:
         ENABLE_KICAD = CONFIG_GENERAL.get('ENABLE_KICAD', False)
         ENABLE_INVENTREE = CONFIG_GENERAL.get('ENABLE_INVENTREE', False)
         ENABLE_ALTERNATE = CONFIG_GENERAL.get('ENABLE_ALTERNATE', False)
+        UPDATE_INVENTREE = CONFIG_GENERAL.get('UPDATE_INVENTREE', False)
         return True
     except TypeError:
         pass
@@ -185,9 +187,10 @@ CACHE_VALID_DAYS = int(CONFIG_SEARCH_API.get('CACHE_VALID_DAYS', '7'))
 def load_cache_settings():
     global search_results
     global search_images
+    global search_datasheets
     global CACHE_ENABLED
     global DIGIKEY_STORAGE_PATH
-    
+
     USER_SETTINGS = config_interface.load_user_paths(home_dir=HOME_DIR)
 
     search_results = {
@@ -203,6 +206,13 @@ def load_cache_settings():
     # Create folder if it does not exists
     if not os.path.exists(search_images):
         os.makedirs(search_images)
+
+    # Part images
+    search_datasheets = os.path.join(
+        USER_SETTINGS['USER_CACHE'], 'datasheets', '')
+    # Create folder if it does not exists
+    if not os.path.exists(search_datasheets):
+        os.makedirs(search_datasheets)
 
     # API token storage path
     DIGIKEY_STORAGE_PATH = os.path.join(USER_SETTINGS['USER_CACHE'], '')
@@ -310,6 +320,8 @@ def load_inventree_settings():
     global ENABLE_PROXY
     global PROXIES
     global PART_URL_ROOT
+    global DATASHEET_UPLOAD
+    global PRICING_UPLOAD
 
     inventree_settings = config_interface.load_inventree_user_settings(INVENTREE_CONFIG)
 
@@ -318,6 +330,8 @@ def load_inventree_settings():
     PASSWORD = inventree_settings.get('PASSWORD', None)
     ENABLE_PROXY = inventree_settings.get('ENABLE_PROXY', False)
     PROXIES = inventree_settings.get('PROXIES', None)
+    DATASHEET_UPLOAD = inventree_settings.get('DATASHEET_UPLOAD', False)
+    PRICING_UPLOAD = inventree_settings.get('PRICING_UPLOAD', False)
     # Part URL
     if SERVER_ADDRESS:
         # If missing, append slash to root URL
@@ -352,13 +366,15 @@ def set_enable_flag(key: str, value: bool):
     global CONFIG_GENERAL
 
     user_settings = CONFIG_GENERAL
-    if key in ['kicad', 'inventree', 'alternate']:
+    if key in ['kicad', 'inventree', 'alternate', 'update']:
         if key == 'kicad':
             user_settings['ENABLE_KICAD'] = value
         elif key == 'inventree':
             user_settings['ENABLE_INVENTREE'] = value
         elif key == 'alternate':
             user_settings['ENABLE_ALTERNATE'] = value
+        elif key == 'update':
+            user_settings['UPDATE_INVENTREE'] = value
 
         # Save
         config_interface.dump_file(

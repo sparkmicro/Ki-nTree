@@ -75,6 +75,12 @@ PARAMETERS_MAP = [
     'attributeValue',
 ]
 
+PRICING_MAP = [
+    'prices',
+    'from',
+    'cost',
+]
+
 
 def get_default_search_keys():
     return [
@@ -208,6 +214,15 @@ def fetch_part_info(part_number: str, supplier: str, store_url=None) -> dict:
         except TypeError:
             # Parameter list is empty
             pass
+
+    # Pricing
+    part_info['pricing'] = {}
+    [pricing_key, qty_key, price_key] = PRICING_MAP
+
+    for price_break in part[pricing_key]:
+        quantity = price_break[qty_key]
+        price = price_break[price_key]
+        part_info['pricing'][quantity] = price
 
     # Extra search fields
     if settings.CONFIG_ELEMENT14.get('EXTRA_FIELDS', None):
