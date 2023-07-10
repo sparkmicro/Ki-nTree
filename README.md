@@ -190,7 +190,7 @@ CATEGORY_NAME:
     - SUPPLIER_2_PARAMETER_NAME_1
 ```
 
-Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/search/supplier_parameters.yaml) as a starting point / example.
+Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/inventree/supplier_parameters.yaml) as a starting point / example.
 
 #### Part Number Search
 
