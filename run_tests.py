@@ -409,6 +409,7 @@ if __name__ == '__main__':
                         "IPN": "",
                         "image": "",
                         "parameters": {},
+                        "pricing": {},
                     }
                     if not inventree_interface.inventree_create_alternate(part_info=part_info,
                                                                           part_id='1',
@@ -417,9 +418,9 @@ if __name__ == '__main__':
 
                 elif method_idx == 11:
                     # Test manufacturer and supplier alternates using Part IPN
-                    if inventree_interface.inventree_create_alternate(part_info=part_info,
-                                                                      part_ipn='CAP-000001-00',
-                                                                      show_progress=False, ):
+                    if not inventree_interface.inventree_create_alternate(part_info=part_info,
+                                                                          part_ipn='CAP-000001-00',
+                                                                          show_progress=False, ):
                         method_success = False
 
                 elif method_idx == 12:
@@ -433,6 +434,7 @@ if __name__ == '__main__':
                         proxies={},
                         datasheet_upload=True,
                         user_config_path=settings.INVENTREE_CONFIG,
+                        pricing_upload=True,
                     ):
                         method_success = False
 
