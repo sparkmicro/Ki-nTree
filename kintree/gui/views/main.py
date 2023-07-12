@@ -252,7 +252,7 @@ class PartSearchView(MainView):
             label="Part Number",
             dense=True,
             hint_text="Part Number",
-            width=300,
+            width=250,
             expand=True,
         ),
         'supplier': ft.Dropdown(
@@ -268,7 +268,12 @@ class PartSearchView(MainView):
             width=48,
             tooltip="Submit",
         ),
+        'parameter_view': ft.Switch(
+            label='View Parameters',
+            disabled=True
+        ),
         'search_form': {},
+        'parameter_form': {},
     }
 
     def reset_view(self, e, ignore=['enable']):
@@ -276,17 +281,20 @@ class PartSearchView(MainView):
             'searched_part_number': '',
             'custom_part': None,
         }
+        self.fields['parameter_form'] = {}
         return super().reset_view(e, ignore=ignore, hidden=hidden_fields)
 
     def enable_search_fields(self):
         for form_field in self.fields['search_form'].values():
             form_field.disabled = False
+        self.fields['parameter_view'].disabled = False
         self.page.update()
         return
 
     def run_search(self, e):
         # Reset view
         self.reset_view(e, ignore=['part_number', 'supplier'])
+        self.switch_view()
         # Validate form
         if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
             if not self.fields['part_number'].value:
@@ -323,22 +331,31 @@ class PartSearchView(MainView):
                         supplier=supplier,
                         part_info=part_supplier_info,
                     )
+                    if part_supplier_form:
+                        for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
+                            # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
+                            try:
+                                self.fields['search_form'][field_name].value = part_supplier_form.get(field_name, '')
+                            except IndexError:
+                                pass
+                            # Enable editing
+                            self.enable_search_fields()
                     # Stitch parameters
                     if part_supplier_info.get('parameters', None):
                         self.data['parameters'] = part_supplier_info['parameters']
+                        for parameter, value in self.data['parameters'].items():
+                            text_field = ft.TextField(
+                                label=parameter,
+                                value=value,
+                                expand=True,
+                                on_change=self.push_data,
+                            )
+                            self.column.controls[0].content.controls.append(ft.Row([text_field]))
+                            self.fields['parameter_form'][parameter] = text_field
                     # and pricing
                     if part_supplier_info.get('pricing', None):
                         self.data['pricing'] = part_supplier_info['pricing']
 
-                if part_supplier_form:
-                    for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
-                        # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
-                        try:
-                            self.fields['search_form'][field_name].value = part_supplier_form.get(field_name, '')
-                        except IndexError:
-                            pass
-                        # Enable editing
-                        self.enable_search_fields()
 
             # Add to data buffer
             self.push_data()
@@ -364,6 +381,8 @@ class PartSearchView(MainView):
         }
         for key, field in self.fields['search_form'].items():
             self.data[key] = field.value
+        for key, field in self.fields['parameter_form'].items():
+            self.data['parameters'][key] = field.value
         return super().push_data(e, hidden=hidden_fields)
         
     def partial_update(self):
@@ -385,10 +404,34 @@ class PartSearchView(MainView):
             # Control not added to page yet
             pass
 
+    def switch_view(self, e=None):
+        # show parameters instead of part information
+        parameters_view =  self.fields['parameter_view'].value
+        self.column.controls[0].content.controls = [
+            ft.Row(),
+            ft.Row(
+                controls=[
+                    self.fields['part_number'],
+                    self.fields['supplier'],
+                    self.fields['search_button'],
+                    self.fields['parameter_view'],
+                ],
+            ),
+            ft.Divider(),
+        ]
+        if not parameters_view:
+            for field, text_field in self.fields['search_form'].items():
+                self.column.controls[0].content.controls.append(ft.Row([text_field]))
+        else:
+            for field, text_field in self.fields['parameter_form'].items():
+                self.column.controls[0].content.controls.append(ft.Row([text_field]))
+        self.page.update()
+
     def build_column(self):
         self.update_suppliers()
         # Enable search method
         self.fields['search_button'].on_click = self.run_search
+        self.fields['parameter_view'].on_change = self.switch_view
 
         self.column = ft.Column(
             controls=[
@@ -401,6 +444,7 @@ class PartSearchView(MainView):
                                     self.fields['part_number'],
                                     self.fields['supplier'],
                                     self.fields['search_button'],
+                                    self.fields['parameter_view'],
                                 ],
                             ),
                             ft.Divider(),
