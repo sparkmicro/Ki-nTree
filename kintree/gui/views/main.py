@@ -1333,12 +1333,22 @@ class CreateView(MainView):
             progress.CREATE_PART_PROGRESS = 0
             # Add part symbol to KiCAD
             cprint('\n[MAIN]\tAdding part to KiCad', silent=settings.SILENT)
-            kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(
+            kicad_success, kicad_new_part, kicad_part_name = kicad_interface.inventree_to_kicad(
                 part_data=part_info,
                 library_path=symbol_library_path,
                 show_progress=self.fields['kicad_progress'],
             )
             # print(kicad_success, kicad_new_part)
+            # Update symbol name in InvenTree
+            if settings.ENABLE_INVENTREE and part_pk:
+                old_state = settings.UPDATE_INVENTREE
+                settings.UPDATE_INVENTREE = True
+                inventree_interface.inventree_process_parameters(
+                    part_pk,
+                    {'Symbol': f"{symbol_lib}:{kicad_part_name}"},
+                    show_progress=self.fields['inventree_progress'],
+                )
+                settings.UPDATE_INVENTREE = old_state
 
             # Complete add operation
             if kicad_success:
