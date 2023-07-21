@@ -510,10 +510,10 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
         # Part exists
         if part_pk > 0:
             cprint('[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
-            ipn = inventree_api.get_part_number(part_pk)
-            if ipn:
+            info = inventree_api.get_part_info(part_pk)
+            if info:
                 # Update InvenTree part number
-                inventree_part['IPN'] = ipn
+                inventree_part = {**inventree_part, **info}
                 # Update InvenTree URL
                 inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
             else:
@@ -748,10 +748,15 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     datasheet = part_info.get('datasheet', '')
 
     # if datasheet upload is enabled and no attechment present yet upload
-    if settings.DATASHEET_UPLOAD and not part.getAttachments():
+    attachment = part.getAttachments()
+    if settings.DATASHEET_UPLOAD and not attachment:
         if datasheet:
-            inventree_api.upload_part_datasheet(part_id=part_pk,
-                                                datasheet_url=datasheet)
+            part_info['datasheet'] = inventree_api.upload_part_datasheet(
+                part_id=part_pk,
+                datasheet_url=datasheet)
+    # if an attachment is present, set it as the datasheet field
+    if attachment:
+        part_info['datasheet'] = f'{inventree_api.base_url.strip("/")}{attachment[0]["attachment"]}'
 
     # Create manufacturer part
     if manufacturer_name and manufacturer_mpn:
