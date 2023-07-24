@@ -160,7 +160,7 @@ def get_part_info(part_id: int) -> str:
     global inventree_api
 
     part = Part(inventree_api, part_id)
-    part_info = {'IPN':part.IPN}
+    part_info = {'IPN': part.IPN}
     attachment = part.getAttachments()
     if attachment:
         part_info['datasheet'] = f'{inventree_api.base_url.strip("/")}{attachment[0]["attachment"]}'

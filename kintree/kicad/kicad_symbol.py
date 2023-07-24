@@ -47,10 +47,9 @@ class ComponentLibManager(object):
                 if key in field:
                     field = field.replace(key, parameters[key])
             return field
-        
-        try:
-            symbol_id = symbol_data['Symbol'].split(':')[1]
-        except KeyError:
+
+        symbol_id = symbol_data.get('Symbol', '').split(':')
+        if not symbol_id:
             cprint('[KCAD] Error: Adding a new symbol to a KiCad library requires the \'Symbol\' key with the following format: {lib}:{symbol_id}')
             return part_in_lib, new_part, part_name
 

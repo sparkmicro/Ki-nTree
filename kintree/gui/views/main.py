@@ -356,7 +356,6 @@ class PartSearchView(MainView):
                     if part_supplier_info.get('pricing', None):
                         self.data['pricing'] = part_supplier_info['pricing']
 
-
             # Add to data buffer
             self.push_data()
             self.page.splash.visible = False
@@ -406,7 +405,7 @@ class PartSearchView(MainView):
 
     def switch_view(self, e=None):
         # show parameters instead of part information
-        parameters_view =  self.fields['parameter_view'].value
+        parameters_view = self.fields['parameter_view'].value
         self.column.controls[0].content.controls = [
             ft.Row(),
             ft.Row(
@@ -1274,7 +1273,7 @@ class CreateView(MainView):
                     is_custom=custom,
                 )
                 # print(new_part, part_pk)
-                #cprint(part_info)
+                # cprint(part_info)
 
             if settings.ENABLE_ALTERNATE:
                 if alt_result:

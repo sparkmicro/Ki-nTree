@@ -227,7 +227,7 @@ if __name__ == '__main__':
                                 settings.symbol_template_lib,
                             )
 
-                        kicad_result, kicad_new_part = kicad_interface.inventree_to_kicad(
+                        kicad_result, kicad_new_part, kicad_part_name = kicad_interface.inventree_to_kicad(
                             part_data=part_info,
                             library_path=test_library_path,
                             show_progress=False,
@@ -253,6 +253,7 @@ if __name__ == '__main__':
                         if ENABLE_KICAD:
                             cprint(f'[DBUG]\tkicad_result = {kicad_result}')
                             cprint(f'[DBUG]\tkicad_new_part = {kicad_new_part}')
+                            cprint(f'[DBUG]\tkicad_part_name = {kicad_part_name}')
                         if ENABLE_INVENTREE:
                             cprint(f'[DBUG]\tinventree_result = {inventree_result}')
                             cprint(f'[DBUG]\tnew_part = {new_part}')

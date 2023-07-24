@@ -1,4 +1,4 @@
-DATASHEET_UPLOAD: true
+DATASHEET_UPLOAD: false
 ENABLE: true
 PASSWORD: !!binary |
   WVdSdGFXND0=
