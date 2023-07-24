@@ -756,7 +756,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
                 datasheet_url=datasheet)
     # if an attachment is present, set it as the datasheet field
     if attachment:
-        part_info['datasheet'] = f'{inventree_api.base_url.strip("/")}{attachment[0]["attachment"]}'
+        part_info['datasheet'] = f'{inventree_api.inventree_api.base_url.strip("/")}{attachment[0]["attachment"]}'
 
     # Create manufacturer part
     if manufacturer_name and manufacturer_mpn:
