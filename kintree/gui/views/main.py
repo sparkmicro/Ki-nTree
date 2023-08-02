@@ -350,7 +350,6 @@ class PartSearchView(MainView):
                                 expand=True,
                                 on_change=self.push_data,
                             )
-                            self.column.controls[0].content.controls.append(ft.Row([text_field]))
                             self.fields['parameter_form'][parameter] = text_field
                     # and pricing
                     if part_supplier_info.get('pricing', None):
