@@ -505,21 +505,22 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
     if category_pk <= 0:
         cprint(f'[ERROR]\tCategory ({category_tree}) does not exist in InvenTree', silent=settings.SILENT)
     else:
-        # Check if part already exists
-        part_pk = inventree_api.is_new_part(category_pk, inventree_part)
-        # Part exists
-        if part_pk > 0:
-            cprint('[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
-            info = inventree_api.get_part_info(part_pk)
-            if info:
-                # Update InvenTree part number
-                inventree_part = {**inventree_part, **info}
-                # Update InvenTree URL
-                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
-            else:
-                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
+        if settings.CHECK_EXISTING:
+            # Check if part already exists
+            part_pk = inventree_api.is_new_part(category_pk, inventree_part)
+            # Part exists
+            if part_pk > 0:
+                cprint('[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
+                info = inventree_api.get_part_info(part_pk)
+                if info:
+                    # Update InvenTree part number
+                    inventree_part = {**inventree_part, **info}
+                    # Update InvenTree URL
+                    inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+                else:
+                    inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
         # Part is new
-        else:
+        if not part_pk:
             new_part = True
             # Create a new Part
             # Use the pk (primary-key) of the category

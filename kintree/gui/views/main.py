@@ -522,6 +522,11 @@ class InventreeView(MainView):
         'Create New Code': SwitchWithRefs(
             label='Create New Code',
         ),
+        'check_existing': ft.Switch(
+            label='Check for existing Parts',
+            value=settings.CHECK_EXISTING if settings.ENABLE_INVENTREE else False,
+            disabled=not settings.ENABLE_INVENTREE,
+        ),
         'New Category Code': ft.TextField(
             label='New Category Code',
             width=GUI_PARAMS['textfield_width'] / 2 - 5,
@@ -628,6 +633,20 @@ class InventreeView(MainView):
         settings.set_enable_flag('update', update_enabled)
         self.push_data(e)
 
+    def process_button(self, e, value=None):
+        if value is not None:
+            button_enabled = value
+        else:
+            # Get switch value
+            button_enabled = False
+            if e.data.lower() == 'true':
+                button_enabled = True
+        if e.control.label == 'Update existing':
+            settings.set_enable_flag('update', button_enabled)
+        elif e.control.label == 'Check for existing Parts':
+            settings.set_enable_flag('check_existing', button_enabled)
+        self.push_data(e)
+
     def process_category(self, e=None, label=None, value=None):
         parent_category = None
         if type(self.fields['Category'].value) == str:
@@ -696,6 +715,8 @@ class InventreeView(MainView):
         self.fields['IPN: Category Code'].on_change = self.push_data
         self.fields['Create New Code'].on_change = self.create_ipn_code
         self.fields['New Category Code'].on_change = self.push_data
+        # Other Settings
+        self.fields['check_existing'].on_change = self.process_button
         # Alternate fields
         self.fields['alternate'].on_change = self.process_alternate
         self.fields['Existing Part ID'].on_change = self.push_data
@@ -734,6 +755,11 @@ class InventreeView(MainView):
                                                 ft.Row([self.fields['New Category Code']]),
                                             ],
                                         ),
+                                    ],
+                                ),
+                                ft.Row(
+                                    [
+                                        self.fields['check_existing'],
                                     ],
                                 ),
                             ],

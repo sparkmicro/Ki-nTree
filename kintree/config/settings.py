@@ -116,12 +116,14 @@ def reload_enable_flags():
     global ENABLE_INVENTREE
     global ENABLE_ALTERNATE
     global UPDATE_INVENTREE
+    global CHECK_EXISTING
 
     try:
         ENABLE_KICAD = CONFIG_GENERAL.get('ENABLE_KICAD', False)
         ENABLE_INVENTREE = CONFIG_GENERAL.get('ENABLE_INVENTREE', False)
         ENABLE_ALTERNATE = CONFIG_GENERAL.get('ENABLE_ALTERNATE', False)
         UPDATE_INVENTREE = CONFIG_GENERAL.get('UPDATE_INVENTREE', False)
+        CHECK_EXISTING = CONFIG_GENERAL.get('CHECK_EXISTING', True)
         return True
     except TypeError:
         pass
@@ -366,7 +368,7 @@ def set_enable_flag(key: str, value: bool):
     global CONFIG_GENERAL
 
     user_settings = CONFIG_GENERAL
-    if key in ['kicad', 'inventree', 'alternate', 'update']:
+    if key in ['kicad', 'inventree', 'alternate', 'update', 'check_existing']:
         if key == 'kicad':
             user_settings['ENABLE_KICAD'] = value
         elif key == 'inventree':
@@ -375,6 +377,8 @@ def set_enable_flag(key: str, value: bool):
             user_settings['ENABLE_ALTERNATE'] = value
         elif key == 'update':
             user_settings['UPDATE_INVENTREE'] = value
+        elif key == 'check_existing':
+            user_settings['CHECK_EXISTING'] = value
 
         # Save
         config_interface.dump_file(
