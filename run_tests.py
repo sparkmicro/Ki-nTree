@@ -453,7 +453,7 @@ if __name__ == '__main__':
                 elif method_idx == 14:
                     # Reload categories from file
                     cat_from_file = inventree_interface.build_category_tree(reload=False)
-                    if type(cat_from_file) != list:
+                    if isinstance(cat_from_file, list):
                         print(f'{type(cat_from_file)} != list')
                         method_success = False
 

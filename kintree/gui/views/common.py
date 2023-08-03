@@ -163,13 +163,13 @@ class CommonView(ft.View):
     ):
         if snackbar:
             self.build_snackbar(d_type, message)
-        if type(self.dialog) == ft.SnackBar:
+        if isinstance(self.dialog, ft.SnackBar):
             self.page.snack_bar = self.dialog
             self.page.snack_bar.open = True
-        elif type(self.dialog) == ft.Banner:
+        elif isinstance(self.dialog, ft.Banner):
             self.page.banner = self.dialog
             self.page.banner.open = open
-        elif type(self.dialog) == ft.AlertDialog:
+        elif isinstance(self.dialog, ft.AlertDialog):
             self.page.dialog = self.dialog
             self.page.dialog.open = open
         self.page.update()
