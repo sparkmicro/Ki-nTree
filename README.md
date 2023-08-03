@@ -6,6 +6,9 @@
 [![Tests | Linting | Publishing](https://github.com/sparkmicro/Ki-nTree/actions/workflows/test_deploy.yaml/badge.svg)](https://github.com/sparkmicro/Ki-nTree/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=main&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=main)
 
+## :warning: InvenTree Compatibility
+Ki-nTree currently only supports InvenTree `0.11` or older versions. InvenTree `0.12` introduced a new parameter template system which is not supported as of now, see https://github.com/sparkmicro/Ki-nTree/issues/165 for more details. The future versions of InvenTree (`0.13` and up) should be compatible with Ki-nTree again soon, and this page will be updated with the required InvenTree setup.
+
 ## :fast_forward: [Demo Video](https://youtu.be/YeWBqOCb4pw)
 
 <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/kintree_v1_example.png" width="auto" height="auto">
