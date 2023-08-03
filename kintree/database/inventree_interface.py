@@ -263,6 +263,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     inventree_part['datasheet'] = part_info['datasheet'].replace(' ', '%20')
     # Image URL is not shown to user so force default key/value
     inventree_part['image'] = part_info['image'].replace(' ', '%20')
+    inventree_part['pricing'] = part_info.get('pricing', {})
 
     # Load parameters map
     if category_tree:
@@ -526,7 +527,6 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                                                 name=inventree_part['name'],
                                                 description=inventree_part['description'],
                                                 revision=inventree_part['revision'],
-                                                image=inventree_part['image'],
                                                 keywords=inventree_part['keywords'])
 
             # Check part primary key
@@ -567,6 +567,14 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                 image_result = inventree_api.upload_part_image(inventree_part['image'], part_pk)
                 if not image_result:
                     cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
+            if inventree_part['datasheet'] and settings.DATASHEET_UPLOAD:
+                # Upload datasheet
+                datasheet_link = inventree_api.upload_part_datasheet(
+                    inventree_part['datasheet'], part_pk)
+                if not datasheet_link:
+                    cprint('[TREE]\tWarning: Failed to upload part datasheet', silent=settings.SILENT)
+                else:
+                    inventree_part['datasheet'] = datasheet_link
 
         if kicad:
             try:
@@ -590,31 +598,12 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
 
         # Create parameters
         if len(inventree_part['parameters']) > 0:
-            cprint('\n[MAIN]\tCreating parameters', silent=settings.SILENT)
-            parameters_lists = [
-                [],  # Store new parameters
-                [],  # Store existings parameters
-            ]
-            for name, value in inventree_part['parameters'].items():
-                parameter, is_new_parameter = inventree_api.create_parameter(part_id=part_pk, template_name=name, value=value)
-                # Progress Update
-                if not progress.update_progress_bar(show_progress, increment=0.03):
-                    return new_part, part_pk, inventree_part
-
-                if is_new_parameter:
-                    parameters_lists[0].append(name)
-                else:
-                    parameters_lists[1].append(name)
-
-            if parameters_lists[0]:
-                cprint('[INFO]\tSuccess: The following parameters were created:', silent=settings.SILENT)
-                for item in parameters_lists[0]:
-                    cprint(f'--->\t{item}', silent=settings.SILENT)
-            if parameters_lists[1]:
-                cprint('[TREE]\tWarning: The following parameters were skipped:', silent=settings.SILENT)
-                for item in parameters_lists[1]:
-                    cprint(f'--->\t{item}', silent=settings.SILENT)
-
+            if not inventree_process_parameters(
+                    part_id=part_pk,
+                    parameters=inventree_part['parameters'],
+                    show_progress=show_progress):
+                return new_part, part_pk, inventree_part
+            
         # Create manufacturer part
         if inventree_part['manufacturer_name'] and inventree_part['manufacturer_part_number']:
             # Overwrite manufacturer name with matching one from database
@@ -651,14 +640,15 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
             supplier_sku = inventree_part['supplier_part_number']
 
             cprint('\n[MAIN]\tCreating supplier part', silent=settings.SILENT)
-            is_new_supplier_part = inventree_api.is_new_supplier_part(supplier_name=supplier_name,
-                                                                      supplier_sku=supplier_sku)
+            is_new_supplier_part, supplier_part = inventree_api.is_new_supplier_part(
+                supplier_name=supplier_name,
+                supplier_sku=supplier_sku)
 
             if not is_new_supplier_part:
                 cprint('[INFO]\tSupplier part already exists, skipping.', silent=settings.SILENT)
             else:
                 # Create a new supplier part
-                is_supplier_part_created = inventree_api.create_supplier_part(
+                is_supplier_part_created, supplier_part = inventree_api.create_supplier_part(
                     part_id=part_pk,
                     manufacturer_name=manufacturer_name,
                     manufacturer_mpn=manufacturer_mpn,
@@ -670,12 +660,52 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
 
                 if is_supplier_part_created:
                     cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
+            
+            if supplier_part:
+                cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
+                inventree_api.update_price_breaks(
+                    supplier_part=supplier_part,
+                    price_breaks=inventree_part['pricing'])
 
     # Progress Update
     if not progress.update_progress_bar(show_progress):
         pass
 
     return new_part, part_pk, inventree_part
+
+
+def inventree_process_parameters(part_id: str, parameters: dict, show_progress=True) -> bool:
+    ''' Create or Update parameters for an InvenTree part'''
+    cprint('\n[MAIN]\tCreating parameters', silent=settings.SILENT)
+    parameters_lists = [
+        [],  # Store new parameters
+        [],  # Store updated parameters
+        [],  # Store unchanged parameters
+    ]
+    for name, value in parameters.items():
+        parameter, is_new_parameter, was_updated = inventree_api.create_parameter(part_id=part_id, template_name=name, value=value)
+        # Progress Update
+        if not progress.update_progress_bar(show_progress, increment=0.03):
+            return False
+        if is_new_parameter:
+            parameters_lists[0].append(name)
+        elif was_updated:
+            parameters_lists[1].append(name)
+        else:
+            parameters_lists[2].append(name)
+    if parameters_lists[0]:
+        cprint('[INFO]\tSuccess: The following parameters were created:', silent=settings.SILENT)
+        for item in parameters_lists[0]:
+            cprint(f'--->\t{item}', silent=settings.SILENT)
+    if parameters_lists[1]:
+        cprint('[INFO]\tSuccess: The following parameters were updated:', silent=settings.SILENT)
+        for item in parameters_lists[1]:
+            cprint(f'--->\t{item}', silent=settings.SILENT)
+    if parameters_lists[2]:
+        cprint('[TREE]\tWarning: The following parameters were skipped:', silent=settings.SILENT)
+        for item in parameters_lists[2]:
+            cprint(f'--->\t{item}', silent=settings.SILENT)
+    return True
 
 
 def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_progress=None) -> bool:
@@ -692,11 +722,36 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     else:
         cprint('[INFO] Error: Original part was not found in database', silent=settings.SILENT)
         return result
+    # Translate to InvenTree part format
+    category_tree = inventree_api.get_category_tree(part.category)
+    category_tree = list(category_tree.values())
+    inventree_part = translate_form_to_inventree(
+        part_info=part_info,
+        category_tree=category_tree,
+    )
+
+    # If the part has no image yet try to upload it from the data
+    if not part.image:
+        image = part_info.get('image', '')
+        if image:
+            inventree_api.upload_part_image(image_url=image, part_id=part_pk)
+
+    # create or update parameters
+    if inventree_part.get('parameters', {}):
+        inventree_process_parameters(part_id=part_pk,
+                                     parameters=inventree_part['parameters'],
+                                     show_progress=show_progress)
 
     # Overwrite manufacturer name with matching one from database
     manufacturer_name = inventree_fuzzy_company_match(part_info.get('manufacturer_name', ''))
     manufacturer_mpn = part_info.get('manufacturer_part_number', '')
     datasheet = part_info.get('datasheet', '')
+
+    # if datasheet upload is enabled and no attechment present yet upload
+    if settings.DATASHEET_UPLOAD and not part.getAttachments():
+        if datasheet:
+            inventree_api.upload_part_datasheet(part_id=part_pk,
+                                                datasheet_url=datasheet)
 
     # Create manufacturer part
     if manufacturer_name and manufacturer_mpn:
@@ -719,24 +774,34 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     # Add supplier alternate
     if supplier_name and supplier_sku:
         cprint('\n[MAIN]\tCreating supplier part', silent=settings.SILENT)
-        is_new_supplier_part = inventree_api.is_new_supplier_part(supplier_name=supplier_name,
-                                                                  supplier_sku=supplier_sku)
+        is_new_supplier_part, supplier_part = inventree_api.is_new_supplier_part(
+            supplier_name=supplier_name,
+            supplier_sku=supplier_sku)
 
         if not is_new_supplier_part:
             cprint('[INFO]\tSupplier part already exists, skipping.', silent=settings.SILENT)
         else:
             # Create a new supplier part
-            is_supplier_part_created = inventree_api.create_supplier_part(part_id=part_pk,
-                                                                          manufacturer_name=manufacturer_name,
-                                                                          manufacturer_mpn=manufacturer_mpn,
-                                                                          supplier_name=supplier_name,
-                                                                          supplier_sku=supplier_sku,
-                                                                          description=part_description,
-                                                                          link=supplier_link)
+            is_supplier_part_created, supplier_part = inventree_api.create_supplier_part(
+                part_id=part_pk,
+                manufacturer_name=manufacturer_name,
+                manufacturer_mpn=manufacturer_mpn,
+                supplier_name=supplier_name,
+                supplier_sku=supplier_sku,
+                description=part_description,
+                link=supplier_link)
 
             if is_supplier_part_created:
                 cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
                 result = True
+
+        if supplier_part:
+            cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
+            inventree_api.update_price_breaks(
+                supplier_part=supplier_part,
+                price_breaks=inventree_part['pricing'])
+            result = True
+    
     else:
         cprint('[INFO]\tWarning: No supplier part to create', silent=settings.SILENT)
 

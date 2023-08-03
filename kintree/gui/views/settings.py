@@ -152,6 +152,16 @@ SETTINGS = {
             ft.TextField(),
             False,  # Browse disabled
         ],
+        'Upload Datasheets to InvenTree': [
+            'DATASHEET_UPLOAD',
+            SwitchWithRefs(),
+            False,  # Browse enabled
+        ],
+        'Upload Pricing Data to InvenTree': [
+            'PRICING_UPLOAD',
+            SwitchWithRefs(),
+            False,  # Browse enabled
+        ],
         'Default Part Revision': [
             'INVENTREE_DEFAULT_REV',
             ft.TextField(),
@@ -537,7 +547,7 @@ class UserSettingsView(PathSettingsView):
         setting_file2 = self.settings_file[2]
 
         for name, field in SETTINGS[self.title].items():
-            if field[0] in ['AUTOMATIC_BROWSER_OPEN', 'DATASHEET_SAVE_ENABLED', 'DATASHEET_SAVE_PATH']:
+            if field[0] in ['AUTOMATIC_BROWSER_OPEN', 'DATASHEET_SAVE_ENABLED', 'DATASHEET_SAVE_PATH', 'DATASHEET_INVENTREE_ENABLED']:
                 self.fields[name].on_change = lambda _: self.save(
                     settings_file=setting_file1,
                     show_dialog=False
@@ -763,6 +773,10 @@ class InvenTreeSettingsView(SettingsView):
                 password=SETTINGS[self.title]['Password or Token'][1].value,
                 enable_proxy=enable_proxy,
                 proxies=proxies,
+                datasheet_upload=SETTINGS[self.title][
+                    'Upload Datasheets to InvenTree'][1].value,
+                pricing_upload=SETTINGS[self.title][
+                    'Upload Pricing Data to InvenTree'][1].value,
                 user_config_path=self.settings_file[0]
             )
             # Alert user

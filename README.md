@@ -154,6 +154,8 @@ Note that each time you enable the "Add" permission to an object, InvenTree auto
 5. If you intend to use InvenTree with this tool, click on "Settings > InvenTree" and fill in your InvenTree server address and credentials then click "Save" (optional: click on "Test" to check communication with server)  
   a. It is possible to define a Proxy Server over which all interactions with InvenTree will be routed. To set a proxy server use the "Enable Proxy Support" switch in "Settings > InvenTree" and define the proxy address in the new input field.  
   b. Instead of user credential authentication token authentication is also supported. To use a token add it it to the "Password or Token" field and leave the "Username" empty. You can retrieve your personal access token from your InvenTree server by sending an get-request to its api url `api/user/token/`.
+  c. If needed this tool can try to download the parts datasheet from the suppliers and upload it it to the attachment section of each part. For this just activate "Upload Datasheets to InvenTree" in the InvenTree settings
+  d. It is also possible to sync the prices in InvenTree with the latest supplier prices. For this enable "Upload Pricing Data to InvenTree"
 
 
 #### Get Digi-Key API token
@@ -161,7 +163,7 @@ Note that each time you enable the "Add" permission to an object, InvenTree auto
 <summary>Show steps (click to expand)</summary>
 <p>
 
-Enter your Digi-Key developper account credentials then login. The following page will appear (`user@email.com` will show your email address):
+Enter your Digi-Key developer account credentials then login. The following page will appear (`user@email.com` will show your email address):
 
 <img src="https://raw.githubusercontent.com/sparkmicro/Ki-nTree/main/images/doc/digikey_api_approval_request.png" width="600" height="auto">
 
@@ -188,7 +190,7 @@ CATEGORY_NAME:
     - SUPPLIER_2_PARAMETER_NAME_1
 ```
 
-Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/search/supplier_parameters.yaml) as a starting point / example.
+Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/inventree/supplier_parameters.yaml) as a starting point / example.
 
 #### Part Number Search
 

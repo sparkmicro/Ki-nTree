@@ -253,7 +253,7 @@ class PartSearchView(MainView):
             dense=True,
             hint_text="Part Number",
             width=300,
-            expand=True
+            expand=True,
         ),
         'supplier': ft.Dropdown(
             label="Supplier",
@@ -326,6 +326,9 @@ class PartSearchView(MainView):
                     # Stitch parameters
                     if part_supplier_info.get('parameters', None):
                         self.data['parameters'] = part_supplier_info['parameters']
+                    # and pricing
+                    if part_supplier_info.get('pricing', None):
+                        self.data['pricing'] = part_supplier_info['pricing']
 
                 if part_supplier_form:
                     for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
@@ -448,7 +451,7 @@ class InventreeView(MainView):
             value=settings.ENABLE_INVENTREE,
         ),
         'alternate': ft.Switch(
-            label='Alternate',
+            label='Update existing',
             value=settings.ENABLE_ALTERNATE if settings.ENABLE_INVENTREE else False,
             disabled=not settings.ENABLE_INVENTREE,
         ),
@@ -494,6 +497,11 @@ class InventreeView(MainView):
             width=GUI_PARAMS['textfield_width'] / 2 - 5,
             dense=GUI_PARAMS['textfield_dense'],
             visible=True,
+        ),
+        'Update Parameter': SwitchWithRefs(
+            label='Update Parameter',
+            value=settings.UPDATE_INVENTREE if settings.ENABLE_INVENTREE else False,
+            disabled=not settings.ENABLE_INVENTREE,
         ),
     }
 
@@ -557,6 +565,7 @@ class InventreeView(MainView):
 
         # Update settings
         settings.set_enable_flag('alternate', alt_visible)
+        settings.set_enable_flag('update', alt_visible)
         # User dialog
         if alt_visible:
             self.show_dialog(
@@ -564,6 +573,17 @@ class InventreeView(MainView):
                 message='Alternate Mode Enabled: Enter Existing Part ID or Part IPN',
             )
 
+        self.push_data(e)
+
+    def process_update(self, e, value=None):
+        if value is not None:
+            update_enabled = value
+        else:
+            # Get switch value
+            update_enabled = False
+            if e.data.lower() == 'true':
+                update_enabled = True
+        settings.set_enable_flag('update', update_enabled)
         self.push_data(e)
 
     def process_category(self, e=None, label=None, value=None):
@@ -638,6 +658,7 @@ class InventreeView(MainView):
         self.fields['alternate'].on_change = self.process_alternate
         self.fields['Existing Part ID'].on_change = self.push_data
         self.fields['Existing Part IPN'].on_change = self.push_data
+        self.fields['Update Parameter'].on_change = self.process_update
 
         self.column = ft.Column(
             controls=[
@@ -677,12 +698,19 @@ class InventreeView(MainView):
                         ),
                     ],
                 ),
-                ft.Row(
+                ft.Column(
                     ref=self.alternate_row_ref,
                     controls=[
-                        self.fields['Existing Part ID'],
-                        self.fields['Existing Part IPN'],
-                    ],
+                        ft.Row(
+                            controls=[
+                                self.fields['Existing Part ID'],
+                                self.fields['Existing Part IPN'],
+                            ],
+                        ),
+                        ft.Row(
+                            controls=[self.fields['Update Parameter']]
+                        )
+                    ]
                 ),
             ],
         )
