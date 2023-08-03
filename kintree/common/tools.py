@@ -65,6 +65,7 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
 
     import socket
     import urllib.request
+    import requests
 
     # Set default timeout for download socket
     socket.setdefaulttimeout(timeout)
@@ -73,56 +74,60 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
         opener.addheaders = [('User-agent', 'Mozilla/5.0')]
         urllib.request.install_opener(opener)
     try:
-        if filetype == 'Image':
-            # Enable use of requests library for downloading images (Element14 URLs do NOT work with urllib)
+        if filetype == 'Image' or filetype == 'PDF':
+            # Enable use of requests library for downloading files (some URLs do NOT work with urllib)
             if requests_lib:
-                import requests
                 headers = {'User-agent': 'Mozilla/5.0'}
-                response = requests.get(url, headers=headers, timeout=timeout)
-                with open(fileoutput, 'wb') as image:
-                    image.write(response.content)
+                response = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
+                if filetype.lower() not in response.headers['Content-Type'].lower():
+                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type', silent=silent)
+                    return None
+                with open(fileoutput, 'wb') as file:
+                    file.write(response.content)
             else:
-                (image, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
-            return image
-        elif filetype == 'PDF':
-            (pdf, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
-            return pdf
+                (file, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
+                if filetype.lower() not in headers['Content-Type'].lower():
+                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type', silent=silent)
+                    return None
+            return file
         else:
             url_data = urllib.request.urlopen(url)
             data = url_data.read()
             data_json = json.loads(data.decode('utf-8'))
             return data_json
-    except socket.timeout:
+    except (socket.timeout, requests.exceptions.ConnectTimeout, requests.exceptions.ReadTimeout):
         cprint(f'[INFO]\tWarning: {filetype} download socket timed out ({timeout}s)', silent=silent)
-    except urllib.error.HTTPError:
+    except (urllib.error.HTTPError, requests.exceptions.ConnectionError):
         cprint(f'[INFO]\tWarning: {filetype} download failed (HTTP Error)', silent=silent)
     except (urllib.error.URLError, ValueError):
         cprint(f'[INFO]\tWarning: {filetype} download failed (URL Error)', silent=silent)
+    except requests.exceptions.SSLError:
+        cprint(f'[INFO]\tWarning: {filetype} download failed (SSL Error)', silent=silent)
     except FileNotFoundError:
         cprint(f'[INFO]\tWarning: {os.path.dirname(fileoutput)} folder does not exist', silent=silent)
     return None
 
 
-def download_image(image_url: str, image_full_path: str, silent=False) -> str:
+def download_with_retry(url: str, full_path: str, silent=False, **kwargs) -> str:
     ''' Standard method to download image URL to local file '''
 
-    if not image_url:
+    if not url:
         cprint('[INFO]\tError: Missing image URL', silent=silent)
         return False
-    
+
     # Try without headers
-    image = download(image_url, filetype='Image', fileoutput=image_full_path, silent=silent)
+    file = download(url, fileoutput=full_path, silent=silent, **kwargs)
 
-    if not image:
+    if not file:
         # Try with headers
-        image = download(image_url, filetype='Image', fileoutput=image_full_path, enable_headers=True, silent=silent)
+        file = download(url, fileoutput=full_path, enable_headers=True, silent=silent, **kwargs)
 
-    if not image:
+    if not file:
         # Try with requests library
-        image = download(image_url, filetype='Image', fileoutput=image_full_path, enable_headers=True, requests_lib=True, silent=silent)
+        file = download(url, fileoutput=full_path, enable_headers=True, requests_lib=True, silent=silent, **kwargs)
 
     # Still nothing
-    if not image:
+    if not file:
         return False
 
     return True

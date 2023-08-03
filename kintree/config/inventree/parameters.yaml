@@ -7,8 +7,8 @@ Breakdown Voltage: V
 Capacitance: nF
 Clamping Voltage: V
 Collector Gate Voltage: V
-DC Resistance: mOhm
-ESR: mOhm
+DC Resistance: mΩ
+ESR: mΩ
 Footprint: null
 Forward Voltage: V
 Frequency: Hz
@@ -39,7 +39,7 @@ Package Type: null
 Pitch: mm
 Polarity: null
 Quiescent Current: A
-RDS On Resistance: Ohm
+RDS On Resistance: Ω
 RDS On Voltage: V
 Rated Current: A
 Rated Power: W

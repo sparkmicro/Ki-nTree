@@ -1,5 +1,5 @@
 from ..config import settings
-from ..common.tools import download, download_image
+from ..common.tools import download, download_with_retry
 
 API_BASE_URL = 'https://snapeda.eeinte.ch/?'
 SNAPEDA_URL = 'https://www.snapeda.com'
@@ -83,7 +83,7 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
                 image_location = settings.search_images + image_name
 
                 # Download symbol image
-                symbol = download_image(snapeda_data['symbol_image'], image_location)
+                symbol = download_with_retry(snapeda_data['symbol_image'], image_location, filetype='Image')
                 if symbol:
                     images['symbol'] = image_location
         except KeyError:
@@ -96,7 +96,7 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
                 image_location = settings.search_images + image_name
 
                 # Download symbol image
-                footprint = download_image(snapeda_data['footprint_image'], image_location)
+                footprint = download_with_retry(snapeda_data['footprint_image'], image_location, filetype='Image')
                 if footprint:
                     images['footprint'] = image_location
         except KeyError:

@@ -2,7 +2,7 @@ import os
 import sys
 
 import kintree.config.settings as settings
-from kintree.common.tools import cprint, create_library, download, download_image
+from kintree.common.tools import cprint, create_library, download, download_with_retry
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
@@ -371,9 +371,9 @@ if __name__ == '__main__':
                     test_image_requestslib = 'https://www.newark.com/productimages/standard/en_GB/GE2SOD12307-40.jpg'
                     test_pdf_urllib = 'https://www.seielect.com/Catalog/SEI-CF_CFM.pdf'
                     # Test different download methods for images
-                    if not download_image(test_image_urllib, './image1.jpg', silent=True):
+                    if not download_with_retry(test_image_urllib, './image1.jpg', silent=True, filetype='Image'):
                         method_success = False
-                    if not download_image(test_image_requestslib, './image2.jpg', silent=True):
+                    if not download_with_retry(test_image_requestslib, './image2.jpg', silent=True, filetype='Image',):
                         method_success = False
                     # Test PDF
                     if not download(test_pdf_urllib, filetype='PDF', fileoutput='./datasheet.pdf', silent=True):
@@ -382,10 +382,10 @@ if __name__ == '__main__':
                     if download(test_pdf_urllib, filetype='PDF', fileoutput='./myfolder/datasheet.pdf', silent=True):
                         method_success = False
                     # Test erroneous URL
-                    if download_image('http', '', silent=True):
+                    if download_with_retry('http', '', silent=True):
                         method_success = False
                     # Test empty URL
-                    if download_image('', '', silent=True):
+                    if download_with_retry('', '', silent=True):
                         method_success = False
 
                 elif method_idx == 9:
@@ -402,6 +402,14 @@ if __name__ == '__main__':
                         "supplier_link": "https://www.digikey.com/en/products/detail/murata-electronics/GRM155R71C104KA88D/675947",
                         "supplier_name": "Digi-Key",
                         "supplier_part_number": "490-3261-1-ND",
+                        "name": "",
+                        "description": "",
+                        "revision": "",
+                        "keywords": "",
+                        "IPN": "",
+                        "image": "",
+                        "parameters": {},
+                        "pricing": {},
                     }
                     if not inventree_interface.inventree_create_alternate(part_info=part_info,
                                                                           part_id='1',
@@ -410,9 +418,9 @@ if __name__ == '__main__':
 
                 elif method_idx == 11:
                     # Test manufacturer and supplier alternates using Part IPN
-                    if inventree_interface.inventree_create_alternate(part_info=part_info,
-                                                                      part_ipn='CAP-000001-00',
-                                                                      show_progress=False, ):
+                    if not inventree_interface.inventree_create_alternate(part_info=part_info,
+                                                                          part_ipn='CAP-000001-00',
+                                                                          show_progress=False, ):
                         method_success = False
 
                 elif method_idx == 12:
@@ -424,7 +432,9 @@ if __name__ == '__main__':
                         password='admin',
                         enable_proxy=False,
                         proxies={},
+                        datasheet_upload=True,
                         user_config_path=settings.INVENTREE_CONFIG,
+                        pricing_upload=True,
                     ):
                         method_success = False
 

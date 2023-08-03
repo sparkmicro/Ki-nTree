@@ -107,6 +107,10 @@ def load_inventree_user_settings(user_config_path: str) -> dict:
         # loading the proxy independent if it is http or https
         user_settings['PROXY'] = list(proxies.values())[0]
 
+    if 'DATASHEET_UPLOAD' not in user_settings:
+        user_settings['DATASHEET_UPLOAD'] = False
+    if 'PRICING_UPLOAD' not in user_settings:
+        user_settings['PRICING_UPLOAD'] = False
     return user_settings
 
 
@@ -116,6 +120,8 @@ def save_inventree_user_settings(enable: bool,
                                  password: str,
                                  enable_proxy: bool,
                                  proxies: dict,
+                                 datasheet_upload: bool,
+                                 pricing_upload: bool,
                                  user_config_path: str):
     ''' Save InvenTree user settings to file '''
     user_settings = {}
@@ -127,6 +133,8 @@ def save_inventree_user_settings(enable: bool,
     user_settings['PASSWORD'] = base64.b64encode(password.encode())
     user_settings['ENABLE_PROXY'] = enable_proxy
     user_settings['PROXIES'] = proxies
+    user_settings['DATASHEET_UPLOAD'] = datasheet_upload
+    user_settings['PRICING_UPLOAD'] = pricing_upload
 
     return dump_file(user_settings, user_config_path)
 
