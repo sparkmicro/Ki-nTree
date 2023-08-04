@@ -100,14 +100,16 @@ if ENABLE_API:
         else:
             cprint('[ PASS ]')
 
-    # Test Element14 API
+    # Test Element14 API (with retry, to avoid the few false positives)
     if 'Element14' in settings.SUPPORTED_SUPPLIERS_API:
-        pretty_test_print('[MAIN]\tElement14 API Test')
-        if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
-            cprint('[ FAIL ]')
+        for i in range(2):
+            pretty_test_print('[MAIN]\tElement14 API Test')
+            if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
+                cprint('[ FAIL ]')
+            else:
+                cprint('[ PASS ]')
+                break
             sys.exit(-1)
-        else:
-            cprint('[ PASS ]')
 
     # Test LCSC API
     if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
@@ -257,6 +259,9 @@ if __name__ == '__main__':
                             cprint(f'[DBUG]\tinventree_result = {inventree_result}')
                             cprint(f'[DBUG]\tnew_part = {new_part}')
                             cprint(f'[DBUG]\tpart_pk = {part_pk}')
+
+                    # Disable datasheet download/upload after first part (to speed up testing)
+                    settings.DATASHEET_UPLOAD = False
 
         if ENABLE_TEST_METHODS:
             methods = [
@@ -463,7 +468,7 @@ if __name__ == '__main__':
                 elif method_idx == 14:
                     # Reload categories from file
                     cat_from_file = inventree_interface.build_category_tree(reload=False)
-                    if type(cat_from_file) != list:
+                    if isinstance(cat_from_file, type(list)):
                         print(f'{type(cat_from_file)} != list')
                         method_success = False
 

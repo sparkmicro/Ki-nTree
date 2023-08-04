@@ -1,6 +1,8 @@
 DATASHEET_UPLOAD: true
 ENABLE: true
+ENABLE_PROXY: false
 PASSWORD: !!binary |
   WVdSdGFXND0=
 SERVER_ADDRESS: http://127.0.0.1:8000/
 USERNAME: admin
+PROXIES: null
