@@ -38,8 +38,8 @@ def check_environment() -> bool:
 def setup_environment(force=False) -> bool:
     if not check_environment() or force:
         tme_api_settings = config_interface.load_file(settings.CONFIG_TME_API)
-        os.environ['TME_API_TOKEN'] = tme_api_settings['TME_API_TOKEN']
-        os.environ['TME_API_SECRET'] = tme_api_settings['TME_API_SECRET']
+        os.environ['TME_API_TOKEN'] = tme_api_settings.get('TME_API_TOKEN', None)
+        os.environ['TME_API_SECRET'] = tme_api_settings.get('TME_API_SECRET', None)
 
     return check_environment()
 
