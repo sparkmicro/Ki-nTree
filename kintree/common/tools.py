@@ -87,7 +87,7 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
             else:
                 (file, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
                 if filetype.lower() not in headers['Content-Type'].lower():
-                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type', silent=silent)
+                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type: {file}', silent=silent)
                     return None
             return file
         else:
