@@ -48,10 +48,12 @@ def setup_environment(force=False) -> bool:
 # https://github.com/tme-dev/TME-API/blob/master/Python/call.py
 def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://api.tme.eu', format='json'):
     params = collections.OrderedDict()
-    params['Country'] = tme_api_settings['TME_API_COUNTRY']
-    params['Language'] = tme_api_settings['TME_API_LANGUAGE']
+    params['Country'] = tme_api_settings.get('TME_API_COUNTRY', 'US')
+    params['Language'] = tme_api_settings.get('TME_API_LANGUAGE', 'EN')
     params['SymbolList[0]'] = part_number
-    params['Token'] = tme_api_settings['TME_API_TOKEN']
+    params['Token'] = tme_api_settings.get('TME_API_TOKEN', None)
+    if not params['Token']:
+        return None
 
     url = api_host + endpoint + '.' + format
     encoded_params = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)

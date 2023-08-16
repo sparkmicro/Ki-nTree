@@ -99,7 +99,7 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
         cprint(f'[INFO]\tWarning: {filetype} download socket timed out ({timeout}s)', silent=silent)
     except (urllib.error.HTTPError, requests.exceptions.ConnectionError):
         cprint(f'[INFO]\tWarning: {filetype} download failed (HTTP Error)', silent=silent)
-    except (urllib.error.URLError, ValueError):
+    except (urllib.error.URLError, ValueError, AttributeError):
         cprint(f'[INFO]\tWarning: {filetype} download failed (URL Error)', silent=silent)
     except requests.exceptions.SSLError:
         cprint(f'[INFO]\tWarning: {filetype} download failed (SSL Error)', silent=silent)
