@@ -81,6 +81,28 @@ for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
             ft.TextField(),
             None,
         ]
+    elif supplier == 'TME':
+        tme_api_settings = config_interface.load_file(global_settings.CONFIG_TME_API)
+        supplier_settings[supplier]['API Token'] = [
+            tme_api_settings['TME_API_TOKEN'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API Secret'] = [
+            tme_api_settings['TME_API_SECRET'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API Country'] = [
+            tme_api_settings['TME_API_COUNTRY'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API Language'] = [
+            tme_api_settings['TME_API_LANGUAGE'],
+            ft.TextField(),
+            None,
+        ]
 
 SETTINGS = {
     'User Settings': {
@@ -641,6 +663,18 @@ class SupplierSettingsView(SettingsView):
             }
             lcsc_settings = {**settings_from_file, **updated_settings}
             config_interface.dump_file(lcsc_settings, global_settings.CONFIG_LCSC_API)
+        elif supplier == 'TME':
+            # Load settings from file
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_TME_API)
+            # Update settings values
+            updated_settings = {
+                'TME_API_TOKEN': SETTINGS[self.title][supplier]['API Token'][1].value,
+                'TME_API_SECRET': SETTINGS[self.title][supplier]['API Secret'][1].value,
+                'TME_API_COUNTRY': SETTINGS[self.title][supplier]['API Country'][1].value,
+                'TME_API_LANGUAGE': SETTINGS[self.title][supplier]['API Language'][1].value,
+            }
+            tme_settings = {**settings_from_file, **updated_settings}
+            config_interface.dump_file(tme_settings, global_settings.CONFIG_TME_API)
             
         if show_dialog:
             self.show_dialog(
@@ -665,6 +699,9 @@ class SupplierSettingsView(SettingsView):
         elif supplier == 'LCSC':
             from ...search import lcsc_api
             result = lcsc_api.test_api()
+        elif supplier == 'TME':
+            from ...search import tme_api
+            result = tme_api.test_api()
 
         if result:
             self.show_dialog(
