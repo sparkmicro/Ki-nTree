@@ -80,14 +80,14 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
                 headers = {'User-agent': 'Mozilla/5.0'}
                 response = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
                 if filetype.lower() not in response.headers['Content-Type'].lower():
-                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type', silent=silent)
+                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type\n{response.headers["Content-Type"].lower()}', silent=silent)
                     return None
                 with open(fileoutput, 'wb') as file:
                     file.write(response.content)
             else:
                 (file, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
                 if filetype.lower() not in headers['Content-Type'].lower():
-                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type: {file}', silent=silent)
+                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type\n{headers["Content-Type"].lower()}', silent=silent)
                     return None
             return file
         else:
