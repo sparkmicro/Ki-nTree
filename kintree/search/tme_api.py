@@ -47,19 +47,25 @@ def setup_environment(force=False) -> bool:
 # Based on TME API snippets mentioned in API documentation: https://developers.tme.eu/documentation/download
 # https://github.com/tme-dev/TME-API/blob/master/Python/call.py
 def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://api.tme.eu', format='json'):
+    TME_API_TOKEN = tme_api_settings.get('TME_API_TOKEN', None)
+    TME_API_SECRET = tme_api_settings.get('TME_API_SECRET', None)
+
     params = collections.OrderedDict()
     params['Country'] = tme_api_settings.get('TME_API_COUNTRY', 'US')
     params['Language'] = tme_api_settings.get('TME_API_LANGUAGE', 'EN')
     params['SymbolList[0]'] = part_number
-    params['Token'] = tme_api_settings.get('TME_API_TOKEN', None)
-    if not params['Token']:
+    if not TME_API_TOKEN and not TME_API_SECRET:
+        TME_API_TOKEN = os.environ.get('TME_API_TOKEN', None)
+        TME_API_SECRET = os.environ.get('TME_API_SECRET', None)
+    if not TME_API_TOKEN and not TME_API_SECRET:
         return None
+    params['Token'] = TME_API_TOKEN
 
     url = api_host + endpoint + '.' + format
     encoded_params = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
     signature_base = 'POST' + '&' + urllib.parse.quote(url, '') + '&' + urllib.parse.quote(encoded_params, '')
     hmac_value = hmac.new(
-        tme_api_settings['TME_API_SECRET'].encode(),
+        TME_API_SECRET.encode(),
         signature_base.encode(),
         hashlib.sha1
     ).digest()
