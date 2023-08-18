@@ -2,7 +2,7 @@ import os
 import sys
 
 import kintree.config.settings as settings
-from kintree.common.tools import cprint, create_library, download, download_with_retry
+from kintree.common.tools import cprint, create_library, download_with_retry
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
@@ -386,20 +386,26 @@ if __name__ == '__main__':
                     test_pdf_urllib = 'https://www.seielect.com/Catalog/SEI-CF_CFM.pdf'
                     # Test different download methods for images
                     if not download_with_retry(test_image_urllib, './image1.jpg', silent=True, filetype='Image'):
+                        print(' [1] ')
                         method_success = False
-                    if not download_with_retry(test_image_requestslib, './image2.jpg', silent=True, filetype='Image',):
+                    if not download_with_retry(test_image_requestslib, './image2.jpg', silent=True, filetype='Image'):
+                        print(' [2] ')
                         method_success = False
                     # Test PDF
-                    if not download(test_pdf_urllib, filetype='PDF', fileoutput='./datasheet.pdf', silent=True):
+                    if not download_with_retry(test_pdf_urllib, './datasheet.pdf', silent=True, filetype='PDF'):
+                        print(' [3] ')
                         method_success = False
                     # Wrong folder
-                    if download(test_pdf_urllib, filetype='PDF', fileoutput='./myfolder/datasheet.pdf', silent=True):
+                    if download_with_retry(test_pdf_urllib, './myfolder/datasheet.pdf', silent=True, filetype='PDF'):
+                        print(' [4] ')
                         method_success = False
                     # Test erroneous URL
                     if download_with_retry('http', '', silent=True):
+                        print(' [5] ')
                         method_success = False
                     # Test empty URL
                     if download_with_retry('', '', silent=True):
+                        print(' [6] ')
                         method_success = False
 
                 elif method_idx == 9:

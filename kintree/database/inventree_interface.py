@@ -262,7 +262,11 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     inventree_part['supplier_link'] = part_info['supplier_link'].replace(' ', '%20')
     inventree_part['datasheet'] = part_info['datasheet'].replace(' ', '%20')
     # Image URL is not shown to user so force default key/value
-    inventree_part['image'] = part_info['image'].replace(' ', '%20')
+    try:
+        inventree_part['image'] = part_info['image'].replace(' ', '%20')
+    except AttributeError:
+        # Part image URL is null (no product picture)
+        pass
     inventree_part['pricing'] = part_info.get('pricing', {})
 
     # Load parameters map
@@ -575,12 +579,12 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                     cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
             if inventree_part['datasheet'] and settings.DATASHEET_UPLOAD:
                 # Upload datasheet
-                datasheet_link = inventree_api.upload_part_datasheet(
-                    inventree_part['datasheet'], part_pk)
+                datasheet_link = inventree_api.upload_part_datasheet(inventree_part['datasheet'], part_pk)
                 if not datasheet_link:
                     cprint('[TREE]\tWarning: Failed to upload part datasheet', silent=settings.SILENT)
-                else:
-                    inventree_part['datasheet'] = datasheet_link
+                # TODO: this is messing up with the datasheet download to local folder
+                # else:
+                #     inventree_part['datasheet'] = datasheet_link
 
         if kicad:
             try:
@@ -753,7 +757,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     manufacturer_mpn = part_info.get('manufacturer_part_number', '')
     datasheet = part_info.get('datasheet', '')
 
-    # if datasheet upload is enabled and no attechment present yet upload
+    # if datasheet upload is enabled and no attachment present yet then upload
     if settings.DATASHEET_UPLOAD and not part.getAttachments():
         if datasheet:
             inventree_api.upload_part_datasheet(part_id=part_pk,
