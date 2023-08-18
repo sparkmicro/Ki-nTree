@@ -262,7 +262,11 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     inventree_part['supplier_link'] = part_info['supplier_link'].replace(' ', '%20')
     inventree_part['datasheet'] = part_info['datasheet'].replace(' ', '%20')
     # Image URL is not shown to user so force default key/value
-    inventree_part['image'] = part_info['image'].replace(' ', '%20')
+    try:
+        inventree_part['image'] = part_info['image'].replace(' ', '%20')
+    except AttributeError:
+        # Part image URL is null (no product picture)
+        pass
     inventree_part['pricing'] = part_info.get('pricing', {})
 
     # Load parameters map
