@@ -120,16 +120,16 @@ def download_with_retry(url: str, full_path: str, silent=False, **kwargs) -> str
         cprint('[INFO]\tError: Missing image URL', silent=silent)
         return False
     
-    # Try with requests library
-    file = download(url, fileoutput=full_path, enable_headers=True, requests_lib=True, silent=silent, **kwargs)
-
-    if not file:
-        # Try without headers
-        file = download(url, fileoutput=full_path, silent=silent, **kwargs)
+    # Try without headers
+    file = download(url, fileoutput=full_path, silent=silent, **kwargs)
 
     if not file:
         # Try with headers
         file = download(url, fileoutput=full_path, enable_headers=True, silent=silent, **kwargs)
+
+    if not file:
+        # Try with requests library
+        file = download(url, fileoutput=full_path, enable_headers=True, requests_lib=True, silent=silent, **kwargs)
 
     # Still nothing
     if not file:
