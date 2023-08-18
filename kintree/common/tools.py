@@ -67,17 +67,22 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
     import urllib.request
     import requests
 
+    headers = {
+        'User-Agent': 'Mozilla/5.0',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+    }
+
     # Set default timeout for download socket
     socket.setdefaulttimeout(timeout)
-    if enable_headers:
+    if enable_headers and not requests_lib:
         opener = urllib.request.build_opener()
-        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+        opener.addheaders = list(headers.items())
         urllib.request.install_opener(opener)
     try:
         if filetype == 'Image' or filetype == 'PDF':
             # Enable use of requests library for downloading files (some URLs do NOT work with urllib)
             if requests_lib:
-                headers = {'User-agent': 'Mozilla/5.0'}
                 response = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
                 if filetype.lower() not in response.headers['Content-Type'].lower():
                     cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type', silent=silent)
