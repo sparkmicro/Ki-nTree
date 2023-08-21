@@ -81,6 +81,28 @@ for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
             ft.TextField(),
             None,
         ]
+    elif supplier == 'TME':
+        tme_api_settings = config_interface.load_file(global_settings.CONFIG_TME_API)
+        supplier_settings[supplier]['API Token'] = [
+            tme_api_settings['TME_API_TOKEN'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API Secret'] = [
+            tme_api_settings['TME_API_SECRET'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API Country'] = [
+            tme_api_settings['TME_API_COUNTRY'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API Language'] = [
+            tme_api_settings['TME_API_LANGUAGE'],
+            ft.TextField(),
+            None,
+        ]
 
 SETTINGS = {
     'User Settings': {
@@ -499,11 +521,16 @@ class UserSettingsView(PathSettingsView):
             'CACHE_VALID_DAYS': global_settings.CACHE_VALID_DAYS
         },
     }
-    settings_file = [
+    settings_file_list = [
         global_settings.USER_CONFIG_FILE,
         global_settings.CONFIG_GENERAL_PATH,
         global_settings.CONFIG_SEARCH_API_PATH,
     ]
+
+    def save(self):
+        # Save all settings
+        for sf in self.settings_file_list:
+            super().save(settings_file=sf, show_dialog=True)
     
     def increment_cache_value(self, inc):
         field = SETTINGS[self.title]['CACHE_VALID_DAYS'][1]
@@ -542,22 +569,13 @@ class UserSettingsView(PathSettingsView):
         self.column.controls.append(cache_row)
         # Add cache row to switch refs
         SETTINGS[self.title]['Enable Supplier Search Cache'][1].refs = [cache_row_ref]
-        
-        setting_file1 = self.settings_file[1]
-        setting_file2 = self.settings_file[2]
 
         for name, field in SETTINGS[self.title].items():
             if field[0] in ['AUTOMATIC_BROWSER_OPEN', 'DATASHEET_SAVE_ENABLED', 'DATASHEET_SAVE_PATH', 'DATASHEET_INVENTREE_ENABLED']:
-                self.fields[name].on_change = lambda _: self.save(
-                    settings_file=setting_file1,
-                    show_dialog=False
-                )
+                self.fields[name].on_change = lambda _: self.save()
             elif field[0] in ['CACHE_ENABLED', 'CACHE_VALID_DAYS']:
-                self.fields[name].on_change = lambda _: self.save(
-                    settings_file=setting_file2,
-                    show_dialog=False
-                )
-        self.settings_file = self.settings_file[0]
+                self.fields[name].on_change = lambda _: self.save()
+        self.settings_file = self.settings_file_list[0]
 
         # Update datasheet ref
         for idx, field in enumerate(self.column.controls):
@@ -645,6 +663,18 @@ class SupplierSettingsView(SettingsView):
             }
             lcsc_settings = {**settings_from_file, **updated_settings}
             config_interface.dump_file(lcsc_settings, global_settings.CONFIG_LCSC_API)
+        elif supplier == 'TME':
+            # Load settings from file
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_TME_API)
+            # Update settings values
+            updated_settings = {
+                'TME_API_TOKEN': SETTINGS[self.title][supplier]['API Token'][1].value,
+                'TME_API_SECRET': SETTINGS[self.title][supplier]['API Secret'][1].value,
+                'TME_API_COUNTRY': SETTINGS[self.title][supplier]['API Country'][1].value,
+                'TME_API_LANGUAGE': SETTINGS[self.title][supplier]['API Language'][1].value,
+            }
+            tme_settings = {**settings_from_file, **updated_settings}
+            config_interface.dump_file(tme_settings, global_settings.CONFIG_TME_API)
             
         if show_dialog:
             self.show_dialog(
@@ -669,6 +699,9 @@ class SupplierSettingsView(SettingsView):
         elif supplier == 'LCSC':
             from ...search import lcsc_api
             result = lcsc_api.test_api()
+        elif supplier == 'TME':
+            from ...search import tme_api
+            result = tme_api.test_api()
 
         if result:
             self.show_dialog(

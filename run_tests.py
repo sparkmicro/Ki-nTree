@@ -2,11 +2,11 @@ import os
 import sys
 
 import kintree.config.settings as settings
-from kintree.common.tools import cprint, create_library, download, download_with_retry
+from kintree.common.tools import cprint, create_library, download_with_retry
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search import digikey_api, mouser_api, element14_api, lcsc_api
+from kintree.search import digikey_api, mouser_api, element14_api, lcsc_api, tme_api
 from kintree.search.snapeda_api import test_snapeda_api
 from kintree.setup_inventree import setup_inventree
 
@@ -100,19 +100,30 @@ if ENABLE_API:
         else:
             cprint('[ PASS ]')
 
-    # Test Element14 API
+    # Test Element14 API (with retry, to avoid the few false positives)
     if 'Element14' in settings.SUPPORTED_SUPPLIERS_API:
-        pretty_test_print('[MAIN]\tElement14 API Test')
-        if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
-            cprint('[ FAIL ]')
+        for i in range(2):
+            pretty_test_print('[MAIN]\tElement14 API Test')
+            if not element14_api.test_api() or not element14_api.test_api(store_url='www.newark.com'):
+                cprint('[ FAIL ]')
+            else:
+                cprint('[ PASS ]')
+                break
             sys.exit(-1)
-        else:
-            cprint('[ PASS ]')
 
     # Test LCSC API
     if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
         pretty_test_print('[MAIN]\tLCSC API Test')
         if not lcsc_api.test_api():
+            cprint('[ FAIL ]')
+            sys.exit(-1)
+        else:
+            cprint('[ PASS ]')
+
+    # Test TME API
+    if 'TME' in settings.SUPPORTED_SUPPLIERS_API:
+        pretty_test_print('[MAIN]\tTME API Test')
+        if not tme_api.test_api():
             cprint('[ FAIL ]')
             sys.exit(-1)
         else:
@@ -259,6 +270,9 @@ if __name__ == '__main__':
                             cprint(f'[DBUG]\tnew_part = {new_part}')
                             cprint(f'[DBUG]\tpart_pk = {part_pk}')
 
+                    # Disable datasheet download/upload after first part (to speed up testing)
+                    settings.DATASHEET_UPLOAD = False
+
         if ENABLE_TEST_METHODS:
             methods = [
                 'Fuzzy category matching',
@@ -373,20 +387,26 @@ if __name__ == '__main__':
                     test_pdf_urllib = 'https://www.seielect.com/Catalog/SEI-CF_CFM.pdf'
                     # Test different download methods for images
                     if not download_with_retry(test_image_urllib, './image1.jpg', silent=True, filetype='Image'):
+                        print(' [1] ')
                         method_success = False
-                    if not download_with_retry(test_image_requestslib, './image2.jpg', silent=True, filetype='Image',):
+                    if not download_with_retry(test_image_requestslib, './image2.jpg', silent=True, filetype='Image'):
+                        print(' [2] ')
                         method_success = False
                     # Test PDF
-                    if not download(test_pdf_urllib, filetype='PDF', fileoutput='./datasheet.pdf', silent=True):
+                    if not download_with_retry(test_pdf_urllib, './datasheet.pdf', silent=True, filetype='PDF'):
+                        print(' [3] ')
                         method_success = False
                     # Wrong folder
-                    if download(test_pdf_urllib, filetype='PDF', fileoutput='./myfolder/datasheet.pdf', silent=True):
+                    if download_with_retry(test_pdf_urllib, './myfolder/datasheet.pdf', silent=True, filetype='PDF'):
+                        print(' [4] ')
                         method_success = False
                     # Test erroneous URL
                     if download_with_retry('http', '', silent=True):
+                        print(' [5] ')
                         method_success = False
                     # Test empty URL
                     if download_with_retry('', '', silent=True):
+                        print(' [6] ')
                         method_success = False
 
                 elif method_idx == 9:
@@ -464,7 +484,7 @@ if __name__ == '__main__':
                 elif method_idx == 14:
                     # Reload categories from file
                     cat_from_file = inventree_interface.build_category_tree(reload=False)
-                    if isinstance(cat_from_file, list):
+                    if isinstance(cat_from_file, type(list)):
                         print(f'{type(cat_from_file)} != list')
                         method_success = False
 

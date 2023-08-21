@@ -133,15 +133,16 @@ def clean_parameter_value(category: str, name: str, value: str) -> str:
     # Clean-up ranges
     separator = '~'
     if separator in value:
-        split_space = value.split()
-        first_value = split_space[0]
-        second_value = split_space[2]
+        space_split = value.split()
+        first_value = space_split[0]
+        if len(space_split) > 2:
+            second_value = space_split[2]
 
-        # Substract digits, negative sign, points from first value to get unit
-        unit = first_value.replace(re.findall('[-.0-9]*', first_value)[0], '')
+            # Substract digits, negative sign, points from first value to get unit
+            unit = first_value.replace(re.findall('[-.0-9]*', first_value)[0], '')
 
-        if unit:
-            value = first_value.replace(unit, '') + separator + second_value
+            if unit:
+                value = first_value.replace(unit, '') + separator + second_value
 
     # Remove parenthesis section
     if '(' in value:

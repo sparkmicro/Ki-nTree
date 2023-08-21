@@ -71,7 +71,7 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=Tr
 
             dump_file(user_settings, os.path.join(path_to_user_files, filename))
 
-    for dir in ['user', 'inventree', 'kicad', 'digikey', 'mouser', 'element14', 'lcsc']:
+    for dir in ['user', 'inventree', 'kicad', 'digikey', 'mouser', 'element14', 'lcsc', 'tme']:
         try:
             # Load configuration
             config_files = os.path.join(path_to_root, dir, '')

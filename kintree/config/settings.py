@@ -103,7 +103,7 @@ CONFIG_GENERAL_PATH = os.path.join(CONFIG_USER_FILES, 'general.yaml')
 CONFIG_GENERAL = config_interface.load_file(CONFIG_GENERAL_PATH)
 # Datasheets
 DATASHEET_SAVE_ENABLED = CONFIG_GENERAL.get('DATASHEET_SAVE_ENABLED', False)
-DATASHEET_SAVE_PATH = CONFIG_GENERAL.get('DATASHEET_SAVE_PATH', False)
+DATASHEET_SAVE_PATH = CONFIG_GENERAL.get('DATASHEET_SAVE_PATH', '')
 # Open Browser
 AUTOMATIC_BROWSER_OPEN = CONFIG_GENERAL.get('AUTOMATIC_BROWSER_OPEN', False)
 # Default Supplier
@@ -176,6 +176,10 @@ CONFIG_ELEMENT14_API = os.path.join(CONFIG_USER_FILES, 'element14_api.yaml')
 # LCSC user configuration
 CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
 CONFIG_LCSC_API = os.path.join(CONFIG_USER_FILES, 'lcsc_api.yaml')
+
+# TME user configuration
+CONFIG_TME = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'tme_config.yaml'))
+CONFIG_TME_API = os.path.join(CONFIG_USER_FILES, 'tme_api.yaml')
 
 # Automatic category match confidence level (from 0 to 100)
 CATEGORY_MATCH_RATIO_LIMIT = CONFIG_SEARCH_API.get('CATEGORY_MATCH_RATIO_LIMIT', 100)

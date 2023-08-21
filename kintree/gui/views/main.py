@@ -11,7 +11,7 @@ from .common import CommonView
 from .common import DropdownWithSearch, SwitchWithRefs
 from .common import handle_transition
 # Tools
-from ...common.tools import cprint, download
+from ...common.tools import cprint, download_with_retry
 # Settings
 from ...common import progress
 from ...config import settings, config_interface
@@ -1399,7 +1399,7 @@ class CreateView(MainView):
                     f'{part_info.get("IPN", "datasheet")}.pdf',
                 )
                 cprint('\n[MAIN]\tDownloading Datasheet')
-                if download(datasheet_url, filetype='PDF', fileoutput=filename, timeout=10):
+                if download_with_retry(datasheet_url, filename, filetype='PDF', timeout=10):
                     cprint(f'[INFO]\tSuccess: Datasheet saved to {filename}')
         # Open browser
         if settings.ENABLE_INVENTREE:
