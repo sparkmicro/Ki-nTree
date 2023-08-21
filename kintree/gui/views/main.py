@@ -145,14 +145,14 @@ class MainView(CommonView):
 
     def reset_view(self, e, ignore=['enable'], hidden={}):
         def reset_field(field):
-            if type(field) is ft.ProgressBar:
+            if isinstance(field, ft.ProgressBar):
                 field.value = 0
             else:
                 field.value = None
             field.update()
 
         for name, field in self.fields.items():
-            if type(field) == dict:
+            if isinstance(field, dict):
                 for key, value in field.items():
                     value.disabled = True
                     reset_field(value)
@@ -649,7 +649,7 @@ class InventreeView(MainView):
 
     def process_category(self, e=None, label=None, value=None):
         parent_category = None
-        if type(self.fields['Category'].value) == str:
+        if isinstance(self.fields['Category'].value, str):
             parent_category = inventree_interface.split_category_tree(self.fields['Category'].value)[0]
         self.fields['IPN: Category Code'].options = self.get_code_options()
         # Select category code corresponding to selected category
@@ -1022,10 +1022,10 @@ class KicadView(MainView):
         kicad_inputs = []
         for name, field in self.fields.items():
             # Update callbacks
-            if type(field) == ft.ElevatedButton:
+            if isinstance(field, ft.ElevatedButton):
                 field.on_click = self.check_snapeda
             # Update options
-            elif type(field) == DropdownWithSearch:
+            elif isinstance(field, DropdownWithSearch):
                 field.label = name
                 if name == 'Symbol Library':
                     field.options = self.build_library_options(type='symbol')

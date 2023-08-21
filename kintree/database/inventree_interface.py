@@ -70,18 +70,18 @@ def build_category_tree(reload=False, category=None) -> dict:
             last_entry = f' {category_tree(tree[-1])}{category_separator}'
         except IndexError:
             last_entry = ''
-        if type(left_to_go) == dict:
+        if isinstance(left_to_go, dict):
             for key, value in left_to_go.items():
                 tree.append(f'{"-" * level}{last_entry}{key}')
                 build_tree(tree, value, level + 1)
-        elif type(left_to_go) == list:
+        elif isinstance(left_to_go, list):
             # Supports legacy structure
             for item in left_to_go:
                 tree.append(f'{"-" * level}{last_entry}{item}')
         elif left_to_go is None:
             pass
         return
-    
+
     if reload:
         categories = inventree_api.get_categories()
         category_data.update({'CATEGORIES': categories})

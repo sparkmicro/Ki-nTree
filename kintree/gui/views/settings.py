@@ -291,7 +291,7 @@ class SettingsView(CommonView):
         # Load setting fields
         self.fields = {}
         for field_name, field_data in SETTINGS.get(self.title, {}).items():
-            if type(field_data) == list and field_data[0] is not None:
+            if isinstance(field_data, list) and field_data[0] is not None:
                 self.fields[field_name] = field_data[1]
                 self.fields[field_name].value = self.settings[field_data[0]]
 
@@ -357,7 +357,7 @@ class SettingsView(CommonView):
         )
 
     def update_field(self, name, field, column):
-        if type(field) == ft.TextField:
+        if isinstance(field, ft.TextField):
             field_predefined = bool(field.width)
             if not field_predefined:
                 field.label = name
@@ -386,7 +386,7 @@ class SettingsView(CommonView):
                         ft.Row(height=GUI_PARAMS['textfield_space_after']),
                     ]
                 )
-        elif type(field) == ft.Text:
+        elif isinstance(field, ft.Text):
             field.value = name
             field_row = ft.Row(
                 controls=[
@@ -395,7 +395,7 @@ class SettingsView(CommonView):
             )
             column.controls.append(field_row)
             column.controls.append(ft.Divider())
-        elif type(field) == ft.TextButton:
+        elif isinstance(field, ft.TextButton):
             column.controls.append(
                 ft.ElevatedButton(
                     name,
@@ -405,12 +405,12 @@ class SettingsView(CommonView):
                     on_click=lambda e, s=name: self.test_s(e, s=s)
                 ),
             )
-        elif type(field) == ft.Dropdown:
+        elif isinstance(field, ft.Dropdown):
             field.on_change = lambda _: self.save()
             column.controls.append(
                 field,
             )
-        elif type(field) == ft.Switch or type(field) == SwitchWithRefs:
+        elif isinstance(field, ft.Switch) or isinstance(field, SwitchWithRefs):
             if 'proxy' in name.lower():
                 field.on_change = lambda _: None
             else:
@@ -561,7 +561,7 @@ class UserSettingsView(PathSettingsView):
 
         # Update datasheet ref
         for idx, field in enumerate(self.column.controls):
-            if type(field) == SwitchWithRefs:
+            if isinstance(field, SwitchWithRefs):
                 if field.label == 'Save Datasheets to Local Folder':
                     datasheet_row_ref.current = self.column.controls[idx + 1]
                     SETTINGS[self.title]['Save Datasheets to Local Folder'][1].refs = [datasheet_row_ref]
