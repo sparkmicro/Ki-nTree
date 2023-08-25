@@ -75,7 +75,7 @@ jobs:
           git clone https://github.com/inventree/InvenTree/
           mkdir InvenTree/static
           cp tests/files/inventree_default_db.sqlite3 InvenTree/
-          cd InvenTree/ && git switch 0.11.x && invoke install && invoke migrate && cd -
+          cd InvenTree/ && git switch stable && invoke install && invoke migrate && cd -
       - name: Ki-nTree setup
         run: |
           invoke install
