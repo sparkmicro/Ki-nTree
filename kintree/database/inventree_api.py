@@ -699,6 +699,11 @@ def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn:
 
     return False, False
 
+def sanitize_price(price_in):
+    price = re.findall('\d+.\d+', price_in)[0]
+    price = price.replace(',', '.')
+    price = price.replace('\xa0', '')
+    return price
 
 def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
     ''' Update the Price Breaks associated with a supplier part '''
@@ -721,8 +726,7 @@ def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
         price = price_breaks[quantity]
         # remove everything but the numbers from the price break
         if isinstance(price, str):
-            price = re.findall('\d+.\d+', price)[0]
-            price = price.replace(',', '.')
+            price = sanitize_price(price)
         if quantity in price_breaks:
             old_price_break.save(data={'price': price})
             updated.append(quantity)
@@ -734,8 +738,7 @@ def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
     for quantity, price in price_breaks.items():
         # remove everything but the numbers from the price break
         if isinstance(price, str):
-            price = re.findall('\d+.\d+', price)[0]
-            price = price.replace(',', '.')
+            price = sanitize_price(price)
         SupplierPriceBreak.create(inventree_api, {
             'part': supplier_part.pk,
             'quantity': quantity,
