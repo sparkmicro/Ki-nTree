@@ -722,7 +722,10 @@ def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, foot
 
         if stock is not None:
             stock['part'] = part_pk
-            inventree_api.create_stock(stock)
+            stock_item = inventree_api.create_stock(stock)
+            if (stock['make_default']):
+                inventree_api.set_part_default_location(part_pk, stock['location'])
+
 
     # Progress Update
     if not progress.update_progress_bar(show_progress):

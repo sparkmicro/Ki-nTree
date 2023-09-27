@@ -496,7 +496,16 @@ def create_part(category_id: int, name: str, description: str, revision: str, ke
     else:
         return 0
 
+def set_part_default_location(part_pk, location_pk):
+    global inventree_api
 
+    # Retrieve part instance with primary-key of 1
+    part = Part(inventree_api, pk=part_pk)
+
+    # Update specified part parameters
+    part.save(data={
+        "default_location": location_pk,
+    })
 def create_company(company_name: str, manufacturer=False, supplier=False) -> bool:
     ''' Create InvenTree company '''
     global inventree_api

@@ -528,6 +528,11 @@ class InventreeView(MainView):
             keyboard_type=ft.KeyboardType.NUMBER,
             value="1",
         ),
+        'Make stock location default': ft.Checkbox(
+            label='Make this the part\'s default location',
+            disabled=not settings.ENABLE_INVENTREE,
+            value=True,
+        ),
         'Stock notes': ft.TextField(
             label='Notes',
             disabled=not settings.ENABLE_INVENTREE,
@@ -814,6 +819,9 @@ class InventreeView(MainView):
                         ),
                         ft.Row(
                             controls=[self.fields['Stock quantity']],
+                        ),
+                        ft.Row(
+                            controls=[self.fields['Make stock location default']],
                         ),
                         ft.Row(
                             controls=[self.fields['Stock notes']],
@@ -1340,6 +1348,7 @@ class CreateView(MainView):
                         'location': inventree_interface.get_inventree_stock_location_id(data_from_views['InvenTree'].get('Stock location')),
                         'quantity': data_from_views['InvenTree'].get('Stock quantity'),
                         'notes': data_from_views['InvenTree'].get('Stock notes'),
+                        'make_default': data_from_views['InvenTree'].get('Make stock location default'),
                     }
 
                 # Create new part
