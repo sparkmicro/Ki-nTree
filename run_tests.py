@@ -439,9 +439,9 @@ if __name__ == '__main__':
 
                 elif method_idx == 11:
                     # Test manufacturer and supplier alternates using Part IPN
-                    if not inventree_interface.inventree_create_alternate(part_info=part_info,
-                                                                          part_ipn='CAP-000001-00',
-                                                                          show_progress=False, ):
+                    if inventree_interface.inventree_create_alternate(part_info=part_info,
+                                                                      part_ipn='CAP-000001-00',
+                                                                      show_progress=False, ):
                         method_success = False
 
                 elif method_idx == 12:

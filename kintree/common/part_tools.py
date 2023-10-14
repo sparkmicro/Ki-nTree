@@ -17,7 +17,10 @@ def generate_part_number(category: str, part_pk: int, category_code='') -> str:
     if settings.CONFIG_IPN.get('IPN_CATEGORY_CODE', False):
         if not category_code:
             CATEGORY_CODES = config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES']
-            category_code = CATEGORY_CODES.get(category, '')
+            try:
+                category_code = CATEGORY_CODES.get(category, '')
+            except AttributeError:
+                category_code = None
         if category_code:
             ipn_elements.append(category_code)
 

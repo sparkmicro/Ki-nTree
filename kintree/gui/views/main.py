@@ -651,12 +651,15 @@ class InventreeView(MainView):
         parent_category = None
         if isinstance(self.fields['Category'].value, str):
             parent_category = inventree_interface.split_category_tree(self.fields['Category'].value)[0]
-        self.fields['IPN: Category Code'].options = self.get_code_options()
-        # Select category code corresponding to selected category
-        code = config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES'].get(parent_category, None)
-        if code and not self.fields['Create New Code'].value:
-            self.fields['IPN: Category Code'].value = code
-        self.fields['IPN: Category Code'].update()
+        # Check for category codes
+        options = self.get_code_options()
+        if options:
+            self.fields['IPN: Category Code'].options = options
+            # Select category code corresponding to selected category
+            code = config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES'].get(parent_category, None)
+            if code and not self.fields['Create New Code'].value:
+                self.fields['IPN: Category Code'].value = code
+            self.fields['IPN: Category Code'].update()
         self.push_data(e)
 
     def process_ipncode(self):
@@ -667,10 +670,13 @@ class InventreeView(MainView):
         self.ipncode_row_ref.current.update()
 
     def get_code_options(self):
-        return [
-            ft.dropdown.Option(code)
-            for code in config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES'].values()
-        ]
+        try:
+            return [
+                ft.dropdown.Option(code)
+                for code in config_interface.load_file(settings.CONFIG_CATEGORIES)['CODES'].values()
+            ]
+        except AttributeError:
+            return []
 
     def get_category_options(self, reload=False):
         return [
