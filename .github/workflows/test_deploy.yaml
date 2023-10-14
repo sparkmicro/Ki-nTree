@@ -162,16 +162,16 @@ jobs:
         run: poetry install --no-root --no-dev --no-interaction
       - name: Build the package
         run: poetry build --no-interaction
-      - name: Set up TestPyPI repo in poetry
-        run: poetry config repositories.test https://test.pypi.org/legacy/
-      - name: Publish to Test PyPI
-        run: >
-          poetry publish
-          --repository "test"
-          --username "__token__"
-          --password "$TOKEN_TEST_PYPI"
-        env:
-          TOKEN_TEST_PYPI: ${{ secrets.TOKEN_TEST_PYPI }}
+      # - name: Set up TestPyPI repo in poetry
+      #   run: poetry config repositories.test https://test.pypi.org/legacy/
+      # - name: Publish to Test PyPI
+      #   run: >
+      #     poetry publish
+      #     --repository "test"
+      #     --username "__token__"
+      #     --password "$TOKEN_TEST_PYPI"
+      #   env:
+      #     TOKEN_TEST_PYPI: ${{ secrets.TOKEN_TEST_PYPI }}
       - name: Publish to PyPI
         run: >
           poetry publish
