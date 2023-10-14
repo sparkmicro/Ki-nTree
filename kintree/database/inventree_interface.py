@@ -672,7 +672,7 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                 if is_supplier_part_created:
                     cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
             
-            if supplier_part:
+            if supplier_part and settings.PRICING_UPLOAD:
                 cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
                 inventree_api.update_price_breaks(
                     supplier_part=supplier_part,
@@ -811,7 +811,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
                 cprint('[INFO]\tSuccess: Added new supplier part', silent=settings.SILENT)
                 result = True
 
-        if supplier_part:
+        if supplier_part and settings.PRICING_UPLOAD:
             cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
             inventree_api.update_price_breaks(
                 supplier_part=supplier_part,
