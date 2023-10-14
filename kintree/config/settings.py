@@ -19,7 +19,7 @@ def enable_test_mode():
     global ENABLE_TEST
     global SILENT
     ENABLE_TEST = True
-    SILENT = False
+    SILENT = True
 
 
 # PATHS
