@@ -154,6 +154,10 @@ def fetch_part_info(part_number: str) -> dict:
         parameter_value = part[parameter_key][parameter][value_key]
         # Append to parameters dictionary
         part_info['parameters'][parameter_name] = parameter_value
+    # process export controll class number as an parameter
+    eccn = part['export_control_class_number']
+    if eccn:
+        part_info['parameters']['ECCN'] = eccn
 
     # Pricing
     part_info['pricing'] = {}

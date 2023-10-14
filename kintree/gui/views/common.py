@@ -56,7 +56,7 @@ def handle_transition(page: ft.Page, transition: bool, update_page=False, timeou
     # Update
     if update_page:
         page.update()
-    
+
 
 def update_theme(page: ft.Page, mode='light', transition=False, compact=True):
     # Color theme

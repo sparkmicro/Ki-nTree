@@ -155,12 +155,16 @@ def get_category_parameters(category_id: int) -> list:
     return parameter_templates
 
 
-def get_part_number(part_id: int) -> str:
-    ''' Get InvenTree part number from specified Part ID '''
+def get_part_info(part_id: int) -> str:
+    ''' Get InvenTree part info from specified Part ID '''
     global inventree_api
 
     part = Part(inventree_api, part_id)
-    return part.IPN
+    part_info = {'IPN': part.IPN}
+    attachment = part.getAttachments()
+    if attachment:
+        part_info['datasheet'] = f'{inventree_api.base_url.strip("/")}{attachment[0]["attachment"]}'
+    return part_info
 
 
 def set_part_number(part_id: int, ipn: str) -> bool:
@@ -390,7 +394,7 @@ def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
         try:
             attachment = part.uploadAttachment(attachment=datasheet_location)
             os.remove(datasheet_location)
-            return inventree_api.base_url.strip('/') + attachment['attachment']
+            return f'{inventree_api.base_url.strip("/")}{attachment["attachment"]}'
         except Exception:
             return ''
     else:

@@ -81,7 +81,7 @@ def build_category_tree(reload=False, category=None) -> dict:
         elif left_to_go is None:
             pass
         return
-    
+
     if reload:
         categories = inventree_api.get_categories()
         category_data.update({'CATEGORIES': categories})
@@ -515,21 +515,22 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
     if category_pk <= 0:
         cprint(f'[ERROR]\tCategory ({category_tree}) does not exist in InvenTree', silent=settings.SILENT)
     else:
-        # Check if part already exists
-        part_pk = inventree_api.is_new_part(category_pk, inventree_part)
-        # Part exists
-        if part_pk > 0:
-            cprint('[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
-            ipn = inventree_api.get_part_number(part_pk)
-            if ipn:
-                # Update InvenTree part number
-                inventree_part['IPN'] = ipn
-                # Update InvenTree URL
-                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
-            else:
-                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
+        if settings.CHECK_EXISTING:
+            # Check if part already exists
+            part_pk = inventree_api.is_new_part(category_pk, inventree_part)
+            # Part exists
+            if part_pk > 0:
+                cprint('[INFO]\tPart already exists, skipping.', silent=settings.SILENT)
+                info = inventree_api.get_part_info(part_pk)
+                if info:
+                    # Update InvenTree part number
+                    inventree_part = {**inventree_part, **info}
+                    # Update InvenTree URL
+                    inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{inventree_part["IPN"]}/'
+                else:
+                    inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
         # Part is new
-        else:
+        if not part_pk:
             new_part = True
             # Create a new Part
             # Use the pk (primary-key) of the category
@@ -757,11 +758,16 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     manufacturer_mpn = part_info.get('manufacturer_part_number', '')
     datasheet = part_info.get('datasheet', '')
 
+    attachment = part.getAttachments()
     # if datasheet upload is enabled and no attachment present yet then upload
-    if settings.DATASHEET_UPLOAD and not part.getAttachments():
+    if settings.DATASHEET_UPLOAD and not attachment:
         if datasheet:
-            inventree_api.upload_part_datasheet(part_id=part_pk,
-                                                datasheet_url=datasheet)
+            part_info['datasheet'] = inventree_api.upload_part_datasheet(
+                part_id=part_pk,
+                datasheet_url=datasheet)
+    # if an attachment is present, set it as the datasheet field
+    if attachment:
+        part_info['datasheet'] = f'{inventree_api.inventree_api.base_url.strip("/")}{attachment[0]["attachment"]}'
 
     # Create manufacturer part
     if manufacturer_name and manufacturer_mpn:

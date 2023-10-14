@@ -252,7 +252,7 @@ class PartSearchView(MainView):
             label="Part Number",
             dense=True,
             hint_text="Part Number",
-            width=300,
+            width=250,
             expand=True,
         ),
         'supplier': ft.Dropdown(
@@ -268,7 +268,12 @@ class PartSearchView(MainView):
             width=48,
             tooltip="Submit",
         ),
+        'parameter_view': ft.Switch(
+            label='View Parameters',
+            disabled=True
+        ),
         'search_form': {},
+        'parameter_form': {},
     }
 
     def reset_view(self, e, ignore=['enable']):
@@ -276,17 +281,20 @@ class PartSearchView(MainView):
             'searched_part_number': '',
             'custom_part': None,
         }
+        self.fields['parameter_form'] = {}
         return super().reset_view(e, ignore=ignore, hidden=hidden_fields)
 
     def enable_search_fields(self):
         for form_field in self.fields['search_form'].values():
             form_field.disabled = False
+        self.fields['parameter_view'].disabled = False
         self.page.update()
         return
 
     def run_search(self, e):
         # Reset view
         self.reset_view(e, ignore=['part_number', 'supplier'])
+        self.switch_view()
         # Validate form
         if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
             if not self.fields['part_number'].value:
@@ -323,22 +331,29 @@ class PartSearchView(MainView):
                         supplier=supplier,
                         part_info=part_supplier_info,
                     )
+                    if part_supplier_form:
+                        for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
+                            # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
+                            try:
+                                self.fields['search_form'][field_name].value = part_supplier_form.get(field_name, '')
+                            except IndexError:
+                                pass
+                            # Enable editing
+                            self.enable_search_fields()
                     # Stitch parameters
                     if part_supplier_info.get('parameters', None):
                         self.data['parameters'] = part_supplier_info['parameters']
+                        for parameter, value in self.data['parameters'].items():
+                            text_field = ft.TextField(
+                                label=parameter,
+                                value=value,
+                                expand=True,
+                                on_change=self.push_data,
+                            )
+                            self.fields['parameter_form'][parameter] = text_field
                     # and pricing
                     if part_supplier_info.get('pricing', None):
                         self.data['pricing'] = part_supplier_info['pricing']
-
-                if part_supplier_form:
-                    for field_idx, field_name in enumerate(self.fields['search_form'].keys()):
-                        # print(field_idx, field_name, get_default_search_keys()[field_idx], search_form_field[field_name])
-                        try:
-                            self.fields['search_form'][field_name].value = part_supplier_form.get(field_name, '')
-                        except IndexError:
-                            pass
-                        # Enable editing
-                        self.enable_search_fields()
 
             # Add to data buffer
             self.push_data()
@@ -364,6 +379,8 @@ class PartSearchView(MainView):
         }
         for key, field in self.fields['search_form'].items():
             self.data[key] = field.value
+        for key, field in self.fields['parameter_form'].items():
+            self.data['parameters'][key] = field.value
         return super().push_data(e, hidden=hidden_fields)
         
     def partial_update(self):
@@ -385,10 +402,34 @@ class PartSearchView(MainView):
             # Control not added to page yet
             pass
 
+    def switch_view(self, e=None):
+        # show parameters instead of part information
+        parameters_view = self.fields['parameter_view'].value
+        self.column.controls[0].content.controls = [
+            ft.Row(),
+            ft.Row(
+                controls=[
+                    self.fields['part_number'],
+                    self.fields['supplier'],
+                    self.fields['search_button'],
+                    self.fields['parameter_view'],
+                ],
+            ),
+            ft.Divider(),
+        ]
+        if not parameters_view:
+            for field, text_field in self.fields['search_form'].items():
+                self.column.controls[0].content.controls.append(ft.Row([text_field]))
+        else:
+            for field, text_field in self.fields['parameter_form'].items():
+                self.column.controls[0].content.controls.append(ft.Row([text_field]))
+        self.page.update()
+
     def build_column(self):
         self.update_suppliers()
         # Enable search method
         self.fields['search_button'].on_click = self.run_search
+        self.fields['parameter_view'].on_change = self.switch_view
 
         self.column = ft.Column(
             controls=[
@@ -401,6 +442,7 @@ class PartSearchView(MainView):
                                     self.fields['part_number'],
                                     self.fields['supplier'],
                                     self.fields['search_button'],
+                                    self.fields['parameter_view'],
                                 ],
                             ),
                             ft.Divider(),
@@ -479,6 +521,11 @@ class InventreeView(MainView):
         ),
         'Create New Code': SwitchWithRefs(
             label='Create New Code',
+        ),
+        'check_existing': ft.Switch(
+            label='Check for existing Parts',
+            value=settings.CHECK_EXISTING if settings.ENABLE_INVENTREE else False,
+            disabled=not settings.ENABLE_INVENTREE,
         ),
         'New Category Code': ft.TextField(
             label='New Category Code',
@@ -586,6 +633,20 @@ class InventreeView(MainView):
         settings.set_enable_flag('update', update_enabled)
         self.push_data(e)
 
+    def process_button(self, e, value=None):
+        if value is not None:
+            button_enabled = value
+        else:
+            # Get switch value
+            button_enabled = False
+            if e.data.lower() == 'true':
+                button_enabled = True
+        if e.control.label == 'Update existing':
+            settings.set_enable_flag('update', button_enabled)
+        elif e.control.label == 'Check for existing Parts':
+            settings.set_enable_flag('check_existing', button_enabled)
+        self.push_data(e)
+
     def process_category(self, e=None, label=None, value=None):
         parent_category = None
         if isinstance(self.fields['Category'].value, str):
@@ -654,6 +715,8 @@ class InventreeView(MainView):
         self.fields['IPN: Category Code'].on_change = self.push_data
         self.fields['Create New Code'].on_change = self.create_ipn_code
         self.fields['New Category Code'].on_change = self.push_data
+        # Other Settings
+        self.fields['check_existing'].on_change = self.process_button
         # Alternate fields
         self.fields['alternate'].on_change = self.process_alternate
         self.fields['Existing Part ID'].on_change = self.push_data
@@ -692,6 +755,11 @@ class InventreeView(MainView):
                                                 ft.Row([self.fields['New Category Code']]),
                                             ],
                                         ),
+                                    ],
+                                ),
+                                ft.Row(
+                                    [
+                                        self.fields['check_existing'],
                                     ],
                                 ),
                             ],
@@ -1289,12 +1357,22 @@ class CreateView(MainView):
             progress.CREATE_PART_PROGRESS = 0
             # Add part symbol to KiCAD
             cprint('\n[MAIN]\tAdding part to KiCad', silent=settings.SILENT)
-            kicad_success, kicad_new_part = kicad_interface.inventree_to_kicad(
+            kicad_success, kicad_new_part, kicad_part_name = kicad_interface.inventree_to_kicad(
                 part_data=part_info,
                 library_path=symbol_library_path,
                 show_progress=self.fields['kicad_progress'],
             )
             # print(kicad_success, kicad_new_part)
+            # Update symbol name in InvenTree
+            if settings.ENABLE_INVENTREE and part_pk:
+                old_state = settings.UPDATE_INVENTREE
+                settings.UPDATE_INVENTREE = True
+                inventree_interface.inventree_process_parameters(
+                    part_pk,
+                    {'Symbol': f"{symbol_lib}:{kicad_part_name}"},
+                    show_progress=self.fields['inventree_progress'],
+                )
+                settings.UPDATE_INVENTREE = old_state
 
             # Complete add operation
             if kicad_success:

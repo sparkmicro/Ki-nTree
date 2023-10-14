@@ -36,12 +36,22 @@ class ComponentLibManager(object):
         ''' Create symbol in KiCad library '''
         part_in_lib = False
         new_part = False
-        
-        try:
-            symbol_id = symbol_data['Symbol'].split(':')[1]
-        except KeyError:
+        part_name = ''
+        parameters = symbol_data.get('parameters', {})
+        parameters = {**symbol_data, **parameters}
+        key_list = list(parameters.keys())
+        key_list.sort(key=len, reverse=True)
+
+        def replace_wildcards(field):
+            for key in key_list:
+                if key in field:
+                    field = field.replace(key, parameters[key])
+            return field
+
+        symbol_id = symbol_data.get('Symbol', '').split(':')
+        if not symbol_id:
             cprint('[KCAD] Error: Adding a new symbol to a KiCad library requires the \'Symbol\' key with the following format: {lib}:{symbol_id}')
-            return part_in_lib, new_part
+            return part_in_lib, new_part, part_name
 
         if not template_path:
             category = symbol_data['Template'][0]
@@ -58,20 +68,7 @@ class ComponentLibManager(object):
             return part_in_lib, new_part
         if not os.path.isfile(template_path):
             cprint(f'[KCAD]\tError loading template file ({template_path})', silent=settings.SILENT)
-            return part_in_lib, new_part
-
-        # Check if part already in library
-        try:
-            is_symbol_in_library = self.is_symbol_in_library(symbol_id)
-            part_in_lib = True
-        except:
-            is_symbol_in_library = False
-        if is_symbol_in_library:
-            return part_in_lib, new_part
-
-        # Progress Update
-        if not progress.update_progress_bar(show_progress):
-            return part_in_lib, new_part
+            return part_in_lib, new_part, part_name
 
         # Load template
         templatelib = SymbolLib.from_file(template_path)
@@ -81,30 +78,28 @@ class ComponentLibManager(object):
                 new_symbol = symbol
         else:
             cprint('[KCAD]\tError: Found more than 1 symbol template in template file, aborting', silent=settings.SILENT)
-            return part_in_lib, new_part
+            return part_in_lib, new_part, part_name
 
         # Update name/ID
-        new_symbol.libId = symbol_id
+        part_name = replace_wildcards(new_symbol.libId)
+        new_symbol.libId = part_name
+
+        # Check if part already in library
+        try:
+            is_symbol_in_library = self.is_symbol_in_library(part_name)
+            part_in_lib = True
+        except:
+            is_symbol_in_library = False
+        if is_symbol_in_library:
+            return part_in_lib, new_part, part_name
+
+        # Progress Update
+        if not progress.update_progress_bar(show_progress):
+            return part_in_lib, new_part, part_name
 
         # Update properties
         for property in new_symbol.properties:
-            # Main data
-            if property.value in symbol_data.keys():
-                property.value = symbol_data[property.value]
-                continue
-
-            # Parameters
-            if symbol_data.get('parameters', None):
-                if property.value in symbol_data['parameters'].keys():
-                    property.value = symbol_data['parameters'][property.value]
-                    continue
-
-            # Maufacturer properties
-            if property.key == 'Manufacturer':
-                property.value = symbol_data['manufacturer_name']
-            elif property.key == 'Manufacturer Part Number':
-                property.value = symbol_data['manufacturer_part_number']
-            continue
+            property.value = replace_wildcards(property.value)
 
         # Add symbol to library
         self.kicad_lib.symbols.append(new_symbol)
@@ -119,4 +114,4 @@ class ComponentLibManager(object):
         if not progress.update_progress_bar(show_progress):
             pass
 
-        return part_in_lib, new_part
+        return part_in_lib, new_part, part_name
