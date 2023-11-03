@@ -18,6 +18,7 @@ if platform.system() == 'Linux':
 from inventree.api import InvenTreeAPI
 from inventree.company import Company, ManufacturerPart, SupplierPart, SupplierPriceBreak
 from inventree.part import Part, PartCategory, Parameter, ParameterTemplate
+from inventree.currency import CurrencyManager
 
 
 def connect(server: str,
@@ -626,15 +627,27 @@ def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn:
     return False, False
 
 
-def sanitize_price(price_in):
-    price = re.findall('\d+.\d+', price_in)[0]
-    price = price.replace(',', '.')
-    price = price.replace('\xa0', '')
-    return price
-
-
-def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
+def update_price_breaks(supplier_part,
+                        price_breaks: dict,
+                        currency='USD') -> bool:
     ''' Update the Price Breaks associated with a supplier part '''
+    def sanitize_price(price_in):
+        price = re.findall('\d+.\d+', price_in)[0]
+        price = price.replace(',', '.')
+        price = price.replace('\xa0', '')
+        return price
+
+    def convert_currency(price):
+        manager = CurrencyManager(inventree_api)
+        base = manager.getBaseCurrency()
+        if base != currency:
+            try:
+                price = manager.convertCurrency(float(price), currency, base)
+            except Exception:
+                cprint('[TREE]\tWarning: Currency conversion failed.',
+                       silent=settings.SILENT)
+        return price
+
     if not isinstance(supplier_part, SupplierPart):
         try:
             supplier_part = SupplierPart(inventree_api, supplier_part)
@@ -651,11 +664,12 @@ def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
     # First process existing price breaks
     for old_price_break in old_price_breaks:
         quantity = old_price_break.quantity
-        price = price_breaks[quantity]
-        # remove everything but the numbers from the price break
-        if isinstance(price, str):
-            price = sanitize_price(price)
         if quantity in price_breaks:
+            price = price_breaks[quantity]
+            # remove everything but the numbers from the price break
+            if isinstance(price, str):
+                price = sanitize_price(price)
+            price = convert_currency(price)
             old_price_break.save(data={'price': price})
             updated.append(quantity)
         else:
@@ -667,6 +681,7 @@ def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
         # remove everything but the numbers from the price break
         if isinstance(price, str):
             price = sanitize_price(price)
+        price = convert_currency(price)
         SupplierPriceBreak.create(inventree_api, {
             'part': supplier_part.pk,
             'quantity': quantity,

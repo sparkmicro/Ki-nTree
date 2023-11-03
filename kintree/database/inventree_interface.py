@@ -268,6 +268,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
         # Part image URL is null (no product picture)
         pass
     inventree_part['pricing'] = part_info.get('pricing', {})
+    inventree_part['currency'] = part_info.get('currency', 'USD')
 
     # Load parameters map
     if category_tree:
@@ -676,7 +677,8 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                 cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
                 inventree_api.update_price_breaks(
                     supplier_part=supplier_part,
-                    price_breaks=inventree_part['pricing'])
+                    price_breaks=inventree_part['pricing'],
+                    currency=inventree_part['currency'])
 
     # Progress Update
     if not progress.update_progress_bar(show_progress):
@@ -815,7 +817,8 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
             cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
             inventree_api.update_price_breaks(
                 supplier_part=supplier_part,
-                price_breaks=inventree_part['pricing'])
+                price_breaks=inventree_part['pricing'],
+                currency=inventree_part['currency'])
             result = True
     
     else:

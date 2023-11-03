@@ -9,6 +9,13 @@ import urllib.request
 from ..common.tools import download
 from ..config import config_interface, settings
 
+PRICING_MAP = [
+    'PriceList',
+    'Amount',
+    'PriceValue',
+    'Currency',
+]
+
 
 def get_default_search_keys():
     return [
@@ -80,6 +87,17 @@ def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://a
 
 
 def fetch_part_info(part_number: str) -> dict:
+
+    def search_product(response):
+        found = False
+        index = 0
+        for product in response['Data']['ProductList']:
+            if product['Symbol'] == part_number:
+                found = True
+                break
+            index = index + 1
+        return found, index
+
     tme_api_settings = config_interface.load_file(settings.CONFIG_TME_API)
     response = download(tme_api_request('/Products/GetProducts', tme_api_settings, part_number))
     if response is None or response['Status'] != 'OK':
@@ -108,13 +126,7 @@ def fetch_part_info(part_number: str) -> dict:
     if response is None or response['Status'] != 'OK':
         return part_info
 
-    found = False
-    index = 0
-    for product in response['Data']['ProductList']:
-        if product['Symbol'] == part_number:
-            found = True
-            break
-        index = index + 1
+    found, index = search_product(response)
 
     if not found:
         return part_info
@@ -123,19 +135,35 @@ def fetch_part_info(part_number: str) -> dict:
     for param in response['Data']['ProductList'][index]["ParameterList"]:
         part_info['parameters'][param['ParameterName']] = param['ParameterValue']
 
+    # query the prices
+    response = download(tme_api_request('/Products/GetPrices', tme_api_settings, part_number))
+    # check if accidentally no data returned
+    if response is None or response['Status'] != 'OK':
+        return part_info
+
+    found, index = search_product(response)
+
+    if not found:
+        part_info['currency'] = 'USD'
+        return part_info
+
+    part_info['pricing'] = {}
+    [pricing_key, qty_key, price_key, currency_key] = PRICING_MAP
+
+    for price_break in response['Data']['ProductList'][index][pricing_key]:
+        quantity = price_break[qty_key]
+        price = price_break[price_key]
+        part_info['pricing'][quantity] = price
+
+    part_info['currency'] = response['Data'][currency_key]
+
     # Query the files associated to the product
     response = download(tme_api_request('/Products/GetProductsFiles', tme_api_settings, part_number))
     # check if accidentally no products returned
     if response is None or response['Status'] != 'OK':
         return part_info
 
-    found = False
-    index = 0
-    for product in response['Data']['ProductList']:
-        if product['Symbol'] == part_number:
-            found = True
-            break
-        index = index + 1
+    found, index = search_product(response)
 
     if not found:
         return part_info
