@@ -163,9 +163,7 @@ def fetch_part_info(part_number: str) -> dict:
     # Pricing
     part_info['pricing'] = {}
     [pricing_key, qty_key, price_key, currency_key] = PRICING_MAP
-    print(part)
-    print(part[pricing_key])
-    print(pricing_key)
+    
     for price_break in part[pricing_key]:
         quantity = price_break[qty_key]
         price = price_break[price_key]

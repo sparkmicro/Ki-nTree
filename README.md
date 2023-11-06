@@ -210,9 +210,10 @@ Ki-nTree currently supports APIs for the following electronics suppliers: Digi-K
 
 The automatic part generation in KiCad is controlled via templates:
 
-* Template examples are shipped together with Ki-nTree, these can be adjusted to your likings or you also can create completely new ones.
+* Template examples are shipped together with Ki-nTree, these can be adjusted to your liking or you also can create completely new ones.
 * Each template has its own library file where the file name defines the templates name.
-* The templates can use the parameters and attributes of the InvenTree part on a wildcard base. So you can add for example `Resistance @ Tolerance` into a field and the resulting part will then have the resitance and the tolerance value inside this text field. 
+* The templates can use the parameters and attributes of the InvenTree part on a wildcard base. So you can add for example `Resistance@Tolerance` into a field and the resulting part will then have the resistance and the tolerance value inside this text field. 
+* Using the templates and wildcards without the InvenTree functions enabled is also possible. In this case the library parameter wildcards need to be configured in the `supplier_parameters.yaml` for each library individually.
 
 
 Enjoy!
