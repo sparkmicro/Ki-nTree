@@ -402,7 +402,7 @@ def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
         return ''
 
 
-def create_part(category_id: int, name: str, description: str, revision: str, keywords=None) -> int:
+def create_part(category_id: int, name: str, description: str, revision: str, ipn: str, keywords=None) -> int:
     ''' Create InvenTree part '''
     global inventree_api
 
@@ -412,6 +412,7 @@ def create_part(category_id: int, name: str, description: str, revision: str, ke
         'category': category_id,
         'keywords': keywords,
         'revision': revision,
+        'IPN': ipn,
         'active': True,
         'virtual': False,
         'component': True,

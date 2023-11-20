@@ -533,13 +533,24 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
         # Part is new
         if not part_pk:
             new_part = True
+            if settings.CONFIG_IPN.get('IPN_ENABLE_CREATE', True):
+                # Generate Placeholder Internal Part Number
+                ipn = part_tools.generate_part_number(
+                    category=category_tree[0],
+                    part_pk=0,
+                    category_code=part_info.get('category_code', ''),
+                )
+            else:
+                ipn = ''
             # Create a new Part
             # Use the pk (primary-key) of the category
-            part_pk = inventree_api.create_part(category_id=category_pk,
-                                                name=inventree_part['name'],
-                                                description=inventree_part['description'],
-                                                revision=inventree_part['revision'],
-                                                keywords=inventree_part['keywords'])
+            part_pk = inventree_api.create_part(
+                category_id=category_pk,
+                name=inventree_part['name'],
+                description=inventree_part['description'],
+                revision=inventree_part['revision'],
+                keywords=inventree_part['keywords'],
+                ipn=ipn)
 
             # Check part primary key
             if not part_pk:

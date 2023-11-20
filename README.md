@@ -34,7 +34,7 @@ Ki-nTree works with:
 >
 > To use with KiCad version **5**, use older Ki-nTree `0.4.x` versions (`pip install kintree==0.4.8`).
 
-Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK Microsystems](https://www.sparkmicro.com/), who generously accepted to make it open-source!
+Ki-nTree was developed by [@eeintech](https://github.com/eeintech) for [SPARK Microsystems](https://www.sparkmicro.com/), who generously accepted to make it open-source!
 
 ## Get Started
 
@@ -131,7 +131,7 @@ Below is a summary table of the different configuration files, their function an
 | `digikey_categories.yaml` | Mapping between InvenTree categories and Digi-Key categories | :x: |
 | `digikey_parameters.yaml` | Mapping between InvenTree parameters and Digi-Key parameters/attributes | :x: |
 
-> Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attibutes (help wanted!)
+> Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attributes (help wanted!)
 
 </p>
 </details>
@@ -159,6 +159,7 @@ Note that each time you enable the "Add" permission to an object, InvenTree auto
   b. Instead of user credential authentication token authentication is also supported. To use a token add it it to the "Password or Token" field and leave the "Username" empty. You can retrieve your personal access token from your InvenTree server by sending an get-request to its api url `api/user/token/`.
   c. If needed this tool can try to download the parts datasheet from the suppliers and upload it it to the attachment section of each part. For this just activate "Upload Datasheets to InvenTree" in the InvenTree settings
   d. It is also possible to sync the prices in InvenTree with the latest supplier prices. For this enable "Upload Pricing Data to InvenTree"
+6. If your InvenTree server requires a IPN in a specific pattern make sure to adjust "Settings > InvenTree > Internal Part Number" to match it or adjust the servers pattern to the one yo set in Ki-nTree 
 
 
 #### Get Digi-Key API token
@@ -197,7 +198,7 @@ Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/co
 
 #### Part Number Search
 
-Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser, Element14 and LCSC.
+Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser, Element14, TME and LCSC.
 
 1. In the main window, enter the part number and select the supplier in drop-down list, then click "CREATE". It will start by fetching part data using the supplier's API
 2. In the case Digi-Key has been selected and the API token is not found or expired, a browser window will pop-up. To get a new token: [follow those steps](#get-digi-key-api-token)
