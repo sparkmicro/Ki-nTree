@@ -406,18 +406,22 @@ def create_part(category_id: int, name: str, description: str, revision: str, ip
     ''' Create InvenTree part '''
     global inventree_api
 
-    part = Part.create(inventree_api, {
-        'name': name,
-        'description': description,
-        'category': category_id,
-        'keywords': keywords,
-        'revision': revision,
-        'IPN': ipn,
-        'active': True,
-        'virtual': False,
-        'component': True,
-        'purchaseable': True,
-    })
+    try:
+        part = Part.create(inventree_api, {
+            'name': name,
+            'description': description,
+            'category': category_id,
+            'keywords': keywords,
+            'revision': revision,
+            'IPN': ipn,
+            'active': True,
+            'virtual': False,
+            'component': True,
+            'purchaseable': True,
+        })
+    except Exception:
+        cprint('[TREE]\tError: Part creation failed. Check if Ki-nTree settings match InvenTree part settings.', silent=settings.SILENT)
+        return 0
 
     if part:
         return part.pk
@@ -701,10 +705,13 @@ def create_parameter_template(name: str, units: str) -> int:
         if name == item.name:
             return 0
 
-    parameter_template = ParameterTemplate.create(inventree_api, {
-        'name': name,
-        'units': units if units else '',
-    })
+    try:
+        parameter_template = ParameterTemplate.create(inventree_api, {
+            'name': name,
+            'units': units if units else '',
+        })
+    except:
+        cprint(f'[TREE]\tError: Failed to create parameter template "{name}".', silent=settings.SILENT)
 
     if parameter_template:
         return parameter_template.pk
@@ -738,9 +745,14 @@ def create_parameter(part_id: int, template_name: int, value: str):
                 if value != item.data and value != '-':
                     parameter = item
                     was_updated = True
-                    parameter.save(data={
-                        'data': value
-                    })
+                    try:
+                        parameter.save(data={
+                            'data': value
+                        })
+                    except Exception as e:
+                        cprint(f'[TREE]\tError: Failed to update part parameter "{template_name}".', silent=settings.SILENT)
+                        if "Invalid choice for parameter value" in e.args[0]['body']:
+                            cprint(f'[TREE]\tError: Parameter value "{value}" is not allowed by server settings.', silent=settings.SILENT)
             break
     # cprint(part_parameters, silent=SILENT)
 
@@ -750,11 +762,16 @@ def create_parameter(part_id: int, template_name: int, value: str):
         - parameter does not exist for this part
     '''
     if template_id > 0 and is_new_part_parameters_template_id:
-        parameter = Parameter.create(inventree_api, {
-            'part': part_id,
-            'template': template_id,
-            'data': value,
-        })
+        try:
+            parameter = Parameter.create(inventree_api, {
+                'part': part_id,
+                'template': template_id,
+                'data': value,
+            })
+        except Exception as e:
+            cprint(f'[TREE]\tError: Failed to create part parameter "{template_name}".', silent=settings.SILENT)
+            if "Invalid choice for parameter value" in e.args[0]['body']:
+                cprint(f'[TREE]\tError: Parameter value "{value}" is not allowed by server settings.', silent=settings.SILENT)
 
     if parameter:
         return parameter.pk, is_new_part_parameters_template_id, was_updated
