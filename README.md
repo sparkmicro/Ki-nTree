@@ -7,7 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=main&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=main)
 
 ## :warning: InvenTree Compatibility
-InvenTree `0.12` introduced a new parameter template system which was not supported until version `0.12.6` came out, see https://github.com/sparkmicro/Ki-nTree/issues/165 for more details. In short, Ki-nTree currently supports InvenTree `0.11` or older versions, and `0.12.6` and future versions.
+InvenTree `0.12` introduced a new parameter template system which was not supported until version `0.12.6` came out, see https://github.com/sparkmicro/Ki-nTree/issues/165 for more details. In short, Ki-nTree currently supports InvenTree `0.11` or older versions, and `0.12.6` and future versions. From `0.13.0` onwards a InvenTree setting needs to be modified for Ki-nTree to work: `InvenTree Settings` -> `Part Parameters` -> `Enforce Parameter Units` -> **OFF** (requires administrator rights)
 
 ## :fast_forward: [Demo Video](https://youtu.be/YeWBqOCb4pw)
 
