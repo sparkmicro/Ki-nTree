@@ -550,11 +550,14 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
             if settings.CONFIG_IPN.get('IPN_ENABLE_CREATE', True):
                 # Generate Internal Part Number
                 cprint('\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
-                ipn = part_tools.generate_part_number(
-                    category=category_tree[0],
-                    part_pk=part_pk,
-                    category_code=part_info.get('category_code', ''),
-                )
+                if settings.CONFIG_IPN.get('IPN_USE_MANUFACTURER_PART_NUMBER', False):
+                    ipn = inventree_part['manufacturer_part_number']
+                else:
+                    ipn = part_tools.generate_part_number(
+                        category=category_tree[0],
+                        part_pk=part_pk,
+                        category_code=part_info.get('category_code', ''),
+                    )
                 cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
                 # Update InvenTree part number
                 ipn_update = inventree_api.set_part_number(part_pk, ipn)
