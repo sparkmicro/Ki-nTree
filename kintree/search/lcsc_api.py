@@ -18,7 +18,7 @@ PARAMETERS_MAP = [
 PRICING_MAP = [
     'productPriceList',
     'ladder',
-    'productPrice',
+    'usdPrice',
 ]
 
 
@@ -113,6 +113,8 @@ def fetch_part_info(part_number: str) -> dict:
         quantity = price_break[qty_key]
         price = price_break[price_key]
         part_info['pricing'][quantity] = price
+
+    part_info['currency'] = 'USD'
 
     # Extra search fields
     if settings.CONFIG_LCSC.get('EXTRA_FIELDS', None):
