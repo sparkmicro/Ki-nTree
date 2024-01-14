@@ -391,7 +391,7 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
     part_form['name'] = get_value_from_user_key('SEARCH_NAME', default_search_keys[0], default_value='')
     part_form['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', default_search_keys[1], default_value='')
     part_form['revision'] = get_value_from_user_key('SEARCH_REVISION', default_search_keys[2], default_value=revision)
-    part_form['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', default_search_keys[1], default_value='')
+    part_form['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', default_search_keys[3], default_value='')
     part_form['supplier_name'] = settings.CONFIG_SUPPLIERS[supplier]['name']
     part_form['supplier_part_number'] = get_value_from_user_key('SEARCH_SKU', default_search_keys[4], default_value='')
     part_form['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', default_search_keys[7], default_value='')
