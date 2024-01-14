@@ -917,8 +917,10 @@ class InvenTreeSettingsView(SettingsView):
         ipn_manufacturer_part_number_ref = ft.Ref[ft.Row]()
         ipn_manufacturer_part_number_col = ft.Column(
             ref=ipn_manufacturer_part_number_ref,
-            controls=[ft.Row([SETTINGS[self.title]['Use Manufacturer Part Number as IPN'][1]]), 
-                ft.Row([ipn_fields_col]),],
+            controls=[
+                ft.Row([SETTINGS[self.title]['Use Manufacturer Part Number as IPN'][1]]),
+                ft.Row([ipn_fields_col]),
+            ],
         )
         
         # Build IPN tab column
@@ -946,7 +948,6 @@ class InvenTreeSettingsView(SettingsView):
             file=ipn_file,
             dialog=False,
         )
-
 
         # Link prefix/suffix switches to corresponding fields
         for name in ['IPN: Enable Prefix', 'IPN: Enable Suffix']:

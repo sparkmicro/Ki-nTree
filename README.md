@@ -40,7 +40,7 @@ Ki-nTree was developed by [@eeintech](https://github.com/eeintech) for [SPARK Mi
 
 ### Requirements
 
-* Ki-nTree is currently tested for Python 3.8 to 3.11 versions.
+* Ki-nTree is currently tested for Python 3.9 to 3.11 versions.
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
@@ -225,7 +225,7 @@ Enjoy!
 
 ### Requirements
 
-You need `python>=3.8` and `poetry`.
+You need `python>=3.9` and `poetry`.
 
 You can install poetry by following the instructions [on its official website](https://python-poetry.org/docs/master/#installation), by using `pip install poetry` or by installing a package on your Linux distro.
 
