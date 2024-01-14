@@ -183,14 +183,18 @@ class SwitchWithRefs(ft.Switch):
     def __init__(
         self,
         refs: List[ft.Ref] = None,
+        reverse_dir: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
         if refs:
             self.refs = refs
             self.enable_refs(self.value)
+        self.reverse_dir = reverse_dir
 
     def enable_refs(self, enable):
+        if self.reverse_dir:
+            enable = not enable
         for ref in self.linked_refs:
             ref.current.visible = enable
             try:
