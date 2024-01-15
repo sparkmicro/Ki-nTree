@@ -751,7 +751,7 @@ def create_parameter(part_id: int, template_name: int, value: str):
                         })
                     except Exception as e:
                         cprint(f'[TREE]\tError: Failed to update part parameter "{template_name}".', silent=settings.SILENT)
-                        if "Invalid choice for parameter value" in e.args[0]['body']:
+                        if "Could not convert" in e.args[0]['body'].__str__():
                             cprint(f'[TREE]\tError: Parameter value "{value}" is not allowed by server settings.', silent=settings.SILENT)
             break
     # cprint(part_parameters, silent=SILENT)
@@ -770,7 +770,7 @@ def create_parameter(part_id: int, template_name: int, value: str):
             })
         except Exception as e:
             cprint(f'[TREE]\tError: Failed to create part parameter "{template_name}".', silent=settings.SILENT)
-            if "Invalid choice for parameter value" in e.args[0]['body']:
+            if "Could not convert" in e.args[0]['body'].__str__():
                 cprint(f'[TREE]\tError: Parameter value "{value}" is not allowed by server settings.', silent=settings.SILENT)
 
     if parameter:
