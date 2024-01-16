@@ -354,7 +354,7 @@ class PartSearchView(MainView):
                     # and pricing
                     if part_supplier_info.get('pricing', None):
                         self.data['pricing'] = part_supplier_info['pricing']
-                        self.data['currency'] = part_supplier_info['currency']
+                        self.data['currency'] = part_supplier_info.get('currency', None)
 
             # Add to data buffer
             self.push_data()
