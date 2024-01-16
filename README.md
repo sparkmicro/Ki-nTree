@@ -7,7 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/sparkmicro/Ki-nTree/badge.svg?branch=main&service=github)](https://coveralls.io/github/sparkmicro/Ki-nTree?branch=main)
 
 ## :warning: InvenTree Compatibility
-InvenTree `0.12` introduced a new parameter template system which was not supported until version `0.12.6` came out, see https://github.com/sparkmicro/Ki-nTree/issues/165 for more details. In short, Ki-nTree currently supports InvenTree `0.11` or older versions, and `0.12.6` and future versions.
+InvenTree `0.12` introduced a new parameter template system which was not supported until version `0.12.6` came out, see https://github.com/sparkmicro/Ki-nTree/issues/165 for more details. In short, Ki-nTree currently supports InvenTree `0.11` or older versions, and `0.12.6` and future versions. From `0.13.0` onwards a InvenTree setting needs to be modified for Ki-nTree to work: `InvenTree Settings` -> `Part Parameters` -> `Enforce Parameter Units` -> **OFF** (requires administrator rights)
 
 ## :fast_forward: [Demo Video](https://youtu.be/YeWBqOCb4pw)
 
@@ -34,13 +34,13 @@ Ki-nTree works with:
 >
 > To use with KiCad version **5**, use older Ki-nTree `0.4.x` versions (`pip install kintree==0.4.8`).
 
-Ki-nTree was developped by [@eeintech](https://github.com/eeintech) for [SPARK Microsystems](https://www.sparkmicro.com/), who generously accepted to make it open-source!
+Ki-nTree was developed by [@eeintech](https://github.com/eeintech) for [SPARK Microsystems](https://www.sparkmicro.com/), who generously accepted to make it open-source!
 
 ## Get Started
 
 ### Requirements
 
-* Ki-nTree is currently tested for Python 3.8 to 3.11 versions.
+* Ki-nTree is currently tested for Python 3.9 to 3.11 versions.
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
@@ -131,7 +131,7 @@ Below is a summary table of the different configuration files, their function an
 | `digikey_categories.yaml` | Mapping between InvenTree categories and Digi-Key categories | :x: |
 | `digikey_parameters.yaml` | Mapping between InvenTree parameters and Digi-Key parameters/attributes | :x: |
 
-> Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attibutes (help wanted!)
+> Ki-nTree only supports matching between InvenTree and Digi-Key categories and parameters/attributes (help wanted!)
 
 </p>
 </details>
@@ -159,6 +159,7 @@ Note that each time you enable the "Add" permission to an object, InvenTree auto
   b. Instead of user credential authentication token authentication is also supported. To use a token add it it to the "Password or Token" field and leave the "Username" empty. You can retrieve your personal access token from your InvenTree server by sending an get-request to its api url `api/user/token/`.
   c. If needed this tool can try to download the parts datasheet from the suppliers and upload it it to the attachment section of each part. For this just activate "Upload Datasheets to InvenTree" in the InvenTree settings
   d. It is also possible to sync the prices in InvenTree with the latest supplier prices. For this enable "Upload Pricing Data to InvenTree"
+6. If your InvenTree server requires a IPN in a specific pattern make sure to adjust "Settings > InvenTree > Internal Part Number" to match it or adjust the servers pattern to the one yo set in Ki-nTree 
 
 
 #### Get Digi-Key API token
@@ -197,7 +198,7 @@ Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/co
 
 #### Part Number Search
 
-Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser, Element14 and LCSC.
+Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser, Element14, TME and LCSC.
 
 1. In the main window, enter the part number and select the supplier in drop-down list, then click "CREATE". It will start by fetching part data using the supplier's API
 2. In the case Digi-Key has been selected and the API token is not found or expired, a browser window will pop-up. To get a new token: [follow those steps](#get-digi-key-api-token)
@@ -210,9 +211,10 @@ Ki-nTree currently supports APIs for the following electronics suppliers: Digi-K
 
 The automatic part generation in KiCad is controlled via templates:
 
-* Template examples are shipped together with Ki-nTree, these can be adjusted to your likings or you also can create completely new ones.
+* Template examples are shipped together with Ki-nTree, these can be adjusted to your liking or you also can create completely new ones.
 * Each template has its own library file where the file name defines the templates name.
-* The templates can use the parameters and attributes of the InvenTree part on a wildcard base. So you can add for example `Resistance @ Tolerance` into a field and the resulting part will then have the resitance and the tolerance value inside this text field. 
+* The templates can use the parameters and attributes of the InvenTree part on a wildcard base. So you can add for example `Resistance@Tolerance` into a field and the resulting part will then have the resistance and the tolerance value inside this text field. 
+* Using the templates and wildcards without the InvenTree functions enabled is also possible. In this case the library parameter wildcards need to be configured in the `supplier_parameters.yaml` for each library individually.
 
 
 Enjoy!
@@ -223,7 +225,7 @@ Enjoy!
 
 ### Requirements
 
-You need `python>=3.8` and `poetry`.
+You need `python>=3.9` and `poetry`.
 
 You can install poetry by following the instructions [on its official website](https://python-poetry.org/docs/master/#installation), by using `pip install poetry` or by installing a package on your Linux distro.
 

@@ -18,6 +18,7 @@ if platform.system() == 'Linux':
 from inventree.api import InvenTreeAPI
 from inventree.company import Company, ManufacturerPart, SupplierPart, SupplierPriceBreak
 from inventree.part import Part, PartCategory, Parameter, ParameterTemplate
+from inventree.currency import CurrencyManager
 
 
 def connect(server: str,
@@ -47,6 +48,13 @@ def connect(server: str,
     if inventree_api.token:
         return True
     return False
+
+
+def set_inventree_db_test_mode():
+    ''' InvenTree test database setup '''
+    global inventree_api
+
+    inventree_api.patch('settings/global/PART_PARAMETER_ENFORCE_UNITS', {'value': False})
 
 
 def get_inventree_category_id(category_tree: list) -> int:
@@ -401,21 +409,26 @@ def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
         return ''
 
 
-def create_part(category_id: int, name: str, description: str, revision: str, keywords=None) -> int:
+def create_part(category_id: int, name: str, description: str, revision: str, ipn: str, keywords=None) -> int:
     ''' Create InvenTree part '''
     global inventree_api
 
-    part = Part.create(inventree_api, {
-        'name': name,
-        'description': description,
-        'category': category_id,
-        'keywords': keywords,
-        'revision': revision,
-        'active': True,
-        'virtual': False,
-        'component': True,
-        'purchaseable': True,
-    })
+    try:
+        part = Part.create(inventree_api, {
+            'name': name,
+            'description': description,
+            'category': category_id,
+            'keywords': keywords,
+            'revision': revision,
+            'IPN': ipn,
+            'active': True,
+            'virtual': False,
+            'component': True,
+            'purchaseable': True,
+        })
+    except Exception:
+        cprint('[TREE]\tError: Part creation failed. Check if Ki-nTree settings match InvenTree part settings.', silent=settings.SILENT)
+        return 0
 
     if part:
         return part.pk
@@ -626,15 +639,27 @@ def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn:
     return False, False
 
 
-def sanitize_price(price_in):
-    price = re.findall('\d+.\d+', price_in)[0]
-    price = price.replace(',', '.')
-    price = price.replace('\xa0', '')
-    return price
-
-
-def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
+def update_price_breaks(supplier_part,
+                        price_breaks: dict,
+                        currency='USD') -> bool:
     ''' Update the Price Breaks associated with a supplier part '''
+    def sanitize_price(price_in):
+        price = re.findall('\d+.\d+', price_in)[0]
+        price = price.replace(',', '.')
+        price = price.replace('\xa0', '')
+        return price
+
+    def convert_currency(price):
+        manager = CurrencyManager(inventree_api)
+        base = manager.getBaseCurrency()
+        if base != currency:
+            try:
+                price = manager.convertCurrency(float(price), currency, base)
+            except Exception:
+                cprint('[TREE]\tWarning: Currency conversion failed.',
+                       silent=settings.SILENT)
+        return price
+
     if not isinstance(supplier_part, SupplierPart):
         try:
             supplier_part = SupplierPart(inventree_api, supplier_part)
@@ -651,11 +676,12 @@ def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
     # First process existing price breaks
     for old_price_break in old_price_breaks:
         quantity = old_price_break.quantity
-        price = price_breaks[quantity]
-        # remove everything but the numbers from the price break
-        if isinstance(price, str):
-            price = sanitize_price(price)
         if quantity in price_breaks:
+            price = price_breaks[quantity]
+            # remove everything but the numbers from the price break
+            if isinstance(price, str):
+                price = sanitize_price(price)
+            price = convert_currency(price)
             old_price_break.save(data={'price': price})
             updated.append(quantity)
         else:
@@ -667,6 +693,7 @@ def update_price_breaks(supplier_part, price_breaks: dict) -> bool:
         # remove everything but the numbers from the price break
         if isinstance(price, str):
             price = sanitize_price(price)
+        price = convert_currency(price)
         SupplierPriceBreak.create(inventree_api, {
             'part': supplier_part.pk,
             'quantity': quantity,
@@ -685,10 +712,13 @@ def create_parameter_template(name: str, units: str) -> int:
         if name == item.name:
             return 0
 
-    parameter_template = ParameterTemplate.create(inventree_api, {
-        'name': name,
-        'units': units if units else '',
-    })
+    try:
+        parameter_template = ParameterTemplate.create(inventree_api, {
+            'name': name,
+            'units': units if units else '',
+        })
+    except:
+        cprint(f'[TREE]\tError: Failed to create parameter template "{name}".', silent=settings.SILENT)
 
     if parameter_template:
         return parameter_template.pk
@@ -722,9 +752,14 @@ def create_parameter(part_id: int, template_name: int, value: str):
                 if value != item.data and value != '-':
                     parameter = item
                     was_updated = True
-                    parameter.save(data={
-                        'data': value
-                    })
+                    try:
+                        parameter.save(data={
+                            'data': value
+                        })
+                    except Exception as e:
+                        cprint(f'[TREE]\tError: Failed to update part parameter "{template_name}".', silent=settings.SILENT)
+                        if "Could not convert" in e.args[0]['body'].__str__():
+                            cprint(f'[TREE]\tError: Parameter value "{value}" is not allowed by server settings.', silent=settings.SILENT)
             break
     # cprint(part_parameters, silent=SILENT)
 
@@ -734,11 +769,16 @@ def create_parameter(part_id: int, template_name: int, value: str):
         - parameter does not exist for this part
     '''
     if template_id > 0 and is_new_part_parameters_template_id:
-        parameter = Parameter.create(inventree_api, {
-            'part': part_id,
-            'template': template_id,
-            'data': value,
-        })
+        try:
+            parameter = Parameter.create(inventree_api, {
+                'part': part_id,
+                'template': template_id,
+                'data': value,
+            })
+        except Exception as e:
+            cprint(f'[TREE]\tError: Failed to create part parameter "{template_name}".', silent=settings.SILENT)
+            if "Could not convert" in e.args[0]['body'].__str__():
+                cprint(f'[TREE]\tError: Parameter value "{value}" is not allowed by server settings.', silent=settings.SILENT)
 
     if parameter:
         return parameter.pk, is_new_part_parameters_template_id, was_updated

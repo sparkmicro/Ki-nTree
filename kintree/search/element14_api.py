@@ -81,6 +81,56 @@ PRICING_MAP = [
     'cost',
 ]
 
+CURRENCIES = {
+    STORES['Farnell']['Bulgaria']: 'EUR',
+    STORES['Farnell']['Czechia']: 'CZK',
+    STORES['Farnell']['Denmark']: 'DKK',
+    STORES['Farnell']['Austria']: 'EUR',
+    STORES['Farnell']['Switzerland']: 'CHF',
+    STORES['Farnell']['Germany']: 'EUR',
+    STORES['Farnell']['CPC UK']: 'GBP',
+    STORES['Farnell']['CPC Ireland']: 'EUR',
+    STORES['Farnell']['Export']: 'GBP',
+    STORES['Farnell']['Onecall']: 'GBP',
+    STORES['Farnell']['Ireland']: 'EUR',
+    STORES['Farnell']['Israel']: 'USD',
+    STORES['Farnell']['United Kingdom']: 'GBP',
+    STORES['Farnell']['Spain']: 'EUR',
+    STORES['Farnell']['Estonia']: 'EUR',
+    STORES['Farnell']['Finland']: 'EUR',
+    STORES['Farnell']['France']: 'EUR',
+    STORES['Farnell']['Hungary']: 'HUF',
+    STORES['Farnell']['Italy']: 'EUR',
+    STORES['Farnell']['Lithuania']: 'EUR',
+    STORES['Farnell']['Latvia']: 'EUR',
+    STORES['Farnell']['Belgium']: 'EUR',
+    STORES['Farnell']['Netherlands']: 'EUR',
+    STORES['Farnell']['Norway']: 'NOK',
+    STORES['Farnell']['Poland']: 'PLN',
+    STORES['Farnell']['Portugal']: 'EUR',
+    STORES['Farnell']['Romania']: 'RON',
+    STORES['Farnell']['Russia']: 'EUR',
+    STORES['Farnell']['Slovakia']: 'EUR',
+    STORES['Farnell']['Slovenia']: 'EUR',
+    STORES['Farnell']['Sweden']: 'SEK',
+    STORES['Farnell']['Turkey']: 'EUR',
+    STORES['Newark']['Canada']: 'CAD',
+    STORES['Newark']['Mexico']: 'USD',
+    STORES['Newark']['United States']: 'USD',
+    STORES['Element14']['China']: 'CNY',
+    STORES['Element14']['Australia']: 'AUD',
+    STORES['Element14']['New Zealand']: 'NZD',
+    STORES['Element14']['Hong Kong']: 'HKD',
+    STORES['Element14']['Singapore']: 'SGD',
+    STORES['Element14']['Malaysia']: 'MYR',
+    STORES['Element14']['Philippines']: 'PHP',
+    STORES['Element14']['Thailand']: 'THB',
+    STORES['Element14']['India']: 'INR',
+    STORES['Element14']['Taiwan']: 'TWD',
+    STORES['Element14']['Korea']: 'KRW',
+    STORES['Element14']['Vietnam']: 'USD',
+}
+
 
 def get_default_search_keys():
     return [
@@ -223,6 +273,10 @@ def fetch_part_info(part_number: str, supplier: str, store_url=None) -> dict:
         quantity = price_break[qty_key]
         price = price_break[price_key]
         part_info['pricing'][quantity] = price
+        
+    if not store_url:
+        store_url = get_default_store_url(supplier)
+    part_info['currency'] = CURRENCIES.get(store_url, 'USD')
 
     # Extra search fields
     if settings.CONFIG_ELEMENT14.get('EXTRA_FIELDS', None):

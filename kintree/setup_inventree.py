@@ -32,6 +32,9 @@ def setup_inventree():
         if not inventree_connect:
             sys.exit(-1)
 
+        # Setup database for test
+        inventree_api.set_inventree_db_test_mode()
+
     if SETUP_CATEGORIES:
         for category in categories.keys():
             cprint(f'\n[MAIN]\tCreating categories in {category.upper()}')

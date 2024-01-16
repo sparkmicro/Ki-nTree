@@ -194,6 +194,11 @@ SETTINGS = {
             SwitchWithRefs(),
             False,  # Browse disabled
         ],
+        'Use Manufacturer Part Number as IPN': [
+            'IPN_USE_MANUFACTURER_PART_NUMBER',
+            SwitchWithRefs(reverse_dir=True),
+            False,  # Browse disabled
+        ],
         'IPN: Enable Prefix': [
             'IPN_ENABLE_PREFIX',
             SwitchWithRefs(),
@@ -854,6 +859,7 @@ class InvenTreeSettingsView(SettingsView):
         ipn_fields = [
             'Default Part Revision',
             'Enable Internal Part Number (IPN)',
+            'Use Manufacturer Part Number as IPN',
             'IPN: Enable Prefix',
             'IPN: Prefix',
             'IPN: Enable Category Codes',
@@ -908,6 +914,14 @@ class InvenTreeSettingsView(SettingsView):
                 ipn_fields_col.controls.append(
                     ft.Row([SETTINGS[self.title][name][1]])
                 )
+        ipn_manufacturer_part_number_ref = ft.Ref[ft.Row]()
+        ipn_manufacturer_part_number_col = ft.Column(
+            ref=ipn_manufacturer_part_number_ref,
+            controls=[
+                ft.Row([SETTINGS[self.title]['Use Manufacturer Part Number as IPN'][1]]),
+                ft.Row([ipn_fields_col]),
+            ],
+        )
         
         # Build IPN tab column
         ipn_tab_col = ft.Column(
@@ -915,14 +929,22 @@ class InvenTreeSettingsView(SettingsView):
                 ft.Row(height=10),
                 ft.Row([SETTINGS[self.title]['Default Part Revision'][1]]),
                 ft.Row([SETTINGS[self.title]['Enable Internal Part Number (IPN)'][1]]),
-                ft.Row([ipn_fields_col]),
+                ft.Row([ipn_manufacturer_part_number_col]),
             ]
         )
     
         # Link main IPN switch to corresponding fields
         main_control = 'Enable Internal Part Number (IPN)'
-        SETTINGS[self.title][main_control][1].refs = [ipn_fields_ref]
+        secondary_control = 'Use Manufacturer Part Number as IPN'
+        SETTINGS[self.title][main_control][1].refs = [ipn_manufacturer_part_number_ref]
         SETTINGS[self.title][main_control][1].on_change = lambda _: self.save(
+            file=ipn_file,
+            dialog=False,
+        )
+
+        # Link Manufacturer Part Number switch to corresponding fields
+        SETTINGS[self.title][secondary_control][1].refs = [ipn_fields_ref]
+        SETTINGS[self.title][secondary_control][1].on_change = lambda _: self.save(
             file=ipn_file,
             dialog=False,
         )

@@ -24,6 +24,7 @@ PRICING_MAP = [
     'standard_pricing',
     'break_quantity',
     'unit_price',
+    'currency',
 ]
 
 
@@ -161,12 +162,14 @@ def fetch_part_info(part_number: str) -> dict:
 
     # Pricing
     part_info['pricing'] = {}
-    [pricing_key, qty_key, price_key] = PRICING_MAP
-
+    [pricing_key, qty_key, price_key, currency_key] = PRICING_MAP
+    
     for price_break in part[pricing_key]:
         quantity = price_break[qty_key]
         price = price_break[price_key]
         part_info['pricing'][quantity] = price
+
+    part_info['currency'] = part['search_locale_used'][currency_key]
 
     # Extra search fields
     if settings.CONFIG_DIGIKEY.get('EXTRA_FIELDS', None):

@@ -268,6 +268,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
         # Part image URL is null (no product picture)
         pass
     inventree_part['pricing'] = part_info.get('pricing', {})
+    inventree_part['currency'] = part_info.get('currency', 'USD')
 
     # Load parameters map
     if category_tree:
@@ -391,7 +392,7 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
     part_form['name'] = get_value_from_user_key('SEARCH_NAME', default_search_keys[0], default_value='')
     part_form['description'] = get_value_from_user_key('SEARCH_DESCRIPTION', default_search_keys[1], default_value='')
     part_form['revision'] = get_value_from_user_key('SEARCH_REVISION', default_search_keys[2], default_value=revision)
-    part_form['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', default_search_keys[1], default_value='')
+    part_form['keywords'] = get_value_from_user_key('SEARCH_KEYWORDS', default_search_keys[3], default_value='')
     part_form['supplier_name'] = settings.CONFIG_SUPPLIERS[supplier]['name']
     part_form['supplier_part_number'] = get_value_from_user_key('SEARCH_SKU', default_search_keys[4], default_value='')
     part_form['supplier_link'] = get_value_from_user_key('SEARCH_SUPPLIER_URL', default_search_keys[7], default_value='')
@@ -532,13 +533,24 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
         # Part is new
         if not part_pk:
             new_part = True
+            if settings.CONFIG_IPN.get('IPN_ENABLE_CREATE', True):
+                # Generate Placeholder Internal Part Number
+                ipn = part_tools.generate_part_number(
+                    category=category_tree[0],
+                    part_pk=0,
+                    category_code=part_info.get('category_code', ''),
+                )
+            else:
+                ipn = ''
             # Create a new Part
             # Use the pk (primary-key) of the category
-            part_pk = inventree_api.create_part(category_id=category_pk,
-                                                name=inventree_part['name'],
-                                                description=inventree_part['description'],
-                                                revision=inventree_part['revision'],
-                                                keywords=inventree_part['keywords'])
+            part_pk = inventree_api.create_part(
+                category_id=category_pk,
+                name=inventree_part['name'],
+                description=inventree_part['description'],
+                revision=inventree_part['revision'],
+                keywords=inventree_part['keywords'],
+                ipn=ipn)
 
             # Check part primary key
             if not part_pk:
@@ -550,11 +562,14 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
             if settings.CONFIG_IPN.get('IPN_ENABLE_CREATE', True):
                 # Generate Internal Part Number
                 cprint('\n[MAIN]\tGenerating Internal Part Number', silent=settings.SILENT)
-                ipn = part_tools.generate_part_number(
-                    category=category_tree[0],
-                    part_pk=part_pk,
-                    category_code=part_info.get('category_code', ''),
-                )
+                if settings.CONFIG_IPN.get('IPN_USE_MANUFACTURER_PART_NUMBER', False):
+                    ipn = inventree_part['manufacturer_part_number']
+                else:
+                    ipn = part_tools.generate_part_number(
+                        category=category_tree[0],
+                        part_pk=part_pk,
+                        category_code=part_info.get('category_code', ''),
+                    )
                 cprint(f'[INFO]\tInternal Part Number = {ipn}', silent=settings.SILENT)
                 # Update InvenTree part number
                 ipn_update = inventree_api.set_part_number(part_pk, ipn)
@@ -676,7 +691,8 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                 cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
                 inventree_api.update_price_breaks(
                     supplier_part=supplier_part,
-                    price_breaks=inventree_part['pricing'])
+                    price_breaks=inventree_part['pricing'],
+                    currency=inventree_part['currency'])
 
     # Progress Update
     if not progress.update_progress_bar(show_progress):
@@ -815,7 +831,8 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
             cprint('\n[MAIN]\tProcessing Price Breaks', silent=settings.SILENT)
             inventree_api.update_price_breaks(
                 supplier_part=supplier_part,
-                price_breaks=inventree_part['pricing'])
+                price_breaks=inventree_part['pricing'],
+                currency=inventree_part['currency'])
             result = True
     
     else:
