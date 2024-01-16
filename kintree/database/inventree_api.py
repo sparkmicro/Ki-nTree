@@ -50,6 +50,13 @@ def connect(server: str,
     return False
 
 
+def set_inventree_db_test_mode():
+    ''' InvenTree test database setup '''
+    global inventree_api
+
+    inventree_api.patch('settings/global/PART_PARAMETER_ENFORCE_UNITS', {'value': False})
+
+
 def get_inventree_category_id(category_tree: list) -> int:
     ''' Get InvenTree category ID from name, specificy parent if subcategory '''
     global inventree_api
