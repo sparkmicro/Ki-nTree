@@ -2,7 +2,18 @@
 # Each template parameter can match to multiple suppliers parameters
 # Categories (main keys) should match categories in the categories.yaml file
 # Parameter template names should match those found in the parameters.yaml file
+Base:
+  Temperature Range:
+  - Operating Temperature
+  Package Type:
+  - Package / Case
+Passives:
+  Tolerance:
+  - Tolerance
 Capacitors:
+  parent:
+  - Base
+  - Passives
   ESR:
   - ESR (Equivalent Series Resistance)
   Package Height:
@@ -10,8 +21,6 @@ Capacitors:
   - Thickness (Max)
   Package Size:
   - Size / Dimension
-  Package Type:
-  - Package / Case
   Rated Voltage:
   - Voltage - Rated
   - Voltage Rated
@@ -19,19 +28,17 @@ Capacitors:
   - Temperature Coefficient
   Temperature Range:
   - Operating Temperature
-  Tolerance:
-  - Tolerance
   Value:
   - Capacitance
 Circuit Protections:
+  parent:
+  - Base
   Breakdown Voltage:
   - Voltage - Breakdown (Min)
   Capacitance:
   - Capacitance @ Frequency
   Clamping Voltage:
   - Voltage - Clamping (Max) @ Ipp
-  Package Type:
-  - Package / Case
   Rated Current:
   - Current Rating (Amps)
   - Current - Max
@@ -42,8 +49,6 @@ Circuit Protections:
   - Voltage - Max
   Standoff Voltage:
   - Voltage - Reverse Standoff (Typ)
-  Temperature Range:
-  - Operating Temperature
   Value:
   - Manufacturer Part Number
 Connectors:
@@ -81,6 +86,8 @@ Connectors:
   Value:
   - Manufacturer Part Number
 Crystals and Oscillators:
+  parent:
+  - Base
   Frequency Stability:
   - Frequency Stability
   Frequency Tolerance:
@@ -91,17 +98,15 @@ Crystals and Oscillators:
   - Height - Seated (Max)
   Package Size:
   - Size / Dimension
-  Package Type:
-  - Package / Case
   Rated Current:
   - Current - Supply (Max)
   Rated Voltage:
   - Voltage - Supply
-  Temperature Range:
-  - Operating Temperature
   Value:
   - Frequency
 Diodes:
+  parent:
+  - Base
   Forward Voltage:
   - Voltage - Forward (Vf) (Max) @ If
   - Voltage - Forward (Vf) (Typ)
@@ -109,8 +114,6 @@ Diodes:
   - Diode Type
   LED Color:
   - Color
-  Package Type:
-  - Package / Case
   Rated Current:
   - Current - Average Rectified (Io)
   Rated Power:
@@ -119,11 +122,13 @@ Diodes:
   - Voltage - DC Reverse (Vr) (Max)
   - Voltage - Zener (Nom) (Vz)
   Temperature Range:
-  - Operating Temperature
   - Operating Temperature - Junction
   Value:
   - Manufacturer Part Number
 Inductors:
+  parent:
+  - Base
+  - Passives
   ESR:
   - DC Resistance (DCR)
   - DC Resistance (DCR) (Max)
@@ -132,8 +137,6 @@ Inductors:
   - Height (Max)
   Package Size:
   - Size / Dimension
-  Package Type:
-  - Package / Case
   Rated Current:
   - Current Rating (Max)
   - Current Rating (Amps)
@@ -141,14 +144,12 @@ Inductors:
   - Current - Saturation
   Shielding:
   - Shielding
-  Temperature Range:
-  - Operating Temperature
-  Tolerance:
-  - Tolerance
   Value:
   - Inductance
   - Impedance @ Frequency
 Integrated Circuits:
+  parent:
+  - Base
   Frequency:
   - Clock Frequency
   - Speed
@@ -166,8 +167,6 @@ Integrated Circuits:
   - Memory Size
   Number of Channels:
   - Channels per Circuit
-  Package Type:
-  - Package / Case
   Rated Voltage:
   - Voltage - VCCA
   - Voltage - VCCB
@@ -175,11 +174,11 @@ Integrated Circuits:
   - Voltage - Supply (Vcc/Vdd)
   - Voltage - Supply, Digital
   - Voltage - Supply, Single (V+)
-  Temperature Range:
-  - Operating Temperature
   Value:
   - Manufacturer Part Number
 Mechanicals:
+  parent:
+  - Base
   Function Type:
   - Circuit
   - Type
@@ -195,11 +194,11 @@ Mechanicals:
   - Screw, Thread Size
   Rated Current:
   - Contact Rating @ Voltage
-  Temperature Range:
-  - Operating Temperature
   Value:
   - Manufacturer Part Number
 Power Management:
+  parent:
+  - Base
   (Min) Output Voltage:
   - Voltage - Output (Min/Fixed)
   Frequency:
@@ -220,30 +219,26 @@ Power Management:
   - Current - Quiescent (Iq)
   Rated Current:
   - Current - Output
-  Temperature Range:
-  - Operating Temperature
   Value:
   - Manufacturer Part Number
 RF:
+  parent:
+  - Base
   Frequency:
   - Frequency Range
   Function Type: null
-  Package Type:
-  - Package / Case
   Rated Voltage: null
-  Temperature Range:
-  - Operating Temperature
   Value:
   - Manufacturer Part Number
 Resistors:
+  parent:
+  - Passives
   Package Type:
   - Supplier Device Package
   Rated Power:
   - Power (Watts)
   Temperature Range:
   - Operating Temperature
-  Tolerance:
-  - Tolerance
   Value:
   - Resistance
 Transistors:

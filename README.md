@@ -194,6 +194,8 @@ CATEGORY_NAME:
     - SUPPLIER_2_PARAMETER_NAME_1
 ```
 
+It is also possible to cross reference the mappings of different categories. To define one or multiple parent categories a parameter named `parent` can be added where the items then are the desired parent categories. If a parameter name is present in both parent and child, the childs definition will override the parent.
+
 Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/config/inventree/supplier_parameters.yaml) as a starting point / example.
 
 #### Part Number Search
