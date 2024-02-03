@@ -53,7 +53,7 @@ def setup_environment(force=False) -> bool:
 
 # Based on TME API snippets mentioned in API documentation: https://developers.tme.eu/documentation/download
 # https://github.com/tme-dev/TME-API/blob/master/Python/call.py
-def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://api.tme.eu', format='json'):
+def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://api.tme.eu', format='json', **kwargs):
     TME_API_TOKEN = tme_api_settings.get('TME_API_TOKEN', None)
     TME_API_SECRET = tme_api_settings.get('TME_API_SECRET', None)
 
@@ -61,6 +61,8 @@ def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://a
     params['Country'] = tme_api_settings.get('TME_API_COUNTRY', 'US')
     params['Language'] = tme_api_settings.get('TME_API_LANGUAGE', 'EN')
     params['SymbolList[0]'] = part_number
+    if kwargs.get('currency', None):
+        params['Currency'] = kwargs.get('currency')
     if not TME_API_TOKEN and not TME_API_SECRET:
         TME_API_TOKEN = os.environ.get('TME_API_TOKEN', None)
         TME_API_SECRET = os.environ.get('TME_API_SECRET', None)
@@ -136,7 +138,7 @@ def fetch_part_info(part_number: str) -> dict:
         part_info['parameters'][param['ParameterName']] = param['ParameterValue']
 
     # query the prices
-    response = download(tme_api_request('/Products/GetPrices', tme_api_settings, part_number))
+    response = download(tme_api_request('/Products/GetPrices', tme_api_settings, part_number, currency='USD'))
     # check if accidentally no data returned
     if response is None or response['Status'] != 'OK':
         return part_info
