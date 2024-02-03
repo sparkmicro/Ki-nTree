@@ -28,7 +28,7 @@ def dump_file(data: dict, file_path: str) -> bool:
     ''' Safe dump YAML file '''
     with open(file_path, 'w') as file:
         try:
-            yaml.safe_dump(data, file, default_flow_style=False)
+            yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)
         except yaml.YAMLError as exc:
             print(exc)
             return False
