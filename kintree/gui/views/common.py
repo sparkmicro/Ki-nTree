@@ -17,7 +17,7 @@ GUI_PARAMS = {
     'dropdown_width': 600,
     'dropdown_dense': False,
     'searchfield_width': 300,
-    'button_width': 100,
+    'button_width': 110,
     'button_height': 56,
     'icon_size': 40,
     'text_size': 16,

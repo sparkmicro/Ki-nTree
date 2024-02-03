@@ -360,15 +360,20 @@ class PartSearchView(MainView):
             self.push_data()
             self.page.splash.visible = False
 
-            if not self.data['manufacturer_part_number'] and not self.data['custom_part']:
+            if not self.data['supplier_part_number'] and not self.data['custom_part']:
                 self.show_dialog(
                     d_type=DialogType.ERROR,
                     message='Part not found',
                 )
+            elif not self.data['manufacturer_part_number']:
+                self.show_dialog(
+                    d_type=DialogType.ERROR,
+                    message='Found part has no manufacturer part number',
+                )
             elif self.data['searched_part_number'].lower() != self.data['manufacturer_part_number'].lower():
                 self.show_dialog(
                     d_type=DialogType.WARNING,
-                    message='Found part number does not match the requested part number',
+                    message='Found manufacturer part number does not match the requested part number',
                 )
             self.page.update()
         return
@@ -915,7 +920,7 @@ class KicadView(MainView):
         if not data_from_views.get('Part Search', {}).get('manufacturer_part_number', ''):
             self.show_dialog(
                 d_type=DialogType.ERROR,
-                message='Missing Part Data',
+                message='Missing Manufacturer Part Number',
             )
             return
         
@@ -1203,7 +1208,7 @@ class CreateView(MainView):
         part_number = data_from_views['Part Search'].get('manufacturer_part_number', None)
         if not custom:
             if not part_number:
-                self.show_dialog(DialogType.ERROR, 'Missing Part Number')
+                self.show_dialog(DialogType.ERROR, 'Missing Manufacturer Part Number')
                 return
             else:
                 # Update IPN (later overwritten)
