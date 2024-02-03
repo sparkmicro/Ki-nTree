@@ -457,7 +457,7 @@ def inventree_fuzzy_company_match(name: str) -> str:
     for company_name in inventree_companies.keys():
         cprint(f'{name.lower()} == {company_name.lower()} % {fuzz.partial_ratio(name.lower(), company_name.lower())}',
                silent=settings.HIDE_DEBUG)
-        if fuzz.partial_ratio(name.lower(), company_name.lower()) == 100:
+        if fuzz.partial_ratio(name.lower(), company_name.lower()) == 100 and len(name) == len(company_name):
             return company_name
     
     return name
