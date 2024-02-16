@@ -28,7 +28,7 @@ def dump_file(data: dict, file_path: str) -> bool:
     ''' Safe dump YAML file '''
     with open(file_path, 'w') as file:
         try:
-            yaml.safe_dump(data, file, default_flow_style=False)
+            yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)
         except yaml.YAMLError as exc:
             print(exc)
             return False
@@ -62,9 +62,12 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=Tr
             template_data = load_file(os.path.join(path, filename))
             try:
                 user_data = load_file(os.path.join(path_to_user_files, filename))
-                # Join user data to template data
-                user_settings = {**template_data, **user_data}
-            except TypeError:
+                if list(template_data.keys()) == list(user_data.keys()):
+                    # Join user data to template data
+                    user_settings = {**template_data, **user_data}
+                else:
+                    user_settings = user_data
+            except (TypeError, AttributeError):
                 cprint(f'[INFO]\tCreating new {filename} configuration file', silent=silent)
                 # Config file does not exists
                 user_settings = template_data
