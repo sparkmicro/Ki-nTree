@@ -447,7 +447,6 @@ def load_category_parameters(categories: list, supplier_config_path: str) -> dic
             combined = '/' + combined
         if not category_parameters:
             return
-        print(category_parameters)
         if 'parent' in category_parameters:
             for parent in category_parameters['parent']:
                 find_parameters(output_dict, [parent])
@@ -457,7 +456,6 @@ def load_category_parameters(categories: list, supplier_config_path: str) -> dic
             if category_parameters[parameter]:
                 for supplier_parameter in category_parameters[parameter]:
                     output_dict[supplier_parameter] = parameter
-        print(output_dict)
 
     try:
         category_file = load_file(supplier_config_path)
@@ -467,7 +465,6 @@ def load_category_parameters(categories: list, supplier_config_path: str) -> dic
 
     find_parameters(category_parameters_inversed, categories)
 
-    # print(category_parameters_inversed)
     return category_parameters_inversed
 
 
