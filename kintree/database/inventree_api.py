@@ -177,7 +177,7 @@ def get_part_info(part_id: int) -> str:
 
 def set_part_number(part_id: int, ipn: str) -> bool:
     ''' Set InvenTree part number for specified Part ID '''
-    data={'IPN': ipn}
+    data = {'IPN': ipn}
     update_part(part_id, data)
 
     if Part(inventree_api, part_id).IPN == ipn:
@@ -406,7 +406,7 @@ def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
         return ''
 
 
-def create_part(category_id: int, name: str, description: str, revision: str, ipn: str, keywords=None, **kwargs) -> int:
+def create_part(category_id: int, name: str, description: str, revision: str, ipn: str, keywords=None) -> int:
     ''' Create InvenTree part '''
     global inventree_api
 
@@ -422,7 +422,7 @@ def create_part(category_id: int, name: str, description: str, revision: str, ip
             'virtual': False,
             'component': True,
             'purchaseable': True,
-        } | kwargs)
+        })
     except Exception:
         cprint('[TREE]\tError: Part creation failed. Check if Ki-nTree settings match InvenTree part settings.', silent=settings.SILENT)
         return 0
@@ -431,6 +431,7 @@ def create_part(category_id: int, name: str, description: str, revision: str, ip
         return part.pk
     else:
         return 0
+
 
 def update_part(pk: int, data: dict) -> int:
     '''Update an existing parts data'''
@@ -442,6 +443,7 @@ def update_part(pk: int, data: dict) -> int:
         return part.pk
     else:
         return 0
+
 
 def create_company(company_name: str, manufacturer=False, supplier=False) -> bool:
     ''' Create InvenTree company '''

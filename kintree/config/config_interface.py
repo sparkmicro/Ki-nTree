@@ -437,7 +437,8 @@ def load_category_parameters(categories: list, supplier_config_path: str) -> dic
         category_parameters = None
         combined = ''
         for category in reversed(category_list):
-            combined = category + combined
+            if category:
+                combined = category + combined
             if combined in category_file:
                 category_parameters = category_file[combined]
                 break

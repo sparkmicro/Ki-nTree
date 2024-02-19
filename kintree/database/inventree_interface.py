@@ -553,7 +553,6 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                 description=inventree_part['description'],
                 revision=inventree_part['revision'],
                 keywords=inventree_part['keywords'],
-                existing_image=inventree_part.get('existing_image', ''),
                 ipn=ipn)
 
             # Check part primary key
@@ -592,7 +591,11 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
     if part_pk > 0:
         if new_part:
             cprint('[INFO]\tSuccess: Added new part to InvenTree', silent=settings.SILENT)
-            if inventree_part['image'] and not inventree_part['existing_image']:
+            if inventree_part.get('existing_image', ''):
+                inventree_api.update_part(
+                    part_pk,
+                    data={'existing_image': inventree_part['existing_image']})
+            elif inventree_part['image']:
                 # Add image
                 image_result = inventree_api.upload_part_image(inventree_part['image'], part_pk)
                 if not image_result:
