@@ -83,6 +83,7 @@ KICAD_CONFIG_CATEGORY_MAP = os.path.join(CONFIG_USER_FILES, 'kicad_map.yaml')
 
 # Inventree
 CONFIG_CATEGORIES = os.path.join(CONFIG_USER_FILES, 'categories.yaml')
+CONFIG_STOCK_LOCATIONS = os.path.join(CONFIG_USER_FILES, 'stock_locations.yaml')
 CONFIG_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'parameters.yaml')
 CONFIG_PARAMETERS_FILTERS = os.path.join(
     CONFIG_USER_FILES, 'parameters_filters.yaml')
