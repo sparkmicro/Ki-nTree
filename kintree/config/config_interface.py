@@ -1,6 +1,7 @@
 import base64
 import copy
 import os
+from sys import platform
 
 import yaml
 from ..common.tools import cprint
@@ -28,7 +29,10 @@ def dump_file(data: dict, file_path: str) -> bool:
     ''' Safe dump YAML file '''
     with open(file_path, 'w') as file:
         try:
-            yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)
+            if platform == "win32":
+                yaml.safe_dump(data, file, default_flow_style=False)
+            else:
+                yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)
         except yaml.YAMLError as exc:
             print(exc)
             return False
