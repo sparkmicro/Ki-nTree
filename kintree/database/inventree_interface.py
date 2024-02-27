@@ -100,6 +100,46 @@ def build_category_tree(reload=False, category=None) -> dict:
     return inventree_categories
 
 
+def build_stock_location_tree(reload=False, location=None) -> dict:
+    '''Build InvenTree stock locations tree from database data'''
+
+    locations_data = config_interface.load_file(settings.CONFIG_STOCK_LOCATIONS)
+
+    def build_tree(tree, left_to_go, level) -> list:
+        try:
+            last_entry = f' {category_tree(tree[-1])}{category_separator}'
+        except IndexError:
+            last_entry = ''
+        if isinstance(left_to_go, dict):
+            for key, value in left_to_go.items():
+                tree.append(f'{"-" * level}{last_entry}{key}')
+                build_tree(tree, value, level + 1)
+        elif isinstance(left_to_go, list):
+            # Supports legacy structure
+            for item in left_to_go:
+                tree.append(f'{"-" * level}{last_entry}{item}')
+        elif left_to_go is None:
+            pass
+        return
+
+    if reload:
+        stock_locations = inventree_api.get_stock_locations()
+        locations_data.update({'STOCK_LOCATIONS': stock_locations})
+        config_interface.dump_file(locations_data, settings.CONFIG_STOCK_LOCATIONS)
+    else:
+        stock_locations = locations_data.get('STOCK_LOCATIONS', {})
+
+    # Get specified branch
+    if location:
+        stock_locations = {location: stock_locations.get(location, {})}
+
+    inventree_stock_locations = []
+    # Build category tree
+    build_tree(inventree_stock_locations, stock_locations, 0)
+
+    return inventree_stock_locations
+
+
 def get_categories_from_supplier_data(part_info: dict, supplier_only=False) -> list:
     ''' Find categories from part supplier data, use "somewhat automatic" matching '''
     from thefuzz import fuzz
@@ -494,7 +534,11 @@ def inventree_create_supplier_part(part) -> bool:
     return
 
 
-def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
+def get_inventree_stock_location_id(stock_location_tree: list):
+    return inventree_api.get_inventree_stock_location_id(stock_location_tree)
+
+
+def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
     ''' Create InvenTree part from supplier part data and categories '''
 
     part_pk = 0
@@ -700,6 +744,12 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                     supplier_part=supplier_part,
                     price_breaks=inventree_part['pricing'],
                     currency=inventree_part['currency'])
+
+        if stock is not None:
+            stock['part'] = part_pk
+            inventree_api.create_stock(stock)
+            if stock['make_default']:
+                inventree_api.set_part_default_location(part_pk, stock['location'])
 
     # Progress Update
     if not progress.update_progress_bar(show_progress):
