@@ -177,11 +177,8 @@ def get_part_info(part_id: int) -> str:
 
 def set_part_number(part_id: int, ipn: str) -> bool:
     ''' Set InvenTree part number for specified Part ID '''
-    global inventree_api
-
-    part = Part(inventree_api, part_id)
-    part._data['IPN'] = ipn
-    part.save()
+    data = {'IPN': ipn}
+    update_part(part_id, data)
 
     if Part(inventree_api, part_id).IPN == ipn:
         return True
@@ -431,6 +428,18 @@ def create_part(category_id: int, name: str, description: str, revision: str, ip
         return 0
 
     if part:
+        return part.pk
+    else:
+        return 0
+
+
+def update_part(pk: int, data: dict) -> int:
+    '''Update an existing parts data'''
+    global inventree_api
+
+    part = Part(inventree_api, pk)
+    if part:
+        part.save(data=data)
         return part.pk
     else:
         return 0
