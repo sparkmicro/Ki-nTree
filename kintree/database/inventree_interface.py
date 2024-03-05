@@ -100,6 +100,46 @@ def build_category_tree(reload=False, category=None) -> dict:
     return inventree_categories
 
 
+def build_stock_location_tree(reload=False, location=None) -> dict:
+    '''Build InvenTree stock locations tree from database data'''
+
+    locations_data = config_interface.load_file(settings.CONFIG_STOCK_LOCATIONS)
+
+    def build_tree(tree, left_to_go, level) -> list:
+        try:
+            last_entry = f' {category_tree(tree[-1])}{category_separator}'
+        except IndexError:
+            last_entry = ''
+        if isinstance(left_to_go, dict):
+            for key, value in left_to_go.items():
+                tree.append(f'{"-" * level}{last_entry}{key}')
+                build_tree(tree, value, level + 1)
+        elif isinstance(left_to_go, list):
+            # Supports legacy structure
+            for item in left_to_go:
+                tree.append(f'{"-" * level}{last_entry}{item}')
+        elif left_to_go is None:
+            pass
+        return
+
+    if reload:
+        stock_locations = inventree_api.get_stock_locations()
+        locations_data.update({'STOCK_LOCATIONS': stock_locations})
+        config_interface.dump_file(locations_data, settings.CONFIG_STOCK_LOCATIONS)
+    else:
+        stock_locations = locations_data.get('STOCK_LOCATIONS', {})
+
+    # Get specified branch
+    if location:
+        stock_locations = {location: stock_locations.get(location, {})}
+
+    inventree_stock_locations = []
+    # Build category tree
+    build_tree(inventree_stock_locations, stock_locations, 0)
+
+    return inventree_stock_locations
+
+
 def get_categories_from_supplier_data(part_info: dict, supplier_only=False) -> list:
     ''' Find categories from part supplier data, use "somewhat automatic" matching '''
     from thefuzz import fuzz
@@ -286,7 +326,11 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
             for supplier_param, inventree_param in parameter_map.items():
                 # Some parameters may not be mapped
                 if inventree_param not in inventree_part['parameters'].keys():
-                    if supplier_param != 'Manufacturer Part Number':
+                    if supplier_param == 'Manufacturer Part Number':
+                        inventree_part['parameters'][inventree_param] = part_info['manufacturer_part_number']
+                    elif inventree_param == 'image':
+                        inventree_part['existing_image'] = supplier_param
+                    else:
                         try:
                             parameter_value = part_tools.clean_parameter_value(
                                 category=category_tree[0],
@@ -296,9 +340,6 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
                             inventree_part['parameters'][inventree_param] = parameter_value
                         except KeyError:
                             parameters_missing.append(supplier_param)
-                    else:
-                        inventree_part['parameters'][inventree_param] = part_info['manufacturer_part_number']
-
             if parameters_missing:
                 msg = '[INFO]\tWarning: The following parameters were not found in supplier data:\n'
                 msg += str(parameters_missing)
@@ -306,6 +347,8 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
 
             # Check for missing InvenTree parameters and fill value with dash
             for inventree_param in parameter_map.values():
+                if inventree_param == 'image':
+                    continue
                 if inventree_param not in inventree_part['parameters'].keys():
                     inventree_part['parameters'][inventree_param] = '-'
 
@@ -491,7 +534,11 @@ def inventree_create_supplier_part(part) -> bool:
     return
 
 
-def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
+def get_inventree_stock_location_id(stock_location_tree: list):
+    return inventree_api.get_inventree_stock_location_id(stock_location_tree)
+
+
+def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
     ''' Create InvenTree part from supplier part data and categories '''
 
     part_pk = 0
@@ -588,7 +635,11 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
     if part_pk > 0:
         if new_part:
             cprint('[INFO]\tSuccess: Added new part to InvenTree', silent=settings.SILENT)
-            if inventree_part['image']:
+            if inventree_part.get('existing_image', ''):
+                inventree_api.update_part(
+                    part_pk,
+                    data={'existing_image': inventree_part['existing_image']})
+            elif inventree_part['image']:
                 # Add image
                 image_result = inventree_api.upload_part_image(inventree_part['image'], part_pk)
                 if not image_result:
@@ -694,6 +745,12 @@ def inventree_create(part_info: dict, kicad=False, symbol=None, footprint=None, 
                     price_breaks=inventree_part['pricing'],
                     currency=inventree_part['currency'])
 
+        if stock is not None:
+            stock['part'] = part_pk
+            inventree_api.create_stock(stock)
+            if stock['make_default']:
+                inventree_api.set_part_default_location(part_pk, stock['location'])
+
     # Progress Update
     if not progress.update_progress_bar(show_progress):
         pass
@@ -752,6 +809,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     # Translate to InvenTree part format
     category_tree = inventree_api.get_category_tree(part.category)
     category_tree = list(category_tree.values())
+    category_tree.reverse()
     inventree_part = translate_form_to_inventree(
         part_info=part_info,
         category_tree=category_tree,
@@ -760,7 +818,11 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     # If the part has no image yet try to upload it from the data
     if not part.image:
         image = part_info.get('image', '')
-        if image:
+        existing_image = inventree_part.get('existing_image', '')
+        if existing_image:
+            inventree_api.update_part(pk=part_pk,
+                                      data={'existing_image': existing_image})
+        elif image:
             inventree_api.upload_part_image(image_url=image, part_id=part_pk)
 
     # create or update parameters

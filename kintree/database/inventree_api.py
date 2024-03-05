@@ -19,6 +19,8 @@ from inventree.api import InvenTreeAPI
 from inventree.company import Company, ManufacturerPart, SupplierPart, SupplierPriceBreak
 from inventree.part import Part, PartCategory, Parameter, ParameterTemplate
 from inventree.currency import CurrencyManager
+from inventree.stock import StockLocation
+from inventree.stock import StockItem
 
 
 def connect(server: str,
@@ -91,6 +93,40 @@ def get_inventree_category_id(category_tree: list) -> int:
     return -1
 
 
+def get_inventree_stock_location_id(stock_location_tree: list) -> int:
+    ''' Get InvenTree stock location ID from name, specificy parent if subcategory '''
+    global inventree_api
+
+    # Fetch all categories
+    stock_locations = StockLocation.list(inventree_api, name=stock_location_tree[-1])
+    if len(stock_locations) == 1:
+        return stock_locations[0].pk
+    else:
+        if len(stock_location_tree) > 1:
+            # Match the parent category
+            parent_stock_location_id = get_inventree_category_id(stock_location_tree[:-1])
+            if parent_stock_location_id:
+                for location in stock_locations:
+                    try:
+                        if parent_stock_location_id == location.getParentLocation().pk:
+                            return location.pk
+                    except AttributeError:
+                        pass
+                    #     # Check parent id match (if passed as argument)
+                    #     match = True
+                    #     if parent_stock_location_id:
+                    #         cprint(f'[TREE]\t{item.getParentCategory().pk} ?= {parent_stock_location_id}', silent=settings.HIDE_DEBUG)
+                    #         if item.getParentCategory().pk != parent_stock_location_id:
+                    #             match = False
+                    #     if match:
+                    #         cprint(f'[TREE]\t{item.name} ?= {category_name} => True', silent=settings.HIDE_DEBUG)
+                    #         return item.pk
+                    # else:
+                    #     cprint(f'[TREE]\t{item.name} ?= {category_name} => False', silent=settings.HIDE_DEBUG)
+
+    return -1
+
+
 def get_categories() -> dict:
     '''Fetch InvenTree categories'''
     global inventree_api
@@ -126,6 +162,41 @@ def get_categories() -> dict:
     return categories
 
 
+def get_stock_locations() -> dict:
+    '''Fetch InvenTree stock locations'''
+    global inventree_api
+
+    categories = {}
+    # Get all categories (list)
+    db_categories = StockLocation.list(inventree_api)
+
+    def deep_add(tree: dict, keys: list, item: dict):
+        if len(keys) == 1:
+            try:
+                tree[keys[0]].update(item)
+            except (KeyError, AttributeError):
+                tree[keys[0]] = item
+            return
+        return deep_add(tree.get(keys[0]), keys[1:], item)
+
+    for category in db_categories:
+        parent = category.getParentLocation()
+        children = category.getChildLocations()
+
+        if not parent and not children:
+            categories[category.name] = None
+            continue
+        elif parent:
+            parent_list = []
+            while parent:
+                parent_list.insert(0, parent.name)
+                parent = parent.getParentLocation()
+            cat = {category.name: None}
+            deep_add(categories, parent_list, cat)
+
+    return categories
+
+
 def get_category_tree(category_id: int) -> dict:
     ''' Get all parents of a category'''
     category = PartCategory(inventree_api, category_id)
@@ -136,6 +207,22 @@ def get_category_tree(category_id: int) -> dict:
         category_list[category.pk] = category.name
 
     return category_list
+
+
+def get_stock_location_tree(id: int) -> dict:
+    ''' Get all parents of a stock_location'''
+    location = StockLocation(inventree_api, id)
+    list = {id: location.name}
+
+    while location.parent:
+        location = location.getParentLocation()
+        list[location.pk] = location.name
+
+    return list
+
+
+def create_stock(stock_data: dict) -> dict:
+    return StockItem.create(inventree_api, stock_data)
 
 
 def get_category_parameters(category_id: int) -> list:
@@ -177,11 +264,8 @@ def get_part_info(part_id: int) -> str:
 
 def set_part_number(part_id: int, ipn: str) -> bool:
     ''' Set InvenTree part number for specified Part ID '''
-    global inventree_api
-
-    part = Part(inventree_api, part_id)
-    part._data['IPN'] = ipn
-    part.save()
+    data = {'IPN': ipn}
+    update_part(part_id, data)
 
     if Part(inventree_api, part_id).IPN == ipn:
         return True
@@ -436,6 +520,30 @@ def create_part(category_id: int, name: str, description: str, revision: str, ip
         return 0
 
 
+def set_part_default_location(part_pk: int, location_pk: int):
+    global inventree_api
+
+    # Retrieve part instance with primary-key of 1
+    part = Part(inventree_api, pk=part_pk)
+
+    # Update specified part parameters
+    part.save(data={
+        "default_location": location_pk,
+    })
+
+
+def update_part(pk: int, data: dict) -> int:
+    '''Update an existing parts data'''
+    global inventree_api
+
+    part = Part(inventree_api, pk)
+    if part:
+        part.save(data=data)
+        return part.pk
+    else:
+        return 0
+
+
 def create_company(company_name: str, manufacturer=False, supplier=False) -> bool:
     ''' Create InvenTree company '''
     global inventree_api
@@ -637,6 +745,13 @@ def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn:
                silent=settings.SILENT)
 
     return False, False
+
+
+def sanitize_price(price_in):
+    price = re.findall('\d+.\d+', price_in)[0]
+    price = price.replace(',', '.')
+    price = price.replace('\xa0', '')
+    return price
 
 
 def update_price_breaks(supplier_part,

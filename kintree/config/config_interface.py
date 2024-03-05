@@ -1,6 +1,7 @@
 import base64
 import copy
 import os
+from sys import platform
 
 import yaml
 from ..common.tools import cprint
@@ -28,7 +29,10 @@ def dump_file(data: dict, file_path: str) -> bool:
     ''' Safe dump YAML file '''
     with open(file_path, 'w') as file:
         try:
-            yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)
+            if platform == "win32":
+                yaml.safe_dump(data, file, default_flow_style=False)
+            else:
+                yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)
         except yaml.YAMLError as exc:
             print(exc)
             return False
@@ -433,27 +437,39 @@ def add_supplier_category(categories: dict, supplier_config_path: str) -> bool:
 
 def load_category_parameters(categories: list, supplier_config_path: str) -> dict:
     ''' Load Supplier parameters mapping from Supplier settings file '''
+    def find_parameters(output_dict, category_list):
+        category_parameters = None
+        combined = ''
+        for category in reversed(category_list):
+            if category:
+                combined = category + combined
+            if combined in category_file:
+                category_parameters = category_file[combined]
+                break
+            if category in category_file:
+                category_parameters = category_file[category]
+                break
+            combined = '/' + combined
+        if not category_parameters:
+            return
+        if 'parent' in category_parameters:
+            for parent in category_parameters['parent']:
+                find_parameters(output_dict, [parent])
+            del category_parameters['parent']
+
+        for parameter in category_parameters.keys():
+            if category_parameters[parameter]:
+                for supplier_parameter in category_parameters[parameter]:
+                    output_dict[supplier_parameter] = parameter
+
     try:
         category_file = load_file(supplier_config_path)
     except:
         return None
-    category_parameters = None
-    for category in reversed(categories):
-        try:
-            category_parameters = category_file[category]
-            break
-        except:
-            pass
-    if not category_parameters:
-        return None
-
     category_parameters_inversed = {}
-    for parameter in category_parameters.keys():
-        if category_parameters[parameter]:
-            for supplier_parameter in category_parameters[parameter]:
-                category_parameters_inversed[supplier_parameter] = parameter
 
-    # print(category_parameters_inversed)
+    find_parameters(category_parameters_inversed, categories)
+
     return category_parameters_inversed
 
 

@@ -510,6 +510,13 @@ class InventreeView(MainView):
             icon=ft.icons.REPLAY,
             disabled=False,
         ),
+        'load_stock_locations': ft.ElevatedButton(
+            'Reload InvenTree Stock locations',
+            width=GUI_PARAMS['button_width'] * 2.8,
+            height=36,
+            icon=ft.icons.REPLAY,
+            disabled=False,
+        ),
         'Category': DropdownWithSearch(
             label='Category',
             dr_width=GUI_PARAMS['textfield_width'],
@@ -556,12 +563,36 @@ class InventreeView(MainView):
             value=settings.UPDATE_INVENTREE if settings.ENABLE_INVENTREE else False,
             disabled=not settings.ENABLE_INVENTREE,
         ),
+        'Create stock': SwitchWithRefs(
+            label='Create Stock',
+            disabled=not settings.ENABLE_INVENTREE,
+        ),
+        'Stock location': DropdownWithSearch(
+            label='Stock Location',
+            disabled=not settings.ENABLE_INVENTREE,
+            dr_width=GUI_PARAMS['textfield_width'],
+            sr_width=GUI_PARAMS['searchfield_width'],
+            dense=GUI_PARAMS['textfield_dense'],
+            options=[],
+        ),
+        'Stock quantity': ft.TextField(
+            label='Stock Quantity',
+            disabled=not settings.ENABLE_INVENTREE,
+            keyboard_type=ft.KeyboardType.NUMBER,
+            value='1',
+        ),
+        'Make stock location default': ft.Checkbox(
+            label="Set this location as the part\'s default location",
+            disabled=not settings.ENABLE_INVENTREE,
+            value=False,
+        ),
     }
 
     def __init__(self, page: ft.Page):
         self.category_row_ref = ft.Ref[ft.Row]()
         self.ipncode_row_ref = ft.Ref[ft.Row]()
         self.alternate_row_ref = ft.Ref[ft.Row]()
+        self.create_stock_widgets_ref = ft.Ref[ft.Row]()
         super().__init__(page)
 
     def partial_update(self):
@@ -572,6 +603,9 @@ class InventreeView(MainView):
         category_tree = self.data.get('Category', None)
         if category_tree:
             self.data['Category'] = inventree_interface.split_category_tree(category_tree)
+        stock_location_tree = self.data.get('Stock location', None)
+        if stock_location_tree:
+            self.data['Stock location'] = inventree_interface.split_category_tree(stock_location_tree)
 
     def process_enable(self, e):
         inventree_enable = True
@@ -585,9 +619,12 @@ class InventreeView(MainView):
             self.fields['alternate'].value = inventree_enable
             self.fields['alternate'].update()
             self.process_alternate(e, value=inventree_enable)
+            self.process_create_stock(e, value=inventree_enable)
         else:
             alternate_enable = self.fields['alternate'].value
             self.process_alternate(e, value=alternate_enable)
+            stock_create_enabled = self.fields['Create stock'].value
+            self.process_create_stock(e, value=stock_create_enabled)
 
         self.process_ipncode()
 
@@ -668,12 +705,30 @@ class InventreeView(MainView):
             self.fields['IPN: Category Code'].update()
         self.push_data(e)
 
+    def process_location(self, e=None, label=None, value=None):
+        self.fields['Stock location'].options = self.get_stock_location_options()
+        self.push_data(e)
+
     def process_ipncode(self):
         ipncode_enable = bool(
             settings.CONFIG_IPN.get('IPN_ENABLE_CREATE', False) and settings.CONFIG_IPN.get('IPN_CATEGORY_CODE', False)
         )
         self.ipncode_row_ref.current.visible = ipncode_enable
         self.ipncode_row_ref.current.update()
+
+    def process_create_stock(self, e, value=None):
+        if value is not None:
+            create_stock_visible = value
+        else:
+            self.fields['New Category Code'].visible = False
+            # Get switch value
+            create_stock_visible = False
+            if e.data.lower() == 'true':
+                create_stock_visible = True
+
+        # Stock create row visibility
+        self.create_stock_widgets_ref.current.visible = create_stock_visible
+        self.create_stock_widgets_ref.current.update()
 
     def get_code_options(self):
         try:
@@ -689,6 +744,12 @@ class InventreeView(MainView):
             ft.dropdown.Option(category)
             for category in inventree_interface.build_category_tree(reload=reload)
         ]
+
+    def get_stock_location_options(self, reload=False):
+        return [
+            ft.dropdown.Option(location)
+            for location in inventree_interface.build_stock_location_tree(reload=reload)
+        ]
         
     def reload_categories(self, e):
         self.page.splash.visible = True
@@ -700,6 +761,20 @@ class InventreeView(MainView):
         else:
             self.fields['Category'].options = self.get_category_options(reload=True)
             self.fields['Category'].update()
+
+        self.page.splash.visible = False
+        self.page.update()
+
+    def reload_stock_locations(self, e):
+        self.page.splash.visible = True
+        self.page.update()
+
+        # Check connection
+        if not inventree_interface.connect_to_server():
+            self.show_dialog(DialogType.ERROR, 'ERROR: Failed to connect to InvenTree server')
+        else:
+            self.fields['Stock location'].options = self.get_stock_location_options(reload=True)
+            self.fields['Stock location'].update()
 
         self.page.splash.visible = False
         self.page.update()
@@ -734,6 +809,12 @@ class InventreeView(MainView):
         self.fields['Existing Part ID'].on_change = self.push_data
         self.fields['Existing Part IPN'].on_change = self.push_data
         self.fields['Update Parameter'].on_change = self.process_update
+        # Create stock location
+        self.fields['Stock location'].options = self.get_stock_location_options()
+        self.fields['Stock location'].on_change = self.process_location
+        self.fields["Create stock"].on_change = self.process_create_stock
+        self.fields['Stock location'].on_change = self.push_data
+        self.fields['load_stock_locations'].on_click = self.reload_stock_locations
 
         self.column = ft.Column(
             controls=[
@@ -792,6 +873,31 @@ class InventreeView(MainView):
                         )
                     ]
                 ),
+                ft.Column(
+                    ref=self.create_stock_widgets_ref,
+                    controls=[
+                        ft.Row(
+                            controls=[
+                                self.fields['Create stock'],
+                                self.fields['load_stock_locations']
+                            ]
+                        )
+                    ]
+                ),
+                ft.Column(
+                    ref=self.create_stock_widgets_ref,
+                    controls=[
+                        ft.Row(
+                            controls=[self.fields['Stock location']],
+                        ),
+                        ft.Row(
+                            controls=[self.fields['Stock quantity']],
+                        ),
+                        ft.Row(
+                            controls=[self.fields['Make stock location default']],
+                        ),
+                    ]
+                )
             ],
         )
 
@@ -1299,7 +1405,21 @@ class CreateView(MainView):
                         part_info['category_code'] = data_from_views['InvenTree'].get('New Category Code', '')
                     else:
                         part_info['category_code'] = data_from_views['InvenTree'].get('IPN: Category Code', '')
-                
+
+                stock = None
+                if data_from_views['InvenTree'].get('Create stock'):
+                    stock_tree = data_from_views['InvenTree'].get('Stock location', None)
+                    if not stock_tree:
+                        # Check category is present
+                        self.show_dialog(DialogType.ERROR, 'Missing InvenTree Stock location')
+                        return
+
+                    stock = {
+                        'location': inventree_interface.get_inventree_stock_location_id(data_from_views['InvenTree'].get('Stock location')),
+                        'quantity': data_from_views['InvenTree'].get('Stock quantity'),
+                        'make_default': data_from_views['InvenTree'].get('Make stock location default'),
+                    }
+
                 # Create new part
                 new_part, part_pk, part_info = inventree_interface.inventree_create(
                     part_info=part_info,
@@ -1308,6 +1428,7 @@ class CreateView(MainView):
                     footprint=footprint,
                     show_progress=self.fields['inventree_progress'],
                     is_custom=custom,
+                    stock=stock,
                 )
                 # print(new_part, part_pk)
                 # cprint(part_info)
