@@ -568,7 +568,7 @@ class InventreeView(MainView):
             disabled=not settings.ENABLE_INVENTREE,
         ),
         'Stock location': DropdownWithSearch(
-            label='Stock location',
+            label='Stock Location',
             disabled=not settings.ENABLE_INVENTREE,
             dr_width=GUI_PARAMS['textfield_width'],
             sr_width=GUI_PARAMS['searchfield_width'],
@@ -576,15 +576,15 @@ class InventreeView(MainView):
             options=[],
         ),
         'Stock quantity': ft.TextField(
-            label='Stock quantity',
+            label='Stock Quantity',
             disabled=not settings.ENABLE_INVENTREE,
             keyboard_type=ft.KeyboardType.NUMBER,
-            value="1",
+            value='1',
         ),
         'Make stock location default': ft.Checkbox(
-            label='Make this the part\'s default location',
+            label="Set this location as the part\'s default location",
             disabled=not settings.ENABLE_INVENTREE,
-            value=True,
+            value=False,
         ),
     }
 
