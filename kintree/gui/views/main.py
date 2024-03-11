@@ -306,6 +306,7 @@ class PartSearchView(MainView):
                 message=error_msg,
             )
         else:
+            self.fields['part_number'].value = self.fields['part_number'].value.strip()
             self.page.splash.visible = True
             self.page.update()
 

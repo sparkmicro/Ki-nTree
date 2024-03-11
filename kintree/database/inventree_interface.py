@@ -310,6 +310,8 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
     inventree_part['pricing'] = part_info.get('pricing', {})
     inventree_part['currency'] = part_info.get('currency', 'USD')
 
+    parameters = part_info.get('parameters', {})
+
     # Load parameters map
     if category_tree:
         parameter_map = config_interface.load_category_parameters(
@@ -335,7 +337,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
                             parameter_value = part_tools.clean_parameter_value(
                                 category=category_tree[0],
                                 name=supplier_param,
-                                value=part_info['parameters'][supplier_param],
+                                value=parameters[supplier_param],
                             )
                             inventree_part['parameters'][inventree_param] = parameter_value
                         except KeyError:
@@ -354,7 +356,7 @@ def translate_form_to_inventree(part_info: dict, category_tree: list, is_custom=
 
             # Check for extra parameters which weren't mapped
             parameters_unmapped = []
-            for search_param in part_info['parameters'].keys():
+            for search_param in parameters.keys():
                 if search_param not in parameter_map.keys():
                     parameters_unmapped.append(search_param)
             
