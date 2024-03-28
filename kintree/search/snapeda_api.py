@@ -111,7 +111,7 @@ def test_snapeda_api() -> bool:
     result = False
 
     # Test single result
-    response = fetch_snapeda_part_info('SN74LV4T125PWR')
+    response = fetch_snapeda_part_info('NTR06B2001CTRF')
     data = parse_snapeda_response(response)
     images = download_snapeda_images(data)
 
