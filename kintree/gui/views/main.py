@@ -282,6 +282,7 @@ class PartSearchView(MainView):
             'custom_part': None,
         }
         self.fields['parameter_form'] = {}
+        self.fields['part_number'].focus()
         return super().reset_view(e, ignore=ignore, hidden=hidden_fields)
 
     def enable_search_fields(self):
@@ -430,12 +431,17 @@ class PartSearchView(MainView):
             for field, text_field in self.fields['parameter_form'].items():
                 self.column.controls[0].content.controls.append(ft.Row([text_field]))
         self.page.update()
+    
+    def perform_pn_search(self, e):
+        self.fields['part_number'].focus()
+        self.run_search(e)
 
     def build_column(self):
         self.update_suppliers()
         # Enable search method
         self.fields['search_button'].on_click = self.run_search
         self.fields['parameter_view'].on_change = self.switch_view
+        self.fields['part_number'].on_submit = self.perform_pn_search
 
         self.column = ft.Column(
             controls=[
