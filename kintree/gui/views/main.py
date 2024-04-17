@@ -59,6 +59,11 @@ MAIN_NAVIGATION = {
     },
 }
 
+# Load navigation indexes
+NAV_BAR_INDEX = {}
+for view in MAIN_NAVIGATION.values():
+    NAV_BAR_INDEX[view['nav_index']] = view['route']
+
 # Main NavRail
 main_navrail = ft.NavigationRail(
     selected_index=0,
@@ -117,15 +122,11 @@ class MainView(CommonView):
                     on_click=self.call_settings,
                 )
             )
-
-        # Load navigation indexes
-        self.NAV_BAR_INDEX = {}
-        for view in MAIN_NAVIGATION.values():
-            self.NAV_BAR_INDEX[view['nav_index']] = view['route']
+        else:
+            self.appbar.actions[0].on_click = self.call_settings
 
         # Update navigation rail
-        if not self.navigation_rail.on_change:
-            self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
+        self.navigation_rail.on_change = self.nav_bar_redirect
 
         # Init data
         self.data = {}
@@ -138,6 +139,9 @@ class MainView(CommonView):
         self.floating_action_button = ft.FloatingActionButton(
             icon=ft.icons.REPLAY, on_click=self.reset_view,
         )
+
+    def nav_bar_redirect(self, e):
+        self.page.go(NAV_BAR_INDEX[e.control.selected_index])
 
     def call_settings(self, e):
         handle_transition(self.page, transition=True)

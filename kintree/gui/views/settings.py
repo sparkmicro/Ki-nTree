@@ -296,6 +296,14 @@ settings_navrail = ft.NavigationRail(
     on_change=None,
 )
 
+# Navigation indexes (settings)
+NAV_BAR_INDEX = {
+    0: '/settings/user',
+    1: '/settings/supplier',
+    2: '/settings/inventree',
+    3: '/settings/kicad',
+}
+
 
 class SettingsView(CommonView):
     '''Main settings view'''
@@ -305,14 +313,6 @@ class SettingsView(CommonView):
     settings = None
     settings_file = None
     dialog = None
-
-    # Navigation indexes
-    NAV_BAR_INDEX = {
-        0: '/settings/user',
-        1: '/settings/supplier',
-        2: '/settings/inventree',
-        3: '/settings/kicad',
-    }
 
     def __init__(self, page: ft.Page):
         # Load setting fields
@@ -326,8 +326,10 @@ class SettingsView(CommonView):
         super().__init__(page=page, appbar=settings_appbar, navigation_rail=settings_navrail)
 
         # Update navigation rail
-        if not self.navigation_rail.on_change:
-            self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
+        self.navigation_rail.on_change = self.nav_bar_redirect
+
+    def nav_bar_redirect(self, e):
+        self.page.go(NAV_BAR_INDEX[e.control.selected_index])
     
     def save(self, settings_file=None, show_dialog=True):
         '''Save settings'''
@@ -594,9 +596,8 @@ class UserSettingsView(PathSettingsView):
 
     def did_mount(self):
         # Reset Index
-        settings_navrail.selected_index = 0
-        settings_navrail.update()
-
+        # self.navigation_rail.selected_index = 0
+        # self.navigation_rail.update()
         return super().did_mount()
 
 

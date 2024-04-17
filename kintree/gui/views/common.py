@@ -81,7 +81,6 @@ class CommonView(ft.View):
 
     page = None
     navigation_rail = None
-    NAV_BAR_INDEX = None
     title = None
     column = None
     fields = None
@@ -103,7 +102,7 @@ class CommonView(ft.View):
         # Empty column (to be set inside the children views)
         self.column = ft.Column()
 
-    def _build(self):
+    def build(self):
         # Build column
         if not self.column:
             self.build_column()
@@ -433,7 +432,7 @@ class Collapsible(ft.Column):
         self.shevron.rotate = pi / 2 if self.shevron.rotate == 0 else 0
         self.update()
 
-    def _build(self):
+    def build(self):
         title_row = ft.Row()
         if self.icon is not None:
             title_row.controls.append(self.icon)
@@ -476,7 +475,7 @@ class MenuButton(ft.Container):
     def item_click(self, _):
         pass
 
-    def _build(self):
+    def build(self):
         row = ft.Row()
         if self.icon is not None:
             row.controls.append(self.icon)
