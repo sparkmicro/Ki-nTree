@@ -1009,8 +1009,9 @@ class KicadView(MainView):
     
     def process_enable(self, e, value=None, ignore=['enable']):
         super().process_enable(e, value, ignore)
-        self.fields['Footprint'].disabled = self.fields['New Footprint'].value
-        self.fields['Footprint'].update()
+        if self.fields['enable'].value:
+            self.fields['Footprint'].disabled = self.fields['New Footprint'].value
+            self.fields['Footprint'].update()
         
     def push_data(self, e=None, label=None, value=None):
         super().push_data(e)

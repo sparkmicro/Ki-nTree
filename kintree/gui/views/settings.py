@@ -595,9 +595,12 @@ class UserSettingsView(PathSettingsView):
         self.add_buttons(self.column, test=False)
 
     def did_mount(self):
-        # Reset Index
-        # self.navigation_rail.selected_index = 0
-        # self.navigation_rail.update()
+        try:
+            # Reset Index
+            self.navigation_rail.selected_index = 0
+            self.navigation_rail.update()
+        except AssertionError:
+            pass
         return super().did_mount()
 
 
