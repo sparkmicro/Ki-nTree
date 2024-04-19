@@ -79,7 +79,7 @@ def update_theme(page: ft.Page, mode='light', transition=False, compact=True):
 class CommonView(ft.View):
     '''Common view to all GUI views'''
 
-    page = None
+    _page = None
     navigation_rail = None
     title = None
     column = None
@@ -89,7 +89,7 @@ class CommonView(ft.View):
     
     def __init__(self, page: ft.Page, appbar: ft.AppBar, navigation_rail: ft.NavigationRail):
         # Store page pointer
-        self.page = page
+        self._page = page
 
         # Init view
         super().__init__(route=self.route, appbar=appbar)
@@ -163,15 +163,15 @@ class CommonView(ft.View):
         if snackbar:
             self.build_snackbar(d_type, message)
         if isinstance(self.dialog, ft.SnackBar):
-            self.page.snack_bar = self.dialog
-            self.page.snack_bar.open = True
+            self._page.snack_bar = self.dialog
+            self._page.snack_bar.open = True
         elif isinstance(self.dialog, ft.Banner):
-            self.page.banner = self.dialog
-            self.page.banner.open = open
+            self._page.banner = self.dialog
+            self._page.banner.open = open
         elif isinstance(self.dialog, ft.AlertDialog):
-            self.page.dialog = self.dialog
-            self.page.dialog.open = open
-        self.page.update()
+            self._page.dialog = self.dialog
+            self._page.dialog.open = open
+        self._page.update()
 
 
 class SwitchWithRefs(ft.Switch):

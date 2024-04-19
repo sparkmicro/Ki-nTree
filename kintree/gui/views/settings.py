@@ -326,10 +326,10 @@ class SettingsView(CommonView):
         super().__init__(page=page, appbar=settings_appbar, navigation_rail=settings_navrail)
 
         # Update navigation rail
-        self.navigation_rail.on_change = self.nav_bar_redirect
+        self.navigation_rail.on_change = self.nav_rail_redirect
 
-    def nav_bar_redirect(self, e):
-        self.page.go(NAV_BAR_INDEX[e.control.selected_index])
+    def nav_rail_redirect(self, e):
+        self._page.go(NAV_BAR_INDEX[e.control.selected_index])
     
     def save(self, settings_file=None, show_dialog=True):
         '''Save settings'''
@@ -361,15 +361,15 @@ class SettingsView(CommonView):
         '''Populate field with user-selected system path'''
         if e.path:
             self.fields[e.control.dialog_title].value = e.path
-            self.page.update()
+            self._page.update()
 
     def path_picker(self, e: ft.ControlEvent, title: str):
         '''Let user browse to a system path'''
-        if self.page.overlay:
-            self.page.overlay.pop()
+        if self._page.overlay:
+            self._page.overlay.pop()
         path_picker = ft.FilePicker(on_result=self.on_dialog_result)
-        self.page.overlay.append(path_picker)
-        self.page.update()
+        self._page.overlay.append(path_picker)
+        self._page.update()
         if self.fields[title].value:
             path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
         else:
@@ -486,7 +486,7 @@ class SettingsView(CommonView):
         self.add_buttons(self.column, test=enable_test)
 
     def did_mount(self):
-        handle_transition(self.page, transition=False, timeout=0.05)
+        handle_transition(self._page, transition=False, timeout=0.05)
         return super().did_mount()
     
 

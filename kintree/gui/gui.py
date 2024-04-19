@@ -58,7 +58,7 @@ def kintree_gui(page: ft.Page):
 
     # Routing
     def route_change(route):
-        print(f'\n--> Routing to {route.route}')
+        # print(f'\n--> Routing to {route.route}')
         if '/main' in page.route or page.route == '/':
             page.views.clear()
             if 'part' in page.route or page.route == '/':
@@ -100,7 +100,6 @@ def kintree_gui(page: ft.Page):
                 timeout=0.3,
             )
         if '/main/part' in top_view.route or '/main/inventree' in top_view.route:
-            print(top_view.title)
             top_view.partial_update()
 
     page.on_route_change = route_change
