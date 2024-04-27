@@ -754,13 +754,13 @@ files = [
 
 [[package]]
 name = "inventree"
-version = "0.13.3"
+version = "0.12.2"
 description = "Python interface for InvenTree inventory management system"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "inventree-0.13.3-py2.py3-none-any.whl", hash = "sha256:092996e9e66b74be701ecf8d10aedd9dfafa82ff25715aff0e3ef668a23c8612"},
-    {file = "inventree-0.13.3.tar.gz", hash = "sha256:2b125846a8161da7a5552a0f543d8c7439856ccf1fe03b35d19e85760f22876c"},
+    {file = "inventree-0.12.2-py2.py3-none-any.whl", hash = "sha256:7b91f822510aa60e1617aca1ae7b47ccebfdbba7b07156fc55b9f3998e6372bc"},
+    {file = "inventree-0.12.2.tar.gz", hash = "sha256:0be6d29977012db35f2b2493af9c5b8c53b8d92df0a601d22360c98520f9e354"},
 ]
 
 [package.dependencies]
@@ -1907,4 +1907,4 @@ test = ["black", "codecov", "coloredlogs", "coverage", "flake8", "mypy", "pytest
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "41a17f403ca8e4f1bd2e3604c60d039e012aba376c8dcf98a296b3f423637dc4"
+content-hash = "34ebd8f627d7a5e9ddab15c5b5823041d2ac72cf2180c693d3f8e8a3387be62f"
