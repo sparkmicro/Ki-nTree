@@ -161,6 +161,7 @@ Note that each time you enable the "Add" permission to an object, InvenTree auto
   d. It is also possible to sync the prices in InvenTree with the latest supplier prices. For this enable "Upload Pricing Data to InvenTree"
 6. If your InvenTree server requires a IPN in a specific pattern make sure to adjust "Settings > InvenTree > Internal Part Number" to match it or adjust the servers pattern to the one yo set in Ki-nTree 
 
+> Note: All URLs should start with "http://" if they do not have a valid SSL certificate.
 
 #### Get Digi-Key API token
 <details>
@@ -204,12 +205,14 @@ Refer to [this file](https://github.com/sparkmicro/Ki-nTree/blob/main/kintree/co
 
 Ki-nTree currently supports APIs for the following electronics suppliers: Digi-Key, Mouser, Element14, TME and LCSC.
 
-1. In the main window, enter the part number and select the supplier in drop-down list, then click "CREATE". It will start by fetching part data using the supplier's API
+1. In the main window, enter the part number and select the supplier in drop-down list, then click the "Submit" button (arrow). It will start by fetching part data using the supplier's API
 2. In the case Digi-Key has been selected and the API token is not found or expired, a browser window will pop-up. To get a new token: [follow those steps](#get-digi-key-api-token)
-3. Once the part data has been successfully fetched from the supplier's API, you will be prompted to add/confirm/edit the part information, followed by the `Category` and `Subcategory` to use for this part (Ki-nTree tries to match them automatically)
-4. Then, you will be prompted with selecting the KiCad symbol library, the template and the footprint library to use for this part
-5. It will take some time to complete the part creation in InvenTree and/or KiCad, once it finishes you'll be notified of the result  
-6. Finally, if the part was created or found in InvenTree, your browser will automatically open a new tab with the part information
+3. Once the part data has been successfully fetched from the supplier's API, you can review the part information in the different fields and edit them, if needed.
+4. Then, go to the Inventree tabl to pick the `Category` and `Subcategory` to use for this part
+5. If you desire to add this part to KiCad, click the KiCad tab and select the KiCad symbol library, the template and the footprint library to use for this part
+6. Finally, go to the Create tab and launch the part creation. It will take some time to complete the process in InvenTree and/or KiCad, once it finishes you'll be notified of the result  
+
+If the part was created or found in InvenTree, and if you have selected this option in the settings, your browser will automatically open and navigate to the new Inventree part page.
 
 #### Kicad Templates
 
@@ -244,7 +247,7 @@ git clone https://github.com/sparkmicro/Ki-nTree
 poetry install
 Installing dependencies from lock file
 ...
-Installing the current project: kintree (1.0.99)
+Installing the current project: kintree (1.1.99)
 ```
 > Note: the version is not accurate (placeholder only)
 
@@ -263,11 +266,11 @@ $ python -m kintree_gui
 1. Make sure you followed the previous installation steps, then run:
 ``` bash
 $ poetry build
-Building kintree (1.0.99)
+Building kintree (1.1.99)
   - Building sdist
-  - Built kintree-1.0.99.tar.gz
+  - Built kintree-1.1.99.tar.gz
   - Building wheel
-  - Built kintree-1.0.99-py3-none-any.whl
+  - Built kintree-1.1.99-py3-none-any.whl
 ```
 2. Exit the virtual environment (`Ctrl + D` on Linux; you can also close the
    terminal and reopen it in the same folder).
@@ -276,7 +279,7 @@ Building kintree (1.0.99)
    step. For example:
 
 ```bash
-pip install dist/kintree-1.0.99-py3-none-any.whl
+pip install dist/kintree-1.1.99-py3-none-any.whl
 ```
 
 3. You can now start Ki-nTree by typing `kintree` in the terminal, provided
