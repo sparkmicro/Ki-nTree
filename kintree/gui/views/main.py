@@ -153,7 +153,10 @@ class MainView(CommonView):
                 field.value = 0
             else:
                 field.value = None
-            field.update()
+            try:
+                field.update()
+            except AssertionError:
+                pass
 
         for name, field in self.fields.items():
             if isinstance(field, dict):
