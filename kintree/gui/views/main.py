@@ -59,6 +59,11 @@ MAIN_NAVIGATION = {
     },
 }
 
+# Load navigation indexes
+NAV_BAR_INDEX = {}
+for view in MAIN_NAVIGATION.values():
+    NAV_BAR_INDEX[view['nav_index']] = view['route']
+
 # Main NavRail
 main_navrail = ft.NavigationRail(
     selected_index=0,
@@ -117,15 +122,11 @@ class MainView(CommonView):
                     on_click=self.call_settings,
                 )
             )
-
-        # Load navigation indexes
-        self.NAV_BAR_INDEX = {}
-        for view in MAIN_NAVIGATION.values():
-            self.NAV_BAR_INDEX[view['nav_index']] = view['route']
+        else:
+            self.appbar.actions[0].on_click = self.call_settings
 
         # Update navigation rail
-        if not self.navigation_rail.on_change:
-            self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
+        self.navigation_rail.on_change = self.nav_rail_redirect
 
         # Init data
         self.data = {}
@@ -139,9 +140,12 @@ class MainView(CommonView):
             icon=ft.icons.REPLAY, on_click=self.reset_view,
         )
 
+    def nav_rail_redirect(self, e):
+        self._page.go(NAV_BAR_INDEX[e.control.selected_index])
+
     def call_settings(self, e):
-        handle_transition(self.page, transition=True)
-        self.page.go('/settings')
+        handle_transition(self._page, transition=True)
+        self._page.go('/settings')
 
     def reset_view(self, e, ignore=['enable'], hidden={}):
         def reset_field(field):
@@ -149,7 +153,10 @@ class MainView(CommonView):
                 field.value = 0
             else:
                 field.value = None
-            field.update()
+            try:
+                field.update()
+            except AssertionError:
+                pass
 
         for name, field in self.fields.items():
             if isinstance(field, dict):
@@ -212,14 +219,14 @@ class MainView(CommonView):
         data_from_views[self.title] = self.data
 
     def did_mount(self, enable=False):
-        handle_transition(self.page, transition=False, update_page=True)
+        handle_transition(self._page, transition=False, update_page=True)
         if self.fields.get('enable', None) is not None:
             # Create enable event
             e = ft.ControlEvent(
                 target=None,
                 name='did_mount_enable',
                 data='true' if enable else 'false',
-                page=self.page,
+                page=self._page,
                 control=self.fields['enable'],
             )
             # Process enable
@@ -288,7 +295,7 @@ class PartSearchView(MainView):
         for form_field in self.fields['search_form'].values():
             form_field.disabled = False
         self.fields['parameter_view'].disabled = False
-        self.page.update()
+        self._page.update()
         return
 
     def run_search(self, e):
@@ -307,8 +314,8 @@ class PartSearchView(MainView):
             )
         else:
             self.fields['part_number'].value = self.fields['part_number'].value.strip()
-            self.page.splash.visible = True
-            self.page.update()
+            self._page.splash.visible = True
+            self._page.update()
 
             if not self.fields['part_number'].value and not self.fields['supplier'].value:
                 self.data['custom_part'] = True
@@ -359,7 +366,7 @@ class PartSearchView(MainView):
 
             # Add to data buffer
             self.push_data()
-            self.page.splash.visible = False
+            self._page.splash.visible = False
 
             if not self.data['supplier_part_number'] and not self.data['custom_part']:
                 self.show_dialog(
@@ -376,7 +383,7 @@ class PartSearchView(MainView):
                     d_type=DialogType.WARNING,
                     message='Found manufacturer part number does not match the requested part number',
                 )
-            self.page.update()
+            self._page.update()
         return
 
     def push_data(self, e=None):
@@ -430,7 +437,7 @@ class PartSearchView(MainView):
         else:
             for field, text_field in self.fields['parameter_form'].items():
                 self.column.controls[0].content.controls.append(ft.Row([text_field]))
-        self.page.update()
+        self._page.update()
 
     def build_column(self):
         self.update_suppliers()
@@ -753,8 +760,8 @@ class InventreeView(MainView):
         ]
         
     def reload_categories(self, e):
-        self.page.splash.visible = True
-        self.page.update()
+        self._page.splash.visible = True
+        self._page.update()
 
         # Check connection
         if not inventree_interface.connect_to_server():
@@ -763,12 +770,12 @@ class InventreeView(MainView):
             self.fields['Category'].options = self.get_category_options(reload=True)
             self.fields['Category'].update()
 
-        self.page.splash.visible = False
-        self.page.update()
+        self._page.splash.visible = False
+        self._page.update()
 
     def reload_stock_locations(self, e):
-        self.page.splash.visible = True
-        self.page.update()
+        self._page.splash.visible = True
+        self._page.update()
 
         # Check connection
         if not inventree_interface.connect_to_server():
@@ -777,8 +784,8 @@ class InventreeView(MainView):
             self.fields['Stock location'].options = self.get_stock_location_options(reload=True)
             self.fields['Stock location'].update()
 
-        self.page.splash.visible = False
-        self.page.update()
+        self._page.splash.visible = False
+        self._page.update()
 
     def create_ipn_code(self, e):
         # Get switch value
@@ -987,12 +994,12 @@ class KicadView(MainView):
         if download:
             if not symbol and not footprint:
                 if single_result:
-                    modal_actions.append(ft.TextButton('Check Part', on_click=lambda _: self.page.launch_url(download)))
+                    modal_actions.append(ft.TextButton('Check Part', on_click=lambda _: self._page.launch_url(download)))
                 else:
                     modal_msg = ft.Text('Multiple matches found on SnapEDA')
-                    modal_actions.append(ft.TextButton('See Results', on_click=lambda _: self.page.launch_url(download)))
+                    modal_actions.append(ft.TextButton('See Results', on_click=lambda _: self._page.launch_url(download)))
             else:
-                modal_actions.append(ft.TextButton('Download', on_click=lambda _: self.page.launch_url(download)))
+                modal_actions.append(ft.TextButton('Download', on_click=lambda _: self._page.launch_url(download)))
         modal_actions.append(ft.TextButton('Close', on_click=lambda _: self.show_dialog(open=False)))
         
         return ft.AlertDialog(
@@ -1006,8 +1013,9 @@ class KicadView(MainView):
     
     def process_enable(self, e, value=None, ignore=['enable']):
         super().process_enable(e, value, ignore)
-        self.fields['Footprint'].disabled = self.fields['New Footprint'].value
-        self.fields['Footprint'].update()
+        if self.fields['enable'].value:
+            self.fields['Footprint'].disabled = self.fields['New Footprint'].value
+            self.fields['Footprint'].update()
         
     def push_data(self, e=None, label=None, value=None):
         super().push_data(e)
@@ -1031,8 +1039,8 @@ class KicadView(MainView):
             )
             return
         
-        self.page.splash.visible = True
-        self.page.update()
+        self._page.splash.visible = True
+        self._page.update()
 
         response = snapeda_api.fetch_snapeda_part_info(data_from_views['Part Search']['manufacturer_part_number'])
         data = snapeda_api.parse_snapeda_response(response)
@@ -1041,8 +1049,8 @@ class KicadView(MainView):
         if data['has_symbol'] or data['has_footprint']:
             images = snapeda_api.download_snapeda_images(data)
 
-        self.page.splash.visible = False
-        self.page.update()
+        self._page.splash.visible = False
+        self._page.update()
         
         self.dialog = self.build_alert_dialog(
             images.get('symbol', ''),
@@ -1545,7 +1553,7 @@ class CreateView(MainView):
                         silent=settings.SILENT
                     )
                     try:
-                        self.page.launch_url(part_info['inventree_url'])
+                        self._page.launch_url(part_info['inventree_url'])
                     except TypeError:
                         cprint('[INFO]\tError: Failed to open URL', silent=settings.SILENT)
                 else:

@@ -79,9 +79,8 @@ def update_theme(page: ft.Page, mode='light', transition=False, compact=True):
 class CommonView(ft.View):
     '''Common view to all GUI views'''
 
-    page = None
+    _page = None
     navigation_rail = None
-    NAV_BAR_INDEX = None
     title = None
     column = None
     fields = None
@@ -90,7 +89,7 @@ class CommonView(ft.View):
     
     def __init__(self, page: ft.Page, appbar: ft.AppBar, navigation_rail: ft.NavigationRail):
         # Store page pointer
-        self.page = page
+        self._page = page
 
         # Init view
         super().__init__(route=self.route, appbar=appbar)
@@ -103,7 +102,7 @@ class CommonView(ft.View):
         # Empty column (to be set inside the children views)
         self.column = ft.Column()
 
-    def _build(self):
+    def build(self):
         # Build column
         if not self.column:
             self.build_column()
@@ -164,15 +163,15 @@ class CommonView(ft.View):
         if snackbar:
             self.build_snackbar(d_type, message)
         if isinstance(self.dialog, ft.SnackBar):
-            self.page.snack_bar = self.dialog
-            self.page.snack_bar.open = True
+            self._page.snack_bar = self.dialog
+            self._page.snack_bar.open = True
         elif isinstance(self.dialog, ft.Banner):
-            self.page.banner = self.dialog
-            self.page.banner.open = open
+            self._page.banner = self.dialog
+            self._page.banner.open = open
         elif isinstance(self.dialog, ft.AlertDialog):
-            self.page.dialog = self.dialog
-            self.page.dialog.open = open
-        self.page.update()
+            self._page.dialog = self.dialog
+            self._page.dialog.open = open
+        self._page.update()
 
 
 class SwitchWithRefs(ft.Switch):
@@ -433,7 +432,7 @@ class Collapsible(ft.Column):
         self.shevron.rotate = pi / 2 if self.shevron.rotate == 0 else 0
         self.update()
 
-    def _build(self):
+    def build(self):
         title_row = ft.Row()
         if self.icon is not None:
             title_row.controls.append(self.icon)
@@ -476,7 +475,7 @@ class MenuButton(ft.Container):
     def item_click(self, _):
         pass
 
-    def _build(self):
+    def build(self):
         row = ft.Row()
         if self.icon is not None:
             row.controls.append(self.icon)

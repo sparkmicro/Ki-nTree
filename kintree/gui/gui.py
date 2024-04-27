@@ -45,22 +45,23 @@ def kintree_gui(page: ft.Page):
     '''Ki-nTree GUI'''
     # Init
     init_gui(page)
-    # Views
+    # Create main views
     part_view = PartSearchView(page)
     inventree_view = InventreeView(page)
     kicad_view = KicadView(page)
     create_view = CreateView(page)
-    # Settings
+    # Create settings views
     user_settings_view = UserSettingsView(page)
     supplier_settings_view = SupplierSettingsView(page)
     inventree_settings_view = InvenTreeSettingsView(page)
     kicad_settings_view = KiCadSettingsView(page)
 
+    # Routing
     def route_change(route):
         # print(f'\n--> Routing to {route.route}')
-        if '/main' in page.route:
+        if '/main' in page.route or page.route == '/':
             page.views.clear()
-            if 'part' in page.route:
+            if 'part' in page.route or page.route == '/':
                 page.views.append(part_view)
             if 'inventree' in page.route:
                 page.views.append(inventree_view)
@@ -71,22 +72,19 @@ def kintree_gui(page: ft.Page):
         elif '/settings' in page.route:
             if '/settings' in page.views[-1].route:
                 page.views.pop()
-            if page.route == user_settings_view.route:
+            if 'user' in page.route:
                 page.views.append(user_settings_view)
-            elif page.route == supplier_settings_view.route:
+            elif 'supplier' in page.route:
                 page.views.append(supplier_settings_view)
-            elif page.route == inventree_settings_view.route:
+            elif 'inventree' in page.route:
                 page.views.append(inventree_settings_view)
-            elif page.route == kicad_settings_view.route:
+            elif 'kicad' in page.route:
                 page.views.append(kicad_settings_view)
             else:
                 page.views.append(user_settings_view)
-        else:
-            page.views.append(part_view)
-
         page.update()
 
-    def view_pop(e):
+    def view_pop(view):
         '''Pop setting view'''
         page.views.pop()
         top_view = page.views[-1]
@@ -101,10 +99,8 @@ def kintree_gui(page: ft.Page):
                 update_page=True,
                 timeout=0.3,
             )
-        if 'part' in top_view.route:
-            part_view.partial_update()
-        elif 'inventree' in top_view.route:
-            inventree_view.partial_update()
+        if '/main/part' in top_view.route or '/main/inventree' in top_view.route:
+            top_view.partial_update()
 
     page.on_route_change = route_change
     page.on_view_pop = view_pop
