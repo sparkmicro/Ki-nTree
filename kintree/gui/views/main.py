@@ -153,10 +153,6 @@ class MainView(CommonView):
                 field.value = 0
             else:
                 field.value = None
-            try:
-                field.update()
-            except AssertionError:
-                pass
 
         for name, field in self.fields.items():
             if isinstance(field, dict):
@@ -176,6 +172,7 @@ class MainView(CommonView):
 
         # Clear data
         self.push_data()
+        self._page.update()
 
     def partial_update(self):
         '''Process partial view updates'''

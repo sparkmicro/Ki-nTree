@@ -69,7 +69,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt install sqlite3
-          pip install -U invoke coveralls
+          pip install -U pip invoke coveralls
       - name: InvenTree setup
         run: |
           git clone https://github.com/inventree/InvenTree/
