@@ -69,13 +69,13 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt install sqlite3
-          pip install -U invoke coveralls
+          pip install -U pip invoke coveralls
       - name: InvenTree setup
         run: |
           git clone https://github.com/inventree/InvenTree/
           mkdir InvenTree/static
           cp tests/files/inventree_default_db.sqlite3 InvenTree/
-          cd InvenTree/ && git switch stable && invoke install && invoke migrate && cd -
+          cd InvenTree/ && git switch 0.14.x && invoke install && invoke migrate && cd -
       - name: Ki-nTree setup
         run: |
           invoke install
@@ -93,7 +93,7 @@ jobs:
           export len_log=$(cat gui.log | wc -l)
           [[ ${len_log} -eq 0 ]] && true || false
       - name: Setup Digi-Key token
-        if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
+        if: ${{ github.ref == 'refs/heads/main' || github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree' }}
         run: |
           git clone https://$TOKEN_DIGIKEY@github.com/eeintech/digikey-token.git
           cd digikey-token/
@@ -108,7 +108,7 @@ jobs:
           echo -e "Digi-Key Token: $dk_token\n"
           cd ..
       - name: Run tests
-        if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
+        if: ${{ github.ref == 'refs/heads/main' || github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree' }}
         run: |
           invoke test -e 1
         env:
@@ -119,7 +119,7 @@ jobs:
         run: |
           invoke test -e 0
       - name: Coveralls
-        if: github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree'
+        if: ${{ github.ref == 'refs/heads/main' || github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree' }}
         run: |
           coveralls --version
           coveralls --service=github

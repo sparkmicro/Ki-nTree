@@ -296,6 +296,14 @@ settings_navrail = ft.NavigationRail(
     on_change=None,
 )
 
+# Navigation indexes (settings)
+NAV_BAR_INDEX = {
+    0: '/settings/user',
+    1: '/settings/supplier',
+    2: '/settings/inventree',
+    3: '/settings/kicad',
+}
+
 
 class SettingsView(CommonView):
     '''Main settings view'''
@@ -305,14 +313,6 @@ class SettingsView(CommonView):
     settings = None
     settings_file = None
     dialog = None
-
-    # Navigation indexes
-    NAV_BAR_INDEX = {
-        0: '/settings/user',
-        1: '/settings/supplier',
-        2: '/settings/inventree',
-        3: '/settings/kicad',
-    }
 
     def __init__(self, page: ft.Page):
         # Load setting fields
@@ -326,8 +326,10 @@ class SettingsView(CommonView):
         super().__init__(page=page, appbar=settings_appbar, navigation_rail=settings_navrail)
 
         # Update navigation rail
-        if not self.navigation_rail.on_change:
-            self.navigation_rail.on_change = lambda e: self.page.go(self.NAV_BAR_INDEX[e.control.selected_index])
+        self.navigation_rail.on_change = self.nav_rail_redirect
+
+    def nav_rail_redirect(self, e):
+        self._page.go(NAV_BAR_INDEX[e.control.selected_index])
     
     def save(self, settings_file=None, show_dialog=True):
         '''Save settings'''
@@ -359,15 +361,15 @@ class SettingsView(CommonView):
         '''Populate field with user-selected system path'''
         if e.path:
             self.fields[e.control.dialog_title].value = e.path
-            self.page.update()
+            self._page.update()
 
     def path_picker(self, e: ft.ControlEvent, title: str):
         '''Let user browse to a system path'''
-        if self.page.overlay:
-            self.page.overlay.pop()
+        if self._page.overlay:
+            self._page.overlay.pop()
         path_picker = ft.FilePicker(on_result=self.on_dialog_result)
-        self.page.overlay.append(path_picker)
-        self.page.update()
+        self._page.overlay.append(path_picker)
+        self._page.update()
         if self.fields[title].value:
             path_picker.get_directory_path(dialog_title=title, initial_directory=self.fields[title].value)
         else:
@@ -484,7 +486,7 @@ class SettingsView(CommonView):
         self.add_buttons(self.column, test=enable_test)
 
     def did_mount(self):
-        handle_transition(self.page, transition=False, timeout=0.05)
+        handle_transition(self._page, transition=False, timeout=0.05)
         return super().did_mount()
     
 
@@ -593,10 +595,12 @@ class UserSettingsView(PathSettingsView):
         self.add_buttons(self.column, test=False)
 
     def did_mount(self):
-        # Reset Index
-        settings_navrail.selected_index = 0
-        settings_navrail.update()
-
+        try:
+            # Reset Index
+            self.navigation_rail.selected_index = 0
+            self.navigation_rail.update()
+        except AssertionError:
+            pass
         return super().did_mount()
 
 
