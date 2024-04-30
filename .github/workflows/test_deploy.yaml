@@ -115,7 +115,7 @@ jobs:
           MOUSER_PART_API_KEY: ${{ secrets.MOUSER_PART_API_KEY }}
           ELEMENT14_PART_API_KEY: ${{ secrets.ELEMENT14_PART_API_KEY }}
       - name: Run tests (skip APIs)
-        if: ${{ github.ref != 'refs/heads/main' || github.event.pull_request.head.repo.full_name != 'sparkmicro/Ki-nTree' }}
+        if: ${{ github.ref != 'refs/heads/main' && github.event.pull_request.head.repo.full_name != 'sparkmicro/Ki-nTree' }}
         run: |
           invoke test -e 0
       - name: Coveralls
