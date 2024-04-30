@@ -118,11 +118,11 @@ jobs:
         if: ${{ github.ref != 'refs/heads/main' && github.event.pull_request.head.repo.full_name != 'sparkmicro/Ki-nTree' }}
         run: |
           invoke test -e 0
-      - name: Coveralls
-        if: ${{ github.ref == 'refs/heads/main' || github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree' }}
-        run: |
-          coveralls --version
-          coveralls --service=github
+      # - name: Coveralls
+      #   if: ${{ github.ref == 'refs/heads/main' || github.event.pull_request.head.repo.full_name == 'sparkmicro/Ki-nTree' }}
+      #   run: |
+      #     coveralls --version
+      #     coveralls --service=github
       - name: Run build
         run: |
           invoke build
