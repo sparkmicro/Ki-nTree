@@ -95,15 +95,12 @@ def fetch_part_info(part_number: str) -> dict:
     part_info['parameters'] = {}
     [parameter_key, name_key, value_key] = PARAMETERS_MAP
 
-    try:
+    if part.get(parameter_key, ''):
         for parameter in range(len(part[parameter_key])):
             parameter_name = part[parameter_key][parameter][name_key]
             parameter_value = part[parameter_key][parameter][value_key]
             # Append to parameters dictionary
             part_info['parameters'][parameter_name] = parameter_value
-    except TypeError:
-        # Parameter list is empty
-        pass
 
     # Pricing
     part_info['pricing'] = {}
