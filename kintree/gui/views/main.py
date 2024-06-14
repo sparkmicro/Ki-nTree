@@ -831,6 +831,8 @@ class InventreeView(MainView):
         self.fields['Stock location'].on_change = self.process_location
         self.fields["Create stock"].on_change = self.process_create_stock
         self.fields['Stock location'].on_change = self.push_data
+        self.fields['Stock quantity'].on_change = self.push_data
+        self.fields['Make stock location default'].on_change = self.push_data
         self.fields['load_stock_locations'].on_click = self.reload_stock_locations
 
         self.column = ft.Column(
@@ -1405,6 +1407,9 @@ class CreateView(MainView):
                 # Check mandatory data
                 if not data_from_views['Part Search'].get('name', None):
                     self.show_dialog(DialogType.ERROR, 'Missing Part Name')
+                    return
+                if len(data_from_views['Part Search'].get('name', None)) > 100:
+                    self.show_dialog(DialogType.ERROR, 'Part Name too long (>100 characters)')
                     return
                 if not data_from_views['Part Search'].get('description', None):
                     self.show_dialog(DialogType.ERROR, 'Missing Part Description')
