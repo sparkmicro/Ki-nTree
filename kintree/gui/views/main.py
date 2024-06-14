@@ -1406,6 +1406,9 @@ class CreateView(MainView):
                 if not data_from_views['Part Search'].get('name', None):
                     self.show_dialog(DialogType.ERROR, 'Missing Part Name')
                     return
+                if len(data_from_views['Part Search'].get('name', None)) > 100:
+                    self.show_dialog(DialogType.ERROR, 'Part Name too long (>100 characters)')
+                    return
                 if not data_from_views['Part Search'].get('description', None):
                     self.show_dialog(DialogType.ERROR, 'Missing Part Description')
                     return
