@@ -831,6 +831,8 @@ class InventreeView(MainView):
         self.fields['Stock location'].on_change = self.process_location
         self.fields["Create stock"].on_change = self.process_create_stock
         self.fields['Stock location'].on_change = self.push_data
+        self.fields['Stock quantity'].on_change = self.push_data
+        self.fields['Make stock location default'].on_change = self.push_data
         self.fields['load_stock_locations'].on_click = self.reload_stock_locations
 
         self.column = ft.Column(
