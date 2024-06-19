@@ -1,4 +1,4 @@
-DATASHEET_UPLOAD: false
+DATASHEET_UPLOAD: true
 ENABLE: true
 ENABLE_PROXY: false
 PASSWORD: !!binary |
