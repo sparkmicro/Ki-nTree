@@ -2,37 +2,40 @@ import re
 from ..common.tools import download
 
 SEARCH_HEADERS = [
+    'title',
     'name',
     'prod_id',
-    'brandNameEn',
-    'productModel',
-    'pdfUrl',
-    'imageUrl',
-    'price',
+    'ss_attr_manufacturer',
     'manufacturer_part_number',
     'url',
-    'ss_attr_manufacturer',
-
+    'imageUrl',
+    'related_prod_id',
+    'category',
 ]
-PARAMETERS_MAP = [
-    'product_type_unigram', #e.g. to92
+
+# Not really a map for Jameco.
+# Parameters are listed at same level as the search keys, not in separate list
+PARAMETERS_KEYS = [
+    'product_type_unigram',
+    'ss_attr_voltage_rating',
+    'ss_attr_multiple_order_quantity',
 ]
 
 
 def get_default_search_keys():
+    # order matters, linked with part_form[] order in inventree_interface.translate_supplier_to_form()
     return [
+        'title',
         'name',
+        'revision',
+        'keywords',
         'prod_id',
-        'brandNameEn',
-        'productModel',
-        'pdfUrl',
-        'imageUrl',
-        'price',
+        'ss_attr_manufacturer',
         'manufacturer_part_number',
         'url',
-        'ss_attr_manufacturer',
+        'datasheet',
+        'imageUrl',
     ]
-
 
 def find_categories(part_details: str):
     ''' Find categories '''
@@ -83,22 +86,33 @@ def fetch_part_info(part_number: str) -> dict:
         if key in headers:
             if key == 'imageUrl':
                 try:
-                    part_info[key] = part['imageUrl'][0]
+                    part_info[key] = part['imageUrl']
                 except IndexError:
                     pass
+            elif key in ['title','name']:
+                # Jameco title/name is often >100 chars, which causes an error later. Check for it here.
+                if (len(part[key]) > 100):
+                    trimmed_value = str(part[key])[:100]
+                    part_info[key] = trimmed_value
+                else:
+                    part_info[key] = part[key]
             else:
                 part_info[key] = part[key]
 
     # Parameters
     part_info['parameters'] = {}
-    [parameter_key] = PARAMETERS_MAP
 
-    if part.get(parameter_key, ''):
-        for parameter in range(len(part[parameter_key])):
+    
+    for i, parameter_key in enumerate(PARAMETERS_KEYS):
+        if part.get(parameter_key, ''):
             parameter_name = parameter_key
-            parameter_value = str(part[parameter_key]).upper()
-            # Append to parameters dictionary
-            part_info['parameters'][parameter_name] = parameter_value
+            parameter_value = part[parameter_key]
+            if isinstance(parameter_value, list):
+                parameter_string = ', '.join(parameter_value)
+                part_info['parameters'][parameter_name] = parameter_string
+            else:
+                # Append to parameters dictionary
+                part_info['parameters'][parameter_name] = parameter_value
 
     # Pricing
     part_info['pricing'] = {}
