@@ -10,6 +10,9 @@ Element14:
 Farnell:
   enable: true
   name: Farnell
+Jameco:
+  enable: true
+  name: Jameco
 Newark:
   enable: true
   name: Newark

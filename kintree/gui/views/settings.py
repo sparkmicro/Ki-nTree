@@ -81,6 +81,13 @@ for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
             ft.TextField(),
             None,
         ]
+    elif supplier == 'Jameco':
+        jameco_api_settings = config_interface.load_file(global_settings.CONFIG_JAMECO_API)
+        supplier_settings[supplier]['API URL'] = [
+            jameco_api_settings['JAMECO_API_URL'],
+            ft.TextField(),
+            None,
+        ]
     elif supplier == 'TME':
         tme_api_settings = config_interface.load_file(global_settings.CONFIG_TME_API)
         supplier_settings[supplier]['API Token'] = [
@@ -672,6 +679,15 @@ class SupplierSettingsView(SettingsView):
             }
             lcsc_settings = {**settings_from_file, **updated_settings}
             config_interface.dump_file(lcsc_settings, global_settings.CONFIG_LCSC_API)
+        elif supplier == 'Jameco':
+            # Load settings from file
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_JAMECO_API)
+            # Update settings values
+            updated_settings = {
+                'JAMECO_API_URL': SETTINGS[self.title][supplier]['API URL'][1].value,
+            }
+            jameco_settings = {**settings_from_file, **updated_settings}
+            config_interface.dump_file(jameco_settings, global_settings.CONFIG_JAMECO_API)
         elif supplier == 'TME':
             # Load settings from file
             settings_from_file = config_interface.load_file(global_settings.CONFIG_TME_API)
@@ -708,6 +724,9 @@ class SupplierSettingsView(SettingsView):
         elif supplier == 'LCSC':
             from ...search import lcsc_api
             result = lcsc_api.test_api()
+        elif supplier == 'Jameco':
+            from ...search import jameco_api
+            result = jameco_api.test_api()
         elif supplier == 'TME':
             from ...search import tme_api
             result = tme_api.test_api()

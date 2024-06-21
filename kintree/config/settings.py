@@ -178,6 +178,10 @@ CONFIG_ELEMENT14_API = os.path.join(CONFIG_USER_FILES, 'element14_api.yaml')
 CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
 CONFIG_LCSC_API = os.path.join(CONFIG_USER_FILES, 'lcsc_api.yaml')
 
+# JAMECO user configuration
+CONFIG_JAMECO = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'jameco_config.yaml'))
+CONFIG_JAMECO_API = os.path.join(CONFIG_USER_FILES, 'jameco_api.yaml')
+
 # TME user configuration
 CONFIG_TME = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'tme_config.yaml'))
 CONFIG_TME_API = os.path.join(CONFIG_USER_FILES, 'tme_api.yaml')
