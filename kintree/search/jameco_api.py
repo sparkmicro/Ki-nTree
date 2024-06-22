@@ -64,12 +64,11 @@ def fetch_part_info(part_number: str) -> dict:
     # Query part number
     try:
         part = search_timeout()
+        # Extract results, select first in returned search List
+        part = part.get('results', None)
+        part = part[0]
     except:
         part = None
-
-    # Extract results, select first in returned search List
-    part = part.get('results', None)
-    part = part[0]
 
     if not part:
         return part_info
