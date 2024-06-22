@@ -1,3 +1,4 @@
+import html
 import re
 from ..common.tools import download
 
@@ -84,19 +85,19 @@ def fetch_part_info(part_number: str) -> dict:
     headers = SEARCH_HEADERS
 
     for key in part:
-        if key in headers:
+        if key in headers: 
             if key == 'imageUrl':
                 try:
                     part_info[key] = part['imageUrl']
                 except IndexError:
                     pass
-            elif key in ['title', 'name']:
+            elif key in ['title', 'name', 'category']:
                 # Jameco title/name is often >100 chars, which causes an error later. Check for it here.
                 if (len(part[key]) > 100):
                     trimmed_value = str(part[key])[:100]
-                    part_info[key] = trimmed_value
+                    part_info[key] = html.unescape(trimmed_value)  # Json data sometimes has HTML encoded chars, e.g. &quot;
                 else:
-                    part_info[key] = part[key]
+                    part_info[key] = html.unescape(part[key])
             else:
                 part_info[key] = part[key]
 
