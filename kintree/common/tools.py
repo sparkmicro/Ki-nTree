@@ -75,7 +75,7 @@ def get_image_with_retries(url, headers, retries=3, wait=5, silent=False):
         except Exception as e:
             cprint(f'[INFO]\tWarning: Image download Attempt {attempt + 1} encountered an error: {e}. Retrying in {wait} seconds...', silent=silent)
         time.sleep(wait)
-    cprint(f'[INFO]\tWarning: All Image download attempts failed. Could not retrieve the image.', silent=silent)
+    cprint('[INFO]\tWarning: All Image download attempts failed. Could not retrieve the image.', silent=silent)
     return None
 
 
@@ -87,9 +87,9 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
     import requests
 
     headers = {
-       'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.106 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.106 Safari/537.36',
         'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-        'Accept-Encoding':'Accept-Encoding: gzip, deflate, br',
+        'Accept-Encoding': 'Accept-Encoding: gzip, deflate, br',
         'Accept-Language': 'en-US,en;q=0.9',
         'Connection': 'keep-alive',
         'Cache-Control': 'no-cache',
@@ -168,5 +168,5 @@ def download_with_retry(url: str, full_path: str, silent=False, **kwargs) -> str
     if not file:
         return False
 
-    cprint(f'[INFO]\tSuccess: Part image downloaded', silent=silent)
+    cprint('[INFO]\tSuccess: Part image downloaded', silent=silent)
     return True

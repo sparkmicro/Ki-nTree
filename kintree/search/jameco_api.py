@@ -85,7 +85,7 @@ def fetch_part_info(part_number: str) -> dict:
     headers = SEARCH_HEADERS
 
     for key in part:
-        if key in headers: 
+        if key in headers:
             if key == 'imageUrl':
                 try:
                     part_info[key] = part['imageUrl']
