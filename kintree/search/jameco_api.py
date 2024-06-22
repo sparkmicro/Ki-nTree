@@ -128,8 +128,8 @@ def fetch_part_info(part_number: str) -> dict:
     price_break_list.pop()  # remove last empty element in List
 
     for i in range(0, len(price_break_list), 2):
-        quantity = price_break_list[i]
-        price = price_break_list[i + 1]
+        quantity = int(price_break_list[i])
+        price = float(price_break_list[i + 1])
         part_info['pricing'][quantity] = price
 
     part_info['currency'] = 'USD'
