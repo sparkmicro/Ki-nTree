@@ -37,6 +37,7 @@ def get_default_search_keys():
         'imageUrl',
     ]
 
+
 def find_categories(part_details: str):
     ''' Find categories '''
     try:
@@ -89,7 +90,7 @@ def fetch_part_info(part_number: str) -> dict:
                     part_info[key] = part['imageUrl']
                 except IndexError:
                     pass
-            elif key in ['title','name']:
+            elif key in ['title', 'name']:
                 # Jameco title/name is often >100 chars, which causes an error later. Check for it here.
                 if (len(part[key]) > 100):
                     trimmed_value = str(part[key])[:100]
@@ -102,7 +103,6 @@ def fetch_part_info(part_number: str) -> dict:
     # Parameters
     part_info['parameters'] = {}
 
-    
     for i, parameter_key in enumerate(PARAMETERS_KEYS):
         if part.get(parameter_key, ''):
             parameter_name = parameter_key
@@ -120,15 +120,15 @@ def fetch_part_info(part_number: str) -> dict:
     # Jameco returns price breaks as a string of HTML text
     # Convert pricing string pattern to List, then  dictionary for Ki-nTree
     price_break_str = part['secondary_prices']
-    price_break_str = re.sub('(\&lt;br\s\/&*gt)','', price_break_str)
+    price_break_str = re.sub('(\&lt;br\s\/&*gt)', '', price_break_str)
     price_break_str = re.sub(';', ':', price_break_str)
     price_break_str = re.sub('(\:\s+\$)|\;', ':', price_break_str)
     price_break_list = price_break_str.split(':')
-    price_break_list.pop() # remove last empty element in List
+    price_break_list.pop()  # remove last empty element in List
 
     for i in range(0, len(price_break_list), 2):
         quantity = price_break_list[i]
-        price = price_break_list[i+1]
+        price = price_break_list[i + 1]
         part_info['pricing'][quantity] = price
 
     part_info['currency'] = 'USD'
@@ -151,7 +151,7 @@ def test_api() -> bool:
     test_success = True
 
     expected = {
-        'manufacturer_part_number':'PN2222ABU',
+        'manufacturer_part_number': 'PN2222ABU',
         'name': 'Transistor PN2222A NPN Silicon General Purpose TO-92',
         'prod_id': '178511',
     }
