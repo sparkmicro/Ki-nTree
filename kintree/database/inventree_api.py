@@ -470,12 +470,6 @@ def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
     datasheet_name = f'{part_id}_datasheet.pdf'
     datasheet_location = settings.search_datasheets + datasheet_name
 
-    # some distributors/manufacturers implement
-    # redirects which don't allow direct downloads
-    if 'gotoUrl' in datasheet_url and 'www.ti.com' in datasheet_url:
-        mpn = datasheet_url.split('%2F')[-1]
-        datasheet_url = f'https://www.ti.com/lit/ds/symlink/{mpn}.pdf'
-
     # Download datasheet (multiple attempts)
     if not download_with_retry(datasheet_url,
                                datasheet_location,
