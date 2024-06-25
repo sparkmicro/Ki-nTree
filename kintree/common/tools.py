@@ -86,6 +86,7 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
     import urllib.request
     import requests
 
+    # A more detailed headers was needed for request to Jameco
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.106 Safari/537.36',
         'Accept': 'applicaiton/json,image/webp,image/apng,image/*,*/*;q=0.8',
@@ -125,10 +126,19 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
                     return None
             return file
         else:
-            url_data = urllib.request.urlopen(url)
-            data = url_data.read()
-            data_json = json.loads(data.decode('utf-8'))
-            return data_json
+            # some suppliers work with requests.get(), others need urllib.request.urlopen()
+            try:
+                response = requests.get(url)
+                data_json = response.json()
+                return data_json
+            except requests.exceptions.JSONDecodeError:
+                try:
+                    url_data = urllib.request.urlopen(url)
+                    data = url_data.read()
+                    data_json = json.loads(data.decode('utf-8'))
+                    return data_json
+                finally:
+                    pass
     except (socket.timeout, requests.exceptions.ConnectTimeout, requests.exceptions.ReadTimeout):
         cprint(f'[INFO]\tWarning: {filetype} download socket timed out ({timeout}s)', silent=silent)
     except (urllib.error.HTTPError, requests.exceptions.ConnectionError):
