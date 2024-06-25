@@ -120,10 +120,11 @@ def fetch_part_info(part_number: str) -> dict:
     # Jameco returns price breaks as a string of HTML text
     # Convert pricing string pattern to List, then  dictionary for Ki-nTree
     price_break_str = part['secondary_prices']
-    price_break_str = re.sub('(\&lt;br\s\/&*gt)', '', price_break_str)
-    price_break_str = re.sub(';', ':', price_break_str)
-    price_break_str = re.sub('(\:\s+\$)|\;', ':', price_break_str)
-    price_break_list = price_break_str.split(':')
+    price_break_str = price_break_str.replace(',', '')  # remove comma
+    price_break_str = re.sub('(\&lt;br\s\/&*gt)', '', price_break_str)  # remove HTML
+    price_break_str = re.sub(';', ':', price_break_str)  # remove ; char
+    price_break_str = re.sub('(\:\s+\$)|\;', ':', price_break_str)  # remove $ char
+    price_break_list = price_break_str.split(':')  # split on :
     price_break_list.pop()  # remove last empty element in List
 
     for i in range(0, len(price_break_list), 2):
