@@ -462,30 +462,32 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
         return False
 
 
-def upload_part_datasheet(datasheet_url: str, part_id: int) -> str:
+def upload_part_datasheet(datasheet_url: str, part_ipn: int, part_pk: int) -> str:
     ''' Upload InvenTree part attachment'''
     global inventree_api
 
-    # Get attachment full path
-    datasheet_name = f'{os.path.basename(datasheet_url)}'
-    # inventree needs .pdf at the end of filename to recognize a PDF
-    if not datasheet_name.lower().endswith('.pdf'):
-        datasheet_name += '.pdf'
-    datasheet_location = settings.search_datasheets + datasheet_name
+    datasheet_name = f'{part_ipn}.pdf'
+    # Get datasheet path based on user settings for local storage
+    if settings.DATASHEET_SAVE_ENABLED:
+        datasheet_location = os.path.join(settings.DATASHEET_SAVE_PATH, datasheet_name)
+    else:
+        datasheet_location = os.path.join(settings.search_datasheets, datasheet_name)
 
-    # Download image (multiple attempts)
-    if not download_with_retry(datasheet_url,
-                               datasheet_location,
-                               filetype='PDF',
-                               timeout=10):
-        return ''
+    if not os.path.isfile(datasheet_location):
+        # Download datasheet (multiple attempts)
+        if not download_with_retry(
+            datasheet_url,
+            datasheet_location,
+            filetype='PDF',
+            timeout=10
+        ):
+            return ''
 
     # Upload Datasheet to InvenTree
-    part = Part(inventree_api, part_id)
+    part = Part(inventree_api, part_pk)
     if part:
         try:
             attachment = part.uploadAttachment(attachment=datasheet_location)
-            os.remove(datasheet_location)
             return f'{inventree_api.base_url.strip("/")}{attachment["attachment"]}'
         except Exception:
             return ''

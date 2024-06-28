@@ -80,6 +80,12 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
         opener.addheaders = list(headers.items())
         urllib.request.install_opener(opener)
     try:
+        if filetype == 'PDF':
+            # some distributors/manufacturers implement
+            # redirects which don't allow direct downloads
+            if 'gotoUrl' in url and 'www.ti.com' in url:
+                mpn = url.split('%2F')[-1]
+                url = f'https://www.ti.com/lit/ds/symlink/{mpn}.pdf'
         if filetype == 'Image' or filetype == 'PDF':
             # Enable use of requests library for downloading files (some URLs do NOT work with urllib)
             if requests_lib:

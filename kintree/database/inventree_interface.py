@@ -646,14 +646,17 @@ def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, foot
                 image_result = inventree_api.upload_part_image(inventree_part['image'], part_pk)
                 if not image_result:
                     cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
-            if inventree_part['datasheet'] and settings.DATASHEET_UPLOAD:
-                # Upload datasheet
-                datasheet_link = inventree_api.upload_part_datasheet(inventree_part['datasheet'], part_pk)
-                if not datasheet_link:
-                    cprint('[TREE]\tWarning: Failed to upload part datasheet', silent=settings.SILENT)
-                # TODO: this is messing up with the datasheet download to local folder
-                # else:
-                #     inventree_part['datasheet'] = datasheet_link
+        if inventree_part['datasheet'] and settings.DATASHEET_UPLOAD:
+            # Upload datasheet
+            datasheet_link = inventree_api.upload_part_datasheet(
+                datasheet_url=inventree_part['datasheet'],
+                part_ipn=inventree_part['IPN'],
+                part_pk=part_pk,
+            )
+            if not datasheet_link:
+                cprint('[TREE]\tWarning: Failed to upload part datasheet', silent=settings.SILENT)
+            else:
+                cprint('[TREE]\tSuccess: Uploaded part datasheet', silent=settings.SILENT)
 
         if kicad:
             try:
@@ -843,8 +846,14 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
     if settings.DATASHEET_UPLOAD and not attachment:
         if datasheet:
             part_info['datasheet'] = inventree_api.upload_part_datasheet(
-                part_id=part_pk,
-                datasheet_url=datasheet)
+                datasheet_url=datasheet,
+                part_ipn=part_ipn,
+                part_pk=part_id,
+            )
+            if not part_info['datasheet']:
+                cprint('[TREE]\tWarning: Failed to upload part datasheet', silent=settings.SILENT)
+            else:
+                cprint('[TREE]\tSuccess: Uploaded part datasheet', silent=settings.SILENT)
     # if an attachment is present, set it as the datasheet field
     if attachment:
         part_info['datasheet'] = f'{inventree_api.inventree_api.base_url.strip("/")}{attachment[0]["attachment"]}'
