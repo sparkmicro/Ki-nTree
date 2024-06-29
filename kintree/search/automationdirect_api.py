@@ -28,11 +28,11 @@ PARAMETERS_MAP = [
     'tech_attributes',  # List of parameters, not list of dictionaries, changes based on product returned
 ]
 
-# PRICING_MAP = [
-#     'productPriceList', # This is a List of Dictionaries, each dictionary contains pricing information for different quantities
-#     'ladder',           # this is the key name for the quantity that the price is for each
-#     'usdPrice',         # this is the key name for price per each for the quantity above
-# ]
+PRICING_MAP = [
+    'ordering_attributes',  # List, e.g. ['Is Cut To Length: True', 'Maximum Cut Length: 2500', 'Minimum Cut Length: 25']
+    'price',                # Automation Direct only has one price, no price breaks
+    'unit_of_measure',      # e.g. 'FT'
+]
 
 
 def get_default_search_keys():
@@ -64,6 +64,7 @@ def fetch_part_info(part_number: str) -> dict:
 
     # Load Automation Direct settingss
     import re
+    from ..common.tools import cprint
     from ..config import settings, config_interface
     automationdirect_api_settings = config_interface.load_file(settings.CONFIG_AUTOMATIONDIRECT_API)
 
@@ -182,25 +183,49 @@ def fetch_part_info(part_number: str) -> dict:
                 # Append to parameters dictionary
                 part_info['parameters'][parameter_name] = parameter_value
 
-    # # Pricing
-    # part_info['pricing'] = {}
-    # [pricing_key, qty_key, price_key] = PRICING_MAP
+    # Pricing
+    part_info['pricing'] = {}
+    [ordering_attributes, price_key, unit_per_price] = PRICING_MAP
 
-    # for price_break in part[pricing_key]:
-    #     quantity = price_break[qty_key]
-    #     price = price_break[price_key]
-    #     part_info['pricing'][quantity] = price
+    # Parse out ordering attributes
+    pricing_attributes = {}
+    price_per_unit = part[price_key]
+    try:
+        for attribute in part[ordering_attributes]:
+            attribute = attribute.split(':')
+            attribute = [x.strip() for x in attribute]
+            pricing_attributes[str(attribute[0])] = attribute[1]
+
+        min_quantity = int(pricing_attributes['Minimum Cut Length'])
+        max_quanitity = int(pricing_attributes['Maximum Cut Length'])
+        
+        price_per_unit = part[price_key]
+
+        # Automation Direct doesn't have price breaks, but we can create common set quanitities for reference
+        quantities = [100, 250, 500, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 14000, 15000]
+        quantities.insert(0, min_quantity)
+        quantities.append(max_quanitity)
+        quantities.sort()
+        quantities = [qty for qty in quantities if qty <= max_quanitity]
+        for i in range(len(quantities)-1):
+            ext_price = price_per_unit * quantities[i]
+            part_info['pricing'][quantities[i]] = price_per_unit
+    
+    except KeyError as e:
+        from ..common.tools import cprint
+        cprint(f'[INFO]\tNo pricing attribute "{e.args[0]}" found for "{part_number}"')
+        part_info['pricing']['1'] = price_per_unit
 
     part_info['currency'] = 'USD'
 
-    # # Extra search fields
-    # if settings.CONFIG_LCSC.get('EXTRA_FIELDS', None):
-    #     for extra_field in settings.CONFIG_LCSC['EXTRA_FIELDS']:
-    #         if part.get(extra_field, None):
-    #             part_info['parameters'][extra_field] = part[extra_field]
-    #         else:
-    #             from ..common.tools import cprint
-    #             cprint(f'[INFO]\tWarning: Extra field "{extra_field}" not found in search results', silent=False)
+    # Extra search fields
+    if settings.CONFIG_AUTOMATIONDIRECT.get('EXTRA_FIELDS', None):
+        for extra_field in settings.CONFIG_AUTOMATIONDIRECT['EXTRA_FIELDS']:
+            if part.get(extra_field, None):
+                part_info['parameters'][extra_field] = part[extra_field]
+            else:
+                from ..common.tools import cprint
+                cprint(f'[INFO]\tWarning: Extra field "{extra_field}" not found in search results', silent=False)
 
     return part_info
 
