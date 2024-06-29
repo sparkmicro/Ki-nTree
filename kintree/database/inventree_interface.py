@@ -5,7 +5,7 @@ from ..common import part_tools, progress
 from ..common.tools import cprint
 from ..config import config_interface
 from ..database import inventree_api
-from ..search import search_api, digikey_api, mouser_api, element14_api, lcsc_api, jameco_api, tme_api
+from ..search import search_api, automationdirect_api, digikey_api, mouser_api, element14_api, lcsc_api, jameco_api, tme_api
 
 category_separator = '/'
 
@@ -405,6 +405,9 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
             user_search_key = settings.CONFIG_JAMECO.get(user_key, None)
         elif supplier == 'TME':
             user_search_key = settings.CONFIG_TME.get(user_key, None)
+        elif supplier == 'AutomationDirect':
+            user_search_key = settings.CONFIG_AUTOMATIONDIRECT.get(user_key, None)
+
         else:
             return default_value
         
@@ -431,6 +434,8 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
         default_search_keys = jameco_api.get_default_search_keys()
     elif supplier == 'TME':
         default_search_keys = tme_api.get_default_search_keys()
+    elif supplier == 'AutomationDirect':
+        default_search_keys = automationdirect_api.get_default_search_keys()
     else:
         # Empty array of default search keys
         default_search_keys = [''] * len(digikey_api.get_default_search_keys())
@@ -486,6 +491,9 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
             part_info = jameco_api.fetch_part_info(part_number)
         elif supplier == 'TME':
             part_info = tme_api.fetch_part_info(part_number)
+        elif supplier == 'AutomationDirect':
+            part_info = automationdirect_api.fetch_part_info(part_number)
+
 
     # Check supplier data exist
     if not part_info:

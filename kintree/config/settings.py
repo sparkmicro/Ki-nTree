@@ -182,6 +182,10 @@ CONFIG_LCSC_API = os.path.join(CONFIG_USER_FILES, 'lcsc_api.yaml')
 CONFIG_JAMECO = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'jameco_config.yaml'))
 CONFIG_JAMECO_API = os.path.join(CONFIG_USER_FILES, 'jameco_api.yaml')
 
+# AUTOMATIONDIRECT user configuration
+CONFIG_AUTOMATIONDIRECT = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'automationdirect_config.yaml'))
+CONFIG_AUTOMATIONDIRECT_API = os.path.join(CONFIG_USER_FILES, 'automationdirect_api.yaml')
+
 # TME user configuration
 CONFIG_TME = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'tme_config.yaml'))
 CONFIG_TME_API = os.path.join(CONFIG_USER_FILES, 'tme_api.yaml')
