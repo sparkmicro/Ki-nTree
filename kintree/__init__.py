@@ -4,8 +4,8 @@
 # VERSION INFORMATION
 version_info = {
     'MAJOR_REVISION': 1,
-    'MINOR_REVISION': 0,
-    'RELEASE_STATUS': '0dev',
+    'MINOR_REVISION': 1,
+    'RELEASE_STATUS': '99dev',
 }
 
 __version__ = '.'.join([str(v) for v in version_info.values()])

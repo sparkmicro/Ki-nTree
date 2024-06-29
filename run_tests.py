@@ -271,7 +271,7 @@ if __name__ == '__main__':
                             cprint(f'[DBUG]\tpart_pk = {part_pk}')
 
                     # Disable datasheet download/upload after first part (to speed up testing)
-                    settings.DATASHEET_UPLOAD = False
+                    # settings.DATASHEET_UPLOAD = False
 
         if ENABLE_TEST_METHODS:
             methods = [

@@ -1546,17 +1546,23 @@ class CreateView(MainView):
             return self.process_cancel()
         
         # Final operations
-        # Download datasheet
+        # Download a local version of the part datasheet
         if settings.DATASHEET_SAVE_ENABLED:
-            datasheet_url = part_info.get('datasheet', None)
-            if datasheet_url:
-                filename = os.path.join(
-                    settings.DATASHEET_SAVE_PATH,
-                    f'{part_info.get("IPN", "datasheet")}.pdf',
-                )
-                cprint('\n[MAIN]\tDownloading Datasheet')
-                if download_with_retry(datasheet_url, filename, filetype='PDF', timeout=10):
-                    cprint(f'[INFO]\tSuccess: Datasheet saved to {filename}')
+            filename = os.path.join(
+                settings.DATASHEET_SAVE_PATH,
+                f'{part_info.get("IPN", "datasheet")}.pdf',
+            )
+            if settings.DATASHEET_UPLOAD and os.path.isfile(filename):
+                # Datasheet was already downloaded
+                cprint('\n[MAIN]\tDatasheet')
+                cprint(f'[INFO]\tSuccess: Datasheet file exists ({filename})')
+            else:
+                # Datasheet needs to be downloaded
+                datasheet_url = part_info.get('datasheet', None)
+                if datasheet_url:
+                    cprint('\n[MAIN]\tDownloading Datasheet')
+                    if download_with_retry(datasheet_url, filename, filetype='PDF', timeout=10):
+                        cprint(f'[INFO]\tSuccess: Datasheet saved to {filename}')
         # Open browser
         if settings.ENABLE_INVENTREE:
             if part_info.get('inventree_url', None):
