@@ -1,0 +1,5 @@
+AUTOMATIONDIRECT_API_ROOT_URL: "https://www.automationdirect.com"
+AUTOMATIONDIRECT_API_URL: "https://www.automationdirect.com/ajax?&fctype=adc.falcon.search.SearchFormCtrl&cmd=AjaxSearch"
+AUTOMATIONDIRECT_API_SEARCH_QUERY: "&searchquery="              # can be anything but probably best to set to search term
+AUTOMATIONDIRECT_API_SEARCH_STRING: "&solrQueryString=q%3D"     # append search term to this and combine with other params
+AUTOMATIONDIRECT_API_IMAGE_PATH: "https://cdn.automationdirect.com/images/products/medium/m_" # image path for medium size image on product page
