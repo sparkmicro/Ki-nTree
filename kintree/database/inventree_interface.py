@@ -494,7 +494,6 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
         elif supplier == 'AutomationDirect':
             part_info = automationdirect_api.fetch_part_info(part_number)
 
-
     # Check supplier data exist
     if not part_info:
         cprint(f'[INFO]\tError: Failed to fetch data for "{part_number}"', silent=settings.SILENT)
