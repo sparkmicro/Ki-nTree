@@ -73,9 +73,16 @@ def fetch_part_info(part_number: str) -> dict:
 
     @timeout(dec_timeout=20)
     def search_timeout():
-        request = MouserPartSearchRequest('partnumber')
-        request.part_search(part_number)
-        return request.get_clean_response()
+        try:
+            request = MouserPartSearchRequest('partnumber')
+            request.part_search(part_number)
+        except FileNotFoundError as e:
+            error_message = repr(e.args[0])
+            error_message = error_message.strip("'")
+            from ..common.tools import cprint
+            cprint(f'[INFO] Warning: {error_message}', silent=False)
+        finally:
+            return request.get_clean_response()
 
     # Query part number
     try:
