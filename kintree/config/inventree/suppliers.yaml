@@ -13,7 +13,7 @@ Farnell:
 Jameco:
   enable: true
   name: Jameco
-Automation Direct:
+AutomationDirect:
   enable: true
   name: Automation Direct
 Newark:

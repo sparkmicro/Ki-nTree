@@ -405,7 +405,7 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
             user_search_key = settings.CONFIG_JAMECO.get(user_key, None)
         elif supplier == 'TME':
             user_search_key = settings.CONFIG_TME.get(user_key, None)
-        elif supplier == 'Automation Direct':
+        elif supplier == 'AutomationDirect':
             user_search_key = settings.CONFIG_AUTOMATIONDIRECT.get(user_key, None)
 
         else:
@@ -434,7 +434,7 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
         default_search_keys = jameco_api.get_default_search_keys()
     elif supplier == 'TME':
         default_search_keys = tme_api.get_default_search_keys()
-    elif supplier == 'Automation Direct':
+    elif supplier == 'AutomationDirect':
         default_search_keys = automationdirect_api.get_default_search_keys()
     else:
         # Empty array of default search keys
@@ -495,7 +495,7 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
             part_info = jameco_api.fetch_part_info(part_number)
         elif supplier == 'TME':
             part_info = tme_api.fetch_part_info(part_number)
-        elif supplier == 'Automation Direct':
+        elif supplier == 'AutomationDirect':
             part_info = automationdirect_api.fetch_part_info(part_number)
 
     # Check supplier data exist

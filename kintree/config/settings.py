@@ -149,9 +149,11 @@ def load_suppliers():
     for supplier, data in CONFIG_SUPPLIERS.items():
         if data['enable']:
             if data['name']:
-                SUPPORTED_SUPPLIERS_API.append(data['name'])
+                supplier_name = data['name'].replace(' ', '')
+                SUPPORTED_SUPPLIERS_API.append(supplier_name)
             else:
-                SUPPORTED_SUPPLIERS_API.append(supplier)
+                supplier_key = supplier.replace(' ', '')
+                SUPPORTED_SUPPLIERS_API.append(supplier_key)
 
 
 load_suppliers()
