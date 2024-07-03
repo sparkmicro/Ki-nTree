@@ -110,14 +110,14 @@ for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
             ft.TextField(),
             None,
         ]
-    elif supplier == 'AuotmationDirect':
-        automationdirect_api_settings = config_interface.load_file(global_settings.CONFIG_TME_API)
+    elif supplier == 'Automation Direct':
+        automationdirect_api_settings = config_interface.load_file(global_settings.CONFIG_AUTOMATIONDIRECT_API)
         supplier_settings[supplier]['API Top-Level Root Domain'] = [
             automationdirect_api_settings['AUTOMATIONDIRECT_API_ROOT_URL'],
             ft.TextField(),
             None,
         ]
-        supplier_settings[supplier]['API URL'] = [
+        supplier_settings[supplier]['API URL Path'] = [
             automationdirect_api_settings['AUTOMATIONDIRECT_API_URL'],
             ft.TextField(),
             None,
@@ -132,7 +132,7 @@ for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
             ft.TextField(),
             None,
         ]
-        supplier_settings[supplier]['API Image URL Path'] = [
+        supplier_settings[supplier]['API Image Path URL'] = [
             automationdirect_api_settings['AUTOMATIONDIRECT_API_IMAGE_PATH'],
             ft.TextField(),
             None,
@@ -728,12 +728,12 @@ class SupplierSettingsView(SettingsView):
             }
             tme_settings = {**settings_from_file, **updated_settings}
             config_interface.dump_file(tme_settings, global_settings.CONFIG_TME_API)
-        elif supplier == 'AutomationDirect':
+        elif supplier == 'Automation Direct':
             # Load settings from file
-            settings_from_file = config_interface.load_file(global_settings.CONFIG_TME_API)
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_AUTOMATIONDIRECT_API)
             # Update settings values
             updated_settings = {
-                'AUTOMATIONDIRECT_API_ROOT_URL': SETTINGS[self.title][supplier]['API Root Level Domain'][1].value,
+                'AUTOMATIONDIRECT_API_ROOT_URL': SETTINGS[self.title][supplier]['API Top-Level Root Domain'][1].value,
                 'AUTOMATIONDIRECT_API_URL': SETTINGS[self.title][supplier]['API URL Path'][1].value,
                 'AUTOMATIONDIRECT_API_SEARCH_QUERY': SETTINGS[self.title][supplier]['API Search Query'][1].value,
                 'AUTOMATIONDIRECT_API_SEARCH_STRING': SETTINGS[self.title][supplier]['API Search String'][1].value,
@@ -766,13 +766,13 @@ class SupplierSettingsView(SettingsView):
         elif supplier == 'LCSC':
             from ...search import lcsc_api
             result = lcsc_api.test_api()
-        elif supplier == 'Jameco':
-            from ...search import jameco_api
-            result = jameco_api.test_api()
         elif supplier == 'TME':
             from ...search import tme_api
             result = tme_api.test_api()
-        elif supplier == 'AutomationDirect':
+        elif supplier == 'Jameco':
+            from ...search import jameco_api
+            result = jameco_api.test_api()
+        elif supplier == 'Automation Direct':
             from ...search import automationdirect_api
             result = automationdirect_api.test_api()
 

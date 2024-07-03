@@ -235,23 +235,25 @@ def test_api() -> bool:
 
     test_success = True
     expected = {
-        'image_file_name': 'bx16nd3.jpg',
+        'image_file_name': 'https://cdn.automationdirect.com/images/products/medium/m_bx16nd3.jpg',
         'item_code': 'BX-16ND3',
-        'manual_url': 'brxuserm.html',
+        'manual_url': 'https://www.automationdirect.com/static/manuals/brxuserm/brxuserm.html',
         'unit_of_measure': 'EA',
-        "tech_attributes": [
-            "Brand: BRX",
-            "Item: Input module",
-            "I/O Module Type: Discrete",
-            "Number of Input Points: 16",
-            "Nominal Input Voltage: 12-24 VDC",
-            "Discrete Input Type: Sinking/sourcing",
-            "Fast Response: No",
-            "Number of Isolated Input Commons: 4",
-            "Number of Points per Common: 4",
-            "Requires: BX-RTB10, BX-RTB10-1 or BX-RTB10-2 terminal block kit or ZIPLink pre-wired cables",
-            "Programming Software: Do-more Designer programming software v2.0 or later"
-        ],
+        "parameters":
+            {
+                'Brand': 'BRX',
+                'Item': 'Input module',
+                'IO Module Type': 'Discrete',
+                'Number of Input Points': '16',
+                'Min Input Voltage': '12',
+                'Max Input Voltage': '24',
+                'Nominal Input Voltage': '12-24',
+                'Discrete Input Type': 'Sinking/sourcing',
+                'Fast Response': 'No', 'Number of Isolated Input Commons': '4',
+                'Number of Points per Common': '4',
+                'Requires': 'BX-RTB10, BX-RTB10-1 or BX-RTB10-2 terminal block kit or ZIPLink pre-wired cables',
+                'Programming Software': 'Do-more Designer programming software v2.0 or later'
+            }
     }
 
     test_part = fetch_part_info('BX-16ND3')
