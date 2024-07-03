@@ -468,8 +468,12 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
 
     store = ''
     if supplier in ['Farnell', 'Newark', 'Element14']:
-        element14_config = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
-        store = element14_config.get(f'{supplier.upper()}_STORE', '').replace(' ', '')
+        try:
+            element14_config = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
+            store = element14_config.get(f'{supplier.upper()}_STORE', '').replace(' ', '')
+        except AttributeError:
+            cprint(f'\n[INFO]\tWarning: {supplier.upper()}_STORE value not found', silent=False)
+
     search_filename = f"{settings.search_results['directory']}{supplier}{store}_{part_number}{settings.search_results['extension']}"
     # Get cached data, if cache is enabled (else returns None)
     part_cache = search_api.load_from_file(search_filename, test_mode)
