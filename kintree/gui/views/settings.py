@@ -742,7 +742,6 @@ class SupplierSettingsView(SettingsView):
             automationdirect_settings = {**settings_from_file, **updated_settings}
             config_interface.dump_file(automationdirect_settings, global_settings.CONFIG_AUTOMATIONDIRECT_API)
 
-            
         if show_dialog:
             self.show_dialog(
                 d_type=DialogType.VALID,
@@ -775,7 +774,6 @@ class SupplierSettingsView(SettingsView):
         elif supplier == 'AutomationDirect':
             from ...search import automationdirect_api
             result = automationdirect_api.test_api()
-
 
         if result:
             self.show_dialog(

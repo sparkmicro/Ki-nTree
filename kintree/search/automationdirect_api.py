@@ -1,4 +1,4 @@
-from ..common.tools import download, cprint
+from ..common.tools import download
 
 # These are the 'keys' we want to pull out response
 SEARCH_HEADERS = [
@@ -174,7 +174,7 @@ def fetch_part_info(part_number: str) -> dict:
                     min_value = min(values_list)
                     max_value = max(values_list)
                     part_info['parameters']['Min Output Voltage'] = min_value
-                    part_info['parameters']['Max Output Voltage'] = max_value  
+                    part_info['parameters']['Max Output Voltage'] = max_value
                 else:
                     # more than one range, copy into set param fields
                     part_info['parameters']['Min Output Voltage'] = parameter_value
@@ -207,8 +207,7 @@ def fetch_part_info(part_number: str) -> dict:
         quantities.append(max_quanitity)
         quantities.sort()
         quantities = [qty for qty in quantities if qty <= max_quanitity]
-        for i in range(len(quantities)-1):
-            ext_price = price_per_unit * quantities[i]
+        for i in range(len(quantities) - 1):
             part_info['pricing'][quantities[i]] = price_per_unit
     
     except KeyError as e:

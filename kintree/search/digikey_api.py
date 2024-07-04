@@ -91,7 +91,7 @@ def fetch_part_info(part_number: str) -> dict:
     part_info = {}
     if not setup_environment():
         from ..common.tools import cprint
-        cprint(f'[INFO]\tWarning: DigiKey API settings are not configured')
+        cprint('[INFO]\tWarning: DigiKey API settings are not configured')
         return part_info
 
     # THIS METHOD CAN SOMETIMES RETURN INCORRECT MATCH

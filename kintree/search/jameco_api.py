@@ -54,7 +54,6 @@ def fetch_part_info(part_number: str) -> dict:
     from ..config import settings, config_interface
     jameco_api_settings = config_interface.load_file(settings.CONFIG_JAMECO_API)
 
-
     part_info = {}
 
     def search_timeout(timeout=10):

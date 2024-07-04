@@ -168,12 +168,12 @@ def build_api_url(part_number: str, supplier: str, store_url=None) -> str:
     api_key = user_settings.get('ELEMENT14_PRODUCT_SEARCH_API_KEY', '')
     if not api_key:
         from ..common.tools import cprint
-        cprint(f'[INFO]\tWarning: ELEMENT14_PRODUCT_SEARCH_API_KEY user value not configured', silent=False)
+        cprint('[INFO]\tWarning: ELEMENT14_PRODUCT_SEARCH_API_KEY user value not configured', silent=False)
 
         import os
         api_key = os.environ.get('ELEMENT14_PART_API_KEY', None)
         if not api_key:
-            cprint(f'[INFO]\tWarning: ELEMENT14_PRODUCT_SEARCH_API_KEY env variable value not found', silent=False)
+            cprint('[INFO]\tWarning: ELEMENT14_PRODUCT_SEARCH_API_KEY env variable value not found', silent=False)
     if not store_url:
         store_url = get_default_store_url(supplier)
 

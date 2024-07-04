@@ -68,7 +68,7 @@ def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://a
         TME_API_SECRET = os.environ.get('TME_API_SECRET', None)
     if not TME_API_TOKEN and not TME_API_SECRET:
         from ..common.tools import cprint
-        cprint(f'[INFO]\tWarning: Value not found for TME_API_TOKEN and/or TME_API_SECRET', silent=False)
+        cprint('[INFO]\tWarning: Value not found for TME_API_TOKEN and/or TME_API_SECRET', silent=False)
         return None
     params['Token'] = TME_API_TOKEN
 
