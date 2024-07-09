@@ -1,3 +1,4 @@
+cloudscraper==1.2.71
 digikey-api>=1.0.0,<2.0
 Flet>=0.22.0,<0.23.0
 thefuzz>=0.19.0,<1.0
