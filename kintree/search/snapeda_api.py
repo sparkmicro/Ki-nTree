@@ -83,7 +83,12 @@ def download_snapeda_images(snapeda_data: dict, silent=False) -> dict:
                 image_location = settings.search_images + image_name
 
                 # Download symbol image
-                symbol = download_with_retry(snapeda_data['symbol_image'], image_location, silent=silent)
+                symbol = download_with_retry(
+                    url=snapeda_data['symbol_image'],
+                    full_path=image_location,
+                    filetype='Image',
+                    silent=silent,
+                )
                 if symbol:
                     images['symbol'] = image_location
         except KeyError:
@@ -96,7 +101,12 @@ def download_snapeda_images(snapeda_data: dict, silent=False) -> dict:
                 image_location = settings.search_images + image_name
 
                 # Download symbol image
-                footprint = download_with_retry(snapeda_data['footprint_image'], image_location, silent=silent)
+                footprint = download_with_retry(
+                    url=snapeda_data['footprint_image'],
+                    full_path=image_location,
+                    filetype='Image',
+                    silent=silent,
+                )
                 if footprint:
                     images['footprint'] = image_location
         except KeyError:
