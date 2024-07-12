@@ -5,8 +5,9 @@ import hmac
 import os
 import urllib.parse
 import urllib.request
+import json
 
-from ..common.tools import download
+# from ..common.tools import download
 from ..config import config_interface, settings
 
 PRICING_MAP = [
@@ -90,6 +91,17 @@ def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://a
     return urllib.request.Request(url, data, headers)
 
 
+def tme_api_query(request: urllib.request.Request) -> dict:
+    response = None
+    try:
+        data = urllib.request.urlopen(request).read().decode('utf8')
+    except urllib.error.HTTPError:
+        data = None
+    if data:
+        response = json.loads(data)
+    return response
+
+
 def fetch_part_info(part_number: str) -> dict:
 
     def search_product(response):
@@ -103,7 +115,8 @@ def fetch_part_info(part_number: str) -> dict:
         return found, index
 
     tme_api_settings = config_interface.load_file(settings.CONFIG_TME_API)
-    response = download(tme_api_request('/Products/GetProducts', tme_api_settings, part_number))
+    response = tme_api_query(tme_api_request('/Products/GetProducts', tme_api_settings, part_number))
+
     if response is None or response['Status'] != 'OK':
         return {}
     # in the case if multiple parts returned
@@ -125,7 +138,7 @@ def fetch_part_info(part_number: str) -> dict:
     part_info['subcategory'] = None
 
     # query the parameters
-    response = download(tme_api_request('/Products/GetParameters', tme_api_settings, part_number))
+    response = tme_api_query(tme_api_request('/Products/GetParameters', tme_api_settings, part_number))
     # check if accidentally no data returned
     if response is None or response['Status'] != 'OK':
         return part_info
@@ -140,7 +153,7 @@ def fetch_part_info(part_number: str) -> dict:
         part_info['parameters'][param['ParameterName']] = param['ParameterValue']
 
     # query the prices
-    response = download(tme_api_request('/Products/GetPrices', tme_api_settings, part_number, currency='USD'))
+    response = tme_api_query(tme_api_request('/Products/GetPrices', tme_api_settings, part_number, currency='USD'))
     # check if accidentally no data returned
     if response is None or response['Status'] != 'OK':
         return part_info
@@ -162,7 +175,7 @@ def fetch_part_info(part_number: str) -> dict:
     part_info['currency'] = response['Data'][currency_key]
 
     # Query the files associated to the product
-    response = download(tme_api_request('/Products/GetProductsFiles', tme_api_settings, part_number))
+    response = tme_api_query(tme_api_request('/Products/GetProductsFiles', tme_api_settings, part_number))
     # check if accidentally no products returned
     if response is None or response['Status'] != 'OK':
         return part_info

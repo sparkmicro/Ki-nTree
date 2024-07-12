@@ -161,14 +161,14 @@ def get_default_store_url(supplier: str) -> str:
     return STORES[supplier][default_store]
 
 
-def build_api_url(part_number: str, supplier: str, store_url=None) -> str:
+def build_api_url(part_number: str, supplier: str, store_url=None, silent=False) -> str:
     ''' Build API URL based on user settings '''
 
     user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
     api_key = user_settings.get('ELEMENT14_PRODUCT_SEARCH_API_KEY', '')
     if not api_key:
         from ..common.tools import cprint
-        cprint('[INFO]\tWarning: ELEMENT14_PRODUCT_SEARCH_API_KEY user value not configured', silent=False)
+        cprint('[INFO]\tWarning: ELEMENT14_PRODUCT_SEARCH_API_KEY user value not configured', silent=silent)
 
         import os
         api_key = os.environ.get('ELEMENT14_PART_API_KEY', None)
@@ -213,13 +213,13 @@ def build_image_url(image_data: dict, supplier: str, store_url=None) -> str:
     return image_url
 
 
-def fetch_part_info(part_number: str, supplier: str, store_url=None) -> dict:
+def fetch_part_info(part_number: str, supplier: str, store_url=None, silent=False) -> dict:
     ''' Fetch part data from API '''
 
     part_info = {}
 
     def search_timeout(timeout=10):
-        url = build_api_url(part_number, supplier, store_url)
+        url = build_api_url(part_number, supplier, store_url, silent)
         response = download(url, timeout=timeout)
         return response
 
@@ -349,7 +349,7 @@ def test_api(store_url=None) -> bool:
     if store_url:
         # If store URL is specified, only check data is returned (eg. avoid discrepancies between stores)
         part_number = '1N4148'
-        test_part = fetch_part_info(part_number, '', store_url)
+        test_part = fetch_part_info(part_number, '', store_url, True)
         if not test_part:
             test_success = False
     else:
@@ -357,7 +357,7 @@ def test_api(store_url=None) -> bool:
             if not test_success:
                 break
 
-            test_part = fetch_part_info(item['part_number'], '', item['store_url'])
+            test_part = fetch_part_info(item['part_number'], '', item['store_url'], True)
 
             if not test_part:
                 test_success = False
