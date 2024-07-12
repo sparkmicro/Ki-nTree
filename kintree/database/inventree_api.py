@@ -439,7 +439,7 @@ def create_category(parent: str, name: str):
     return category_pk, is_new_category
 
 
-def upload_part_image(image_url: str, part_id: int) -> bool:
+def upload_part_image(image_url: str, part_id: int, silent=False) -> bool:
     ''' Upload InvenTree part thumbnail'''
     global inventree_api
 
@@ -448,7 +448,7 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
     image_location = settings.search_images + image_name
 
     # Download image (multiple attempts)
-    if not download_with_retry(image_url, image_location, filetype='Image'):
+    if not download_with_retry(image_url, image_location, filetype='Image', silent=silent):
         return False
 
     # Upload image to InvenTree
@@ -462,7 +462,7 @@ def upload_part_image(image_url: str, part_id: int) -> bool:
         return False
 
 
-def upload_part_datasheet(datasheet_url: str, part_ipn: int, part_pk: int) -> str:
+def upload_part_datasheet(datasheet_url: str, part_ipn: int, part_pk: int, silent=False) -> str:
     ''' Upload InvenTree part attachment'''
     global inventree_api
 
@@ -479,7 +479,8 @@ def upload_part_datasheet(datasheet_url: str, part_ipn: int, part_pk: int) -> st
             datasheet_url,
             datasheet_location,
             filetype='PDF',
-            timeout=10
+            timeout=10,
+            silent=silent,
         ):
             return ''
 

@@ -71,6 +71,14 @@ def load_user_config_files(path_to_root: str, path_to_user_files: str, silent=Tr
                     user_settings = {**template_data, **user_data}
                 else:
                     user_settings = user_data
+                    # Warn user about config data discrepancies with template data
+                    template_vs_user = set(template_data) - set(user_data)
+                    # user_vs_template = set(user_data) - set(template_data)
+                    if template_vs_user:
+                        print(f'[INFO]\tTEMPLATE "{filename}" configuration file contains the following keys which are NOT in your user settings: {template_vs_user}')
+                    # if user_vs_template:
+                    #     cprint(f'[INFO]\tUSER SETTINGS {filename} configuration file contains the following keys which are NOT in the template: {user_vs_template}', silent=silent)
+
             except (TypeError, AttributeError):
                 cprint(f'[INFO]\tCreating new {filename} configuration file', silent=silent)
                 # Config file does not exists

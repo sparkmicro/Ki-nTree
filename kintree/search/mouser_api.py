@@ -157,7 +157,7 @@ def test_api() -> bool:
 
     test_success = True
     expected = {
-        'Description': 'MOSFET P-channel 1.25W',
+        'Description': 'MOSFETs P-channel 1.25W',
         'MouserPartNumber': '621-DMP2066LSN-7',
         'Manufacturer': 'Diodes Incorporated',
         'ManufacturerPartNumber': 'DMP2066LSN-7',

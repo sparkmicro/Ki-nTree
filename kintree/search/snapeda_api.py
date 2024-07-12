@@ -62,7 +62,7 @@ def parse_snapeda_response(response: dict) -> dict:
     return data
 
 
-def download_snapeda_images(snapeda_data: dict) -> dict:
+def download_snapeda_images(snapeda_data: dict, silent=False) -> dict:
     ''' Download symbol and footprint images from SnapEDA's server '''
 
     images = {
@@ -83,7 +83,12 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
                 image_location = settings.search_images + image_name
 
                 # Download symbol image
-                symbol = download_with_retry(snapeda_data['symbol_image'], image_location, filetype='Image')
+                symbol = download_with_retry(
+                    url=snapeda_data['symbol_image'],
+                    full_path=image_location,
+                    filetype='Image',
+                    silent=silent,
+                )
                 if symbol:
                     images['symbol'] = image_location
         except KeyError:
@@ -96,7 +101,12 @@ def download_snapeda_images(snapeda_data: dict) -> dict:
                 image_location = settings.search_images + image_name
 
                 # Download symbol image
-                footprint = download_with_retry(snapeda_data['footprint_image'], image_location, filetype='Image')
+                footprint = download_with_retry(
+                    url=snapeda_data['footprint_image'],
+                    full_path=image_location,
+                    filetype='Image',
+                    silent=silent,
+                )
                 if footprint:
                     images['footprint'] = image_location
         except KeyError:
@@ -113,7 +123,7 @@ def test_snapeda_api() -> bool:
     # Test single result
     response = fetch_snapeda_part_info('NTR06B2001CTRF')
     data = parse_snapeda_response(response)
-    images = download_snapeda_images(data)
+    images = download_snapeda_images(data, silent=True)
 
     if data['part_number'] and data['has_symbol'] and images['symbol']:
         result = True

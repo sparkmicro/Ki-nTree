@@ -557,7 +557,7 @@ def get_inventree_stock_location_id(stock_location_tree: list):
     return inventree_api.get_inventree_stock_location_id(stock_location_tree)
 
 
-def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False):
+def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False, enable_upload=False):
     ''' Create InvenTree part from supplier part data and categories '''
 
     part_pk = 0
@@ -659,21 +659,24 @@ def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, foot
                     part_pk,
                     data={'existing_image': inventree_part['existing_image']})
             elif inventree_part['image']:
-                # Add image
-                image_result = inventree_api.upload_part_image(inventree_part['image'], part_pk)
-                if not image_result:
-                    cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
+                if enable_upload:
+                    # Add image
+                    image_result = inventree_api.upload_part_image(inventree_part['image'], part_pk, silent=settings.SILENT)
+                    if not image_result:
+                        cprint('[TREE]\tWarning: Failed to upload part image', silent=settings.SILENT)
         if inventree_part['datasheet'] and settings.DATASHEET_UPLOAD:
-            # Upload datasheet
-            datasheet_link = inventree_api.upload_part_datasheet(
-                datasheet_url=inventree_part['datasheet'],
-                part_ipn=inventree_part['IPN'],
-                part_pk=part_pk,
-            )
-            if not datasheet_link:
-                cprint('[TREE]\tWarning: Failed to upload part datasheet', silent=settings.SILENT)
-            else:
-                cprint('[TREE]\tSuccess: Uploaded part datasheet', silent=settings.SILENT)
+            if enable_upload:
+                # Upload datasheet
+                datasheet_link = inventree_api.upload_part_datasheet(
+                    datasheet_url=inventree_part['datasheet'],
+                    part_ipn=inventree_part['IPN'],
+                    part_pk=part_pk,
+                    silent=settings.SILENT,
+                )
+                if not datasheet_link:
+                    cprint('[TREE]\tWarning: Failed to upload part datasheet', silent=settings.SILENT)
+                else:
+                    cprint('[TREE]\tSuccess: Uploaded part datasheet', silent=settings.SILENT)
 
         if kicad:
             try:
@@ -845,7 +848,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
             inventree_api.update_part(pk=part_pk,
                                       data={'existing_image': existing_image})
         elif image:
-            inventree_api.upload_part_image(image_url=image, part_id=part_pk)
+            inventree_api.upload_part_image(image_url=image, part_id=part_pk, silent=settings.SILENT)
 
     # create or update parameters
     if inventree_part.get('parameters', {}):
@@ -866,6 +869,7 @@ def inventree_create_alternate(part_info: dict, part_id='', part_ipn='', show_pr
                 datasheet_url=datasheet,
                 part_ipn=part_ipn,
                 part_pk=part_id,
+                silent=settings.SILENT,
             )
             if not part_info['datasheet']:
                 cprint('[TREE]\tWarning: Failed to upload part datasheet', silent=settings.SILENT)

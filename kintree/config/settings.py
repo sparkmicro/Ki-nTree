@@ -145,18 +145,34 @@ def load_suppliers():
     global CONFIG_SUPPLIERS
     global SUPPORTED_SUPPLIERS_API
 
+    update_supplier_config = {}
     SUPPORTED_SUPPLIERS_API = []
     for supplier, data in CONFIG_SUPPLIERS.items():
-        if data['enable']:
-            if data['name']:
-                supplier_name = data['name'].replace(' ', '')
-                SUPPORTED_SUPPLIERS_API.append(supplier_name)
-            else:
-                supplier_key = supplier.replace(' ', '')
-                SUPPORTED_SUPPLIERS_API.append(supplier_key)
+        try:
+            if data['enable']:
+                if data['name']:
+                    supplier_name = data['name'].replace(' ', '')
+                    SUPPORTED_SUPPLIERS_API.append(supplier_name)
+                else:
+                    supplier_key = supplier.replace(' ', '')
+                    SUPPORTED_SUPPLIERS_API.append(supplier_key)
+        except (TypeError, KeyError):
+            update_supplier_config[supplier] = {
+                'enable': True,
+                'name': supplier,
+            }
+
+    # Update supplier configuration file
+    if update_supplier_config:
+        config_interface.dump_file({**CONFIG_SUPPLIERS, **update_supplier_config}, CONFIG_SUPPLIERS_PATH)
+        CONFIG_SUPPLIERS = config_interface.load_file(CONFIG_SUPPLIERS_PATH)
+        return False
+    return True
 
 
-load_suppliers()
+if not load_suppliers():
+    # Re-load updated configuration file
+    load_suppliers()
 
 # Generic API user configuration
 CONFIG_SUPPLIER_PARAMETERS = os.path.join(CONFIG_USER_FILES, 'supplier_parameters.yaml')
