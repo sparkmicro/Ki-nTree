@@ -243,6 +243,7 @@ if __name__ == '__main__':
                             kicad=last_category,
                             symbol=part_info['Symbol'],
                             show_progress=False,
+                            enable_upload=True if number == 'BSS84-7-F' else False,
                         )
 
                         inventree_result = check_result(status, new_part)

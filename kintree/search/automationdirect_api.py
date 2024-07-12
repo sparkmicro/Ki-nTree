@@ -59,7 +59,7 @@ def find_categories(part_details: str):
         return None, None
 
 
-def fetch_part_info(part_number: str) -> dict:
+def fetch_part_info(part_number: str, silent=False) -> dict:
     ''' Fetch part data from API '''
 
     # Load Automation Direct settingss
@@ -212,7 +212,7 @@ def fetch_part_info(part_number: str) -> dict:
     
     except KeyError as e:
         from ..common.tools import cprint
-        cprint(f'[INFO]\tNo pricing attribute "{e.args[0]}" found for "{part_number}"', silent=False)
+        cprint(f'[INFO]\tNo pricing attribute "{e.args[0]}" found for "{part_number}"', silent=silent)
         part_info['pricing']['1'] = price_per_unit
 
     part_info['currency'] = 'USD'
@@ -255,7 +255,7 @@ def test_api() -> bool:
             }
     }
 
-    test_part = fetch_part_info('BX-16ND3')
+    test_part = fetch_part_info('BX-16ND3', silent=True)
     if not test_part:
         test_success = False
         
