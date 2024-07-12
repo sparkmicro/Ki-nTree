@@ -13,7 +13,7 @@ keywords = ["inventree", "kicad", "digikey", "mouser", "component", "part", "cre
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
 digikey-api = "^1.0.0"
-flet = "^0.22.0"
+flet = "^0.23.0"
 thefuzz = "^0.19.0"
 inventree = "^0.13.3"
 kiutils = "^1.4.0"

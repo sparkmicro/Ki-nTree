@@ -81,7 +81,7 @@ def fetch_part_info(part_number: str) -> dict:
         part = part['solrResult']['response']   # extract the data for parts returned
         if part['numFound'] > 0:
             if part['numFound'] == 1:
-                cprint(f'[INFO]\tFound exactly one result for "{part_number}"', silent=False)
+                cprint(f'[INFO]\tFound exactly one result for "{part_number}"', silent=True)
             else:
                 cprint(f'[INFO]\tFound {part["numFound"]} results for "{part_number}", selecting first result', silent=False)
             part = part['docs'][0]              # choose the first part in the returned returned list
@@ -212,7 +212,7 @@ def fetch_part_info(part_number: str) -> dict:
     
     except KeyError as e:
         from ..common.tools import cprint
-        cprint(f'[INFO]\tNo pricing attribute "{e.args[0]}" found for "{part_number}"')
+        cprint(f'[INFO]\tNo pricing attribute "{e.args[0]}" found for "{part_number}"', silent=False)
         part_info['pricing']['1'] = price_per_unit
 
     part_info['currency'] = 'USD'
