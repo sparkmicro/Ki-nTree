@@ -81,6 +81,13 @@ for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
             ft.TextField(),
             None,
         ]
+    elif supplier == 'Jameco':
+        jameco_api_settings = config_interface.load_file(global_settings.CONFIG_JAMECO_API)
+        supplier_settings[supplier]['API URL'] = [
+            jameco_api_settings['JAMECO_API_URL'],
+            ft.TextField(),
+            None,
+        ]
     elif supplier == 'TME':
         tme_api_settings = config_interface.load_file(global_settings.CONFIG_TME_API)
         supplier_settings[supplier]['API Token'] = [
@@ -103,6 +110,34 @@ for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
             ft.TextField(),
             None,
         ]
+    elif supplier == 'AutomationDirect':
+        automationdirect_api_settings = config_interface.load_file(global_settings.CONFIG_AUTOMATIONDIRECT_API)
+        supplier_settings[supplier]['API Top-Level Root Domain'] = [
+            automationdirect_api_settings['AUTOMATIONDIRECT_API_ROOT_URL'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API URL Path'] = [
+            automationdirect_api_settings['AUTOMATIONDIRECT_API_URL'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API Search Query'] = [
+            automationdirect_api_settings['AUTOMATIONDIRECT_API_SEARCH_QUERY'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API Search String'] = [
+            automationdirect_api_settings['AUTOMATIONDIRECT_API_SEARCH_STRING'],
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['API Image Path URL'] = [
+            automationdirect_api_settings['AUTOMATIONDIRECT_API_IMAGE_PATH'],
+            ft.TextField(),
+            None,
+        ]
+
 
 SETTINGS = {
     'User Settings': {
@@ -672,6 +707,15 @@ class SupplierSettingsView(SettingsView):
             }
             lcsc_settings = {**settings_from_file, **updated_settings}
             config_interface.dump_file(lcsc_settings, global_settings.CONFIG_LCSC_API)
+        elif supplier == 'Jameco':
+            # Load settings from file
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_JAMECO_API)
+            # Update settings values
+            updated_settings = {
+                'JAMECO_API_URL': SETTINGS[self.title][supplier]['API URL'][1].value,
+            }
+            jameco_settings = {**settings_from_file, **updated_settings}
+            config_interface.dump_file(jameco_settings, global_settings.CONFIG_JAMECO_API)
         elif supplier == 'TME':
             # Load settings from file
             settings_from_file = config_interface.load_file(global_settings.CONFIG_TME_API)
@@ -684,7 +728,20 @@ class SupplierSettingsView(SettingsView):
             }
             tme_settings = {**settings_from_file, **updated_settings}
             config_interface.dump_file(tme_settings, global_settings.CONFIG_TME_API)
-            
+        elif supplier == 'AutomationDirect':
+            # Load settings from file
+            settings_from_file = config_interface.load_file(global_settings.CONFIG_AUTOMATIONDIRECT_API)
+            # Update settings values
+            updated_settings = {
+                'AUTOMATIONDIRECT_API_ROOT_URL': SETTINGS[self.title][supplier]['API Top-Level Root Domain'][1].value,
+                'AUTOMATIONDIRECT_API_URL': SETTINGS[self.title][supplier]['API URL Path'][1].value,
+                'AUTOMATIONDIRECT_API_SEARCH_QUERY': SETTINGS[self.title][supplier]['API Search Query'][1].value,
+                'AUTOMATIONDIRECT_API_SEARCH_STRING': SETTINGS[self.title][supplier]['API Search String'][1].value,
+                'AUTOMATIONDIRECT_API_IMAGE_PATH': SETTINGS[self.title][supplier]['API Image Path URL'][1].value,
+            }
+            automationdirect_settings = {**settings_from_file, **updated_settings}
+            config_interface.dump_file(automationdirect_settings, global_settings.CONFIG_AUTOMATIONDIRECT_API)
+
         if show_dialog:
             self.show_dialog(
                 d_type=DialogType.VALID,
@@ -711,6 +768,12 @@ class SupplierSettingsView(SettingsView):
         elif supplier == 'TME':
             from ...search import tme_api
             result = tme_api.test_api()
+        elif supplier == 'Jameco':
+            from ...search import jameco_api
+            result = jameco_api.test_api()
+        elif supplier == 'AutomationDirect':
+            from ...search import automationdirect_api
+            result = automationdirect_api.test_api()
 
         if result:
             self.show_dialog(

@@ -512,8 +512,9 @@ def create_part(category_id: int, name: str, description: str, revision: str, ip
             'component': True,
             'purchaseable': True,
         })
-    except Exception:
+    except Exception as e:
         cprint('[TREE]\tError: Part creation failed. Check if Ki-nTree settings match InvenTree part settings.', silent=settings.SILENT)
+        cprint(repr(e), silent=settings.SILENT)
         return 0
 
     if part:

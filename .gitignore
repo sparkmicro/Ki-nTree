@@ -9,3 +9,4 @@ build/
 kintree/tests/*
 .coverage
 htmlcov/
+.vscode/launch.json

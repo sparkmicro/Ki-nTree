@@ -10,6 +10,12 @@ Element14:
 Farnell:
   enable: true
   name: Farnell
+Jameco:
+  enable: true
+  name: Jameco
+AutomationDirect:
+  enable: true
+  name: Automation Direct
 Newark:
   enable: true
   name: Newark

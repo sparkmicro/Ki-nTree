@@ -60,17 +60,40 @@ def create_library(library_path: str, symbol: str, template_lib: str):
         copyfile(template_lib, new_kicad_sym_file)
 
 
-def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=False, requests_lib=False, silent=False):
+def get_image_with_retries(url, headers, retries=3, wait=5, silent=False):
+    """ Method to download image with cloudscraper library and retry attempts"""
+    import cloudscraper
+    import time
+    scraper = cloudscraper.create_scraper()
+    for attempt in range(retries):
+        try:
+            response = scraper.get(url, headers=headers)
+            if response.status_code == 200:
+                return response
+            else:
+                cprint(f'[INFO]\tWarning: Image download Attempt {attempt + 1} failed with status code {response.status_code}. Retrying in {wait} seconds...', silent=silent)
+        except Exception as e:
+            cprint(f'[INFO]\tWarning: Image download Attempt {attempt + 1} encountered an error: {e}. Retrying in {wait} seconds...', silent=silent)
+        time.sleep(wait)
+    cprint('[INFO]\tWarning: All Image download attempts failed. Could not retrieve the image.', silent=silent)
+    return None
+
+
+def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=False, requests_lib=False, try_cloudscraper=False, silent=False):
     ''' Standard method to download URL content, with option to save to local file (eg. images) '''
 
     import socket
     import urllib.request
     import requests
 
+    # A more detailed headers was needed for request to Jameco
     headers = {
-        'User-Agent': 'Mozilla/5.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.106 Safari/537.36',
+        'Accept': 'applicaiton/json,image/webp,image/apng,image/*,*/*;q=0.8',
+        'Accept-Encoding': 'Accept-Encoding: gzip, deflate, br',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'no-cache',
     }
 
     # Set default timeout for download socket
@@ -95,6 +118,13 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
                     return None
                 with open(fileoutput, 'wb') as file:
                     file.write(response.content)
+            elif try_cloudscraper:
+                response = get_image_with_retries(url, headers=headers)
+                if filetype.lower() not in response.headers['Content-Type'].lower():
+                    cprint(f'[INFO]\tWarning: {filetype} download returned the wrong file type', silent=silent)
+                    return None
+                with open(fileoutput, 'wb') as file:
+                    file.write(response.content)
             else:
                 (file, headers) = urllib.request.urlretrieve(url, filename=fileoutput)
                 if filetype.lower() not in headers['Content-Type'].lower():
@@ -102,10 +132,19 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
                     return None
             return file
         else:
-            url_data = urllib.request.urlopen(url)
-            data = url_data.read()
-            data_json = json.loads(data.decode('utf-8'))
-            return data_json
+            # some suppliers work with requests.get(), others need urllib.request.urlopen()
+            try:
+                response = requests.get(url)
+                data_json = response.json()
+                return data_json
+            except requests.exceptions.JSONDecodeError:
+                try:
+                    url_data = urllib.request.urlopen(url)
+                    data = url_data.read()
+                    data_json = json.loads(data.decode('utf-8'))
+                    return data_json
+                finally:
+                    pass
     except (socket.timeout, requests.exceptions.ConnectTimeout, requests.exceptions.ReadTimeout):
         cprint(f'[INFO]\tWarning: {filetype} download socket timed out ({timeout}s)', silent=silent)
     except (urllib.error.HTTPError, requests.exceptions.ConnectionError):
@@ -136,9 +175,14 @@ def download_with_retry(url: str, full_path: str, silent=False, **kwargs) -> str
     if not file:
         # Try with requests library
         file = download(url, fileoutput=full_path, enable_headers=True, requests_lib=True, silent=silent, **kwargs)
+    
+    if not file:
+        # Try with cloudscraper
+        file = download(url, fileoutput=full_path, enable_headers=True, requests_lib=False, try_cloudscraper=True, silent=silent, **kwargs)
 
     # Still nothing
     if not file:
         return False
 
+    cprint('[INFO]\tSuccess: Part image downloaded', silent=silent)
     return True

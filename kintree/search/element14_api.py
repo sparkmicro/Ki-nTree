@@ -152,6 +152,9 @@ def get_default_store_url(supplier: str) -> str:
     import re
     user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
     default_store = user_settings.get(f'{supplier.upper()}_STORE', '')
+    if not default_store:
+        from ..common.tools import cprint
+        cprint(f'[INFO]\tWarning: Default store "{supplier.upper()}_STORE" value not configured', silent=False)
     url_match = re.match(r'^(.+?) \((.+?)\)$', default_store)
     if url_match:
         return url_match.group(2)
@@ -164,8 +167,13 @@ def build_api_url(part_number: str, supplier: str, store_url=None) -> str:
     user_settings = config_interface.load_file(settings.CONFIG_ELEMENT14_API)
     api_key = user_settings.get('ELEMENT14_PRODUCT_SEARCH_API_KEY', '')
     if not api_key:
+        from ..common.tools import cprint
+        cprint('[INFO]\tWarning: ELEMENT14_PRODUCT_SEARCH_API_KEY user value not configured', silent=False)
+
         import os
         api_key = os.environ.get('ELEMENT14_PART_API_KEY', None)
+        if not api_key:
+            cprint('[INFO]\tWarning: ELEMENT14_PRODUCT_SEARCH_API_KEY env variable value not found', silent=False)
     if not store_url:
         store_url = get_default_store_url(supplier)
 

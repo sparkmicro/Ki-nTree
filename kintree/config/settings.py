@@ -149,9 +149,11 @@ def load_suppliers():
     for supplier, data in CONFIG_SUPPLIERS.items():
         if data['enable']:
             if data['name']:
-                SUPPORTED_SUPPLIERS_API.append(data['name'])
+                supplier_name = data['name'].replace(' ', '')
+                SUPPORTED_SUPPLIERS_API.append(supplier_name)
             else:
-                SUPPORTED_SUPPLIERS_API.append(supplier)
+                supplier_key = supplier.replace(' ', '')
+                SUPPORTED_SUPPLIERS_API.append(supplier_key)
 
 
 load_suppliers()
@@ -177,6 +179,14 @@ CONFIG_ELEMENT14_API = os.path.join(CONFIG_USER_FILES, 'element14_api.yaml')
 # LCSC user configuration
 CONFIG_LCSC = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'lcsc_config.yaml'))
 CONFIG_LCSC_API = os.path.join(CONFIG_USER_FILES, 'lcsc_api.yaml')
+
+# JAMECO user configuration
+CONFIG_JAMECO = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'jameco_config.yaml'))
+CONFIG_JAMECO_API = os.path.join(CONFIG_USER_FILES, 'jameco_api.yaml')
+
+# AUTOMATIONDIRECT user configuration
+CONFIG_AUTOMATIONDIRECT = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'automationdirect_config.yaml'))
+CONFIG_AUTOMATIONDIRECT_API = os.path.join(CONFIG_USER_FILES, 'automationdirect_api.yaml')
 
 # TME user configuration
 CONFIG_TME = config_interface.load_file(os.path.join(CONFIG_USER_FILES, 'tme_config.yaml'))
