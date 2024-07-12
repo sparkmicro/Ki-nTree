@@ -166,19 +166,19 @@ def download_with_retry(url: str, full_path: str, silent=False, **kwargs) -> str
         return False
     
     # Try without headers
-    file = download(url, fileoutput=full_path, silent=silent, **kwargs)
+    file = download(url, filetype='Image', fileoutput=full_path, silent=silent, **kwargs)
 
     if not file:
         # Try with headers
-        file = download(url, fileoutput=full_path, enable_headers=True, silent=silent, **kwargs)
+        file = download(url, filetype='Image', fileoutput=full_path, enable_headers=True, silent=silent, **kwargs)
 
     if not file:
         # Try with requests library
-        file = download(url, fileoutput=full_path, enable_headers=True, requests_lib=True, silent=silent, **kwargs)
+        file = download(url, filetype='Image', fileoutput=full_path, enable_headers=True, requests_lib=True, silent=silent, **kwargs)
     
     if not file:
         # Try with cloudscraper
-        file = download(url, fileoutput=full_path, enable_headers=True, requests_lib=False, try_cloudscraper=True, silent=silent, **kwargs)
+        file = download(url, filetype='Image', fileoutput=full_path, enable_headers=True, requests_lib=False, try_cloudscraper=True, silent=silent, **kwargs)
 
     # Still nothing
     if not file:
