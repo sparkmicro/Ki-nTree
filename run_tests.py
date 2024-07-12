@@ -6,8 +6,16 @@ from kintree.common.tools import cprint, create_library, download_with_retry
 from kintree.config import config_interface
 from kintree.database import inventree_api, inventree_interface
 from kintree.kicad import kicad_interface
-from kintree.search import digikey_api, mouser_api, element14_api, lcsc_api, tme_api
-from kintree.search.snapeda_api import test_snapeda_api
+from kintree.search import (
+    digikey_api,
+    mouser_api,
+    element14_api,
+    lcsc_api,
+    tme_api,
+    snapeda_api,
+    automationdirect_api,
+    jameco_api,
+)
 from kintree.setup_inventree import setup_inventree
 
 
@@ -129,9 +137,27 @@ if ENABLE_API:
         else:
             cprint('[ PASS ]')
 
+    # Test AutomationDirect API
+    if 'AutomationDirect' in settings.SUPPORTED_SUPPLIERS_API:
+        pretty_test_print('[MAIN]\tAutomationDirect API Test')
+        if not automationdirect_api.test_api():
+            cprint('[ FAIL ]')
+            sys.exit(-1)
+        else:
+            cprint('[ PASS ]')
+
+    # Test Jameco API
+    if 'Jameco' in settings.SUPPORTED_SUPPLIERS_API:
+        pretty_test_print('[MAIN]\tJameco API Test')
+        if not jameco_api.test_api():
+            cprint('[ FAIL ]')
+            sys.exit(-1)
+        else:
+            cprint('[ PASS ]')
+
     # Test SnapEDA API methods
     pretty_test_print('[MAIN]\tSnapEDA API Test')
-    if not test_snapeda_api():
+    if not snapeda_api.test_snapeda_api():
         cprint('[ FAIL ]')
         sys.exit(-1)
     else:

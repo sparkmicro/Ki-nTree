@@ -184,5 +184,5 @@ def download_with_retry(url: str, full_path: str, silent=False, **kwargs) -> str
     if not file:
         return False
 
-    cprint('[INFO]\tSuccess: Part image downloaded', silent=silent)
+    cprint(f'[INFO]\tDownload success ({url=})', silent=silent)
     return True
