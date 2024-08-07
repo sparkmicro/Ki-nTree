@@ -186,7 +186,7 @@ if __name__ == '__main__':
     if settings.ENABLE_TEST:
         if ENABLE_INVENTREE:
             pretty_test_print('\n[MAIN]\tConnecting to Inventree')
-            inventree_connect = inventree_interface.connect_to_server()
+            inventree_connect = inventree_interface.connect_to_server(timeout=10)
             if inventree_connect:
                 cprint('[ PASS ]')
             else:
