@@ -557,7 +557,7 @@ def get_inventree_stock_location_id(stock_location_tree: list):
     return inventree_api.get_inventree_stock_location_id(stock_location_tree)
 
 
-def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False, enable_upload=False):
+def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, footprint=None, show_progress=True, is_custom=False, enable_upload=True):
     ''' Create InvenTree part from supplier part data and categories '''
 
     part_pk = 0
