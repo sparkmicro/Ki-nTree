@@ -199,7 +199,7 @@ Mechanicals:
 Power Management:
   parent:
   - Base
-  (Min) Output Voltage:
+  Min Output Voltage:
   - Voltage - Output (Min/Fixed)
   Frequency:
   - Frequency - Switching
