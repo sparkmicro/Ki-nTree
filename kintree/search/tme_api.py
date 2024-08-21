@@ -111,7 +111,7 @@ def fetch_part_info(part_number: str) -> dict:
             index = index + 1
         return found, index
 
-    tme_api_settings = config_interface.load_file(settings.CONFIG_TME_API) 
+    tme_api_settings = config_interface.load_file(settings.CONFIG_TME_API)
     params = {'SymbolList[0]': part_number}
     response = tme_api_query(tme_api_request('/Products/GetProducts', tme_api_settings, params))
 
@@ -174,7 +174,7 @@ def fetch_part_info(part_number: str) -> dict:
 
     part_info['currency'] = response['Data'][currency_key]
 
-    # Query the files associated to the product  
+    # Query the files associated to the product
     params = {'SymbolList[0]': part_number}
     response = tme_api_query(tme_api_request('/Products/GetProductsFiles', tme_api_settings, params))
     # check if accidentally no products returned
