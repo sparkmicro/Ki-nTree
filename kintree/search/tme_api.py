@@ -54,16 +54,12 @@ def setup_environment(force=False) -> bool:
 
 # Based on TME API snippets mentioned in API documentation: https://developers.tme.eu/documentation/download
 # https://github.com/tme-dev/TME-API/blob/master/Python/call.py
-def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://api.tme.eu', format='json', **kwargs):
+def tme_api_request(endpoint, tme_api_settings, params, api_host='https://api.tme.eu', format='json', **kwargs):
     TME_API_TOKEN = tme_api_settings.get('TME_API_TOKEN', None)
     TME_API_SECRET = tme_api_settings.get('TME_API_SECRET', None)
 
-    params = collections.OrderedDict()
     params['Country'] = tme_api_settings.get('TME_API_COUNTRY', 'US')
     params['Language'] = tme_api_settings.get('TME_API_LANGUAGE', 'EN')
-    params['SymbolList[0]'] = part_number
-    if kwargs.get('currency', None):
-        params['Currency'] = kwargs.get('currency')
     if not TME_API_TOKEN and not TME_API_SECRET:
         TME_API_TOKEN = os.environ.get('TME_API_TOKEN', None)
         TME_API_SECRET = os.environ.get('TME_API_SECRET', None)
@@ -72,6 +68,7 @@ def tme_api_request(endpoint, tme_api_settings, part_number, api_host='https://a
         cprint('[INFO]\tWarning: Value not found for TME_API_TOKEN and/or TME_API_SECRET', silent=False)
         return None
     params['Token'] = TME_API_TOKEN
+    params = collections.OrderedDict(sorted(params.items()))
 
     url = api_host + endpoint + '.' + format
     encoded_params = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
@@ -115,7 +112,8 @@ def fetch_part_info(part_number: str) -> dict:
         return found, index
 
     tme_api_settings = config_interface.load_file(settings.CONFIG_TME_API)
-    response = tme_api_query(tme_api_request('/Products/GetProducts', tme_api_settings, part_number))
+    params = {'SymbolList[0]': part_number}
+    response = tme_api_query(tme_api_request('/Products/GetProducts', tme_api_settings, params))
 
     if response is None or response['Status'] != 'OK':
         return {}
@@ -138,7 +136,8 @@ def fetch_part_info(part_number: str) -> dict:
     part_info['subcategory'] = None
 
     # query the parameters
-    response = tme_api_query(tme_api_request('/Products/GetParameters', tme_api_settings, part_number))
+    params = {'SymbolList[0]': part_number}
+    response = tme_api_query(tme_api_request('/Products/GetParameters', tme_api_settings, params))
     # check if accidentally no data returned
     if response is None or response['Status'] != 'OK':
         return part_info
@@ -153,7 +152,8 @@ def fetch_part_info(part_number: str) -> dict:
         part_info['parameters'][param['ParameterName']] = param['ParameterValue']
 
     # query the prices
-    response = tme_api_query(tme_api_request('/Products/GetPrices', tme_api_settings, part_number, currency='USD'))
+    params = {'SymbolList[0]': part_number, 'Curreny': 'USD'}
+    response = tme_api_query(tme_api_request('/Products/GetPrices', tme_api_settings, params))
     # check if accidentally no data returned
     if response is None or response['Status'] != 'OK':
         return part_info
@@ -175,7 +175,8 @@ def fetch_part_info(part_number: str) -> dict:
     part_info['currency'] = response['Data'][currency_key]
 
     # Query the files associated to the product
-    response = tme_api_query(tme_api_request('/Products/GetProductsFiles', tme_api_settings, part_number))
+    params = {'SymbolList[0]': part_number}
+    response = tme_api_query(tme_api_request('/Products/GetProductsFiles', tme_api_settings, params))
     # check if accidentally no products returned
     if response is None or response['Status'] != 'OK':
         return part_info
