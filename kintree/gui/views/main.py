@@ -24,16 +24,19 @@ from ...search import snapeda_api
 
 # Main AppBar
 main_appbar = ft.AppBar(
-    leading=ft.Container(
-        content=ft.Image(
-            src=os.path.join(settings.PROJECT_DIR, 'gui', 'logo.png'),
-            fit=ft.ImageFit.CONTAIN,
+    leading=ft.WindowDragArea(
+        ft.Container(
+            content=ft.Image(
+                src=os.path.join(settings.PROJECT_DIR, 'gui', 'logo.ico'),
+                fit=ft.ImageFit.CONTAIN,
+            ),
+            padding=ft.padding.only(left=10),
+            expand=True,
         ),
-        padding=ft.padding.only(left=10),
-        expand=True,
+        maximizable=True,
     ),
     leading_width=40,
-    title=ft.Text(f'Ki-nTree | {__version__}'),
+    title=ft.WindowDragArea(ft.Text(f'Ki-nTree | {__version__}'), maximizable=True),
     center_title=False,
     bgcolor=ft.colors.SURFACE_VARIANT,
     actions=[],
@@ -116,11 +119,17 @@ class MainView(CommonView):
 
         # Update application bar
         if not self.appbar.actions:
-            self.appbar.actions.append(
-                ft.IconButton(
-                    ft.icons.SETTINGS,
-                    on_click=self.call_settings,
-                )
+            self.appbar.actions.extend(
+                [
+                    ft.IconButton(
+                        ft.icons.SETTINGS,
+                        on_click=self.call_settings,
+                    ),
+                    ft.IconButton(
+                        ft.icons.CLOSE,
+                        on_click=lambda _: page.window.close(),
+                    ),
+                ]
             )
         else:
             self.appbar.actions[0].on_click = self.call_settings

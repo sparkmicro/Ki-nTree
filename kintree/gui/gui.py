@@ -1,4 +1,7 @@
+import os
 import flet as ft
+
+from ..config import settings
 
 from .views.common import update_theme, handle_transition
 from .views.main import (
@@ -21,6 +24,10 @@ def init_gui(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.scroll = ft.ScrollMode.ALWAYS
+
+    # Window Icon
+    page.window.icon = os.path.join(settings.PROJECT_DIR, 'gui', 'logo.ico')
+    page.window.title_bar_hidden = True
     
     # Theme
     update_theme(page)
