@@ -330,7 +330,7 @@ def test_api(store_url=None) -> bool:
             'store_url': 'www.newark.com',
             'part_number': 'BLM18AG601SN1D',
             'expected': {
-                'displayName': 'Ferrite Bead, 0603 [1608 Metric], 600 ohm, 500 mA, BLM18A Series, 0.38 ohm, &#177; 25%',
+                'displayName': 'Ferrite Bead, 0603 [1608 Metric], 600 ohm, 500 mA, EMIFIL BLM18AG Series, 0.38 ohm, ± 25%',
                 'brandName': 'MURATA',
                 'translatedManufacturerPartNumber': 'BLM18AG601SN1D',
             }
