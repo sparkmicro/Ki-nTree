@@ -63,13 +63,13 @@ def fetch_part_info(part_number: str) -> dict:
     try:
         part = search_timeout()
     except:
-        part = None
+        part = {}
+
+    # Extract result
+    part = part.get('result', None)
 
     if not part:
         return part_info
-    
-    # Extract result
-    part = part.get('result', None)
 
     category, subcategory = find_categories(part)
     try:
