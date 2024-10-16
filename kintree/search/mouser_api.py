@@ -82,11 +82,12 @@ def fetch_part_info(part_number: str) -> dict:
             from ..common.tools import cprint
             cprint(f'[INFO] Warning: {error_message}', silent=False)
         finally:
-            return request.get_clean_response()
+            # Mouser 0.1.6 API update: single part list is returned, instead of dict
+            return request.get_clean_response()[0]
 
     # Query part number
     try:
-        part = search_timeout()
+        part: dict = search_timeout()
     except:
         part = None
 
