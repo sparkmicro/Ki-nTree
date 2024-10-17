@@ -321,9 +321,9 @@ def test_api(store_url=None) -> bool:
             'store_url': 'uk.farnell.com',
             'part_number': '1N4148W-7-F',
             'expected': {
-                'displayName': 'Small Signal Diode, Single, 100 V, 300 mA, 1.25 V, 4 ns, 2 A',
-                'brandName': 'DIODES INC.',
-                'translatedManufacturerPartNumber': '1N4148W-7-F',
+                'displayName': 'DIODE, ULTRAFAST RECOVERY, 300mA, 75V, SOD-123-2, FULL REEL',
+                'brandName': 'MULTICOMP PRO',
+                'translatedManufacturerPartNumber': '1N4148W-7-F.',
             }
         },
         {
