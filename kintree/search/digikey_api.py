@@ -187,7 +187,6 @@ def fetch_part_info(part_number: str) -> dict:
             price = price_break[price_key]
             part_info['pricing'][digi_number][quantity] = price
 
-
     # Extra search fields
     if settings.CONFIG_DIGIKEY.get('EXTRA_FIELDS'):
         for extra_field in settings.CONFIG_DIGIKEY['EXTRA_FIELDS']:
@@ -196,7 +195,7 @@ def fetch_part_info(part_number: str) -> dict:
             else:
                 from ..common.tools import cprint
                 cprint(f'[INFO]\tWarning: Extra field "{extra_field}" not found in search results', silent=False)
-    print(part_info)
+
     return part_info
 
 
