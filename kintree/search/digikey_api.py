@@ -5,26 +5,26 @@ import digikey
 from ..config import settings, config_interface
 
 SEARCH_HEADERS = [
-    'product_description',
-    'detailed_description',
+    'description',
     'digi_key_part_number',
     'manufacturer',
-    'manufacturer_part_number',
+    'manufacturer_product_number',
     'product_url',
-    'primary_datasheet',
-    'primary_photo',
+    'datasheet_url',
+    'photo_url',
 ]
 PARAMETERS_MAP = [
     'parameters',
-    'parameter',
-    'value',
+    'parameter_text',
+    'value_text',
 ]
 
 PRICING_MAP = [
+    'product_variations',
+    'digi_key_product_number',
     'standard_pricing',
     'break_quantity',
     'unit_price',
-    'currency',
 ]
 
 
@@ -69,10 +69,10 @@ def get_default_search_keys():
         'keywords',
         'digi_key_part_number',
         'manufacturer',
-        'manufacturer_part_number',
+        'manufacturer_product_number',
         'product_url',
-        'primary_datasheet',
-        'primary_photo',
+        'datasheet_url',
+        'photo_url',
     ]
 
 
@@ -130,6 +130,11 @@ def fetch_part_info(part_number: str) -> dict:
 
     if not part:
         return part_info
+    if 'product' not in part or not part['product']:
+        return part_info
+
+    part_info['currency'] = part['search_locale_used']['currency']
+    part = part['product']
 
     category, subcategory = find_categories(part)
     try:
@@ -144,7 +149,10 @@ def fetch_part_info(part_number: str) -> dict:
     for key in part:
         if key in headers:
             if key == 'manufacturer':
-                part_info[key] = part['manufacturer']['value']
+                part_info[key] = part['manufacturer'].get('name')
+            elif key == 'description':
+                part_info['product_description'] = part['description'].get('product_description')
+                part_info['detailed_description'] = part['description'].get('detailed_description')
             else:
                 part_info[key] = part[key]
 
@@ -152,36 +160,43 @@ def fetch_part_info(part_number: str) -> dict:
     part_info['parameters'] = {}
     [parameter_key, name_key, value_key] = PARAMETERS_MAP
 
-    for parameter in range(len(part[parameter_key])):
-        parameter_name = part[parameter_key][parameter][name_key]
-        parameter_value = part[parameter_key][parameter][value_key]
+    for parameter in part[parameter_key]:
+        parameter_name = parameter.get(name_key, '')
+        parameter_value = parameter.get(value_key, '')
         # Append to parameters dictionary
         part_info['parameters'][parameter_name] = parameter_value
-    # process export controll class number as an parameter
-    eccn = part['export_control_class_number']
-    if eccn:
-        part_info['parameters']['ECCN'] = eccn
+    # process classifications as parameters
+    for classification, value in part.get('classifications', {}).items():
+        part_info['parameters'][classification] = value
 
     # Pricing
     part_info['pricing'] = {}
-    [pricing_key, qty_key, price_key, currency_key] = PRICING_MAP
-    
-    for price_break in part[pricing_key]:
-        quantity = price_break[qty_key]
-        price = price_break[price_key]
-        part_info['pricing'][quantity] = price
+    [variations_key,
+     digi_number_key,
+     pricing_key,
+     qty_key,
+     price_key] = PRICING_MAP
 
-    part_info['currency'] = part['search_locale_used'][currency_key]
+    for variation in part[variations_key]:
+        digi_number = variation.get(digi_number_key)
+        if not variation.get('digi_reel_fee'):
+            part_info['digi_key_part_number'] = digi_number
+        part_info['pricing'][digi_number] = {}
+        for price_break in variation[pricing_key]:
+            quantity = price_break[qty_key]
+            price = price_break[price_key]
+            part_info['pricing'][digi_number][quantity] = price
+
 
     # Extra search fields
-    if settings.CONFIG_DIGIKEY.get('EXTRA_FIELDS', None):
+    if settings.CONFIG_DIGIKEY.get('EXTRA_FIELDS'):
         for extra_field in settings.CONFIG_DIGIKEY['EXTRA_FIELDS']:
-            if part.get(extra_field, None):
+            if part.get(extra_field):
                 part_info['parameters'][extra_field] = part[extra_field]
             else:
                 from ..common.tools import cprint
                 cprint(f'[INFO]\tWarning: Extra field "{extra_field}" not found in search results', silent=False)
-
+    print(part_info)
     return part_info
 
 
