@@ -67,7 +67,7 @@ def get_image_with_retries(url, headers, retries=3, wait=5, silent=False):
     scraper = cloudscraper.create_scraper()
     for attempt in range(retries):
         try:
-            response = scraper.get(url, headers=headers)
+            response = scraper.get(url, headers=headers, timeout=wait)
             if response.status_code == 200:
                 return response
             else:
