@@ -25,6 +25,7 @@ PRICING_MAP = [
     'standard_pricing',
     'break_quantity',
     'unit_price',
+    'package_type'
 ]
 
 
@@ -121,6 +122,13 @@ def fetch_part_info(part_number: str) -> dict:
     #         return manufacturer_product_details.get('product_details', None)[0]
     #     else:
     #         return {}
+    # Method to process price breaks
+    def process_price_break(product_variation):
+        part_info['digi_key_part_number'] = product_variation.get(digi_number_key)
+        for price_break in product_variation[pricing_key]:
+            quantity = price_break[qty_key]
+            price = price_break[price_key]
+            part_info['pricing'][quantity] = price
 
     # Query part number
     try:
@@ -175,17 +183,22 @@ def fetch_part_info(part_number: str) -> dict:
      digi_number_key,
      pricing_key,
      qty_key,
-     price_key] = PRICING_MAP
+     price_key,
+     package_key] = PRICING_MAP
 
-    for variation in part[variations_key]:
-        digi_number = variation.get(digi_number_key)
-        if not variation.get('digi_reel_fee'):
-            part_info['digi_key_part_number'] = digi_number
-        part_info['pricing'][digi_number] = {}
-        for price_break in variation[pricing_key]:
-            quantity = price_break[qty_key]
-            price = price_break[price_key]
-            part_info['pricing'][digi_number][quantity] = price
+    variations = part[variations_key]
+    if len(variations) == 1:
+        process_price_break(variations[0])
+    else:
+        for variation in variations:
+            # we try to get the not TR or Digi-Reel option
+            package_type = variation.get(package_key).get('id')
+            if all(package_type != x for x in [1, 243]):
+                process_price_break(variation)
+                break
+    # if no other option was found use the first one returned
+    if not part_info['pricing'] and variations:
+        process_price_break(variations[0])
 
     # Extra search fields
     if settings.CONFIG_DIGIKEY.get('EXTRA_FIELDS'):

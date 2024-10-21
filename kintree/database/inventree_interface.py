@@ -454,7 +454,7 @@ def translate_supplier_to_form(supplier: str, part_info: dict) -> dict:
     part_form['manufacturer_part_number'] = get_value_from_user_key('SEARCH_MPN', default_search_keys[6], default_value='')
     part_form['datasheet'] = get_value_from_user_key('SEARCH_DATASHEET', default_search_keys[8], default_value='')
     part_form['image'] = get_value_from_user_key('', default_search_keys[9], default_value='')
-    
+    print(part_form)
     return part_form
 
 
@@ -485,18 +485,25 @@ def supplier_search(supplier: str, part_number: str, test_mode=False) -> dict:
         cprint(f'\n[MAIN]\t{supplier} search for {part_number}', silent=settings.SILENT)
         if supplier == 'Digi-Key':
             part_info = digikey_api.fetch_part_info(part_number)
+            print('Digikey', part_info)
         elif supplier == 'Mouser':
             part_info = mouser_api.fetch_part_info(part_number)
+            print('Mouser', part_info)
         elif supplier in ['Farnell', 'Newark', 'Element14']:
             part_info = element14_api.fetch_part_info(part_number, supplier)
+            print('Farnell', part_info)
         elif supplier == 'LCSC':
             part_info = lcsc_api.fetch_part_info(part_number)
+            print('LCSC', part_info)
         elif supplier == 'Jameco':
             part_info = jameco_api.fetch_part_info(part_number)
+            print('Jameco', part_info)
         elif supplier == 'TME':
             part_info = tme_api.fetch_part_info(part_number)
+            print('TME', part_info)
         elif supplier == 'AutomationDirect':
             part_info = automationdirect_api.fetch_part_info(part_number)
+            print('AutomationDirect', part_info)
 
     # Check supplier data exist
     if not part_info:
@@ -707,6 +714,7 @@ def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, foot
                 return new_part, part_pk, inventree_part
             
         # Create manufacturer part
+        print(inventree_part)
         if inventree_part['manufacturer_name'] and inventree_part['manufacturer_part_number']:
             # Overwrite manufacturer name with matching one from database
             manufacturer_name = inventree_fuzzy_company_match(inventree_part['manufacturer_name'])
@@ -733,7 +741,7 @@ def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, foot
 
                 if is_manufacturer_part_created:
                     cprint('[INFO]\tSuccess: Added new manufacturer part', silent=settings.SILENT)
-
+        print(f'Hersteller: {manufacturer_name}')
         # Create supplier part
         if inventree_part['supplier_name'] and inventree_part['supplier_part_number']:
             # Overwrite manufacturer name with matching one from database
