@@ -146,7 +146,7 @@ def fetch_part_info(part_number: str, silent=False) -> dict:
             parameter_name = parameter_name.replace('/', '')
             parameter_value = attribute_list[1]
             try:
-                html_li_list = re.split("</?\s*[a-z-][^>]*\s*>|(\&(?:[\w\d]+|#\d+|#x[a-f\d]+);)", parameter_value)
+                html_li_list = re.split(r"</?\s*[a-z-][^>]*\s*>|(\&(?:[\w\d]+|#\d+|#x[a-f\d]+);)", parameter_value)
                 cleaned_html_li_list = list(filter(None, html_li_list))
                 parameter_value = ', '.join(cleaned_html_li_list)
             except Exception as e:
@@ -156,7 +156,7 @@ def fetch_part_info(part_number: str, silent=False) -> dict:
             # Nominal Input Voltage gives range min-max, parse it out to put in min/max params
             if parameter_name == "Nominal Input Voltage":
                 if parameter_value.count('-') == 1:
-                    parameter_value = re.sub('[^\d-]+', '', parameter_value)
+                    parameter_value = re.sub(r'[^\d-]+', '', parameter_value)
                     values_list = parameter_value.split('-')
                     min_value = min(values_list)
                     max_value = max(values_list)
@@ -169,7 +169,7 @@ def fetch_part_info(part_number: str, silent=False) -> dict:
             # Nominal Output Voltage gives range min-max, parse it out to put in min/max params
             if parameter_name == "Nominal Output Voltage":
                 if parameter_value.count('-') == 1:
-                    parameter_value = re.sub('[^\d-]+', '', parameter_value)
+                    parameter_value = re.sub(r'[^\d-]+', '', parameter_value)
                     values_list = parameter_value.split('-')
                     min_value = min(values_list)
                     max_value = max(values_list)

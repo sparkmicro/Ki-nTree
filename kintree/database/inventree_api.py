@@ -751,19 +751,12 @@ def create_supplier_part(part_id: int, manufacturer_name: str, manufacturer_mpn:
     return False, False
 
 
-def sanitize_price(price_in):
-    price = re.findall('\d+.\d+', price_in)[0]
-    price = price.replace(',', '.')
-    price = price.replace('\xa0', '')
-    return price
-
-
 def update_price_breaks(supplier_part,
                         price_breaks: dict,
                         currency='USD') -> bool:
     ''' Update the Price Breaks associated with a supplier part '''
     def sanitize_price(price_in):
-        price = re.findall('\d+.\d+', price_in)[0]
+        price = re.findall(r'\d+.\d+', price_in)[0]
         price = price.replace(',', '.')
         price = price.replace('\xa0', '')
         return price
