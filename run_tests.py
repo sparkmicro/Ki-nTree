@@ -28,7 +28,7 @@ except IndexError:
 # Enable InvenTree tests
 ENABLE_INVENTREE = True
 # Enable KiCad tests
-ENABLE_KICAD = False
+ENABLE_KICAD = True
 # Set categories to test
 PART_CATEGORIES = [
     'Capacitors',
