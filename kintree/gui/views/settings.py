@@ -43,6 +43,21 @@ for supplier, data in global_settings.CONFIG_SUPPLIERS.items():
             ft.TextField(),
             None,
         ]
+        supplier_settings[supplier]['Local Site'] = [
+            digikey_api_settings.get('DIGIKEY_LOCAL_SITE', 'US'),
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['Language'] = [
+            digikey_api_settings.get('DIGIKEY_LOCAL_LANGUAGE', 'en'),
+            ft.TextField(),
+            None,
+        ]
+        supplier_settings[supplier]['Currency'] = [
+            digikey_api_settings.get('DIGIKEY_LOCAL_CURRENCY', 'USD'),
+            ft.TextField(),
+            None,
+        ]
     elif supplier == 'Mouser':
         mouser_api_settings = config_interface.load_file(global_settings.CONFIG_MOUSER_API)
         supplier_settings[supplier]['Part API Key'] = [
@@ -673,6 +688,9 @@ class SupplierSettingsView(SettingsView):
             updated_settings = {
                 'DIGIKEY_CLIENT_ID': SETTINGS[self.title][supplier]['Client ID'][1].value,
                 'DIGIKEY_CLIENT_SECRET': SETTINGS[self.title][supplier]['Client Secret'][1].value,
+                'DIGIKEY_LOCAL_SITE': SETTINGS[self.title][supplier]['Local Site'][1].value,
+                'DIGIKEY_LOCAL_LANGUAGE': SETTINGS[self.title][supplier]['Language'][1].value,
+                'DIGIKEY_LOCAL_CURRENCY': SETTINGS[self.title][supplier]['Currency'][1].value,
             }
             digikey_settings = {**settings_from_file, **updated_settings}
             config_interface.dump_file(digikey_settings, global_settings.CONFIG_DIGIKEY_API)

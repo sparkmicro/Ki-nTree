@@ -28,7 +28,6 @@ PRICING_MAP = [
     'package_type'
 ]
 
-
 os.environ['DIGIKEY_STORAGE_PATH'] = settings.DIGIKEY_STORAGE_PATH
 # Check if storage path exists, else create it
 if not os.path.exists(os.environ['DIGIKEY_STORAGE_PATH']):
@@ -58,7 +57,9 @@ def setup_environment(force=False) -> bool:
         digikey_api_settings = config_interface.load_file(settings.CONFIG_DIGIKEY_API)
         os.environ['DIGIKEY_CLIENT_ID'] = digikey_api_settings['DIGIKEY_CLIENT_ID']
         os.environ['DIGIKEY_CLIENT_SECRET'] = digikey_api_settings['DIGIKEY_CLIENT_SECRET']
-
+        os.environ['DIGIKEY_LOCAL_SITE'] = digikey_api_settings.get('DIGIKEY_LOCAL_SITE', 'US')
+        os.environ['DIGIKEY_LOCAL_LANGUAGE'] = digikey_api_settings.get('DIGIKEY_LOCAL_LANGUAGE', 'en')
+        os.environ['DIGIKEY_LOCAL_CURRENCY'] = digikey_api_settings.get('DIGIKEY_LOCAL_CURRENCY', 'USD')
     return check_environment()
 
 
@@ -103,7 +104,12 @@ def fetch_part_info(part_number: str) -> dict:
     # Added logic to check the result in the GUI flow
     @timeout(dec_timeout=20)
     def digikey_search_timeout():
-        return digikey.product_details(part_number).to_dict()
+        return digikey.product_details(
+            part_number,
+            x_digikey_locale_site=os.environ['DIGIKEY_LOCAL_SITE'],
+            x_digikey_locale_language=os.environ['DIGIKEY_LOCAL_LANGUAGE'],
+            x_digikey_locale_currency=os.environ['DIGIKEY_LOCAL_CURRENCY'],
+        ).to_dict()
 
     # THIS METHOD WILL NOT WORK WITH DIGI-KEY PART NUMBERS...
     # @timeout(dec_timeout=20)
