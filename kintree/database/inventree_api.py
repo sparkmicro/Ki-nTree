@@ -831,6 +831,7 @@ def create_parameter_template(name: str, units: str) -> int:
         })
     except:
         cprint(f'[TREE]\tError: Failed to create parameter template "{name}".', silent=settings.SILENT)
+        return 0
 
     if parameter_template:
         return parameter_template.pk

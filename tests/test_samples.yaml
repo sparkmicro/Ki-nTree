@@ -130,7 +130,7 @@ Resistors:
 
 RF:
   # Filter (Balun)
-  2450BM14E0003T: original
+  2450BM14E0003001T: original
 
 Transistors:
   # NPN

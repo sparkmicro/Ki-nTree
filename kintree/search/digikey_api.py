@@ -79,10 +79,14 @@ def get_default_search_keys():
 
 def find_categories(part_details: str):
     ''' Find categories '''
-    try:
-        return part_details['limited_taxonomy'].get('value'), part_details['limited_taxonomy']['children'][0].get('value')
-    except:
-        return None, None
+    category = part_details.get('category')
+    subcategory = None
+    if category:
+        subcategory = category.get('child_categories')[0]
+        category = category.get('name')
+    if subcategory:
+        subcategory = subcategory.get('name')
+    return category, subcategory
 
 
 def fetch_part_info(part_number: str) -> dict:
@@ -221,10 +225,10 @@ def test_api(check_content=False) -> bool:
         'product_description': 'RES 10K OHM 5% 1/16W 0402',
         'digi_key_part_number': 'RMCF0402JT10K0CT-ND',
         'manufacturer': 'Stackpole Electronics Inc',
-        'manufacturer_part_number': 'RMCF0402JT10K0',
+        'manufacturer_product_number': 'RMCF0402JT10K0',
         'product_url': 'https://www.digikey.com/en/products/detail/stackpole-electronics-inc/RMCF0402JT10K0/1758206',
-        'primary_datasheet': 'https://www.seielect.com/catalog/sei-rmcf_rmcp.pdf',
-        'primary_photo': 'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/2597/MFG_RMC SERIES.jpg',
+        'datasheet_url': 'https://www.seielect.com/catalog/sei-rmcf_rmcp.pdf',
+        'photo_url': 'https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/2597/MFG_RMC SERIES.jpg',
     }
 
     test_part = fetch_part_info('RMCF0402JT10K0')

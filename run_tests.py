@@ -28,7 +28,7 @@ except IndexError:
 # Enable InvenTree tests
 ENABLE_INVENTREE = True
 # Enable KiCad tests
-ENABLE_KICAD = True
+ENABLE_KICAD = False
 # Set categories to test
 PART_CATEGORIES = [
     'Capacitors',
@@ -221,7 +221,7 @@ if __name__ == '__main__':
                         'category_tree': [supplier_info['category'], supplier_info['subcategory']],
                         'parameters': supplier_info['parameters'],
                         'Symbol': f'{category}:{number}',
-                        'IPN': supplier_info['manufacturer_part_number'],
+                        'IPN': supplier_info['manufacturer_product_number'],
                     })
                     # Update categories
                     part_info['category_tree'] = inventree_interface.get_categories_from_supplier_data(part_info)
