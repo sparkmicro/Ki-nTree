@@ -85,6 +85,8 @@ def fetch_part_info(part_number: str, silent=False) -> dict:
             else:
                 cprint(f'[INFO]\tFound {part["numFound"]} results for "{part_number}", selecting first result', silent=False)
             part = part['docs'][0]              # choose the first part in the returned returned list
+        else:
+            part = None
     except Exception as e:
         cprint(f'[INFO]\tError: fetch_part_info(): {repr(e)}')
         part = None
@@ -189,7 +191,7 @@ def fetch_part_info(part_number: str, silent=False) -> dict:
 
     # Parse out ordering attributes
     pricing_attributes = {}
-    price_per_unit = part[price_key]
+    price_per_unit = part.get(price_key, '0')
     try:
         for attribute in part[ordering_attributes]:
             attribute = attribute.split(':')
