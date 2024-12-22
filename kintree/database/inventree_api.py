@@ -867,18 +867,17 @@ def create_parameter(part_id: int, template_name: int, value: str):
         # cprint(f'[TREE]\t{parameter.template} ?= {template_id}', silent=SILENT)
         if item.template == template_id:
             is_new_part_parameters_template_id = False
-            if settings.UPDATE_INVENTREE:
-                if value != item.data and value != '-':
-                    parameter = item
-                    was_updated = True
-                    try:
-                        parameter.save(data={
-                            'data': value
-                        })
-                    except Exception as e:
-                        cprint(f'[TREE]\tError: Failed to update part parameter "{template_name}".', silent=settings.SILENT)
-                        if "Could not convert" in e.args[0]['body'].__str__():
-                            cprint(f'[TREE]\tError: Parameter value "{value}" is not allowed by server settings.', silent=settings.SILENT)
+            if value != item.data and value != '-':
+                parameter = item
+                was_updated = True
+                try:
+                    parameter.save(data={
+                        'data': value
+                    })
+                except Exception as e:
+                    cprint(f'[TREE]\tError: Failed to update part parameter "{template_name}".', silent=settings.SILENT)
+                    if "Could not convert" in e.args[0]['body'].__str__():
+                        cprint(f'[TREE]\tError: Parameter value "{value}" is not allowed by server settings.', silent=settings.SILENT)
             break
     # cprint(part_parameters, silent=SILENT)
 
