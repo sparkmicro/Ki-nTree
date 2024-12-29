@@ -28,6 +28,8 @@ Ki-nTree works with:
 
 > :warning: **Important Note**
 >
+> Ki-nTree version `1.2.x` and forward support Digi-Key API version **4 only**.
+>
 > Ki-nTree version `1.0.x` and forward support KiCad versions **6 and up**.
 >
 > Ki-nTree versions `0.5.x` and `0.6.x` only support KiCad version **6** (`pip install kintree==0.6.6`).
