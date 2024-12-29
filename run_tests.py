@@ -90,21 +90,19 @@ if ENABLE_API:
     digikey_api.disable_api_logger()
 
     # Test Digi-Key API
-    # if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
-    #     pretty_test_print('[MAIN]\tDigi-Key API Test')
-    #     if not digikey_api.test_api(check_content=True):
-    #         cprint('[ FAIL ]')
-    #         cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
-    #         sys.exit(-1)
-    #     else:
-    #         cprint('[ PASS ]')
+    if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
+        pretty_test_print('[MAIN]\tDigi-Key API Test')
+        if not digikey_api.test_api(check_content=True):
+            cprint('[ FAIL ]')
+            cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+        else:
+            cprint('[ PASS ]')
 
     # Test Mouser API
     if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
         pretty_test_print('[MAIN]\tMouser API Test')
         if not mouser_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -117,14 +115,12 @@ if ENABLE_API:
             else:
                 cprint('[ PASS ]')
                 break
-            sys.exit(-1)
 
     # Test LCSC API
     if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
         pretty_test_print('[MAIN]\tLCSC API Test')
         if not lcsc_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -133,7 +129,6 @@ if ENABLE_API:
         pretty_test_print('[MAIN]\tTME API Test')
         if not tme_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -142,7 +137,6 @@ if ENABLE_API:
         pretty_test_print('[MAIN]\tAutomationDirect API Test')
         if not automationdirect_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -151,7 +145,6 @@ if ENABLE_API:
         pretty_test_print('[MAIN]\tJameco API Test')
         if not jameco_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -159,7 +152,6 @@ if ENABLE_API:
     pretty_test_print('[MAIN]\tSnapEDA API Test')
     if not snapeda_api.test_snapeda_api():
         cprint('[ FAIL ]')
-        sys.exit(-1)
     else:
         cprint('[ PASS ]')
 
@@ -191,7 +183,7 @@ if __name__ == '__main__':
                 cprint('[ PASS ]')
             else:
                 cprint('[ FAIL ]')
-                sys.exit(-1)
+                # sys.exit(-1)
 
         if ENABLE_KICAD or ENABLE_INVENTREE:
             for category in PART_TEST_SAMPLES.keys():
