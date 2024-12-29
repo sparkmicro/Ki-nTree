@@ -11,7 +11,7 @@ repository = "https://github.com/sparkmicro/Ki-nTree"
 keywords = ["inventree", "kicad", "digikey", "mouser", "component", "part", "create"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<=3.12"
+python = ">=3.9,<3.13"
 # digikey-api = "^1.0.0"
 digikey-api = { git = "https://github.com/hurricaneJoef/digikey-api.git", branch = "master" }
 setuptools = "^75.2.0"
