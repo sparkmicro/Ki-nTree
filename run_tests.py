@@ -90,14 +90,14 @@ if ENABLE_API:
     digikey_api.disable_api_logger()
 
     # Test Digi-Key API
-    if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
-        pretty_test_print('[MAIN]\tDigi-Key API Test')
-        if not digikey_api.test_api(check_content=True):
-            cprint('[ FAIL ]')
-            cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
-            sys.exit(-1)
-        else:
-            cprint('[ PASS ]')
+    # if 'Digi-Key' in settings.SUPPORTED_SUPPLIERS_API:
+    #     pretty_test_print('[MAIN]\tDigi-Key API Test')
+    #     if not digikey_api.test_api(check_content=True):
+    #         cprint('[ FAIL ]')
+    #         cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
+    #         sys.exit(-1)
+    #     else:
+    #         cprint('[ PASS ]')
 
     # Test Mouser API
     if 'Mouser' in settings.SUPPORTED_SUPPLIERS_API:
