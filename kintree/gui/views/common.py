@@ -1,5 +1,4 @@
 from enum import Enum
-from math import pi
 from typing import Optional, List
 
 import flet as ft
