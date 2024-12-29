@@ -394,66 +394,6 @@ class DropdownWithSearch(ft.UserControl):
         self.options = self._options
         self.dropdown.update()
 
-
-class Collapsible(ft.Column):
-    def __init__(
-        self,
-        title: str,
-        content: ft.Control,
-        icon: Optional[ft.Control] = None,
-        spacing: float = 3,
-        radio: Optional[ft.Radio] = None,
-        scale: ft.types.ScaleValue = 1,
-    ):
-        super().__init__()
-        self.icon = icon
-        self.title = title
-        self.scale = scale
-        self.shevron = ft.Icon(
-            ft.icons.KEYBOARD_ARROW_RIGHT_ROUNDED,
-            animate_rotation=100,
-            rotate=0,
-            scale=self.scale,
-        )
-        self.content = ft.Column(
-            [ft.Container(height=spacing), content],
-            height=0,
-            spacing=0,
-            animate_size=100,
-            opacity=0,
-            animate_opacity=100,
-            scale=self.scale,
-        )
-        self.spacing = 0
-        self.radio = radio
-        self.radio.scale = self.scale
-
-    def header_click(self, e):
-        self.content.height = None if self.content.height == 0 else 0
-        self.content.opacity = 0 if self.content.height == 0 else 1
-        self.shevron.rotate = pi / 2 if self.shevron.rotate == 0 else 0
-        self.update()
-
-    def build(self):
-        title_row = ft.Row()
-        if self.icon is not None:
-            title_row.controls.append(self.icon)
-        if self.radio:
-            title_row.controls.append(self.radio)
-        else:
-            title_row.controls.append(ft.Text(self.title))
-        self.controls = [
-            ft.Container(
-                ft.Row([title_row, self.shevron], alignment="spaceBetween"),
-                padding=ft.padding.only(left=8, right=8),
-                height=38,
-                border_radius=4,
-                ink=True,
-                on_click=self.header_click,
-            ),
-            self.content,
-        ]
-
         
 class MenuButton(ft.Container):
     def __init__(

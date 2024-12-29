@@ -314,7 +314,7 @@ class PartSearchView(MainView):
         self.reset_view(e, ignore=['part_number', 'supplier'])
         self.switch_view()
         # Validate form
-        if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
+        if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value) or not self.fields['part_number'].value and not self.fields['supplier'].value:
             if not self.fields['part_number'].value:
                 error_msg = 'Missing Part Number'
             else:
