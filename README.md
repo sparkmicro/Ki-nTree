@@ -28,6 +28,8 @@ Ki-nTree works with:
 
 > :warning: **Important Note**
 >
+> Ki-nTree version `1.2.x` and forward support Digi-Key API version **4 only**.
+>
 > Ki-nTree version `1.0.x` and forward support KiCad versions **6 and up**.
 >
 > Ki-nTree versions `0.5.x` and `0.6.x` only support KiCad version **6** (`pip install kintree==0.6.6`).
@@ -40,11 +42,16 @@ Ki-nTree was developed by [@eeintech](https://github.com/eeintech) for [SPARK Mi
 
 ### Requirements
 
-* Ki-nTree is currently tested for Python 3.9 to 3.11 versions.
+* Ki-nTree is currently tested for Python 3.9 to 3.12 versions.
 * Ki-nTree requires a Digi-Key **production** API instance. To create one, go to https://developer.digikey.com/. Create an account, an organization and add a **production** API to your organization. Save both Client ID and Secret keys.
 > [Here is a video](https://youtu.be/OI1EGEc0Ju0) to help with the different steps
 * Ki-nTree requires a Mouser Search API key. To request one, head over to https://www.mouser.ca/api-search/ and click on "Sign Up for Search API"
 * Ki-nTree requires an Element14 Product Search API key to fetch part information for the following suppliers: Farnell (Europe), Newark (North America) and Element14 (Asia-Pacific). To request one, head over to https://partner.element14.com/ and click on "Register"
+* on rolling release distributions like Arch Linux some Flet dependencies need to be repaired manually:
+```
+sudo pacman -S mpv
+sudo ln -s /usr/lib/libmpv.so /usr/lib/libmpv.so.1 
+```
 
 ### Installation (system wide)
 

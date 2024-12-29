@@ -121,7 +121,7 @@ def python_badge(c):
     cprint('[MAIN]\tInstall pybadges')
     c.run('pip install pybadges pip-autoremove', hide=True)
     cprint('[MAIN]\tCreate badge')
-    c.run('python -m pybadges --left-text="python" --right-text="3.9 | 3.10 | 3.11" '
+    c.run('python -m pybadges --left-text="python" --right-text="3.9 | 3.10 | 3.11 | 3.12" '
           '--whole-link="https://www.python.org/" --browser --embed-logo '
           '--logo="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/python.svg"')
     cprint('[MAIN]\tUninstall pybadges')

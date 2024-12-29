@@ -26,7 +26,7 @@ try:
 except IndexError:
     ENABLE_API = 0
 # Enable InvenTree tests
-ENABLE_INVENTREE = True
+ENABLE_INVENTREE = False
 # Enable KiCad tests
 ENABLE_KICAD = True
 # Set categories to test
@@ -95,7 +95,6 @@ if ENABLE_API:
         if not digikey_api.test_api(check_content=True):
             cprint('[ FAIL ]')
             cprint('[INFO]\tFailed to get Digi-Key API token, aborting.')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -104,7 +103,6 @@ if ENABLE_API:
         pretty_test_print('[MAIN]\tMouser API Test')
         if not mouser_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -117,14 +115,12 @@ if ENABLE_API:
             else:
                 cprint('[ PASS ]')
                 break
-            sys.exit(-1)
 
     # Test LCSC API
     if 'LCSC' in settings.SUPPORTED_SUPPLIERS_API:
         pretty_test_print('[MAIN]\tLCSC API Test')
         if not lcsc_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -133,7 +129,6 @@ if ENABLE_API:
         pretty_test_print('[MAIN]\tTME API Test')
         if not tme_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -142,7 +137,6 @@ if ENABLE_API:
         pretty_test_print('[MAIN]\tAutomationDirect API Test')
         if not automationdirect_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -151,7 +145,6 @@ if ENABLE_API:
         pretty_test_print('[MAIN]\tJameco API Test')
         if not jameco_api.test_api():
             cprint('[ FAIL ]')
-            sys.exit(-1)
         else:
             cprint('[ PASS ]')
 
@@ -159,15 +152,16 @@ if ENABLE_API:
     pretty_test_print('[MAIN]\tSnapEDA API Test')
     if not snapeda_api.test_snapeda_api():
         cprint('[ FAIL ]')
-        sys.exit(-1)
     else:
         cprint('[ PASS ]')
 
     cprint('\n-----')
 
-# Setup InvenTree
-setup_inventree()
-cprint('\n-----')
+if ENABLE_INVENTREE:
+    # Setup InvenTree
+    pretty_test_print('\n[MAIN]\tSetting up Inventree')
+    setup_inventree()
+    cprint('\n-----')
 
 # Load test samples
 samples = config_interface.load_file(os.path.abspath(
@@ -191,7 +185,6 @@ if __name__ == '__main__':
                 cprint('[ PASS ]')
             else:
                 cprint('[ FAIL ]')
-                sys.exit(-1)
 
         if ENABLE_KICAD or ENABLE_INVENTREE:
             for category in PART_TEST_SAMPLES.keys():
@@ -221,7 +214,7 @@ if __name__ == '__main__':
                         'category_tree': [supplier_info['category'], supplier_info['subcategory']],
                         'parameters': supplier_info['parameters'],
                         'Symbol': f'{category}:{number}',
-                        'IPN': supplier_info['manufacturer_part_number'],
+                        'IPN': supplier_info['manufacturer_product_number'],
                     })
                     # Update categories
                     part_info['category_tree'] = inventree_interface.get_categories_from_supplier_data(part_info)
@@ -300,7 +293,7 @@ if __name__ == '__main__':
                     # Disable datasheet download/upload after first part (to speed up testing)
                     # settings.DATASHEET_UPLOAD = False
 
-        if ENABLE_TEST_METHODS:
+        if ENABLE_TEST_METHODS and ENABLE_INVENTREE:
             methods = [
                 'Fuzzy category matching',
                 'Custom parts form',

@@ -36,7 +36,8 @@ main_appbar = ft.AppBar(
         maximizable=True,
     ),
     leading_width=40,
-    title=ft.WindowDragArea(ft.Text(f'Ki-nTree | {__version__}'), maximizable=True),
+    title=ft.WindowDragArea(ft.Container(ft.Text(f'Ki-nTree | {__version__}'),
+                                         width=10000), maximizable=True),
     center_title=False,
     bgcolor=ft.colors.SURFACE_VARIANT,
     actions=[],
@@ -313,7 +314,7 @@ class PartSearchView(MainView):
         self.reset_view(e, ignore=['part_number', 'supplier'])
         self.switch_view()
         # Validate form
-        if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value):
+        if bool(self.fields['part_number'].value) != bool(self.fields['supplier'].value) or not self.fields['part_number'].value and not self.fields['supplier'].value:
             if not self.fields['part_number'].value:
                 error_msg = 'Missing Part Number'
             else:

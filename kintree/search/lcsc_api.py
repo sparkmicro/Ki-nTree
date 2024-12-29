@@ -31,7 +31,7 @@ def get_default_search_keys():
         'productCode',
         'brandNameEn',
         'productModel',
-        '',
+        'part_url',
         'pdfUrl',
         'productImages',
     ]
@@ -62,14 +62,17 @@ def fetch_part_info(part_number: str) -> dict:
     # Query part number
     try:
         part = search_timeout()
+        # Extract result
+        part = part.get('result', None)
     except:
-        part = None
+        part = {}
 
     if not part:
         return part_info
-    
-    # Extract result
-    part = part.get('result', None)
+
+    product_code = part.get('productCode')
+    if product_code:
+        part_info['part_url'] = f'https://www.lcsc.com/product-detail/{product_code}.html'
 
     category, subcategory = find_categories(part)
     try:

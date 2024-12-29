@@ -1,5 +1,4 @@
-EXTRA_FIELDS:
-- export_control_class_number
+EXTRA_FIELDS: null
 SEARCH_DATASHEET: null
 SEARCH_DESCRIPTION: null
 SEARCH_KEYWORDS: null

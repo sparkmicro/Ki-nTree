@@ -149,7 +149,7 @@ def clean_parameter_value(category: str, name: str, value: str) -> str:
 
     # Remove parenthesis section
     if '(' in value:
-        parenthesis = re.findall('\(.*\)', value)
+        parenthesis = re.findall(r'\(.*\)', value)
 
         if parenthesis:
             for item in parenthesis:
