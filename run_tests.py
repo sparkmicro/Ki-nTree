@@ -183,7 +183,6 @@ if __name__ == '__main__':
                 cprint('[ PASS ]')
             else:
                 cprint('[ FAIL ]')
-                # sys.exit(-1)
 
         if ENABLE_KICAD or ENABLE_INVENTREE:
             for category in PART_TEST_SAMPLES.keys():
