@@ -8,7 +8,7 @@ STORES = {
         'Bulgaria': 'bg.farnell.com ',
         'Czechia': 'cz.farnell.com',
         'Denmark': 'dk.farnell.com',
-        'Austria': 'at.farnell.com ',
+        'Austria': 'at.farnell.com',
         'Switzerland': 'ch.farnell.com',
         'Germany': 'de.farnell.com',
         'CPC UK': 'cpc.farnell.com',
