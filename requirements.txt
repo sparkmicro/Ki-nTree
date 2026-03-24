@@ -3,7 +3,7 @@ setuptools==75.2.0
 https://github.com/hurricaneJoef/digikey-api/archive/refs/heads/master.zip
 Flet>=0.24.1,<1.0
 thefuzz>=0.19.0,<1.0
-inventree>=0.17.1,<1.0
+inventree>=0.23.1,<1.0
 kiutils>=1.4.8,<2.0
 mouser>=0.1.6,<1.0
 multiprocess>=0.70.16,<0.71
