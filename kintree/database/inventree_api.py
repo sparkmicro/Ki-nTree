@@ -885,7 +885,8 @@ def create_parameter(part_id: int, template_name: int, value: str):
     if template_id > 0 and is_new_part_parameters_template_id:
         try:
             parameter = Parameter.create(inventree_api, {
-                'part': part_id,
+                'model_type': 'part',
+                'model_id': part.pk,
                 'template': template_id,
                 'data': value,
             })

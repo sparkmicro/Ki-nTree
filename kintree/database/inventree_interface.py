@@ -642,10 +642,8 @@ def inventree_create(part_info: dict, stock=None, kicad=False, symbol=None, foot
                 if not ipn_update:
                     cprint('\n[INFO]\tError updating IPN', silent=settings.SILENT)
                 inventree_part['IPN'] = ipn
-                # Update InvenTree URL
-                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
-            else:
-                inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
+            # Update InvenTree URL
+            inventree_part['inventree_url'] = f'{settings.PART_URL_ROOT}{part_pk}/'
 
     # Progress Update
     if not progress.update_progress_bar(show_progress):
