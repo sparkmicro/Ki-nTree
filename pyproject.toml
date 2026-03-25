@@ -16,9 +16,9 @@ python = ">=3.9,<3.14"
 # digikey-api = { git = "https://github.com/hurricaneJoef/digikey-api.git", branch = "master" }
 digikey-api = { path = "./submodules/digikey_api-1.0.0-py3-none-any.whl", develop = true}
 setuptools = "^75.6.0"
-flet = "^0.24.1"
+flet = "0.24.1"
 thefuzz = "^0.22.1"
-inventree = "^0.17.2"
+inventree = "^0.23.1"
 kiutils = "^1.4.8"
 mouser = "^0.1.6"
 multiprocess = "^0.70.17"
