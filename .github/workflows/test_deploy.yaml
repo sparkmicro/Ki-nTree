@@ -162,7 +162,7 @@ jobs:
       - name: Install dependencies
         run: pip install -U poetry
       - name: Install poetry dependencies
-        run: poetry install --no-root --no-dev --no-interaction
+        run: poetry install --no-root --no-interaction
       - name: Build the package
         run: poetry build --no-interaction
       - name: Set up TestPyPI repo in poetry
