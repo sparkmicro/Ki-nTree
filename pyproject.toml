@@ -13,8 +13,7 @@ keywords = ["inventree", "kicad", "digikey", "mouser", "component", "part", "cre
 [tool.poetry.dependencies]
 python = ">=3.9,<3.14"
 # digikey-api = "^1.0.0"
-# digikey-api = { git = "https://github.com/hurricaneJoef/digikey-api.git", branch = "master" }
-digikey-api = { path = "./submodules/digikey_api-1.0.0-py3-none-any.whl", develop = true}
+digikey-api = { git = "https://github.com/hurricaneJoef/digikey-api.git", branch = "master" }
 setuptools = "^75.6.0"
 flet = "0.24.1"
 thefuzz = "^0.22.1"
