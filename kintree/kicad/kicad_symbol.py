@@ -104,7 +104,7 @@ class ComponentLibManager(object):
         # Add symbol to library
         self.kicad_lib.symbols.append(new_symbol)
         # Write library
-        self.kicad_lib.to_file()
+        self.kicad_lib.to_file(encoding="utf-8")
 
         cprint(f'[KCAD]\tSuccess: Component added to library {self.library_name}', silent=settings.SILENT)
         part_in_lib = True

@@ -17,10 +17,11 @@ if platform.system() == 'Linux':
 # InvenTree
 from inventree.api import InvenTreeAPI
 from inventree.company import Company, ManufacturerPart, SupplierPart, SupplierPriceBreak
-from inventree.part import Part, PartCategory, Parameter, ParameterTemplate
+from inventree.part import Part, PartCategory
 from inventree.currency import CurrencyManager
 from inventree.stock import StockLocation
 from inventree.stock import StockItem
+from inventree.base import ParameterTemplate, Parameter
 
 
 def connect(server: str,
@@ -56,8 +57,7 @@ def set_inventree_db_test_mode():
     ''' InvenTree test database setup '''
     global inventree_api
 
-    inventree_api.patch('settings/global/PART_PARAMETER_ENFORCE_UNITS', {'value': False})
-
+    inventree_api.patch('settings/global/PARAMETER_ENFORCE_UNITS/', {'value': False})
 
 def get_inventree_category_id(category_tree: list) -> int:
     ''' Get InvenTree category ID from name, specificy parent if subcategory '''
