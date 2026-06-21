@@ -79,6 +79,13 @@ def get_image_with_retries(url, headers, retries=3, wait=5, silent=False):
     return None
 
 
+def get_with_cloudscraper(url, headers, timeout):
+    """ Single-shot GET using cloudscraper, to get past Cloudflare protection """
+    import cloudscraper
+    scraper = cloudscraper.create_scraper()
+    return scraper.get(url, headers=headers, timeout=timeout)
+
+
 def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=False, requests_lib=False, try_cloudscraper=False, silent=False):
     ''' Standard method to download URL content, with option to save to local file (eg. images) '''
 
@@ -132,19 +139,17 @@ def download(url, filetype='API data', fileoutput='', timeout=3, enable_headers=
                     return None
             return file
         else:
-            # some suppliers work with requests.get(), others need urllib.request.urlopen()
-            try:
-                response = requests.get(url)
-                data_json = response.json()
-                return data_json
-            except requests.exceptions.JSONDecodeError:
+            # Try plain requests first; if the endpoint is Cloudflare-protected the body
+            # won't be JSON (or the connection is refused) -> fall back to cloudscraper.
+            # Some suppliers only work with urllib.request.urlopen(), kept as last resort.
+            for fetch in (requests.get, get_with_cloudscraper):
                 try:
-                    url_data = urllib.request.urlopen(url)
-                    data = url_data.read()
-                    data_json = json.loads(data.decode('utf-8'))
-                    return data_json
-                finally:
-                    pass
+                    return fetch(url, headers=headers, timeout=timeout).json()
+                except (requests.exceptions.RequestException, ValueError):
+                    continue
+            url_data = urllib.request.urlopen(url)
+            data = url_data.read()
+            return json.loads(data.decode('utf-8'))
     except (socket.timeout, requests.exceptions.ConnectTimeout, requests.exceptions.ReadTimeout):
         cprint(f'[INFO]\tWarning: {filetype} download socket timed out ({timeout}s)', silent=silent)
     except (urllib.error.HTTPError, requests.exceptions.ConnectionError):

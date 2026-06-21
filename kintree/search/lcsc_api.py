@@ -132,8 +132,9 @@ def test_api() -> bool:
     ''' Test method for API '''
 
     test_success = True
+    # Exact-match only on stable identity fields. The free-text 'productIntroEn'
+    # description is edited by LCSC from time to time, so it is checked loosely below.
     expected = {
-        'productIntroEn': '25V 100pF C0G ±5% 0201 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS',
         'productCode': 'C2181718',
         'brandNameEn': 'TDK',
         'productModel': 'C0603C0G1E101J030BA',
@@ -142,13 +143,19 @@ def test_api() -> bool:
     test_part = fetch_part_info('C2181718')
     if not test_part:
         test_success = False
-        
+
     # Check content of response
     if test_success:
         for key, value in expected.items():
-            if test_part[key] != value:
-                print(f'"{test_part[key]}" <> "{value}"')
+            actual = test_part.get(key)
+            if actual != value:
+                print(f'"{actual}" <> "{value}"')
                 test_success = False
                 break
+
+    # Loose check on the free-text description (resilient to LCSC rewording)
+    if test_success and '100pF' not in test_part.get('productIntroEn', ''):
+        print(f'"100pF" not found in "{test_part.get("productIntroEn", "")}"')
+        test_success = False
 
     return test_success

@@ -10,3 +10,9 @@ kintree/tests/*
 .coverage
 htmlcov/
 .vscode/launch.json
+
+# vscode
+.vscode
+
+# github
+.github/copilot-instructions.md
