@@ -152,7 +152,7 @@ def fetch_part_info(part_number: str) -> dict:
         part_info['parameters'][param['ParameterName']] = param['ParameterValue']
 
     # query the prices
-    params = {'SymbolList[0]': part_number, 'Curreny': 'USD'}
+    params = {'SymbolList[0]': part_number, 'Currency': 'USD'}
     response = tme_api_query(tme_api_request('/Products/GetPrices', tme_api_settings, params))
     # check if accidentally no data returned
     if response is None or response['Status'] != 'OK':
